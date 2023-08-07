@@ -1,0 +1,14 @@
+*.idea*
+*.egg-info*
+*__pycache__*
+*.ipynb_checkpoints*
+.coverage
+coverage.xml
+htmlcov
+.DS_Store
+docs/_build/*
+docs/source/examples
+/docs/source/copyright.rst
+vanguard/datasets/data
+.scannerwork
+.venv

@@ -1,0 +1,181 @@
+"""
+Partitioners are responsible for separating the training data into subsets to be assigned to each expert controller.
+"""
+from collections import defaultdict
+
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.cluster import KMeans as _KMeans
+from sklearn.cluster import MiniBatchKMeans as _MiniBatchKMeans
+from sklearn.manifold import TSNE
+from sklearn_extra.cluster import KMedoids as _KMedoids
+import torch
+
+
+class BasePartitioner:
+    """
+    Generate a partition over index space using various methods. All partitioners should inherit from this class.
+    """
+    def __init__(self, train_x, n_experts=3, communication=False, seed=42):
+        """
+        Initialise self.
+
+        :param numpy.ndarray train_x: The mean of the inputs.
+        :param int n_experts: The number of partitions in which to split the data. Defaults to 3.
+        :param bool communication: If True, A communications expert will be included. Defaults to False.
+        :param int seed: The seed for the random state. Defaults to 42.
+        """
+        self.train_x = train_x
+        self.n_experts = n_experts
+        self.communication = communication
+        self.seed = seed
+
+        self.n_examples = self.train_x.shape[0]
+
+    def create_partition(self):
+        """
+        Create a partition of ``self.train_x`` across ``self.n_experts``.
+
+        :return partition: A partition of length ``self.n_experts``.
+        :rtype: list[list[int]]
+        """
+        np.random.seed(self.seed)
+
+        if self.communication:
+            partition = self._create_cluster_communication_partition()
+        else:
+            partition = self._create_cluster_partition(self.n_experts)
+
+        return partition
+
+    def plot_partition(self, partition, cmap="Set3", **plot_kwargs):
+        """Plot a partition on a T-SNE graph."""
+        embedding = TSNE().fit_transform(self.train_x)
+
+        colours = [-1 for _ in range(len(self.train_x))]
+        for group_index, group in enumerate(partition):
+            for data_point_index in group:
+                colours[data_point_index] = group_index
+
+        plt.scatter(embedding[:, 0], embedding[:, 1], c=colours, cmap=cmap, **plot_kwargs)
+
+    def _create_cluster_partition(self, n_clusters):
+        """
+        Create the partition.
+
+        :param int n_clusters: The number of clusters.
+        :return partition: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
+        :rtype: list[list[int]]
+        """
+        raise NotImplementedError
+
+    def _create_cluster_communication_partition(self):
+        """
+        Create a partition with a communications expert.
+
+        :return partition: A partition of length ``self.n_experts``.
+        :rtype: list[list[int]]
+        """
+        size = self.n_examples // self.n_experts
+        random_partition = np.random.choice(self.n_examples, size=size, replace=False).tolist()
+        cluster_partition = self._create_cluster_partition(self.n_experts-1)
+
+        for i in range(self.n_experts-1):
+            cluster_partition[i] = random_partition + cluster_partition[i]
+
+        partition = [random_partition, *cluster_partition]
+
+        return partition
+
+    @staticmethod
+    def _group_indices_by_label(labels):
+        """
+        Group the indices of the labels by their value.
+
+        :param Iterable labels: An array of labels.
+        :returns groups: A list of values such that labels[groups[i][j]] == i for all j in groups[i].
+        :rtype: list[int]
+
+        :Example:
+            >>> labels = [1, 2, 3, 2, 1, 3, 0, 9]
+            >>> BasePartitioner._group_indices_by_label(labels)
+            [[6], [0, 4], [1, 3], [2, 5], [], [], [], [], [], [7]]
+        """
+        label_value_to_index = defaultdict(list)
+        for label_index, label_value in enumerate(labels):
+            label_value_to_index[label_value].append(label_index)
+
+        groups = [label_value_to_index[value] for value in range(max(labels) + 1)]
+        return groups
+
+
+class RandomPartitioner(BasePartitioner):
+    """
+    Generates a random partition.
+    """
+    def _create_cluster_partition(self, n_clusters):
+        size = (n_clusters, self.n_examples // n_clusters)
+        partition = np.random.choice(self.n_examples, size=size, replace=False).tolist()
+        return partition
+
+
+class KMeansPartitioner(BasePartitioner):
+    """
+    Create a partition using K-Means.
+    """
+    def _create_cluster_partition(self, n_clusters):
+        clusterer = _KMeans(n_clusters=n_clusters, random_state=self.seed)
+        labels = clusterer.fit(self.train_x).labels_
+        partition = self._group_indices_by_label(labels)
+        return partition
+
+
+class MiniBatchKMeansPartitioner(BasePartitioner):
+    """
+    Create a partition using Mini-batch K-Means.
+    """
+    def _create_cluster_partition(self, n_clusters):
+        clusterer = _MiniBatchKMeans(n_clusters=n_clusters, random_state=self.seed)
+        labels = clusterer.fit(self.train_x).labels_
+        partition = self._group_indices_by_label(labels)
+        return partition
+
+
+class KMedoidsPartitioner(BasePartitioner):
+    """
+    Create a partition using KMedoids with similarity defined by the kernel.
+    """
+    def __init__(self, train_x, kernel, n_experts=2, communication=False, seed=42):
+        """
+        Initialise self.
+
+        :param numpy.ndarray train_x: The mean of the inputs.
+        :param gpytorch.kernels.Kernel kernel: The kernel to use for constructing the
+                similarity matrix in kmedoids.
+        :param int n_experts: The number of partitions in which to split the data. Defaults to 2.
+        :param bool communication: If True, A communications expert will be included. Defaults to False.
+        :param int seed: The seed for the random state. Defaults to 42.
+        """
+        super().__init__(train_x=train_x, n_experts=n_experts, communication=communication, seed=seed)
+        self.kernel = kernel
+
+    def _create_cluster_partition(self, n_clusters):
+        dist_matrix = self._construct_distance_matrix()
+        clusterer = _KMedoids(n_clusters=n_clusters, metric='precomputed', random_state=self.seed)
+        labels = clusterer.fit(dist_matrix).labels_
+        partition = self._group_indices_by_label(labels)
+        return partition
+
+    def _construct_distance_matrix(self):
+        """
+        Construct the distance matrix.
+
+        :return dist_matrix: The distance matrix.
+        :rtype: numpy.ndarray
+
+        .. warning::
+            The affinity matrix takes up O(N^2) memory so can't be used for large ``train_x``.
+        """
+        affinity_matrix = self.kernel(torch.from_numpy(self.train_x)).cpu().evaluate().detach().cpu().numpy()
+        dist_matrix = np.exp(-affinity_matrix)
+        return dist_matrix
