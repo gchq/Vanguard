@@ -16,7 +16,7 @@ class DirichletMulticlassClassification(Decorator):
     Implements multiclass Gaussian process classification using a Dirichlet transformation.
 
     This decorator allows multiclass classification with exact gaussian processes.
-    The implementation is based on a GPyTorch example notebook [Maddox21]_ and the paper [Milios18]_.
+    The implementation is based on a GPyTorch example notebook :cite:`Maddox21` and the paper :cite:`Milios18`.
 
     :Example:
         >>> from gpytorch.kernels import RBFKernel, ScaleKernel
@@ -118,7 +118,7 @@ class DirichletMulticlassClassification(Decorator):
 
                         Return a representative distribution of the posterior, with 1-dimensional
                         mean and 2-dimensional covariance. In this case, return a distribution
-                        based on the mean and covariance returned by :py:meth:`_tensor_prediction`.
+                        based on the mean and covariance returned by meth:`_tensor_prediction`.
 
                         :rtype: gpytorch.distributions.MultivariateNormal
                         """
@@ -137,7 +137,7 @@ class DirichletMulticlassClassification(Decorator):
 
                 .. note::
                     The predictions are generated from the
-                    :py:attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
+                    attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_point(x)
@@ -154,7 +154,7 @@ class DirichletMulticlassClassification(Decorator):
 
                 .. note::
                     The predictions are generated from the
-                    :py:attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
+                    attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_fuzzy_point(x, x_std)

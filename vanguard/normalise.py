@@ -1,5 +1,5 @@
 """
-The :py:class:`NormaliseY` decorator will scale the y-inputs to a unit normal distribution.
+The class:`NormaliseY` decorator will scale the y-inputs to a unit normal distribution.
 """
 import numpy as np
 import torch
@@ -45,7 +45,7 @@ class NormaliseY(Decorator):
         """
         Initialise self.
 
-        :param kwargs: Keyword arguments passed to :py:class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 

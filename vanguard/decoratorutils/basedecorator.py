@@ -12,7 +12,7 @@ class Decorator:
     A base class for a vanguard decorator.
 
     .. note::
-        Decorating :py:class:`~vanguard.base.gpcontroller.GPController` classes is an
+        Decorating class:`~vanguard.base.gpcontroller.GPController` classes is an
         extremely practical means of extending functionality.  However, many
         decorators are designed to work with a specific 'framework class', and
         any methods which have been added (or modified) to the decorated class
@@ -20,9 +20,9 @@ class Decorator:
 
         To mitigate this, any unexpected or modified methods (along with any
         other potential problems that the creator may wish to avoid) will emit
-        a :py:exc:`~vanguard.decoratorutils.errors.DecoratorWarning` or raise a
-        :py:exc:`~vanguard.decoratorutils.errors.DecoratorError`
-        at runtime if the decorator calls the :py:meth:`verify_decorated_class`
+        a exc:`~vanguard.decoratorutils.errors.DecoratorWarning` or raise a
+        exc:`~vanguard.decoratorutils.errors.DecoratorError`
+        at runtime if the decorator calls the meth:`verify_decorated_class`
         method to ensure that this does not happen. These warnings can be ignored
         by the user with the ``ignore_methods`` or ``ignore_all`` parameters.
 
@@ -99,9 +99,9 @@ class Decorator:
         :param type cls: The class to be checked.
         :param set[str] super_methods: A set of method names found in the framework class.
         :raises errors.UnexpectedMethodError: If an unexpected method is found, and the
-            :py:attr:`vanguard.decoratorutils.basedecorator.Decorator.raise_instead` is ``True``.
+            attr:`vanguard.decoratorutils.basedecorator.Decorator.raise_instead` is ``True``.
         :raises errors.OverwrittenMethodError: If a method has been overwritten, and the
-            :py:attr:`vanguard.decoratorutils.basedecorator.Decorator.raise_instead` is ``True``.
+            attr:`vanguard.decoratorutils.basedecorator.Decorator.raise_instead` is ``True``.
         """
         cls_methods = {key for key, value in getmembers(cls) if isfunction(value)}
         ignore_methods = set(self.ignore_methods) | {"__wrapped__"}

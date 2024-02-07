@@ -2,7 +2,7 @@
 Errors and warnings corresponding to unstable decorator combinations.
 
 If a decorated class has implemented new functions (or overwritten existing ones)
-then calling :py:meth:`~vanguard.decoratorutils.basedecorator.Decorator.verify_decorated_class`
+then calling meth:`~vanguard.decoratorutils.basedecorator.Decorator.verify_decorated_class`
 will raise one of these errors or warnings.
 """
 

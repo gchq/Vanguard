@@ -16,7 +16,7 @@ class BaseHierarchicalHyperparameters(Decorator):
     Convert a controller so that Bayesian inference is performed over its hyperparameters.
 
     Note that only those hyperparameters specified using the
-    :py:class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
+    class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
     for Bayesian inference. The remaining hyperparameters will be inferred as point estimates.
     """
     def __init__(self, num_mc_samples=100, **kwargs):
@@ -73,7 +73,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
 
                 .. warning:
-                    The ``n_features`` must match with :py:attr:`self.dim`.
+                    The ``n_features`` must match with attr:`self.dim`.
 
                 :param array_like[float] x: (n_preds, n_features) The predictive inputs.
                 :param array_like[float],float x_std: The input noise standard deviations:
@@ -95,7 +95,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 Obtain Monte Carlo integration samples from the predictive likelihood with Gaussian input noise.
 
                 .. warning:
-                    The ``n_features`` must match with :py:attr:`self.dim`.
+                    The ``n_features`` must match with attr:`self.dim`.
 
                 :param array_like[float] x: (n_preds, n_features) The predictive inputs.
                 :param array_like[float],float x_std: The input noise standard deviations:
@@ -156,7 +156,7 @@ def _get_bayesian_hyperparameters(module):
 
     .. note::
         This function is designed to work with modules that have been decorated with
-        :py:class:`~vanguard.hierarchical.module.BayesianHyperparameters`. If that
+        class:`~vanguard.hierarchical.module.BayesianHyperparameters`. If that
         decorator has not been applied, then this function does nothing.
 
     :param gpytorch.module.Module module: The module from which to extract the hyperparameters.
