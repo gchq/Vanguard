@@ -1,0 +1,30 @@
+name: "Other"
+description: "Submit an issue that's not a feature request or a bug report."
+title: "[Title]"
+labels: ["new"]
+projects: ["gchq/16"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        _Before reporting_: search [existing issues](https://github.com/gchq/Vanguard/issues) to see if an issue already exists for the feature you're requesting.
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: textarea
+    attributes:
+      label: "What's the issue?"
+      description: "Describe the issue you're raising and why."
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: "Code of Conduct*"
+      description: "By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/gchq/Vanguard/blob/main/CODE_OF_CONDUCT.md)"
+      options:
+        - label: "I agree to follow this project's Code of Conduct"
+          required: true
