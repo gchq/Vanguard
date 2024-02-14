@@ -8,6 +8,7 @@ will have :py:meth:`~ClassificationMixin.classify_points` and
 When creating new decorators, include the :py:class:`ClassificationMixin` as a
 mixin for the inner class which will be returned to enable this.
 """
+import numpy as np
 
 
 class ClassificationMixin:
@@ -18,7 +19,7 @@ class ClassificationMixin:
     automatically 'closes' the standard posterior methods and adds the framework
     for the :py:meth:`classify_points` and :py:meth:`classify_fuzzy_points` methods.
     """
-    def classify_points(self, x):
+    def classify_points(self, x: np.typing.array_like[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
         """
         Classify points.
 
@@ -32,7 +33,7 @@ class ClassificationMixin:
         """
         raise NotImplementedError
 
-    def classify_fuzzy_points(self, x, x_std):
+    def classify_fuzzy_points(self, x: np.typing.array_like[float], x_std: np.typing.array_like[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
         """
         Classify fuzzy points.
 
@@ -51,18 +52,18 @@ class ClassificationMixin:
         """
         raise NotImplementedError
 
-    def posterior_over_point(self, x):
+    def posterior_over_point(self, x: np.typing.array_like[float]) -> None:
         """Use :py:meth:`classify_points` instead."""
         raise TypeError("The 'classify_points' method should be used instead.")
 
-    def posterior_over_fuzzy_point(self, x, x_std):
+    def posterior_over_fuzzy_point(self, x: np.typing.array_like[float], x_std: np.typing.array_like[float]) -> None:
         """Use :py:meth:`classify_fuzzy_points` instead."""
         raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
 
-    def predictive_likelihood(self, x):
+    def predictive_likelihood(self, x: np.typing.array_like[float]) -> None:
         """Use :py:meth:`classify_points` instead."""
         raise TypeError("The 'classify_points' method should be used instead.")
 
-    def fuzzy_predictive_likelihood(self, x, x_std):
+    def fuzzy_predictive_likelihood(self, x: np.typing.array_like[float], x_std: np.typing.array_like[float]) -> None:
         """Use :py:meth:`classify_fuzzy_points` instead."""
         raise TypeError("The 'classify_fuzzy_points' method should be used instead.")

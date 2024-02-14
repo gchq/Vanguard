@@ -1,6 +1,7 @@
 """
 Contains some multitask classification likelihoods.
 """
+import gpytorch.distributions
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.constraints import Positive
 from gpytorch.lazy import DiagLazyTensor
@@ -9,15 +10,17 @@ from gpytorch.likelihoods import SoftmaxLikelihood as _SoftmaxLikelihood
 from gpytorch.likelihoods.likelihood import _OneDimensionalLikelihood
 from gpytorch.likelihoods.noise_models import MultitaskHomoskedasticNoise
 import torch
+import numpy as np
 
 from .models import DummyKernelDistribution
+from typing import Union
 
 
 class DummyNoise:
     """
     Provides a dummy wrapper around a tensor so that the tensor can be accessed as the noise property of the class.
     """
-    def __init__(self, value):
+    def __init__(self, value: Union[float, np.typing.ArrayLike[float], None]):
         """
         Initialise self.
 
@@ -26,7 +29,7 @@ class DummyNoise:
         self.value = value
 
     @property
-    def noise(self):
+    def noise(self) -> Union[float, np.typing.ArrayLike[float], None]:
         return self.value
 
 
@@ -44,11 +47,11 @@ class MultitaskBernoulliLikelihood(BernoulliLikelihood):
         kwargs.pop("num_tasks", None)
         super().__init__(*args, **kwargs)
 
-    def log_marginal(self, observations, function_dist, *args, **kwargs):
+    def log_marginal(self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, *args, **kwargs):
         """Compute the log probability sum summing the log probabilities over the tasks."""
         return super().log_prob(observations, function_dist, *args, **kwargs).sum(dim=-1)
 
-    def expected_log_prob(self, observations, function_dist, *args, **kwargs):
+    def expected_log_prob(self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, *args, **kwargs):
         """Compute the expected log probability sum summing the expected log probabilities over the tasks."""
         return super().expected_log_prob(observations, function_dist, *args, **kwargs).sum(dim=-1)
 
@@ -59,7 +62,7 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
 
     This wrapper allows the arg names more consistent with other likelihoods.
     """
-    def __init__(self, *args, num_classes=None, num_tasks=None, **kwargs):
+    def __init__(self, *args, num_classes: int = None, num_tasks: int = None, **kwargs):
         r"""
         Initialise self.
 
@@ -75,7 +78,7 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
     """
     A pseudo Dirichlet distribution with the log probability modified to match that from [CITATION NEEDED]_.
     """
-    def __init__(self, label_matrix, kernel_matrix, alpha):
+    def __init__(self, label_matrix: torch.Tensor, kernel_matrix: torch.Tensor, alpha: float):
         """
         Initialise self.
 
@@ -91,7 +94,7 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
         concentration = (self.kernel_matrix @ self.label_matrix + torch.unsqueeze(self.alpha, 0)).evaluate()
         super().__init__(concentration)
 
-    def log_prob(self, value):
+    def log_prob(self, value: torch.Tensor) -> torch.Tensor:
         one_hot_values = DiagLazyTensor(torch.ones(self.label_matrix.shape[1]))[value.long()]
         all_class_grouped_kernel_entries = (self.kernel_matrix @ one_hot_values + torch.unsqueeze(self.alpha, 0))
         relevant_logits = all_class_grouped_kernel_entries.evaluate().log() * one_hot_values.evaluate()
@@ -103,7 +106,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     """
     A pseudo Dirichlet likelihood matching the approximation in [CITATION NEEDED]_.
     """
-    def __init__(self, num_classes, alpha=None, learn_alpha=False, **kwargs):
+    def __init__(self, num_classes: int , alpha: Union[float, np.typing.array_like[float], None] = None, learn_alpha: bool = False, **kwargs):
         """
         Initialise self.
 
@@ -130,20 +133,20 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             self._alpha_var = DummyNoise(self._alpha_var)
 
     @property
-    def alpha(self):
+    def alpha(self) -> Union[float, np.typing.ArrayLike[float], None]:
         return self._alpha_var.noise
 
-    def forward(self, function_samples, **kwargs):
+    def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
         return None
 
-    def log_marginal(self, observations, function_dist, **kwargs):
+    def log_marginal(self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, **kwargs) -> torch.Tensor:
         marginal = self.marginal(function_dist, **kwargs)
         return marginal.log_prob(observations)
 
-    def marginal(self, function_dist, *args, **kwargs):
+    def marginal(self, function_dist: gpytorch.distributions.Distribution, *args, **kwargs) -> DirichletKernelDistribution:
         return DirichletKernelDistribution(function_dist.labels, function_dist.kernel,  self.alpha)
 
-    def __call__(self, input, *args, **kwargs):
+    def __call__(self, input: Union[torch.Tensor, DummyKernelDistribution], *args, **kwargs) -> torch.distributions.Distribution:
         is_conditional = torch.is_tensor(input)
         is_marginal = isinstance(input, DummyKernelDistribution)
 
@@ -164,7 +167,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
 
     This removes some RuntimeErrors that prevent use with non-Gaussian likelihoods even when it is possible to do so.
     """
-    def __init__(self, likelihood, model):
+    def __init__(self, likelihood: gpytorch.likelihoods.GaussianLikelihood, model: gpytorch.models.ExactGP):
         """
         Initialise self.
 
@@ -173,7 +176,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         """
         super(ExactMarginalLogLikelihood, self).__init__(likelihood, model)
 
-    def forward(self, function_dist, target, *params):
+    def forward(self, function_dist: gpytorch.distributions.MultivariateNormal, target: torch.Tensor, *params) -> torch.Tensor:
         r"""
         Compute the MLL given :math:`p(\mathbf f)` and :math:`\mathbf y`.
 

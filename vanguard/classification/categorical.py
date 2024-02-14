@@ -8,6 +8,7 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from ..multitask import Multitask
 from ..variational import VariationalInference
 from .mixin import ClassificationMixin
+from vanguard.base.posteriors.posterior import Posterior
 
 
 class CategoricalClassification(Decorator):
@@ -50,7 +51,7 @@ class CategoricalClassification(Decorator):
         >>> preds
         array([0, 2])
     """
-    def __init__(self, num_classes, **kwargs):
+    def __init__(self, num_classes: int, **kwargs):
         """
         Initialise self.
 
@@ -60,7 +61,7 @@ class CategoricalClassification(Decorator):
         super().__init__(framework_class=GPController, required_decorators={VariationalInference, Multitask}, **kwargs)
         self.num_classes = num_classes
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: GPController) -> GPController:
         decorator = self
 
         @wraps_class(cls)
@@ -79,18 +80,25 @@ class CategoricalClassification(Decorator):
                 super().__init__(likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs,
                                  **all_parameters_as_kwargs)
 
-            def classify_points(self, x):
+            def classify_points(
+                    self,
+                    x: np.ndarray[float]
+            ) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
-            def classify_fuzzy_points(self, x, x_std):
+            def classify_fuzzy_points(
+                    self, x: np.ndarray[float], x_std: np.ndarray[float]
+            ) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             @staticmethod
-            def _get_predictions_from_posterior(posterior):
+            def _get_predictions_from_posterior(
+                    posterior: Posterior
+            ) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """
                 Get predictions from a posterior distribution.
 
@@ -106,7 +114,7 @@ class CategoricalClassification(Decorator):
                 return prediction, np.max(normalised_probs, axis=1)
 
             @staticmethod
-            def warn_normalise_y():
+            def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 
