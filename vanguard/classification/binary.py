@@ -85,27 +85,18 @@ class BinaryClassification(Decorator):
 
                 super().__init__(likelihood_class=likelihood_class, **all_parameters_as_kwargs)
 
-            def classify_points(
-                    self,
-                    x: np.ndarray[float]
-            ) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
-            def classify_fuzzy_points(
-                    self,
-                    x: np.ndarray[float],
-                    x_std: np.ndarray[float]
-            ) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_fuzzy_points(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             @staticmethod
-            def _get_predictions_from_prediction_means(
-                    means: np.ndarray[float]
-            ) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def _get_predictions_from_prediction_means(means: np.ndarray[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 

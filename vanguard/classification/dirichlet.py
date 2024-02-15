@@ -95,9 +95,7 @@ class DirichletMulticlassClassification(Decorator):
                         mean, covar = super()._tensor_prediction()
                         return mean.T, torch.block_diag(*covar)
 
-                    def _tensor_sample(
-                            self, sample_shape: torch.Size = torch.Size()
-                    ) -> torch.Tensor:
+                    def _tensor_sample(self, sample_shape: torch.Size = torch.Size()) -> torch.Tensor:
                         """Return a transposed version of the sample."""
                         sample = super()._tensor_sample(sample_shape=sample_shape)
                         return sample.transpose(-1, -2)
@@ -111,9 +109,7 @@ class DirichletMulticlassClassification(Decorator):
                     compatibility downstream.
                     """
                     @classmethod
-                    def from_mean_and_covariance(
-                            cls, mean: torch.Tensor, covariance: torch.Tensor
-                    ) -> type(cls):
+                    def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> type(cls):
                         """Transpose the mean before returning."""
                         return cls(cls._make_multivariate_normal(mean.T, covariance))
 
