@@ -10,6 +10,8 @@ from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from .mixin import ClassificationMixin
 
+from typing_extensions import Self
+
 SAMPLE_DIM, TASK_DIM = 0, 2
 
 
@@ -109,7 +111,7 @@ class DirichletMulticlassClassification(Decorator):
                     compatibility downstream.
                     """
                     @classmethod
-                    def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> type(cls):
+                    def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> Self:
                         """Transpose the mean before returning."""
                         return cls(cls._make_multivariate_normal(mean.T, covariance))
 
