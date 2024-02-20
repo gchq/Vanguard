@@ -23,13 +23,11 @@ class ClassificationMixin:
         """
         Classify points.
 
-        :param array_like[float] x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_preds, n_features) The predictive inputs.
         :returns: (``predictions``, ``certainties``) where:
 
             * ``predictions``: (n_preds,) The posterior predicted classes.
             * ``certainties``: (n_preds,) The posterior predicted class probabilities.
-
-        :rtype: tuple[numpy.ndarray[int, float]]
         """
         raise NotImplementedError
 
@@ -37,8 +35,8 @@ class ClassificationMixin:
         """
         Classify fuzzy points.
 
-        :param array_like[float] x: (n_preds, n_features) The predictive inputs.
-        :param array_like[float],float x_std: The input noise standard deviations:
+        :param x: (n_preds, n_features) The predictive inputs.
+        :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
             * float: Assume homoskedastic noise.
@@ -47,8 +45,6 @@ class ClassificationMixin:
 
             * ``predictions``: (n_preds,) The posterior predicted classes.
             * ``certainties``: (n_preds,) The posterior predicted class probabilities.
-
-        :rtype: tuple[numpy.ndarray[int, float]]
         """
         raise NotImplementedError
 

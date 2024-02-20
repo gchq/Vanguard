@@ -67,8 +67,8 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
         Initialise self.
 
         :param args: For full signature, see :py:class:`gpytorch.likelihoods.SoftmaxLikelihood`.
-        :param int,None num_classes: The number of target classes.
-        :param int num_tasks: Dimensionality of latent function :math:`\mathbf f`.
+        :param num_classes: The number of target classes.
+        :param num_tasks: Dimensionality of latent function :math:`\mathbf f`.
         :param kwargs: For full signature, see :py:class:`gpytorch.likelihoods.SoftmaxLikelihood`.
         """
         super().__init__(*args, num_classes=num_classes, num_features=num_tasks, **kwargs)
@@ -84,8 +84,8 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
 
         :param torch.Tensor label_matrix: (``n_data_points``,``n_classes``) A binary indicator matrix encoding the class
                                                                             to which each data point belongs.
-        :param torch.Tensor kernel_matrix: (``n_data_points``,``n_data_points``) The evaluated kernel matrix.
-        :param float alpha: (``n_classes``,) The Dirichlet prior concentration parameters.
+        :param kernel_matrix: (``n_data_points``,``n_data_points``) The evaluated kernel matrix.
+        :param alpha: (``n_classes``,) The Dirichlet prior concentration parameters.
         """
         self.label_matrix = label_matrix
         self.kernel_matrix = kernel_matrix
@@ -110,10 +110,10 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         """
         Initialise self.
 
-        :param int num_classes: The number of classes in the data.
-        :param float,array_like[float],None alpha: The Dirichlet prior concentration. If a float will be assumed
+        :param num_classes: The number of classes in the data.
+        :param alpha: The Dirichlet prior concentration. If a float will be assumed
                                                     homogenous.
-        :param bool learn_alpha: If to learn the Dirichlet prior concentration as a parameter.
+        :param learn_alpha: If to learn the Dirichlet prior concentration as a parameter.
         """
         super().__init__()
         self.n_classes = num_classes
@@ -171,8 +171,8 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         """
         Initialise self.
 
-        :param gpytorch.likelihoods.GaussianLikelihood likelihood: The Gaussian likelihood for the model.
-        :param gpytorch.models.ExactGP model: The exact GP .
+        :param likelihood: The Gaussian likelihood for the model.
+        :param model: The exact GP .
         """
         super(ExactMarginalLogLikelihood, self).__init__(likelihood, model)
 
@@ -180,10 +180,8 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         r"""
         Compute the MLL given :math:`p(\mathbf f)` and :math:`\mathbf y`.
 
-        :param ~gpytorch.distributions.MultivariateNormal function_dist: :math:`p(\mathbf f)`
-            the outputs of the latent function (the :obj:`gpytorch.models.ExactGP`)
-        :param torch.Tensor target: :math:`\mathbf y` The target values
-        :rtype: torch.Tensor
+        :param function_dist: :math:`p(\mathbf f)` the outputs of the latent function (the :obj:`gpytorch.models.ExactGP`)
+        :param target: :math:`\mathbf y` The target values
         :return: Exact MLL. Output shape corresponds to batch shape of the model/input data.
         """
         output = self.likelihood(function_dist, *params)

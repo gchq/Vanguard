@@ -51,7 +51,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         """
         Initialise self.
 
-        :param int num_classes: The number of target classes.
+        :param num_classes: The number of target classes.
         :param kwargs: Keyword arguments passed to :py:class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         self.num_classes = num_classes
@@ -105,9 +105,8 @@ class DirichletKernelMulticlassClassification(Decorator):
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 
-                :param numpy.ndarray[float] means: The prediction means in the range [0, 1].
+                :param means: The prediction means in the range [0, 1].
                 :returns: The predicted class labels, and the certainty probabilities.
-                :rtype: tuple[numpy.ndarray[int], numpy.ndarray[float]]
                 """
                 prediction = np.argmax(means, axis=1)
                 certainty = np.max(means, axis=1)

@@ -55,7 +55,7 @@ class CategoricalClassification(Decorator):
         """
         Initialise self.
 
-        :param int num_classes: The number of target classes.
+        :param num_classes: The number of target classes.
         :param kwargs: Keyword arguments passed to :py:class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference, Multitask}, **kwargs)
@@ -95,9 +95,8 @@ class CategoricalClassification(Decorator):
                 """
                 Get predictions from a posterior distribution.
 
-                :param vanguard.base.posterior.Posterior posterior: The posterior distribution.
+                :param posterior: The posterior distribution.
                 :returns: The predicted class labels, and the certainty probabilities.
-                :rtype: tuple[numpy.ndarray[int], numpy.ndarray[float]]
                 """
                 probs = posterior.distribution.probs.detach().cpu().numpy()
                 if probs.ndim == 3:

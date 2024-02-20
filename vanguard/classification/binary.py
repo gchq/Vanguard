@@ -100,9 +100,8 @@ class BinaryClassification(Decorator):
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 
-                :param numpy.ndarray[float] means: The prediction means in the range [0, 1].
+                :param means: The prediction means in the range [0, 1].
                 :returns: The predicted class labels, and the certainty probabilities.
-                :rtype: tuple[numpy.ndarray[int], numpy.ndarray[float]]
                 """
                 prediction = means.round().astype(int)
                 certainty = np.maximum(means, 1 - means)

@@ -52,7 +52,7 @@ class DirichletMulticlassClassification(Decorator):
         """
         Initialise self.
 
-        :param int num_classes: The number of target classes.
+        :param num_classes: The number of target classes.
         """
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
@@ -123,8 +123,6 @@ class DirichletMulticlassClassification(Decorator):
                         Return a representative distribution of the posterior, with 1-dimensional
                         mean and 2-dimensional covariance. In this case, return a distribution
                         based on the mean and covariance returned by :py:meth:`_tensor_prediction`.
-
-                        :rtype: gpytorch.distributions.MultivariateNormal
                         """
                         mean, covar = self._tensor_prediction()
                         return self._add_jitter(self._make_multivariate_normal(mean.T, covar))

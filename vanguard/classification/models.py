@@ -49,12 +49,12 @@ class InertKernelModel(ExactGPModel):
         """
         Initialise self.
 
-        :param torch.Tensor train_inputs: (n_samples, n_features) The training inputs (features).
-        :param torch.Tensor train_targets: (n_samples,) The training targets (response).
-        :param gpytorch.kernels.Kernel covar_module:  The prior kernel function to use.
-        :param gpytorch.means.Mean mean_module: Not used, remaining in the signature for compatibility.
-        :param gpytorch.likelihoods.Likelihood likelihood:  Likelihood to use with model.
-        :param int num_classes: The number of classes to use.
+        :param train_inputs: (n_samples, n_features) The training inputs (features).
+        :param train_targets: (n_samples,) The training targets (response).
+        :param covar_module:  The prior kernel function to use.
+        :param mean_module: Not used, remaining in the signature for compatibility.
+        :param likelihood:  Likelihood to use with model.
+        :param num_classes: The number of classes to use.
         """
         super(ExactGP, self).__init__()
 
