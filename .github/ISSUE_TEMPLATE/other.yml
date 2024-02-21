@@ -2,12 +2,13 @@ name: Other
 description: Submit an issue that's not covered by another template
 labels:
   - new
-projects: ["gchq/16"]
+projects:
+  - gchq/16
 body:
   - type: markdown
     attributes:
       value: >
-        _Before reporting_: search [existing issues](https://github.com/gchq/Vanguard/issues) 
+        _Before reporting_: search [existing issues](https://github.com/gchq/Vanguard/issues)
         to see if an issue already exists for your request.
   - type: textarea
     attributes:
