@@ -111,7 +111,7 @@ class CategoricalClassification(Decorator):
                 return prediction, np.max(normalised_probs, axis=1)
 
             @staticmethod
-            def warn_normalise_y() -> NoReturn:
+            def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 

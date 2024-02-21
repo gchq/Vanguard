@@ -136,7 +136,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     def alpha(self) -> Optional[np.typing.ArrayLike[float]]:
         return self._alpha_var.noise
 
-    def forward(self, function_samples: torch.Tensor, **kwargs) -> NoReturn:
+    def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
         return None
 
     def log_marginal(self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, **kwargs) -> torch.Tensor:
@@ -167,7 +167,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
 
     This removes some RuntimeErrors that prevent use with non-Gaussian likelihoods even when it is possible to do so.
     """
-    def __init__(self, likelihood: gpytorch.likelihoods.GaussianLikelihood, model: gpytorch.models.ExactGP) -> NoReturn:
+    def __init__(self, likelihood: gpytorch.likelihoods.GaussianLikelihood, model: gpytorch.models.ExactGP) -> None:
         """
         Initialise self.
 

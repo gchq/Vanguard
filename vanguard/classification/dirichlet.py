@@ -179,7 +179,7 @@ class DirichletMulticlassClassification(Decorator):
                 return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze().T
 
             @staticmethod
-            def warn_normalise_y() -> NoReturn:
+            def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 
