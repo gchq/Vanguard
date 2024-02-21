@@ -11,7 +11,10 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from .mixin import ClassificationMixin
 
 from typing_extensions import Self
+from typing import TypeVar, Type, NoReturn
 
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
 
 
@@ -57,7 +60,7 @@ class DirichletMulticlassClassification(Decorator):
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: GPController) -> GPController:
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
@@ -176,7 +179,7 @@ class DirichletMulticlassClassification(Decorator):
                 return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze().T
 
             @staticmethod
-            def warn_normalise_y() -> None:
+            def warn_normalise_y() -> NoReturn:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 

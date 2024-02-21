@@ -10,6 +10,11 @@ from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 from vanguard.base.posteriors.posterior import Posterior
 
+from typing import TypeVar, Type, NoReturn
+
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
+
 
 class CategoricalClassification(Decorator):
     """
@@ -61,7 +66,7 @@ class CategoricalClassification(Decorator):
         super().__init__(framework_class=GPController, required_decorators={VariationalInference, Multitask}, **kwargs)
         self.num_classes = num_classes
 
-    def _decorate_class(self, cls: GPController) -> GPController:
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         decorator = self
 
         @wraps_class(cls)
@@ -106,7 +111,7 @@ class CategoricalClassification(Decorator):
                 return prediction, np.max(normalised_probs, axis=1)
 
             @staticmethod
-            def warn_normalise_y() -> None:
+            def warn_normalise_y() -> NoReturn:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 

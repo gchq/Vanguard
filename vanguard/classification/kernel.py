@@ -10,6 +10,10 @@ from .likelihoods import DirichletKernelClassifierLikelihood
 from .mixin import ClassificationMixin
 from .models import InertKernelModel
 
+from typing import TypeVar, Type
+
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
 
 
@@ -57,7 +61,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: GPController) -> GPController:
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         num_classes = self.num_classes
 
         @wraps_class(cls)

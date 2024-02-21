@@ -9,6 +9,11 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 
+from typing import TypeVar, Type, NoReturn
+
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
+
 
 class BinaryClassification(Decorator):
     r"""
@@ -67,7 +72,7 @@ class BinaryClassification(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference}, **kwargs)
 
-    def _decorate_class(self, cls: GPController) -> GPController:
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
@@ -108,7 +113,7 @@ class BinaryClassification(Decorator):
                 return prediction, certainty
 
             @staticmethod
-            def warn_normalise_y() -> None:
+            def warn_normalise_y() -> NoReturn:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 

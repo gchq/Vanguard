@@ -13,14 +13,14 @@ import torch
 import numpy as np
 
 from .models import DummyKernelDistribution
-from typing import Union
+from typing import Union, Optional, NoReturn
 
 
 class DummyNoise:
     """
     Provides a dummy wrapper around a tensor so that the tensor can be accessed as the noise property of the class.
     """
-    def __init__(self, value: Union[np.typing.ArrayLike[float], None]):
+    def __init__(self, value: Optional[np.typing.ArrayLike[float]]):
         """
         Initialise self.
 
@@ -29,7 +29,7 @@ class DummyNoise:
         self.value = value
 
     @property
-    def noise(self) -> Union[np.typing.ArrayLike[float], None]:
+    def noise(self) -> Optional[np.typing.ArrayLike[float]]:
         return self.value
 
 
@@ -62,7 +62,7 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
 
     This wrapper allows the arg names more consistent with other likelihoods.
     """
-    def __init__(self, *args, num_classes: int = None, num_tasks: int = None, **kwargs):
+    def __init__(self, *args, num_classes: Optional[int] = None, num_tasks: Optional[int] = None, **kwargs):
         r"""
         Initialise self.
 
@@ -106,7 +106,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     """
     A pseudo Dirichlet likelihood matching the approximation in [CITATION NEEDED]_.
     """
-    def __init__(self, num_classes: int , alpha: Union[np.typing.array_like[float], None] = None, learn_alpha: bool = False, **kwargs):
+    def __init__(self, num_classes: int , alpha: Optional[np.typing.array_like[float]] = None, learn_alpha: bool = False, **kwargs):
         """
         Initialise self.
 
@@ -133,10 +133,10 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             self._alpha_var = DummyNoise(self._alpha_var)
 
     @property
-    def alpha(self) -> Union[np.typing.ArrayLike[float], None]:
+    def alpha(self) -> Optional[np.typing.ArrayLike[float]]:
         return self._alpha_var.noise
 
-    def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
+    def forward(self, function_samples: torch.Tensor, **kwargs) -> NoReturn:
         return None
 
     def log_marginal(self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, **kwargs) -> torch.Tensor:
@@ -167,7 +167,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
 
     This removes some RuntimeErrors that prevent use with non-Gaussian likelihoods even when it is possible to do so.
     """
-    def __init__(self, likelihood: gpytorch.likelihoods.GaussianLikelihood, model: gpytorch.models.ExactGP):
+    def __init__(self, likelihood: gpytorch.likelihoods.GaussianLikelihood, model: gpytorch.models.ExactGP) -> NoReturn:
         """
         Initialise self.
 

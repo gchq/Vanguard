@@ -9,6 +9,7 @@ When creating new decorators, include the :py:class:`ClassificationMixin` as a
 mixin for the inner class which will be returned to enable this.
 """
 import numpy as np
+from typing import NoReturn
 
 
 class ClassificationMixin:
@@ -48,18 +49,18 @@ class ClassificationMixin:
         """
         raise NotImplementedError
 
-    def posterior_over_point(self, x: np.typing.ArrayLike[float]) -> None:
+    def posterior_over_point(self, x: np.typing.ArrayLike[float]) -> NoReturn:
         """Use :py:meth:`classify_points` instead."""
         raise TypeError("The 'classify_points' method should be used instead.")
 
-    def posterior_over_fuzzy_point(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> None:
+    def posterior_over_fuzzy_point(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> NoReturn:
         """Use :py:meth:`classify_fuzzy_points` instead."""
         raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
 
-    def predictive_likelihood(self, x: np.typing.ArrayLike[float]) -> None:
+    def predictive_likelihood(self, x: np.typing.ArrayLike[float]) -> NoReturn:
         """Use :py:meth:`classify_points` instead."""
         raise TypeError("The 'classify_points' method should be used instead.")
 
-    def fuzzy_predictive_likelihood(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> None:
+    def fuzzy_predictive_likelihood(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> NoReturn:
         """Use :py:meth:`classify_fuzzy_points` instead."""
         raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
