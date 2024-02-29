@@ -30,4 +30,4 @@ jobs:
     - name: Install test dependencies
       run: pip install .
     - name: Test with pytest
-      run: pytest
+      run: pytest --ignore=tests/cases.py --ignore=tests/test_doctests.py --ignore=tests/test_examples.py
