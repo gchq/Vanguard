@@ -134,7 +134,7 @@ def lmc_variational_multitask_model(cls):
     @wraps_class(new_cls)
     class InnerClass(new_cls):
         """
-        Implements a linear model of co-regionalisation [Wackernagel03]_ multitask variational approximation.
+        Implements a linear model of co-regionalisation :cite:`Wackernagel03` multitask variational approximation.
         """
         def _build_variational_strategy(self, base_variational_strategy):
             return gpytorch.variational.LMCVariationalStrategy(base_variational_strategy,

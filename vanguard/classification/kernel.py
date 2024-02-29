@@ -17,7 +17,7 @@ class DirichletKernelMulticlassClassification(Decorator):
     """
     Implements multiclass classification using a Dirichlet kernel method.
 
-    Based on the implementation [CITATION NEEDED]_ and the paper [MacKenzie14]_.
+    Based on the implementation [CITATION NEEDED]_ and the paper :cite:`MacKenzie14`.
 
     :Example:
         >>> from gpytorch.kernels import RBFKernel, ScaleKernel
@@ -52,7 +52,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         Initialise self.
 
         :param int num_classes: The number of target classes.
-        :param kwargs: Keyword arguments passed to :py:class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)

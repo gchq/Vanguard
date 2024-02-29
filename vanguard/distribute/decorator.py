@@ -27,7 +27,7 @@ class Distributed(TopMostDecorator):
         float or an integer, and cannot be an array.
 
     .. note::
-        Every call to :py:meth:`~vanguard.base.gpcontroller.GPController.fit` creates a new partition,
+        Every call to meth:`~vanguard.base.gpcontroller.GPController.fit` creates a new partition,
         and regenerates the experts.
 
     :Example:
@@ -46,15 +46,15 @@ class Distributed(TopMostDecorator):
         :param seed: The seed used for creating the subset of the training data used to train the hyperparameters.
             Defaults to 42.
         :param type aggregator_class: The class to be used for aggregation. Defaults to
-            :py:class:`~vanguard.distribute.aggregators.RBCMAggregator`.
+            class:`~vanguard.distribute.aggregators.RBCMAggregator`.
         :param type partitioner_class: The class to be used for partitioning. Defaults to
-            :py:class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
+            class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
 
         :Keyword Arguments:
 
             * **partitioner_args** *dict*: Additional parameters passed to the partitioner initialisation.
             * For other possible keyword arguments, see the
-              :py:class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
+              class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
         """
         self.n_experts = n_experts
         self.subset_fraction = subset_fraction

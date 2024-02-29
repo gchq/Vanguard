@@ -51,7 +51,7 @@ class BinaryStripeClassificationDataset(Dataset):
 
 class MulticlassGaussianClassificationDataset(Dataset):
     """
-    A multiclass dataset based on :py:func:`sklearn.datasets.make_gaussian_quantiles`.
+    A multiclass dataset based on func:`sklearn.datasets.make_gaussian_quantiles`.
 
     .. plot::
 
@@ -148,7 +148,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
 
 class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDataset):
     """
-    A binary dataset based on :py:func:`sklearn.datasets.make_gaussian_quantiles`.
+    A binary dataset based on func:`sklearn.datasets.make_gaussian_quantiles`.
 
     .. plot::
 

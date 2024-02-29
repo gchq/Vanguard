@@ -50,7 +50,7 @@ class WarpedGaussian(Normal):
 
         :param `~vanguard.warps.basefunction.WarpFunction` warp: The warp to use.
         :param array_like[float] samples: (n_samples, ...) The data to fit.
-        :param type optimiser: A subclass of :py:class:`torch.optim.Optimizer` used to tune the parameters.
+        :param type optimiser: A subclass of class:`torch.optim.Optimizer` used to tune the parameters.
         :param int n_iterations: The number of optimisation iterations.
         :param float lr: The learning rate for optimisation.
         :returns: A fit distribution.
