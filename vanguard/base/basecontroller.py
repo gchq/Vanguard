@@ -20,7 +20,7 @@ from numpy import dtype
 from . import metrics
 from ..decoratorutils import wraps_class
 from ..models import ExactGPModel
-from ..optimise import NoImprovementError
+from ..optimise import NoImprovementError, SmartOptimiser
 from ..utils import infinite_tensor_generator, instantiate_with_subset_of_kwargs
 from ..warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
 from .posteriors import MonteCarloPosteriorCollection, Posterior
@@ -94,7 +94,7 @@ class BaseGPController:
             likelihood_class: Type[gpytorch.likelihoods.Likelihood],
             marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
             optimiser_class: Type[torch.optim.Optimizer],
-            smart_optimiser_class,
+            smart_optimiser_class: SmartOptimiser,
             **kwargs
     ):
         """Initialise self."""

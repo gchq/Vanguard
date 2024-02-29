@@ -22,7 +22,7 @@ class MonteCarloPosteriorCollection(Posterior):
         In order to ensure reproducible output for predictions and confidence
         intervals, a cached sample is used.
     """
-    INITIAL_NUMBER_OF_SAMPLES = 100
+    INITIAL_NUMBER_OF_SAMPLES: int = 100
 
     def __init__(
             self,

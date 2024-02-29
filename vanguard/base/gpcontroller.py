@@ -8,6 +8,7 @@ from typing import Optional
 from numpy.typing import ArrayLike
 
 from .basecontroller import BaseGPController
+from ..decoratorutils import Decorator
 from .metaclass import _StoreInitValues
 from .metrics import MetricsTracker
 from posteriors.posterior import Posterior
@@ -59,7 +60,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         For more options see the :py:class:`~vanguard.base.metrics.MetricsTracker` class.
     """
     _init_params = {}
-    __decorators__: list = []
+    __decorators__: list[Decorator] = []
 
     @property
     def likelihood_noise(self) -> float:
