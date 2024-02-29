@@ -22,7 +22,7 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
       - name: Install test dependencies
-        run: pip install -r docs/requirements-docs.txt --no-deps
+        run: pip install -r requirements-docs.txt --no-deps
       - name: Build documentation
         run: |
           python3 -m sphinx -b html -aE docs/source docs/build
