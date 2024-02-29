@@ -4,6 +4,8 @@ The (non-user-facing) base class of Vanguard controllers.
 The :py:class:`~vanguard.base.basecontroller.BaseGPController` class contains the
 machinery of the :py:class:`~vanguard.base.gpcontroller.GPController`.
 """
+from __future__ import annotations
+
 from itertools import islice
 import warnings
 
@@ -11,7 +13,7 @@ import gpytorch
 from gpytorch import constraints
 from gpytorch.utils.errors import NanError
 import torch
-from typing import Any, Callable
+from typing import Callable, Generator, Type, Union
 from numpy.typing import ArrayLike
 from numpy import dtype
 
@@ -25,6 +27,13 @@ from .posteriors import MonteCarloPosteriorCollection, Posterior
 from .standardise import StandardiseXModule
 
 NOISE_LOWER_BOUND = 1e-3
+ttypes = Type[Union[torch.FloatTensor, torch.DoubleTensor, torch.IntTensor, torch.BoolTensor,
+              torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor,
+              torch.ShortTensor, torch.LongTensor]]
+ttypes_cuda = Type[Union[torch.cuda.FloatTensor, torch.cuda.DoubleTensor, torch.cuda.IntTensor,
+                   torch.cuda.BoolTensor, torch.cuda.HalfTensor, torch.cuda.BFloat16Tensor,
+                   torch.cuda.ByteTensor, torch.cuda.CharTensor, torch.cuda.ShortTensor,
+                   torch.cuda.LongTensor]]
 
 
 class BaseGPController:
@@ -63,9 +72,9 @@ class BaseGPController:
 
     """
     if torch.cuda.is_available():
-        _default_tensor_type = torch.cuda.FloatTensor
+        _default_tensor_type: ttypes_cuda = torch.cuda.FloatTensor
     else:
-        _default_tensor_type = torch.FloatTensor
+        _default_tensor_type: ttypes = torch.FloatTensor
 
     torch.set_default_tensor_type(_default_tensor_type)
 
@@ -73,18 +82,18 @@ class BaseGPController:
     posterior_class = Posterior
     posterior_collection_class = MonteCarloPosteriorCollection
 
-    _y_batch_axis = 0
+    _y_batch_axis: int = 0
 
     def __init__(
             self,
             train_x: ArrayLike[float],
             train_y: ArrayLike[float],
-            kernel_class: gpytorch.kernels.Kernel,
-            mean_class: gpytorch.means.Mean,
+            kernel_class: Type[gpytorch.kernels.Kernel],
+            mean_class: Type[gpytorch.means.Mean],
             y_std: ArrayLike[float],
-            likelihood_class: type(gpytorch.likelihoods.Likelihood),
-            marginal_log_likelihood_class: type(gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood),
-            optimiser_class: type(torch.optim.Optimizer),
+            likelihood_class: Type[gpytorch.likelihoods.Likelihood],
+            marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
+            optimiser_class: Type[torch.optim.Optimizer],
             smart_optimiser_class,
             **kwargs
     ):
@@ -172,7 +181,7 @@ class BaseGPController:
             return torch.device("cpu")
 
     @property
-    def _likelihood(self) -> type(gpytorch.likelihoods.Likelihood):
+    def _likelihood(self) -> Type[gpytorch.likelihoods.Likelihood]:
         """Return the likelihood of the model."""
         return self._gp.likelihood
 
@@ -231,7 +240,7 @@ class BaseGPController:
             self,
             x: ArrayLike[float],
             x_std: ArrayLike[float],
-    ) -> MonteCarloPosteriorCollection:
+    ) -> Posterior:
         """
         Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
 
@@ -251,7 +260,7 @@ class BaseGPController:
 
         def infinite_x_samples(
                 group_size: int = 100,
-        ):
+        ) -> Generator[torch.Tensor, None, None]:
             """
             Yield infinitely many samples.
 
@@ -437,7 +446,7 @@ class BaseGPController:
     @classmethod
     def set_default_tensor_type(
             cls,
-            tensor_type: Any,
+            tensor_type: ttypes | ttypes_cuda,
     ) -> None:
         """
         Set the default tensor type for the class, subsequent subclasses, and external tensors.

@@ -7,7 +7,7 @@ controller classes. These are calculated per iteration by the
 """
 from contextlib import contextmanager
 import itertools
-from typing import Callable, Tuple
+from typing import Callable
 
 from .gpcontroller import BaseGPController
 
@@ -90,7 +90,7 @@ class MetricsTracker:
 
     def add_metrics(
             self,
-            *metrics: Tuple[Callable],
+            *metrics: Callable,
     ) -> None:
         """
         Add metrics to the tracker.

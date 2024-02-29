@@ -43,7 +43,7 @@ class Posterior:
         """
         return self.distribution
 
-    def prediction(self) -> tuple[np.array, np.array]:
+    def prediction(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Return the prediction as a numpy array.
 
@@ -58,7 +58,7 @@ class Posterior:
     def confidence_interval(
             self,
             alpha: float = 0.05,
-    ) -> tuple[np.array, np.array, np.array]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Construct confidence intervals around mean of predictive posterior.
 

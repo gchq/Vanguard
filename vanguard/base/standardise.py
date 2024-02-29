@@ -2,6 +2,7 @@
 Contains a class decorator to apply input standard scaling to means and kernels.
 """
 import torch
+from typing import Self
 from numpy.typing import ArrayLike, DTypeLike
 
 from ..decoratorutils import wraps_class
@@ -58,7 +59,7 @@ class StandardiseXModule:
             x: torch.Tensor,
             device: torch.device | None,
             dtype: DTypeLike | None,
-    ):
+    ) -> Self:
         """
         Create an instance of self with the mean and scale of the standard scaling obtained from the given data.
 

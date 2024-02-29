@@ -3,8 +3,7 @@ Contains the MonteCarloPosteriorCollection class.
 """
 import numpy
 import torch
-from numpy.typing import ArrayLike
-from typing import Generator
+from typing import Generator, NoReturn
 
 from .posterior import Posterior
 
@@ -27,7 +26,7 @@ class MonteCarloPosteriorCollection(Posterior):
 
     def __init__(
             self,
-            posterior_generator: Generator[Posterior]
+            posterior_generator: Generator[Posterior, None, None]
     ):
         """Initialise self."""
         self._posterior_generator = posterior_generator
@@ -65,7 +64,7 @@ class MonteCarloPosteriorCollection(Posterior):
             cls,
             mean: torch.Tensor,
             covariance: torch.Tensor
-    ) -> None:
+    ) -> NoReturn:
         """
         Construct from the mean and covariance of a Gaussian.
 
@@ -178,7 +177,7 @@ class MonteCarloPosteriorCollection(Posterior):
     def _yield_posteriors(
             self,
             num_posteriors: int,
-    ) -> Generator[Posterior]:
+    ) -> Generator[Posterior, None, None]:
         """
         Yield a number of posteriors from the infinite generator.
 

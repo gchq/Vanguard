@@ -4,6 +4,7 @@ The user-facing interface of the :py:class:`~vanguard.base.basecontroller.BaseGP
 import warnings
 
 import torch
+from typing import Optional
 from numpy.typing import ArrayLike
 
 from .basecontroller import BaseGPController
@@ -58,7 +59,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         For more options see the :py:class:`~vanguard.base.metrics.MetricsTracker` class.
     """
     _init_params = {}
-    __decorators__ = []
+    __decorators__: list = []
 
     @property
     def likelihood_noise(self) -> float:
@@ -74,7 +75,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         self._likelihood.noise = value
 
     @property
-    def learning_rate(self) -> None:
+    def learning_rate(self) -> float:
         """Return the learning rate of the parameter optimiser."""
         return self._smart_optimiser.learning_rate
 
@@ -94,7 +95,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
     def fit(
             self,
             n_sgd_iters: int = 10,
-            gradient_every: int = None,
+            gradient_every: Optional[int] = None,
     ) -> torch.Tensor:
         """
         Run rounds of hyperparameter tuning.
