@@ -10,6 +10,10 @@ from .likelihoods import DirichletKernelClassifierLikelihood
 from .mixin import ClassificationMixin
 from .models import InertKernelModel
 
+from typing import TypeVar, Type
+
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
 
 
@@ -47,17 +51,17 @@ class DirichletKernelMulticlassClassification(Decorator):
         >>> preds
         array([0, 1, 2])
     """
-    def __init__(self, num_classes, **kwargs):
+    def __init__(self, num_classes: int, **kwargs):
         """
         Initialise self.
 
-        :param int num_classes: The number of target classes.
+        :param num_classes: The number of target classes.
         :param kwargs: Keyword arguments passed to :py:class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         num_classes = self.num_classes
 
         @wraps_class(cls)
@@ -90,24 +94,23 @@ class DirichletKernelMulticlassClassification(Decorator):
                                  gp_kwargs=model_kwargs,
                                  **all_parameters_as_kwargs)
 
-            def classify_points(self, x):
+            def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
-            def classify_fuzzy_points(self, x, x_std):
+            def classify_fuzzy_points(self, x: np.ndarray[float], x_std: np.ndarray[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             @staticmethod
-            def _get_predictions_from_prediction_means(means):
+            def _get_predictions_from_prediction_means(means: np.ndarray[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 
-                :param numpy.ndarray[float] means: The prediction means in the range [0, 1].
+                :param means: The prediction means in the range [0, 1].
                 :returns: The predicted class labels, and the certainty probabilities.
-                :rtype: tuple[numpy.ndarray[int], numpy.ndarray[float]]
                 """
                 prediction = np.argmax(means, axis=1)
                 certainty = np.max(means, axis=1)
