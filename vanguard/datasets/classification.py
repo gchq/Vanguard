@@ -1,19 +1,20 @@
 """
 The following datasets allow for straightforward experiments with synthetic classification data.
 """
-from functools import reduce
+from __future__ import annotations
+
 import itertools
-from operator import or_
-import pickle
+import typing
 
 import matplotlib.pyplot as plt
 import numpy as np
 import sklearn
 from sklearn.datasets import make_gaussian_quantiles
-from sklearn.metrics import confusion_matrix
 
-from .basedataset import Dataset, FileDataset
+from .basedataset import Dataset
 
+if typing.TYPE_CHECKING:
+    from numpy.typing import ArrayLike, NDArray
 
 class BinaryStripeClassificationDataset(Dataset):
     """
@@ -27,7 +28,7 @@ class BinaryStripeClassificationDataset(Dataset):
         plt.plot(DATASET.train_x, DATASET.train_y, label="Truth")
         plt.show()
     """
-    def __init__(self, num_train_points, num_test_points):
+    def __init__(self, num_train_points: int, num_test_points: int):
         """
         Initialise self.
 
@@ -44,7 +45,7 @@ class BinaryStripeClassificationDataset(Dataset):
                          test_x, np.array([]), test_y, np.array([]), 0)
 
     @staticmethod
-    def even_split(x):
+    def even_split(x: ArrayLike[float]) -> ArrayLike[float]:
         """Return the reals, divided into two distinct values."""
         return (np.sign(np.cos(x * (4 * np.pi))) + 1) / 2
 
@@ -61,7 +62,8 @@ class MulticlassGaussianClassificationDataset(Dataset):
         DATASET.plot()
         plt.show()
     """
-    def __init__(self, num_train_points, num_test_points, num_classes, covariance_scale=1.0, seed=None):
+    def __init__(self, num_train_points: int, num_test_points: int, num_classes: int,
+                 covariance_scale: float = 1.0, seed: int | None = None):
         """
         Initialise self.
 
@@ -83,11 +85,11 @@ class MulticlassGaussianClassificationDataset(Dataset):
                          test_x, 0, test_y, 0, 0)
 
     @property
-    def one_hot_train_y(self):
+    def one_hot_train_y(self) -> NDArray[int]:
         """Return the training data as a one-hot encoded array."""
         return sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y)
 
-    def plot(self, cmap="Set1", alpha=0.5):
+    def plot(self, cmap="Set1", alpha=0.5) -> None:
         """
         Plot the data.
 
@@ -100,18 +102,16 @@ class MulticlassGaussianClassificationDataset(Dataset):
         legend = ax.legend(*scatter.legend_elements(), title="Classes")
         ax.add_artist(legend)
 
-    def plot_prediction(self, prediction, cmap="Set1", alpha=0.5):
+    def plot_prediction(self, prediction: NDArray, cmap: str = "Set1", alpha: float = 0.5) -> None:
         """
         Plot a prediction.
 
         :param numpy.ndarray prediction: The predicted classes.
         :param str cmap: The colour map to be used.
         :param float alpha: The transparency of the points.
-        :param int point_size: The size of each individual point.
-        :param int edge_width: The width of the edge of each point.
         """
         correct_prediction = (prediction == self.test_y)
-        proportion_correct = correct_prediction.sum() / len(self.test_x)
+        proportion_correct: float = correct_prediction.sum() / len(self.test_x)  # type: ignore
 
         ax = plt.gca()
         correct_scatter = plt.scatter(self.test_x[correct_prediction, 0], self.test_x[correct_prediction, 1],
@@ -124,7 +124,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         ax.add_artist(legend_incorrect)
         plt.title(f"Proportion correct: {100 * proportion_correct:.2f}%")
 
-    def plot_confusion_matrix(self, prediction, cmap="OrRd", text_size="xx-large"):
+    def plot_confusion_matrix(self, prediction: NDArray, cmap: str = "OrRd", text_size: str = "xx-large"):
         """
         Plot a confusion matrix based on a specific prediction.
 
@@ -141,7 +141,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         ax = plt.gca()
         ax.matshow(matrix, cmap=cmap)
         for x, y in itertools.product(range(self.num_classes), repeat=2):
-            ax.text(x=x, y=y, s=matrix[y, x], va="center", ha="center", size=text_size)
+            ax.text(x=x, y=y, s=str(matrix[y, x]), va="center", ha="center", size=text_size)
         plt.xlabel("Predicted classes")
         plt.ylabel("True classes")
 
@@ -158,7 +158,7 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         DATASET.plot()
         plt.show()
     """
-    def __init__(self, num_train_points, num_test_points, covariance_scale=1.0, seed=None):
+    def __init__(self, num_train_points: int, num_test_points: int, covariance_scale: float = 1.0, seed: int|None = None):
         """
         Initialise self.
 
