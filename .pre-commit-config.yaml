@@ -94,9 +94,7 @@ repos:
     rev: 1.8.4
     hooks:
       - id: nbqa-pyupgrade
-        additional_dependencies: [pyupgrade==2.7.3]
       - id: nbqa-isort
-        additional_dependencies: [isort==5.6.4]
       - id: nbqa-ruff
   - repo: local
     hooks:
