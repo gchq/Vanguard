@@ -25,18 +25,18 @@ clear-cache-post-run=no
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
 # run arbitrary code.
-extension-pkg-allow-list=
+#extension-pkg-allow-list=
 
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
 # run arbitrary code. (This is an alternative name to extension-pkg-allow-list
 # for backward compatibility.)
-extension-pkg-whitelist=
+#extension-pkg-whitelist=
 
 # Return non-zero exit code if any of these messages/categories are detected,
 # even if score is above --fail-under value. Syntax same as enable. Messages
 # specified are enabled, while categories only check already-enabled messages.
-fail-on=
+#fail-on=
 
 # Specify a score threshold under which the program will exit with error.
 fail-under=10
@@ -46,13 +46,13 @@ fail-under=10
 #from-stdin=
 
 # Files or directories to be skipped. They should be base names, not paths.
-ignore=CVS
+#ignore=
 
 # Add files or directories matching the regular expressions patterns to the
 # ignore-list. The regex matches against paths and can be in Posix or Windows
 # format. Because '\\' represents the directory delimiter on Windows systems,
 # it can't be used as an escape character.
-ignore-paths=
+#ignore-paths=
 
 # Files or directories matching the regular expression patterns are skipped.
 # The regex matches against base names, not paths. The default value ignores
@@ -63,7 +63,7 @@ ignore-patterns=^\.#
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis). It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=
+#ignored-modules=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -81,7 +81,7 @@ limit-inference-results=100
 
 # List of plugins (as comma separated values of python module names) to load,
 # usually to register additional checkers.
-load-plugins=
+#load-plugins=
 
 # Pickle collected data for later comparisons.
 persistent=yes
@@ -97,7 +97,7 @@ recursive=no
 # source root is an absolute path or a path relative to the current working
 # directory used to determine a package namespace for modules located under the
 # source root.
-source-roots=
+#source-roots=
 
 # When enabled, pylint would attempt to guess common misconfiguration and emit
 # user-friendly hints instead of false-positive error messages.
@@ -139,7 +139,7 @@ bad-names=foo,
 
 # Bad variable names regexes, separated by a comma. If names match any regex,
 # they will always be refused
-bad-names-rgxs=
+#bad-names-rgxs=
 
 # Naming style matching correct class attribute names.
 class-attribute-naming-style=any
@@ -185,16 +185,11 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=i,
-           j,
-           k,
-           ex,
-           Run,
-           _
+#good-names=
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
-good-names-rgxs=
+#good-names-rgxs=
 
 # Include a hint for the correct naming format with invalid-name.
 include-naming-hint=no
@@ -223,7 +218,7 @@ module-naming-style=snake_case
 
 # Colon-delimited sets of names that determine each other's naming style when
 # the name regexes allow several styles.
-name-group=
+#name-group=
 
 # Regular expression which should only match function or class names that do
 # not require a docstring.
@@ -265,7 +260,7 @@ defining-attr-methods=__init__,
 
 # List of member names, which should be excluded from the protected access
 # warning.
-exclude-protected=_asdict,_fields,_replace,_source,_make,os._exit
+#exclude-protected=
 
 # List of valid names for the first argument in a class method.
 valid-classmethod-first-arg=cls
@@ -278,11 +273,11 @@ valid-metaclass-classmethod-first-arg=mcs
 
 # List of regular expressions of class ancestor names to ignore when counting
 # public methods (see R0903)
-exclude-too-few-public-methods=
+#exclude-too-few-public-methods=
 
 # List of qualified class names to ignore when counting class parents (see
 # R0901)
-ignored-parents=
+#ignored-parents=
 
 # Maximum number of arguments for function / method.
 max-args=10
@@ -337,7 +332,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=88
+max-line-length=120
 
 # Maximum number of lines in a module.
 max-module-lines=1000
@@ -355,7 +350,7 @@ single-line-if-stmt=no
 
 # List of modules that can be imported at any level, not just the top level
 # one.
-allow-any-import-level=
+#allow-any-import-level=
 
 # Allow explicit reexports by alias from a package __init__.
 allow-reexport-from-package=no
@@ -364,30 +359,30 @@ allow-reexport-from-package=no
 allow-wildcard-with-all=no
 
 # Deprecated modules which should not be used, separated by a comma.
-deprecated-modules=
+#deprecated-modules=
 
 # Output a graph (.gv or any supported image format) of external dependencies
 # to the given file (report RP0402 must not be disabled).
-ext-import-graph=
+#ext-import-graph=
 
 # Output a graph (.gv or any supported image format) of all (i.e. internal and
 # external) dependencies to the given file (report RP0402 must not be
 # disabled).
-import-graph=
+#import-graph=
 
 # Output a graph (.gv or any supported image format) of internal dependencies
 # to the given file (report RP0402 must not be disabled).
-int-import-graph=
+#int-import-graph=
 
 # Force import order to recognize a module as part of the standard
 # compatibility libraries.
-known-standard-library=
+#known-standard-library=
 
 # Force import order to recognize a module as part of a third party library.
 known-third-party=enchant
 
 # Couples of modules and preferred modules, separated by a comma.
-preferred-modules=
+#preferred-modules=
 
 
 [LOGGING]
@@ -446,7 +441,7 @@ notes=FIXME,
       TODO
 
 # Regular expression of note tags to take in consideration.
-notes-rgx=
+#notes-rgx=
 
 
 [REFACTORING]
@@ -472,7 +467,7 @@ evaluation=max(0, 0 if fatal else 10.0 - ((float(5 * error + warning + refactor 
 
 # Template used to display messages. This is a python new-style format string
 # used to format the message information. See doc for all details.
-msg-template=
+#msg-template=
 
 # Set the output format. Available formats are: text, parseable, colorized,
 # json2 (improved json format), json (old json format) and msvs (visual
@@ -512,14 +507,14 @@ max-spelling-suggestions=4
 
 # Spelling dictionary name. No available dictionaries : You need to install
 # both the python package and the system dependency for enchant to work.
-spelling-dict=
+#spelling-dict=
 
 # List of comma separated words that should be considered directives if they
 # appear at the beginning of a comment and should not be checked.
 spelling-ignore-comment-directives=fmt: on,fmt: off,noqa:,noqa,nosec,isort:skip,mypy:
 
 # List of comma separated words that should not be checked.
-spelling-ignore-words=
+#spelling-ignore-words=
 
 # A path to a file that contains the private dictionary; one word per line.
 spelling-private-dict-file=
@@ -550,7 +545,7 @@ contextmanager-decorators=contextlib.contextmanager
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E1101 when accessed. Python regular
 # expressions are accepted.
-generated-members=
+#generated-members=
 
 # Tells whether to warn about missing members when the owner of the attribute
 # is inferred to be None.
@@ -591,20 +586,20 @@ missing-member-max-choices=1
 mixin-class-rgx=.*[Mm]ixin
 
 # List of decorators that change the signature of a decorated function.
-signature-mutators=
+#signature-mutators=
 
 
 [VARIABLES]
 
 # List of additional names supposed to be defined in builtins. Remember that
 # you should avoid defining new builtins when possible.
-additional-builtins=
+#additional-builtins=
 
 # Tells whether unused global variables should be treated as a violation.
 allow-global-unused-variables=yes
 
 # List of names allowed to shadow builtins
-allowed-redefined-builtins=
+#allowed-redefined-builtins=
 
 # List of strings which can identify a callback function by name. A callback
 # name must start or end with one of those strings.

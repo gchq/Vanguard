@@ -61,15 +61,12 @@ repos:
     hooks:
       # No tabs, only spaces
       - id: forbid-tabs
-        exclude: documentation/make.bat|documentation/Makefile
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.2.2
     hooks:
       # Run the linter.
       - id: ruff
         args: [ --fix ]
-      # Run the formatter.
-      - id: ruff-format
   - repo: https://github.com/regebro/pyroma
     rev: "4.2"
     hooks:
@@ -87,6 +84,25 @@ repos:
               requirements.txt|
               .pylintrc
             )$
+  - repo: https://github.com/pycqa/isort
+    rev: 5.11.2
+    hooks:
+      # Ensure import statements are sorted
+      - id: isort
+        name: isort (python)
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 0.0.0.dev0
+    hooks:
+      # Ensure docstrings comply with conventions
+      - id: pydocstyle
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.4
+    hooks:
+      - id: nbqa-pyupgrade
+        additional_dependencies: [pyupgrade==2.7.3]
+      - id: nbqa-isort
+        additional_dependencies: [isort==5.6.4]
+      - id: nbqa-ruff
   - repo: local
     hooks:
       # Check for non-ascii characters in files

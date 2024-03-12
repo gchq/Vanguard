@@ -1,4 +1,4 @@
-name: Tests
+name: Tests from requirements file
 
 on:
   push:
@@ -10,23 +10,17 @@ on:
 
 jobs:
   tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version:
-          - "3.8"
-          - "3.9"
     runs-on: [self-hosted, linux]
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.9
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.9
         cache: pip
     - name: Upgrade pip
       run: python -m pip install --upgrade pip
     - name: Install test dependencies
-      run: pip install .
+      run: pip install -r requirements.txt --no-deps
     - name: Test with pytest
       run: pytest --ignore=tests/test_examples.py

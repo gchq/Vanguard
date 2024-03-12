@@ -1,7 +1,7 @@
 """
 Enable Bayesian hyperparameters in a controller.
 
-Applying the class:`~vanguard.hierarchical.module.BayesianHyperparameters`
+Applying the :class:`~vanguard.hierarchical.module.BayesianHyperparameters`
 to a module will make its parameters Bayesian, so posteriors can be inferred
 over them rather than point estimates.
 """
@@ -28,7 +28,7 @@ class BayesianHyperparameters:
 
     .. note::
         Modules decorated with this decorator must be used in a controller decorated with
-        a subclass of class:`~vanguard.hierarchical.base.BaseHierarchicalHyperparameters`.
+        a subclass of :class:`~vanguard.hierarchical.base.BaseHierarchicalHyperparameters`.
         Using in a controller without this decorator or in raw GPyTorch will lead to errors.
 
     .. note::
