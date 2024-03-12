@@ -1,16 +1,17 @@
 """
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
-from typing import TypedDict, Unpack, TYPE_CHECKING
+from __future__ import annotations
+
+from collections.abc import Iterable, Callable
+from typing import TypedDict, Unpack
 
 import numpy as np
+from numpy.typing import ArrayLike, NDArray
 from sklearn.preprocessing import StandardScaler
 
 from .basedataset import Dataset
 
-if TYPE_CHECKING:
-    from numpy.typing import ArrayLike, NDArray
-    from collections.abc import Iterable, Callable
 
 def simple_f(x: ArrayLike[np.floating]) -> ArrayLike[np.floating]:
     r"""

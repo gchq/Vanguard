@@ -4,17 +4,15 @@ The following datasets allow for straightforward experiments with synthetic clas
 from __future__ import annotations
 
 import itertools
-import typing
 
 import matplotlib.pyplot as plt
 import numpy as np
 import sklearn
+from numpy.typing import ArrayLike, NDArray
 from sklearn.datasets import make_gaussian_quantiles
 
 from .basedataset import Dataset
 
-if typing.TYPE_CHECKING:
-    from numpy.typing import ArrayLike, NDArray
 
 class BinaryStripeClassificationDataset(Dataset):
     """

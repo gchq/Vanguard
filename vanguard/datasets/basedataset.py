@@ -6,16 +6,13 @@ The dataset instances allow for easy access to the training and testing data thr
 """
 from __future__ import annotations
 
-from contextlib import contextmanager
 import os
-import typing
+from contextlib import contextmanager
 
 import numpy as np
 import urllib3
-
-if typing.TYPE_CHECKING:
-    from urllib3 import BaseHTTPResponse
-    from numpy.typing import NDArray
+from numpy.typing import NDArray
+from urllib3 import BaseHTTPResponse
 
 
 class Dataset:
