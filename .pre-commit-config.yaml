@@ -85,7 +85,7 @@ repos:
               .pylintrc
             )$
   - repo: https://github.com/pycqa/isort
-    rev: 5.11.2
+    rev: 5.13.2
     hooks:
       # Ensure import statements are sorted
       - id: isort
