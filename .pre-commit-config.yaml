@@ -90,11 +90,6 @@ repos:
       # Ensure import statements are sorted
       - id: isort
         name: isort (python)
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 0.0.0.dev0
-    hooks:
-      # Ensure docstrings comply with conventions
-      - id: pydocstyle
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.8.4
     hooks:
