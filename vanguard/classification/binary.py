@@ -9,6 +9,11 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 
+from typing import TypeVar, Type, NoReturn
+
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
+
 
 class BinaryClassification(Decorator):
     r"""
@@ -67,7 +72,7 @@ class BinaryClassification(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
@@ -85,31 +90,30 @@ class BinaryClassification(Decorator):
 
                 super().__init__(likelihood_class=likelihood_class, **all_parameters_as_kwargs)
 
-            def classify_points(self, x):
+            def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
-            def classify_fuzzy_points(self, x, x_std):
+            def classify_fuzzy_points(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             @staticmethod
-            def _get_predictions_from_prediction_means(means):
+            def _get_predictions_from_prediction_means(means: np.ndarray[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 
-                :param numpy.ndarray[float] means: The prediction means in the range [0, 1].
+                :param means: The prediction means in the range [0, 1].
                 :returns: The predicted class labels, and the certainty probabilities.
-                :rtype: tuple[numpy.ndarray[int], numpy.ndarray[float]]
                 """
                 prediction = means.round().astype(int)
                 certainty = np.maximum(means, 1 - means)
                 return prediction, certainty
 
             @staticmethod
-            def warn_normalise_y():
+            def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 

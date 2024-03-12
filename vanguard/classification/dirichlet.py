@@ -3,11 +3,18 @@ Contains the DirichletMulticlassClassification decorator.
 """
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 import torch
+import gpytorch
+import numpy as np
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from .mixin import ClassificationMixin
 
+from typing_extensions import Self
+from typing import TypeVar, Type, NoReturn
+
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
 
 
@@ -44,16 +51,16 @@ class DirichletMulticlassClassification(Decorator):
         >>> preds
         array([0, 1, 2])
     """
-    def __init__(self, num_classes, **kwargs):
+    def __init__(self, num_classes: int, **kwargs):
         """
         Initialise self.
 
-        :param int num_classes: The number of target classes.
+        :param num_classes: The number of target classes.
         """
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
@@ -88,12 +95,12 @@ class DirichletMulticlassClassification(Decorator):
                     Dirichlet works with batch multivariate normal, so we need to reshape predictions and samples for
                     compatibility downstream.
                     """
-                    def _tensor_prediction(self):
+                    def _tensor_prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
                         """Return a transposed version of the mean of the prediction."""
                         mean, covar = super()._tensor_prediction()
                         return mean.T, torch.block_diag(*covar)
 
-                    def _tensor_sample(self,  sample_shape=torch.Size()):
+                    def _tensor_sample(self, sample_shape: torch.Size = torch.Size()) -> torch.Tensor:
                         """Return a transposed version of the sample."""
                         sample = super()._tensor_sample(sample_shape=sample_shape)
                         return sample.transpose(-1, -2)
@@ -107,20 +114,18 @@ class DirichletMulticlassClassification(Decorator):
                     compatibility downstream.
                     """
                     @classmethod
-                    def from_mean_and_covariance(cls, mean, covariance):
+                    def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> Self:
                         """Transpose the mean before returning."""
                         return cls(cls._make_multivariate_normal(mean.T, covariance))
 
                     @property
-                    def condensed_distribution(self):
+                    def condensed_distribution(self) -> gpytorch.distributions.MultivariateNormal:
                         """
                         Return the condensed distribution.
 
                         Return a representative distribution of the posterior, with 1-dimensional
                         mean and 2-dimensional covariance. In this case, return a distribution
                         based on the mean and covariance returned by meth:`_tensor_prediction`.
-
-                        :rtype: gpytorch.distributions.MultivariateNormal
                         """
                         mean, covar = self._tensor_prediction()
                         return self._add_jitter(self._make_multivariate_normal(mean.T, covar))
@@ -131,7 +136,7 @@ class DirichletMulticlassClassification(Decorator):
                 super().__init__(train_y=transformed_targets.detach().cpu().numpy(), likelihood_class=likelihood_class,
                                  likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs)
 
-            def classify_points(self, x):
+            def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """
                 Classify points.
 
@@ -148,7 +153,7 @@ class DirichletMulticlassClassification(Decorator):
                 predictions = detached_probs.argmax(axis=1)
                 return predictions, detached_probs.max(axis=1)
 
-            def classify_fuzzy_points(self, x, x_std):
+            def classify_fuzzy_points(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """
                 Classify fuzzy points.
 
@@ -165,16 +170,16 @@ class DirichletMulticlassClassification(Decorator):
                 predictions = detached_probs.argmax(axis=1)
                 return predictions, detached_probs.max(axis=1)
 
-            def _loss(self, train_x, train_y):
+            def _loss(self, train_x: torch.Tensor, train_y: torch.Tensor) -> torch.Tensor:
                 """Accounting for multiple values."""
                 return super()._loss(train_x, train_y).sum()
 
             @staticmethod
-            def _noise_transform(gamma):
+            def _noise_transform(gamma: np.typing.ArrayLike[float]) -> torch.Tensor:
                 return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze().T
 
             @staticmethod
-            def warn_normalise_y():
+            def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 
