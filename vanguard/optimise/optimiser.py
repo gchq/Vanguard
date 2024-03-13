@@ -14,7 +14,7 @@ class SmartOptimiser:
     A smart wrapper around the standard optimisers found in PyTorch which can enable early stopping.
 
     .. warning::
-        When setting the learning rate, using the meth:`learning_rate` property,
+        When setting the learning rate, using the :meth:`learning_rate` property,
         the parameters for each registered module are re-initialised.
     """
     def __init__(self, optimiser_class, *initial_modules, early_stop_patience=None, **optimiser_kwargs):
@@ -107,7 +107,7 @@ class SmartOptimiser:
 
         .. note::
             Calling this in isolation will restore the initialised values for all parameters, but it
-            does not reset the optimiser. To do this, call meth:`_reset_internal_optimiser` additionally.
+            does not reset the optimiser. To do this, call :meth:`_reset_internal_optimiser` additionally.
         """
         for module, state_dict in self._stored_initial_state_dicts.items():
             module.load_state_dict(state_dict)
@@ -118,7 +118,7 @@ class SmartOptimiser:
 
         .. note::
             Calling this in isolation will not affect the current value of the parameters as learned
-            thus far. To reset these, call meth:`_reset_module_parameters` additionally.
+            thus far. To reset these, call :meth:`_reset_module_parameters` additionally.
         """
         parameters = [{"params": module.parameters()} for module in self._stored_initial_state_dicts]
         self._internal_optimiser = self._internal_optimiser_class(parameters, lr=self._learning_rate,
@@ -136,7 +136,7 @@ class SmartOptimiser:
         self._stored_initial_state_dicts[module] = state_dict
 
     def _set_step_method(self):
-        """Create and set the meth:`_step` method according to the internal optimiser."""
+        """Create and set the :meth:`_step` method according to the internal optimiser."""
         internal_step_signature = inspect.signature(self._internal_optimiser.step)
         if "loss" in internal_step_signature.parameters:
             def new_step(loss, closure=None):

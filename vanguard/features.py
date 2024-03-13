@@ -11,7 +11,7 @@ from .decoratorutils import Decorator, process_args, wraps_class
 
 class HigherRankFeatures(Decorator):
     """
-    Make a class:`~vanguard.base.gpcontroller.GPController` compatible with higher rank features.
+    Make a :class:`~vanguard.base.gpcontroller.GPController` compatible with higher rank features.
 
     GPyTorch assumes that input features are rank-1 (vectors) and a variety of
     RuntimeErrors are thrown from different places in the code if this is not true.

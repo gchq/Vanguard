@@ -3,7 +3,7 @@ Enable lazy initialisation in controllers.
 
 Some warp functions require the input data passed to the controller class in
 order to initialise properly. In order to avoid needing to set this ahead of time,
-the func:`require_controller_input` decorator will allow a warp function to be
+the :func:`require_controller_input` decorator will allow a warp function to be
 initialised lazily, only becoming a full warp function upon activation.
 """
 from ..decoratorutils import process_args, wraps_class
@@ -14,7 +14,7 @@ def is_intermediate_warp_function(func):
     """
     Establish if a warp function is intermediate.
 
-    :param WarpFunction func: A warp function instance which may be intermediate.
+    :param WarpFunction :func: A warp function instance which may be intermediate.
     :return: True, if the warp function is intermediate.
     :rtype: bool
     """
@@ -52,9 +52,9 @@ def require_controller_input(cache_name):
         tensor([[-0.6325]])
 
     .. note::
-        The class:`~vanguard.warps.SetWarp` decorator will call meth:`activate` on the user's behalf,
+        The :class:`~vanguard.warps.SetWarp` decorator will call :meth:`activate` on the user's behalf,
         so in the majority of cases one should not worry about this step. Only key word arguments can be passed to
-        meth:`activate`.
+        :meth:`activate`.
 
     .. warning::
         Despite best efforts, failing to activate an intermediate warp function before usage can return opaque error

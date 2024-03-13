@@ -39,23 +39,23 @@ class GaussianUncertaintyGPController(GPController):
             * None: heteroskedastic (among input dimension) std dev is inferred from given noisy inputs.
 
         :param array_like[float] train_y: (n_samples,) or (n_samples, 1) The responsive values.
-        :param type kernel_class: An uninstantiated subclass of class:`gpytorch.kernels.Kernel`.
-        :param type mean_class: An uninstantiated subclass of class:`gpytorch.means.Mean` to use in the prior GP.
-                Defaults to class:`gpytorch.means.ConstantMean`.
+        :param type kernel_class: An uninstantiated subclass of :class:`gpytorch.kernels.Kernel`.
+        :param type mean_class: An uninstantiated subclass of :class:`gpytorch.means.Mean` to use in the prior GP.
+                Defaults to :class:`gpytorch.means.ConstantMean`.
         :param array_like[float],float y_std: The observation noise standard deviation:
 
             * *array_like[float]* (n_samples,): known heteroskedastic noise,
             * *float*: known homoskedastic noise assumed.
 
         :param type gp_model_class: An uninstantiated subclass of a GP model from mod:`gpytorch.models`.
-                The default is class:`vanguard.models.ExactGPModel`.
-        :param type likelihood_class: An uninstantiated subclass of class:`gpytorch.likelihoods.Likelihood`.
-                The default is class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
+                The default is :class:`vanguard.models.ExactGPModel`.
+        :param type likelihood_class: An uninstantiated subclass of :class:`gpytorch.likelihoods.Likelihood`.
+                The default is :class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
         :param type marginal_log_likelihood_class: An uninstantiated subclass of of an MLL from
-                mod:`gpytorch.mlls`. The default is class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
-        :param type optimiser_class: An uninstantiated class:`torch.optim.Optimizer` class used for
-                gradient-based learning of hyperparameters. The default is class:`torch.optim.Adam`.
-        :param kwargs: For a complete list, see class:`~vanguard.base.gpcontroller.GPController`.
+                mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
+        :param type optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
+                gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
+        :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(train_x=train_x, train_y=train_y, kernel_class=kernel_class, mean_class=mean_class,
                          y_std=y_std, likelihood_class=likelihood_class,
@@ -202,7 +202,7 @@ class GaussianUncertaintyGPController(GPController):
         Obtain posterior predictive mean and covariance at a point with variance.
 
         .. warning:
-            The ``n_features`` must match with attr:`self.dim`.
+            The ``n_features`` must match with :attr:`self.dim`.
 
         :param array_like[float] x: (n_preds, n_features) The predictive inputs.
         :param array_like[float],float x_std: The input noise standard deviations:

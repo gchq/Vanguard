@@ -39,7 +39,7 @@ class MonteCarloPosteriorCollection(Posterior):
 
         Return a representative distribution of the posterior, with 1-dimensional
         mean and 2-dimensional covariance. In this case, return a distribution
-        based on the mean and covariance returned by meth:`_tensor_prediction`.
+        based on the mean and covariance returned by :meth:`_tensor_prediction`.
 
         :rtype: gpytorch.distributions.MultivariateNormal
         """
@@ -122,7 +122,7 @@ class MonteCarloPosteriorCollection(Posterior):
 
         :param int n_new_samples: The number of new samples to be added.
         :return: The new distribution, with the same class as the existing distribution.
-        :raises TypeError: If the posteriors in class:`self._posterior_generator` have
+        :raises TypeError: If the posteriors in :class:`self._posterior_generator` have
             different types, or if they do not match the type of the existing distribution.
         """
         try:

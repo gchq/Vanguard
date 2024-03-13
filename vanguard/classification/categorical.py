@@ -27,8 +27,8 @@ class CategoricalClassification(Decorator):
         Passing ``y_std=0`` is suggested.
 
     .. note::
-        The class:`~vanguard.variational.VariationalInference` and
-        class:`~vanguard.multitask.decorator.Multitask` decorators are required for this decorator to be applied.
+        The :class:`~vanguard.variational.VariationalInference` and
+        :class:`~vanguard.multitask.decorator.Multitask` decorators are required for this decorator to be applied.
 
     :Example:
         >>> from gpytorch.likelihoods import BernoulliLikelihood
@@ -62,7 +62,7 @@ class CategoricalClassification(Decorator):
         Initialise self.
 
         :param num_classes: The number of target classes.
-        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference, Multitask}, **kwargs)
         self.num_classes = num_classes

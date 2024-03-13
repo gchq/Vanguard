@@ -1,5 +1,5 @@
 """
-All warp functions should subclass this class:`WarpFunction` class.
+All warp functions should subclass this :class:`WarpFunction` class.
 """
 import copy
 from functools import wraps
@@ -13,8 +13,8 @@ class WarpFunction(gpytorch.Module):
     """
     Base module for warp functions.
 
-    Subclasses must implement the meth:`forward` and meth:`inverse` methods. Optionally, the
-    meth:`deriv` method can be implemented. If not, then it defaults to autograd, which is significantly slower.
+    Subclasses must implement the :meth:`forward` and :meth:`inverse` methods. Optionally, the
+    :meth:`deriv` method can be implemented. If not, then it defaults to autograd, which is significantly slower.
 
     :Example:
         >>> # New warp functions should inherit from the WarpFunction class:
@@ -108,7 +108,7 @@ class WarpFunction(gpytorch.Module):
             The warp functions are not copied before composition, meaning that
             each component of the returned warp function will be the same object.
             When applied to a controller class with the
-            class:`~vanguard.warps.SetWarp` decorator, the warp function
+            :class:`~vanguard.warps.SetWarp` decorator, the warp function
             (and its components) will be copied and this will no longer be an issue.
         """
         if n > 0:
@@ -130,7 +130,7 @@ class WarpFunction(gpytorch.Module):
         :rtype: WarpFunction
 
         .. note::
-            For convenience, it is often easier to use the ``@`` operator in place of meth:`compose`.
+            For convenience, it is often easier to use the ``@`` operator in place of :meth:`compose`.
 
         :Example:
             >>> warp_1, warp_2 = WarpFunction(), WarpFunction()
@@ -167,7 +167,7 @@ class WarpFunction(gpytorch.Module):
         Return a copy of the warp with frozen parameters.
 
         .. note::
-            We override attr:`torch.nn.Module.parameters` to return an empty generator, so no amount of
+            We override :attr:`torch.nn.Module.parameters` to return an empty generator, so no amount of
             ``return_grad=True`` will make the parameters trainable again. This is the most reliable way of freezing
             parameters and keeping them frozen in downstream usage.
 
@@ -182,7 +182,7 @@ class WarpFunction(gpytorch.Module):
         """
         Return the combined parameters of the composition.
 
-        Used in composition warps to override the default attr:`torch.nn.Module.parameters` so that
+        Used in composition warps to override the default :attr:`torch.nn.Module.parameters` so that
         frozen functions remain frozen under composition.
         """
         return chain(self.old_warp_left.parameters(), self.old_warp_right.parameters())
@@ -288,7 +288,7 @@ class MultitaskWarpFunction(WarpFunction):
         :rtype: MultitaskWarpFunction
 
         .. note::
-            For convenience, it is often easier to use the ``@`` operator in place of meth:`compose`.
+            For convenience, it is often easier to use the ``@`` operator in place of :meth:`compose`.
 
         :Example:
             >>> warp_1, warp_2 = MultitaskWarpFunction(), MultitaskWarpFunction()

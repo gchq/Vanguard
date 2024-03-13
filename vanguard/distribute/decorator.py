@@ -27,7 +27,7 @@ class Distributed(TopMostDecorator):
         float or an integer, and cannot be an array.
 
     .. note::
-        Every call to meth:`~vanguard.base.gpcontroller.GPController.fit` creates a new partition,
+        Every call to :meth:`~vanguard.base.gpcontroller.GPController.fit` creates a new partition,
         and regenerates the experts.
 
     :Example:

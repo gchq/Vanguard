@@ -126,7 +126,7 @@ class DirichletMulticlassClassification(Decorator):
 
                         Return a representative distribution of the posterior, with 1-dimensional
                         mean and 2-dimensional covariance. In this case, return a distribution
-                        based on the mean and covariance returned by meth:`_tensor_prediction`.
+                        based on the mean and covariance returned by :meth:`_tensor_prediction`.
                         """
                         mean, covar = self._tensor_prediction()
                         return self._add_jitter(self._make_multivariate_normal(mean.T, covar))
@@ -143,7 +143,7 @@ class DirichletMulticlassClassification(Decorator):
 
                 .. note::
                     The predictions are generated from the
-                    attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
+                    :attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_point(x)
@@ -160,7 +160,7 @@ class DirichletMulticlassClassification(Decorator):
 
                 .. note::
                     The predictions are generated from the
-                    attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
+                    :attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_fuzzy_point(x, x_std)

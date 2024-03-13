@@ -57,7 +57,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         Initialise self.
 
         :param num_classes: The number of target classes.
-        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)

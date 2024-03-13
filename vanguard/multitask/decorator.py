@@ -1,7 +1,7 @@
 """
 Enabling multitask Gaussian processes.
 
-The class:`~vanguard.multitask.decorator.Multitask` decorator
+The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
 from gpytorch.kernels import MultitaskKernel
@@ -118,8 +118,8 @@ class Multitask(Decorator):
                 """
                 Construct a mean class suitable for multitask GPs that matches the form of the kernel, if possible.
 
-                :param mean_class: An uninstantiated class:`gpytorch.means.Mean`.
-                :param kernel_class: An uninstantiated class:`gpytorch.kernels.Kernel`.
+                :param mean_class: An uninstantiated :class:`gpytorch.means.Mean`.
+                :param kernel_class: An uninstantiated :class:`gpytorch.kernels.Kernel`.
                 :param dict mean_kwargs: Keyword arguments to be passed to the mean_class constructor.
                 :param dict kernel_kwargs: Keyword arguments to be passed to the kernel_class constructor.
                 :returns: An uninstantiated class:`gpytorch.means.Mean` like mean_class but modified to have the

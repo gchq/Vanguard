@@ -16,7 +16,7 @@ class LearnYNoise(Decorator):
     """
     Learn the likelihood noise.
 
-    This decorator passes the appropriate arguments to allow a class:`~vanguard.base.gpcontroller.GPController`
+    This decorator passes the appropriate arguments to allow a :class:`~vanguard.base.gpcontroller.GPController`
     class to set the likelihood noise as unknown and subsequently learn it.
 
     :Example:
@@ -28,7 +28,7 @@ class LearnYNoise(Decorator):
         """
         Initialise self.
 
-        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 

@@ -25,7 +25,7 @@ class DummyNoise:
         """
         Initialise self.
 
-        :param value: Always returned by the attr:noise property.
+        :param value: Always returned by the :attr:noise property.
         """
         self.value = value
 
@@ -36,7 +36,7 @@ class DummyNoise:
 
 class MultitaskBernoulliLikelihood(BernoulliLikelihood):
     """
-    A very simple extension of class:`gpytorch.likelihoods.BernoulliLikelihood`.
+    A very simple extension of :class:`gpytorch.likelihoods.BernoulliLikelihood`.
 
     Provides an improper likelihood over multiple independent Bernoulli distributions.
     """
@@ -59,7 +59,7 @@ class MultitaskBernoulliLikelihood(BernoulliLikelihood):
 
 class SoftmaxLikelihood(_SoftmaxLikelihood):
     """
-    Superficial wrapper around the GPyTorch class:`gpytorch.likelihoods.SoftmaxLikelihood`.
+    Superficial wrapper around the GPyTorch :class:`gpytorch.likelihoods.SoftmaxLikelihood`.
 
     This wrapper allows the arg names more consistent with other likelihoods.
     """
@@ -67,10 +67,10 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
         r"""
         Initialise self.
 
-        :param args: For full signature, see class:`gpytorch.likelihoods.SoftmaxLikelihood`.
+        :param args: For full signature, see :class:`gpytorch.likelihoods.SoftmaxLikelihood`.
         :param num_classes: The number of target classes.
         :param num_tasks: Dimensionality of latent function :math:`\mathbf f`.
-        :param kwargs: For full signature, see class:`gpytorch.likelihoods.SoftmaxLikelihood`.
+        :param kwargs: For full signature, see :class:`gpytorch.likelihoods.SoftmaxLikelihood`.
         """
         super().__init__(*args, num_classes=num_classes, num_features=num_tasks, **kwargs)
 
@@ -164,7 +164,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
 
 class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
     """
-    A lightweight modification of class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
+    A lightweight modification of :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
 
     This removes some RuntimeErrors that prevent use with non-Gaussian likelihoods even when it is possible to do so.
     """

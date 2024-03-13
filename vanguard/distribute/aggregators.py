@@ -188,7 +188,7 @@ class XBCMAggregator(BaseAggregator):
     Implements the Corrected Bayesian Committee Machine method of [CITATION NEEDED]_.
 
     We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
-    (For further details see meth:`BaseAggregator._beta_correction`.)
+    (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
     def aggregate(self):
         delta = 0.5 * (torch.log(self.prior_var) - torch.log(self.variances)).reshape(self.n_experts, -1)
@@ -238,7 +238,7 @@ class XGRBCMAggregator(BaseAggregator):
     Implements the Corrected Generalised Robust Bayesian Committee Machine method of [CITATION NEEDED]_.
 
     We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
-    (For further details see meth:`BaseAggregator._beta_correction`.)
+    (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
     def aggregate(self):
         comm_mean = self.means[0]

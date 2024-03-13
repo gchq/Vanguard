@@ -50,7 +50,7 @@ class SetInputWarp(Decorator):
         Initialise self.
 
         :param WarpFunction warp_function: The warp function to be applied to the GP inputs.
-        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.warp_function = warp_function

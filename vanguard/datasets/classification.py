@@ -148,7 +148,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
 
 class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDataset):
     """
-    A binary dataset based on func:`sklearn.datasets.make_gaussian_quantiles`.
+    A binary dataset based on :func:`sklearn.datasets.make_gaussian_quantiles`.
 
     .. plot::
 
