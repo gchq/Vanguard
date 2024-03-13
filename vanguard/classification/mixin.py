@@ -21,7 +21,7 @@ class ClassificationMixin:
     automatically 'closes' the standard posterior methods and adds the framework
     for the meth:`classify_points` and meth:`classify_fuzzy_points` methods.
     """
-    def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+    def classify_points(self, x: numpy.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
         """
         Classify points.
 
@@ -33,7 +33,7 @@ class ClassificationMixin:
         """
         raise NotImplementedError
 
-    def classify_fuzzy_points(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+    def classify_fuzzy_points(self, x: numpy.typing.ArrayLike[float], x_std: numpy.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
         """
         Classify fuzzy points.
 
@@ -50,18 +50,18 @@ class ClassificationMixin:
         """
         raise NotImplementedError
 
-    def posterior_over_point(self, x: np.typing.ArrayLike[float]) -> NoReturn:
+    def posterior_over_point(self, x: numpy.typing.ArrayLike[float]) -> NoReturn:
         """Use meth:`classify_points` instead."""
         raise TypeError("The 'classify_points' method should be used instead.")
 
-    def posterior_over_fuzzy_point(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> NoReturn:
+    def posterior_over_fuzzy_point(self, x: numpy.typing.ArrayLike[float], x_std: numpy.typing.ArrayLike[float]) -> NoReturn:
         """Use meth:`classify_fuzzy_points` instead."""
         raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
 
-    def predictive_likelihood(self, x: np.typing.ArrayLike[float]) -> NoReturn:
+    def predictive_likelihood(self, x: numpy.typing.ArrayLike[float]) -> NoReturn:
         """Use meth:`classify_points` instead."""
         raise TypeError("The 'classify_points' method should be used instead.")
 
-    def fuzzy_predictive_likelihood(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> NoReturn:
+    def fuzzy_predictive_likelihood(self, x: numpy.typing.ArrayLike[float], x_std: numpy.typing.ArrayLike[float]) -> NoReturn:
         """Use meth:`classify_fuzzy_points` instead."""
         raise TypeError("The 'classify_fuzzy_points' method should be used instead.")

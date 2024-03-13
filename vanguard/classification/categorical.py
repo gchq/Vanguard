@@ -86,12 +86,12 @@ class CategoricalClassification(Decorator):
                 super().__init__(likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs,
                                  **all_parameters_as_kwargs)
 
-            def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_points(self, x: numpy.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
-            def classify_fuzzy_points(self, x: np.typing.ArrayLike[float][float], x_std: np.typing.ArrayLike[float][float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_fuzzy_points(self, x: numpy.typing.ArrayLike[float][float], x_std: numpy.typing.ArrayLike[float][float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
                 return self._get_predictions_from_posterior(predictive_likelihood)

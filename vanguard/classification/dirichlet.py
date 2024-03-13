@@ -137,7 +137,7 @@ class DirichletMulticlassClassification(Decorator):
                 super().__init__(train_y=transformed_targets.detach().cpu().numpy(), likelihood_class=likelihood_class,
                                  likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs)
 
-            def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_points(self, x: numpy.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """
                 Classify points.
 
@@ -154,7 +154,7 @@ class DirichletMulticlassClassification(Decorator):
                 predictions = detached_probs.argmax(axis=1)
                 return predictions, detached_probs.max(axis=1)
 
-            def classify_fuzzy_points(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_fuzzy_points(self, x: numpy.typing.ArrayLike[float], x_std: numpy.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
                 """
                 Classify fuzzy points.
 
@@ -176,7 +176,7 @@ class DirichletMulticlassClassification(Decorator):
                 return super()._loss(train_x, train_y).sum()
 
             @staticmethod
-            def _noise_transform(gamma: np.typing.ArrayLike[float]) -> torch.Tensor:
+            def _noise_transform(gamma: numpy.typing.ArrayLike[float]) -> torch.Tensor:
                 return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze().T
 
             @staticmethod
