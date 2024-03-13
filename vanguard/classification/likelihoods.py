@@ -11,6 +11,7 @@ from gpytorch.likelihoods.likelihood import _OneDimensionalLikelihood
 from gpytorch.likelihoods.noise_models import MultitaskHomoskedasticNoise
 import torch
 import numpy as np
+import numpy.typing
 
 from .models import DummyKernelDistribution
 from typing import Union, Optional, NoReturn

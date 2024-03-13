@@ -3,6 +3,7 @@ Contains the BinaryClassification decorator.
 """
 from gpytorch.likelihoods import BernoulliLikelihood
 import numpy as np
+import numpy.typing
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class

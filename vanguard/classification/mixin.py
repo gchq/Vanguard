@@ -9,6 +9,7 @@ When creating new decorators, include the class:`ClassificationMixin` as a
 mixin for the inner class which will be returned to enable this.
 """
 import numpy as np
+import numpy.typing
 from typing import NoReturn
 
 

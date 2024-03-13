@@ -2,6 +2,7 @@
 Contains the DirichletKernelMulticlassClassification decorator.
 """
 import numpy as np
+import numpy.typing
 import torch
 
 from ..base import GPController
