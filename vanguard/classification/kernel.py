@@ -1,6 +1,8 @@
 """
 Contains the DirichletKernelMulticlassClassification decorator.
 """
+from __future__ import annotations
+
 import numpy as np
 import numpy.typing
 import torch

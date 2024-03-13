@@ -1,6 +1,8 @@
 """
 Contains the DirichletMulticlassClassification decorator.
 """
+from __future__ import annotations
+
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 import torch
 import gpytorch

@@ -1,6 +1,8 @@
 """
 Contains some multitask classification likelihoods.
 """
+from __future__ import annotations
+
 import gpytorch.distributions
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.constraints import Positive

@@ -1,6 +1,8 @@
 """
 Contains the BinaryClassification decorator.
 """
+from __future__ import annotations
+
 from gpytorch.likelihoods import BernoulliLikelihood
 import numpy as np
 import numpy.typing
