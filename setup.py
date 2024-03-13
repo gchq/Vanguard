@@ -28,7 +28,7 @@ setup(
     long_description_content_type="text/markdown",
     python_requires=">=3.7",
     packages=find_packages(include=["vanguard", "vanguard.*"]),
-    install_requires=["bibtexparser", "gpytorch>=1.5.1", "matplotlib", "numpy", "pandas",
+    install_requires=["bibtexparser", "gpytorch>=1.5.1", "matplotlib", "numpy>=1.20", "pandas",
                       "scikit-learn", "scikit-learn-extra", "scipy", "torch>=1.7.0", "urllib3"],
     package_data={"vanguard": [BIBTEX_FILE]}
 )
