@@ -95,7 +95,9 @@ repos:
     hooks:
       - id: nbqa-pyupgrade
       - id: nbqa-isort
+        args: [--line-length=87]
       - id: nbqa-ruff
+        args: [--line-length=87]
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:
