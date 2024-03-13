@@ -10,7 +10,7 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 
-from typing import TypeVar, Type, NoReturn
+from typing import TypeVar, Type
 
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -91,18 +91,22 @@ class BinaryClassification(Decorator):
 
                 super().__init__(likelihood_class=likelihood_class, **all_parameters_as_kwargs)
 
-            def classify_points(self, x: numpy.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_points(self, x: float | numpy.typing.NDArray[np.floating]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
-            def classify_fuzzy_points(self, x: numpy.typing.ArrayLike[float], x_std: numpy.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_fuzzy_points(
+                    self, x: float | numpy.typing.NDArray[np.floating], x_std: float | numpy.typing.NDArray[np.floating]
+            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             @staticmethod
-            def _get_predictions_from_prediction_means(means: np.ndarray[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def _get_predictions_from_prediction_means(
+                    means: float | numpy.typing.NDArray[np.floating]
+            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 

@@ -11,7 +11,7 @@ from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 from vanguard.base.posteriors.posterior import Posterior
 
-from typing import TypeVar, Type, NoReturn
+from typing import TypeVar, Type
 
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -86,18 +86,20 @@ class CategoricalClassification(Decorator):
                 super().__init__(likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs,
                                  **all_parameters_as_kwargs)
 
-            def classify_points(self, x: numpy.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_points(self, x: float | numpy.typing.NDArray[np.floating]) -> tuple[numpy.typing.NDArray[np.integer], float | numpy.typing.NDArray[np.floating]]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
-            def classify_fuzzy_points(self, x: numpy.typing.ArrayLike[float][float], x_std: numpy.typing.ArrayLike[float][float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_fuzzy_points(
+                    self, x: float | numpy.typing.NDArray[[np.floating, np.floating]], x_std: float | numpy.typing.NDArray[[np.floating, np.floating]]
+            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             @staticmethod
-            def _get_predictions_from_posterior(posterior: Posterior) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def _get_predictions_from_posterior(posterior: Posterior) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get predictions from a posterior distribution.
 

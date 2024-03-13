@@ -21,7 +21,7 @@ class DummyNoise:
     """
     Provides a dummy wrapper around a tensor so that the tensor can be accessed as the noise property of the class.
     """
-    def __init__(self, value: Optional[numpy.typing.ArrayLike[float]]):
+    def __init__(self, value: Optional[float | numpy.typing.NDArray[np.floating]]):
         """
         Initialise self.
 
@@ -30,7 +30,7 @@ class DummyNoise:
         self.value = value
 
     @property
-    def noise(self) -> Optional[numpy.typing.ArrayLike[float]]:
+    def noise(self) -> Optional[float | numpy.typing.NDArray[np.floating]]:
         return self.value
 
 
@@ -107,7 +107,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     """
     A pseudo Dirichlet likelihood matching the approximation in [CITATION NEEDED]_.
     """
-    def __init__(self, num_classes: int , alpha: Optional[numpy.typing.array_like[float]] = None, learn_alpha: bool = False, **kwargs):
+    def __init__(self, num_classes: int , alpha: Optional[float | numpy.typing.NDArray[np.floating]] = None, learn_alpha: bool = False, **kwargs):
         """
         Initialise self.
 
@@ -134,7 +134,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             self._alpha_var = DummyNoise(self._alpha_var)
 
     @property
-    def alpha(self) -> Optional[numpy.typing.ArrayLike[float]]:
+    def alpha(self) -> Optional[float | numpy.typing.NDArray[np.floating]]:
         return self._alpha_var.noise
 
     def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
