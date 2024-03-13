@@ -9,9 +9,12 @@ to a function into a dictionary for straightforward access.
 from functools import WRAPPER_ASSIGNMENTS, wraps
 import inspect
 import types
+from typing import Type, TypeVar
+
+T = TypeVar('T')
 
 
-def process_args(func, *args, **kwargs):
+def process_args(func, *args: tuple, **kwargs: dict) -> dict:
     """
     Process the arguments for a function.
 
@@ -67,7 +70,7 @@ def process_args(func, *args, **kwargs):
     return parameters_as_kwargs
 
 
-def wraps_class(base_class):
+def wraps_class(base_class: Type[T]) -> Type[T]:
     r"""
     Update the names and docstrings of an inner class to those of a base class.
 
@@ -103,7 +106,7 @@ def wraps_class(base_class):
         >>> Second.__wrapped__
         <class 'vanguard.decoratorutils.wrapping.First'>
     """
-    def inner_function(inner_class):
+    def inner_function(inner_class: Type[T]) -> Type[T]:
         """Update the values in the inner class."""
         for attribute in WRAPPER_ASSIGNMENTS:
             try:
