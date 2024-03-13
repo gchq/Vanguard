@@ -96,6 +96,11 @@ repos:
       - id: nbqa-pyupgrade
       - id: nbqa-isort
       - id: nbqa-ruff
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+        args: [ --drop-empty-cells, "--extra-keys=metadata.kernelspec metadata.language_info.version" ]
   - repo: local
     hooks:
       # Check for non-ascii characters in files
