@@ -94,7 +94,7 @@ class BaseGPController:
             likelihood_class: Type[gpytorch.likelihoods.Likelihood],
             marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
             optimiser_class: Type[torch.optim.Optimizer],
-            smart_optimiser_class: SmartOptimiser,
+            smart_optimiser_class: Type[SmartOptimiser],
             **kwargs
     ):
         """Initialise self."""
@@ -181,7 +181,7 @@ class BaseGPController:
             return torch.device("cpu")
 
     @property
-    def _likelihood(self) -> Type[gpytorch.likelihoods.Likelihood]:
+    def _likelihood(self) -> gpytorch.likelihoods.Likelihood:
         """Return the likelihood of the model."""
         return self._gp.likelihood
 

@@ -6,7 +6,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy import stats
 import torch
-from typing import TypeVar, Type
+from typing import TypeVar, Tuple
 from typing_extensions import Self
 
 T = TypeVar("T")
@@ -43,7 +43,7 @@ class Posterior:
         """
         return self.distribution
 
-    def prediction(self) -> tuple[np.ndarray, np.ndarray]:
+    def prediction(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Return the prediction as a numpy array.
 
@@ -58,7 +58,7 @@ class Posterior:
     def confidence_interval(
             self,
             alpha: float = 0.05,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Construct confidence intervals around mean of predictive posterior.
 

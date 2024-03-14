@@ -11,7 +11,7 @@ from .basecontroller import BaseGPController
 from ..decoratorutils import Decorator
 from .metaclass import _StoreInitValues
 from .metrics import MetricsTracker
-from posteriors.posterior import Posterior
+from .posteriors.posterior import Posterior
 
 
 class GPController(BaseGPController, metaclass=_StoreInitValues):
@@ -130,7 +130,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_point(
             self,
-            x: ArrayLike[float],
+            x: ArrayLike,
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.
@@ -142,8 +142,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_fuzzy_point(
             self,
-            x: ArrayLike[float],
-            x_std: ArrayLike[float],
+            x: ArrayLike,
+            x_std: ArrayLike,
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a fuzzy point.
@@ -163,7 +163,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def predictive_likelihood(
             self,
-            x: ArrayLike[float],
+            x: ArrayLike,
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -175,8 +175,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def fuzzy_predictive_likelihood(
             self,
-            x: ArrayLike[float],
-            x_std: ArrayLike[float],
+            x: ArrayLike,
+            x_std: ArrayLike,
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.
