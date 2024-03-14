@@ -5,11 +5,14 @@ Vanguard supports a number of metrics pre-attached and tracked to all
 controller classes. These are calculated per iteration by the
 :py:class:`MetricsTracker` class.
 """
+from __future__ import annotations
+
 from contextlib import contextmanager
 import itertools
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
-from .gpcontroller import BaseGPController
+if TYPE_CHECKING:
+    from .gpcontroller import BaseGPController
 
 class MetricsTracker:
     """
