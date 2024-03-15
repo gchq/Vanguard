@@ -165,6 +165,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float) -> float:
+def loss(loss_value: float, controller) -> float:
     """Return the loss value."""
     return loss_value
