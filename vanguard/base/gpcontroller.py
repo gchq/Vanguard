@@ -1,6 +1,8 @@
 """
 The user-facing interface of the :py:class:`~vanguard.base.basecontroller.BaseGPController` class.
 """
+from __future__ import annotations
+
 import warnings
 
 import torch
@@ -130,7 +132,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_point(
             self,
-            x: ArrayLike,
+            x: ArrayLike[float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.
@@ -142,8 +144,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_fuzzy_point(
             self,
-            x: ArrayLike,
-            x_std: ArrayLike,
+            x: ArrayLike[float],
+            x_std: ArrayLike[float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a fuzzy point.
@@ -163,7 +165,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def predictive_likelihood(
             self,
-            x: ArrayLike,
+            x: ArrayLike[float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -175,8 +177,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def fuzzy_predictive_likelihood(
             self,
-            x: ArrayLike,
-            x_std: ArrayLike,
+            x: ArrayLike[float],
+            x_std: ArrayLike[float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.

@@ -1,6 +1,8 @@
 """
 Contains the Posterior class.
 """
+from __future__ import annotations
+
 import gpytorch
 import numpy as np
 from numpy.typing import ArrayLike
@@ -71,7 +73,7 @@ class Posterior:
 
     def mse(
             self,
-            y: ArrayLike,
+            y: ArrayLike[float],
     ) -> float:
         r"""
         Compute the mean-squared of some values under the posterior.
@@ -85,8 +87,8 @@ class Posterior:
 
     def nll(
             self,
-            y: ArrayLike,
-            noise_variance: ArrayLike = 0,
+            y: ArrayLike[float],
+            noise_variance: ArrayLike[float] = 0,
             alpha: float = stats.norm.cdf(-1)*2,
     ) -> float:
         """
@@ -108,7 +110,7 @@ class Posterior:
 
     def log_probability(
             self,
-            y: ArrayLike,
+            y: ArrayLike[float],
     ) -> float:
         r"""
         Compute the log-likelihood of some values under the posterior.

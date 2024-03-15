@@ -1,6 +1,8 @@
 """
 Contains a class decorator to apply input standard scaling to means and kernels.
 """
+from __future__ import annotations
+
 import torch
 from typing import Self
 from numpy.typing import ArrayLike, DTypeLike
