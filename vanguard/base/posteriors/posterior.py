@@ -141,7 +141,7 @@ class Posterior:
         Construct from the mean and covariance of a Gaussian.
 
         :param mean: (d,) or (d, t) The mean of the Gaussian.
-        :param  covariance: (d, d) or (dt, dt) The covariance matrix of the Gaussian.
+        :param covariance: (d, d) or (dt, dt) The covariance matrix of the Gaussian.
         :returns: The multivariate Gaussian distribution for either a single task or multiple tasks, depending on the
                   shape of the args.
         """
