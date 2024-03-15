@@ -431,7 +431,7 @@ class BaseGPController:
     def _input_standardise_modules(
             self,
             *modules: torch.nn.Module,
-    ) -> list[StandardiseXModule]:
+    ) -> list[torch.Module]:
         """
         Apply standard input scaling (mean zero, variance 1) to the supplied PyTorch nn.Modules.
 

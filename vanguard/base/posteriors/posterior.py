@@ -25,11 +25,11 @@ class Posterior:
         should remain untouched, in order to avoid accidental double transformations.
 
 
-    :param distribution: :class:`gpytorch.distributions.MultivariateNormal` The distribution.
+    :param distribution: The distribution.
     """
     def __init__(
             self,
-            distribution: gpytorch.distributions.MultivariateNormal,
+            distribution: gpytorch.distributions.Distribution,
     ):
         """Initialise self."""
         self.distribution = self._add_jitter(distribution)
@@ -230,7 +230,7 @@ class Posterior:
     def _make_multivariate_normal(
             mean: torch.Tensor,
             covariance: torch.Tensor,
-    ) -> torch.Tensor:
+    ) -> torch.distributions.MultivariateNormal:
         r"""
         Construct MultivariateNormal or MultitaskMultivariateNormal from mean and covariance.
 
