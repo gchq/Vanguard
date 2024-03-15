@@ -88,10 +88,9 @@ class MonteCarloPosteriorCollection(Posterior):
             * ``covar``: (n_preds, n_preds) The posterior predictive covariance matrix.
 
         """
-        preds = self._cached_samples.sum() / len(self._cached_samples)
+        preds = sum(self._cached_samples) / len(self._cached_samples)
         diffs = [(sample - preds).reshape(-1, 1) for sample in self._cached_samples]
-        # TODO check change here does the same
-        covar = torch.stack([diff @ diff.T for diff in diffs]).sum() / (len(self._cached_samples) - 1)
+        covar = sum([diff @ diff.T for diff in diffs]) / (len(self._cached_samples) - 1)
         return preds, covar
 
     def _tensor_confidence_interval(
