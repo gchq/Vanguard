@@ -1,0 +1,40 @@
+name: Feature Request
+description: Suggest an idea for this project
+labels:
+  - new
+  - enhancement
+projects:
+  - gchq/16
+body:
+  - type: markdown
+    attributes:
+      value: >
+        _Before reporting_: search [existing issues](https://github.com/gchq/Vanguard/issues)
+        to see if an issue already exists for the feature you're requesting.
+  - type: textarea
+    attributes:
+      label: What's the new feature?
+      description: Describe the feature you're suggesting.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What value does this add?
+      description: Explain the benefits. Describe a specific use case if applicable.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Is there an alternative you've considered?
+      description: >
+       Describe any alternatives if applicable. Is there existing software with the
+       feature you're suggesting? If yes, how does it work?
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: >
+        Add further context here. Link any related issues here, if you haven't already.
+    validations:
+      required: false

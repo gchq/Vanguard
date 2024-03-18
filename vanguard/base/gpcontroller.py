@@ -1,5 +1,5 @@
 """
-The user-facing interface of the :py:class:`~vanguard.base.basecontroller.BaseGPController` class.
+The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPController` class.
 """
 from __future__ import annotations
 
@@ -23,22 +23,22 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
     The following class variables will persist unless changed (manually or by decorators):
 
     * ``device``: The device of the tensors to be used. By default, this will be set to ``torch.device('cuda:0')`` if
-      :py:func:`torch.cuda.is_available()` returns ``True``, but otherwise it defaults to ``torch.device('cpu')``.
+      :func:`torch.cuda.is_available()` returns ``True``, but otherwise it defaults to ``torch.device('cpu')``.
     * ``dtype``: The dtype for tensors, which defaults to ``torch.float32``. Setting this higher will improve accuracy
       at the cost of memory.
-    * ``gp_model_class``: An uninstantiated subclass of :py:class:`~gpytorch.models.ExactGP` or
-      :py:class:`~gpytorch.models.ApproximateGP` to be used in inference.
-    * ``posterior_class``: An uninstantiated subclass of :py:class:`~vanguard.base.posteriors.Posterior` to be used for
+    * ``gp_model_class``: An uninstantiated subclass of :class:`~gpytorch.models.ExactGP` or
+      :class:`~gpytorch.models.ApproximateGP` to be used in inference.
+    * ``posterior_class``: An uninstantiated subclass of :class:`~vanguard.base.posteriors.Posterior` to be used for
       all posteriors returned during prediction.
     * ``posterior_collection_class``: An uninstantiated subclass of
-      :py:class:`~vanguard.base.posteriors.MonteCarloPosteriorCollection` to be used for all posteriors returned during
+      :class:`~vanguard.base.posteriors.MonteCarloPosteriorCollection` to be used for all posteriors returned during
       fuzzy prediction.
 
     .. note::
         The loss after each iteration of hyperparameter tuning is saved in the controller's
-        metrics tracker (accessed using the :py:meth:`metrics_tracker` property), and can be printed
-        during fitting by using the :py:meth:`~vanguard.base.metrics.MetricsTracker.print_metrics` method.
-        Consider this example (:py:class:`~vanguard.vanilla.GaussianGPController` is used
+        metrics tracker (accessed using the :meth:`metrics_tracker` property), and can be printed
+        during fitting by using the :meth:`~vanguard.base.metrics.MetricsTracker.print_metrics` method.
+        Consider this example (:class:`~vanguard.vanilla.GaussianGPController` is used
         to simplify the example; metric printing is available for all controller classes):
 
         :Example:
@@ -59,7 +59,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
             iteration: 14, loss: ...
             iteration: 15, loss: ...
 
-        For more options see the :py:class:`~vanguard.base.metrics.MetricsTracker` class.
+        For more options see the :class:`~vanguard.base.metrics.MetricsTracker` class.
     """
     _init_params = {}
     __decorators__: list[Decorator] = []
@@ -92,7 +92,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     @property
     def metrics_tracker(self) -> MetricsTracker:
-        """Return the :py:class:`~vanguard.base.metrics.MetricsTracker` associated with the controller."""
+        """Return the :class:`~vanguard.base.metrics.MetricsTracker` associated with the controller."""
         return self._metrics_tracker
 
     def fit(
@@ -105,12 +105,12 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
         .. note::
             By default ``fit(n_sgd_iters=n, gradient_every=m)`` is equivalent to ``fit(n_sgd_iters=n)``.
-            However, any changes to :py:meth:`~vanguard.base.basecontroller.BaseGPController._sgd_round`
+            However, any changes to :meth:`~vanguard.base.basecontroller.BaseGPController._sgd_round`
             could break this equivalence.
 
         .. warning::
             Do **not** overload this method in order to alter SGD behaviour. Instead, overload
-            :py:meth:`~vanguard.base.basecontroller.BaseGPController._sgd_round` to ensure that
+            :meth:`~vanguard.base.basecontroller.BaseGPController._sgd_round` to ensure that
             all added functionality propagates correctly.
 
         :param n_sgd_iters: The number of gradient updates to perform in each round of hyperparameter tuning.
@@ -151,7 +151,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         Return predictive posterior of the y-value over a fuzzy point.
 
         .. warning:
-            The ``n_features`` must match with :py:attr:`self.dim`.
+            The ``n_features`` must match with :attr:`self.dim`.
 
         :param x: (n_preds, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:

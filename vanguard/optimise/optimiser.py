@@ -14,14 +14,14 @@ class SmartOptimiser:
     A smart wrapper around the standard optimisers found in PyTorch which can enable early stopping.
 
     .. warning::
-        When setting the learning rate, using the :py:meth:`learning_rate` property,
+        When setting the learning rate, using the :meth:`learning_rate` property,
         the parameters for each registered module are re-initialised.
     """
     def __init__(self, optimiser_class, *initial_modules, early_stop_patience=None, **optimiser_kwargs):
         """
         Initialise self.
 
-        :param type optimiser_class: An uninstantiated subclass of :py:class:`torch.optim.Optimizer` to be used
+        :param type optimiser_class: An uninstantiated subclass of class:`torch.optim.Optimizer` to be used
             to create the internal optimiser.
         :param torch.nn.Module initial_modules: Initial modules whose parameters will be added to the
             internal optimiser.
@@ -69,7 +69,7 @@ class SmartOptimiser:
         self.last_n_losses = self._get_last_n_losses_structure(self._early_stop_patience)
 
     def zero_grad(self, set_to_none=False):
-        """Set the gradients of all optimized :py:class:`torch.Tensor`s to zero."""
+        """Set the gradients of all optimized class:`torch.Tensor`s to zero."""
         return self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     def step(self, loss, closure=None):
@@ -107,7 +107,7 @@ class SmartOptimiser:
 
         .. note::
             Calling this in isolation will restore the initialised values for all parameters, but it
-            does not reset the optimiser. To do this, call :py:meth:`_reset_internal_optimiser` additionally.
+            does not reset the optimiser. To do this, call :meth:`_reset_internal_optimiser` additionally.
         """
         for module, state_dict in self._stored_initial_state_dicts.items():
             module.load_state_dict(state_dict)
@@ -118,7 +118,7 @@ class SmartOptimiser:
 
         .. note::
             Calling this in isolation will not affect the current value of the parameters as learned
-            thus far. To reset these, call :py:meth:`_reset_module_parameters` additionally.
+            thus far. To reset these, call :meth:`_reset_module_parameters` additionally.
         """
         parameters = [{"params": module.parameters()} for module in self._stored_initial_state_dicts]
         self._internal_optimiser = self._internal_optimiser_class(parameters, lr=self._learning_rate,
@@ -136,7 +136,7 @@ class SmartOptimiser:
         self._stored_initial_state_dicts[module] = state_dict
 
     def _set_step_method(self):
-        """Create and set the :py:meth:`_step` method according to the internal optimiser."""
+        """Create and set the :meth:`_step` method according to the internal optimiser."""
         internal_step_signature = inspect.signature(self._internal_optimiser.step)
         if "loss" in internal_step_signature.parameters:
             def new_step(loss, closure=None):
@@ -154,7 +154,7 @@ class SmartOptimiser:
         """
         Get the structure which will contain the last :math`n` losses.
 
-        Returns an instance of :py:class:`collections.deque`.  This is
+        Returns an instance of class:`collections.deque`.  This is
         always initialised with at least one ``nan`` value.  Whilst
         ``nan`` values occur in the structure, the minimum value will also
         be ``nan`` meaning that the minimum value will not be equal to the
@@ -247,9 +247,9 @@ class GreedySmartOptimiser(SmartOptimiser):
     Always choose parameters with the minimum loss value, regardless of the iteration at which they occur.
 
     .. note::
-        This is the default smart optimiser for some :py:class:`vanguard.vanilla.GaussianGPController.
+        This is the default smart optimiser for some class:`vanguard.vanilla.GaussianGPController.
         To disable the greedy loss behaviour and revert to keeping the parameters at the final iteration
-        of training, using :py:class:`vanguard.optimise.optimiser.SmartOptimiser` or a different subclass
+        of training, using class:`vanguard.optimise.optimiser.SmartOptimiser` or a different subclass
         thereof.
 
     """

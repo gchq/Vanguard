@@ -10,7 +10,7 @@ import numpy as np
 
 class ExactGPModel(ExactGP):
     """
-    Standard GPyTorch exact GP model subclassing :py:class:`gpytorch.models.ExactGP` with flexible prior kernel, mean.
+    Standard GPyTorch exact GP model subclassing :class:`gpytorch.models.ExactGP` with flexible prior kernel, mean.
     """
     def __init__(self, train_x, train_y, likelihood, mean_module, covar_module, **kwargs):
         """
@@ -44,8 +44,8 @@ class InducingPointKernelGPModel(ExactGPModel):
     """
     A model with inducing point sparse approximation to the kernel.
 
-    GPyTorch exact GP model subclassing :py:class:`gpytorch.models.ExactGP` with flexible prior kernel, mean and an
-    inducing point sparse approximation to the kernel a la [Titsias09]_.
+    GPyTorch exact GP model subclassing :class:`gpytorch.models.ExactGP` with flexible prior kernel, mean and an
+    inducing point sparse approximation to the kernel a la :cite:`Titsias09`.
     """
     def __init__(self, train_x, train_y, likelihood, mean_module, covar_module, n_inducing_points):
         """

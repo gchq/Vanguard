@@ -1,13 +1,21 @@
 """
 Contains the BinaryClassification decorator.
 """
+from __future__ import annotations
+
 from gpytorch.likelihoods import BernoulliLikelihood
 import numpy as np
+import numpy.typing
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .mixin import ClassificationMixin
+
+from typing import TypeVar, Type
+
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
 
 
 class BinaryClassification(Decorator):
@@ -20,8 +28,8 @@ class BinaryClassification(Decorator):
         Passing ``y_std=0`` is suggested.
 
     .. note::
-        When used in conjunction with the :py:class:`~gpytorch.likelihoods.BernoulliLikelihood` class,
-        the probit likelihood is calculated in closed form by applying the following formula [Kuss05]_:
+        When used in conjunction with the class:`~gpytorch.likelihoods.BernoulliLikelihood` class,
+        the probit likelihood is calculated in closed form by applying the following formula :cite:`Kuss05`:
 
         .. math::
             q(y_*=1\mid\mathcal{D},{\pmb{\theta}},{\bf x_*})
@@ -31,7 +39,7 @@ class BinaryClassification(Decorator):
         This means that the predictive uncertainty is taken into account.
 
     .. note::
-        The :py:class:`~vanguard.variational.VariationalInference` decorator is required for this
+        The class:`~vanguard.variational.VariationalInference` decorator is required for this
         decorator to be applied.
 
     :Example:
@@ -63,11 +71,11 @@ class BinaryClassification(Decorator):
         """
         Initialise self.
 
-        :param kwargs: Keyword arguments passed to :py:class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
@@ -85,31 +93,34 @@ class BinaryClassification(Decorator):
 
                 super().__init__(likelihood_class=likelihood_class, **all_parameters_as_kwargs)
 
-            def classify_points(self, x):
+            def classify_points(self, x: float | numpy.typing.NDArray[np.floating]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
-            def classify_fuzzy_points(self, x, x_std):
+            def classify_fuzzy_points(
+                    self, x: float | numpy.typing.NDArray[np.floating], x_std: float | numpy.typing.NDArray[np.floating]
+            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             @staticmethod
-            def _get_predictions_from_prediction_means(means):
+            def _get_predictions_from_prediction_means(
+                    means: float | numpy.typing.NDArray[np.floating]
+            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 
-                :param numpy.ndarray[float] means: The prediction means in the range [0, 1].
+                :param means: The prediction means in the range [0, 1].
                 :returns: The predicted class labels, and the certainty probabilities.
-                :rtype: tuple[numpy.ndarray[int], numpy.ndarray[float]]
                 """
                 prediction = means.round().astype(int)
                 certainty = np.maximum(means, 1 - means)
                 return prediction, certainty
 
             @staticmethod
-            def warn_normalise_y():
+            def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
                 pass
 

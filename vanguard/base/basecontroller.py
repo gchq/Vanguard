@@ -1,8 +1,8 @@
 """
 The (non-user-facing) base class of Vanguard controllers.
 
-The :py:class:`~vanguard.base.basecontroller.BaseGPController` class contains the
-machinery of the :py:class:`~vanguard.base.gpcontroller.GPController`.
+The :class:`~vanguard.base.basecontroller.BaseGPController` class contains the
+machinery of the :class:`~vanguard.base.gpcontroller.GPController`.
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ ttypes_cuda = Type[Union[torch.cuda.FloatTensor, torch.cuda.DoubleTensor, torch.
 
 class BaseGPController:
     """
-    Contains the base machinery for the :py:class:`~vanguard.base.gpcontroller.GPController` class.
+    Contains the base machinery for the :class:`~vanguard.base.gpcontroller.GPController` class.
 
     :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values)
     :param train_y: (n_samples,) or (n_samples, 1) The responsive values.
@@ -245,7 +245,7 @@ class BaseGPController:
         Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
 
         .. warning:
-            The ``n_features`` must match with :py:attr:`self.dim`.
+            The ``n_features`` must match with :attr:`self.dim`.
 
         :param x: (n_preds, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:

@@ -19,9 +19,9 @@ class Posterior:
     Represents a posterior predictive distribution over a collection of points.
 
     .. note::
-        Various Vanguard decorators are expected to overwrite the :py:meth:`prediction`
-        and :py:meth:`confidence_interval` methods of this class. However, the
-        :py:meth:`_tensor_prediction` and :py:meth:`_tensor_confidence_interval` methods
+        Various Vanguard decorators are expected to overwrite the :meth:`prediction`
+        and :meth:`confidence_interval` methods of this class. However, the
+        :meth:`_tensor_prediction` and :meth:`_tensor_confidence_interval` methods
         should remain untouched, in order to avoid accidental double transformations.
 
 
@@ -155,7 +155,7 @@ class Posterior:
 
         .. warning::
             Overwriting this method is not safe, as it may affect the transformations applied by
-            certain decorators. Consider overwriting :py:meth:`prediction` instead.
+            certain decorators. Consider overwriting :meth:`prediction` instead.
 
         :returns: (``means``, ``covar``) where:
 
@@ -177,7 +177,7 @@ class Posterior:
 
         .. warning::
             Overwriting this method is not safe, as it may affect the transformations applied by
-            certain decorators. Consider overwriting :py:meth:`confidence_interval` instead.
+            certain decorators. Consider overwriting :meth:`confidence_interval` instead.
 
         :param alpha: The significance level of the CIs.
         :returns: The (``median``, ``lower``, ``upper``) bounds of the confidence interval for the
@@ -217,7 +217,7 @@ class Posterior:
 
         .. warning::
             Overwriting this method is not safe, as it may affect the transformations applied by
-            certain decorators. Consider overwriting :py:meth:`log_probability` instead.
+            certain decorators. Consider overwriting :meth:`log_probability` instead.
 
         :param y: (n, d) or (d,) where d is the dimension of the space on which the
             posterior is defined. Sum over first dimension if two dimensional.

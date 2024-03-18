@@ -8,6 +8,7 @@ from gpytorch.lazy import DiagLazyTensor
 from gpytorch.means import ZeroMean
 from gpytorch.models import ExactGP
 from gpytorch.utils.warnings import GPInputWarning
+import gpytorch
 import torch
 
 from vanguard.models import ExactGPModel
@@ -17,7 +18,7 @@ class DummyKernelDistribution:
     """
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
-    def __init__(self, labels, kernel):
+    def __init__(self, labels: torch.Tensor, kernel: torch.Tensor):
         """
         Initialise self.
 
@@ -40,16 +41,20 @@ class InertKernelModel(ExactGPModel):
     Uses a given kernel for prior and posterior and returns a dummy distribution holding the
     kernel matrix.
     """
-    def __init__(self, train_inputs, train_targets, covar_module, mean_module, likelihood, num_classes):
+    def __init__(
+            self, train_inputs: torch.Tensor, train_targets: torch.Tensor,
+            covar_module: gpytorch.kernels.Kernel, mean_module: gpytorch.means.Mean,
+            likelihood: gpytorch.likelihoods.Likelihood, num_classes: int
+    ):
         """
         Initialise self.
 
-        :param torch.Tensor train_inputs: (n_samples, n_features) The training inputs (features).
-        :param torch.Tensor train_targets: (n_samples,) The training targets (response).
-        :param gpytorch.kernels.Kernel covar_module:  The prior kernel function to use.
-        :param gpytorch.means.Mean mean_module: Not used, remaining in the signature for compatibility.
-        :param gpytorch.likelihoods.Likelihood likelihood:  Likelihood to use with model.
-        :param int num_classes: The number of classes to use.
+        :param train_inputs: (n_samples, n_features) The training inputs (features).
+        :param train_targets: (n_samples,) The training targets (response).
+        :param covar_module:  The prior kernel function to use.
+        :param mean_module: Not used, remaining in the signature for compatibility.
+        :param likelihood:  Likelihood to use with model.
+        :param num_classes: The number of classes to use.
         """
         super(ExactGP, self).__init__()
 
@@ -71,7 +76,7 @@ class InertKernelModel(ExactGPModel):
         self.mean_module = ZeroMean()
         self.likelihood = likelihood
 
-    def train(self, mode=True):
+    def train(self, mode: bool = True) -> ExactGPModel:
         """Set to training mode, if data is not None."""
         if mode is True and (self.train_inputs is None or self.train_targets is None):
             raise RuntimeError(
@@ -80,10 +85,10 @@ class InertKernelModel(ExactGPModel):
             )
         return super().train(mode)
 
-    def _label_tensor(self, targets):
+    def _label_tensor(self, targets: torch.Tensor) -> torch.Tensor:
         return DiagLazyTensor(torch.ones(self.n_classes))[targets.long()]
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> DummyKernelDistribution:
         train_inputs = list(self.train_inputs) if self.train_inputs is not None else []
         inputs = [arg.unsqueeze(-1) if arg.ndimension() == 1 else arg for arg in args]
 
