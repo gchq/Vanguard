@@ -69,7 +69,7 @@ class KernelConversionTests(unittest.TestCase):
         self.assertEqual(gp.hyperparameter_collection.sample_tensor.shape, torch.Size([N_MC_SAMPLES, 1]))
 
 
-class TrainingTests:
+class TrainingTests(unittest.TestCase):
     """
     Basic tests for an hierarchical controller and BayesianHyperparameters decorators.
     """
