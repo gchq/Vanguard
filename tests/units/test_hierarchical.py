@@ -78,7 +78,7 @@ class TrainingTests:
         gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel,
                                    dataset.train_y_std)
         gp.fit(10)
-        self.assertNotEquals(gp.kernel.raw_outputscale.item(), 0.)
+        self.assertNotEqual(gp.kernel.raw_outputscale.item(), 0.)
 
     def test_posterior_does_not_fail(self):
         dataset = SyntheticDataset()
@@ -96,7 +96,7 @@ class TrainingTests:
         gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel,
                                    dataset.train_y_std, kernel_kwargs={"ard_num_dims": 2})
         gp.fit(10)
-        self.assertNotEquals(gp.kernel.raw_outputscale.item(), 0.)
+        self.assertNotEqual(gp.kernel.raw_outputscale.item(), 0.)
 
     def test_2d_posterior_does_not_fail(self):
         dataset = MultidimensionalSyntheticDataset()

@@ -3,6 +3,11 @@ Contains the HyperparameterCollection class.
 """
 from gpytorch.distributions import MultivariateNormal
 import torch
+from typing import Any, Iterator, List, Tuple, Type, TypeVar
+
+HyperparameterType = TypeVar('HyperparameterType', bound='vanguard.hierarchical.base.BaseHierarchicalHyperparameters')
+ModuleType = TypeVar('ModuleType', bound='gpytorch.module.Module')
+VariationalDistributionType = TypeVar('VariationalDistributionType', bound='gpytorch.variational._VariationalDistribution')
 
 
 class HyperparameterCollection:
@@ -13,13 +18,13 @@ class HyperparameterCollection:
     so that they can be replaced by batches of parameters representing samples
     from a distribution over those hyperparameters.
     """
-    def __init__(self, module_hyperparameter_pairs, sample_shape, variational_distribution_class):
+    def __init__(self, module_hyperparameter_pairs: List[Tuple], sample_shape: torch.Size, variational_distribution_class: VariationalDistributionType):
         """
         Initialise self.
 
-        :param list[tuple] module_hyperparameter_pairs: A list of (module, hyperparameter) pairs.
-        :param torch.Size sample_shape: The shape of the sample tensor.
-        :param gpytorch.variational._VariationalDistribution variational_distribution_class: The variational
+        :param module_hyperparameter_pairs: A list of (module, hyperparameter) pairs.
+        :param sample_shape: The shape of the sample tensor.
+        :param variational_distribution_class: The variational
             distribution to use for the raw hyperparameters' posterior.
         """
         self.sample_shape = sample_shape
@@ -46,18 +51,14 @@ class HyperparameterCollection:
         self.prior_mean.requires_grad = False
         self.prior_variance.requires_grad = False
 
-    def sample_and_update(self):
+    def sample_and_update(self) -> None:
         """Sample from the collection, and update the hyperparameters."""
         self._sample()
         for owner_module, hyperparameter in self.module_hyperparameter_pairs:
             self._update_hyperparameter_value(owner_module, hyperparameter)
 
-    def kl_term(self):
-        """
-        Compute the KL divergence term in the ELBO.
-
-        :rtype: torch.Tensor
-        """
+    def kl_term(self) -> torch.Tensor:
+        """Compute the KL divergence term in the ELBO."""
         mu = self.variational_distribution.variational_mean
         sigma = self.variational_distribution().covariance_matrix
 
@@ -72,12 +73,12 @@ class HyperparameterCollection:
 
         return (trace_term + mean_term + det_term - mu.shape[0]) / 2
 
-    def _sample(self):
+    def _sample(self) -> None:
         """Sample from the collection."""
         distribution = self.variational_distribution()
         self.sample_tensor = distribution.rsample(self.sample_shape)
 
-    def _initialise_variational_parameters_and_constants(self):
+    def _initialise_variational_parameters_and_constants(self) -> None:
         """Infer an index into the sample tensor for each hyperparameter, and initialise accordingly."""
         variational_index = 0
 
@@ -96,7 +97,7 @@ class HyperparameterCollection:
 
             variational_index += index_size
 
-    def _parameter_index_size(self, hyperparameter):
+    def _parameter_index_size(self, hyperparameter: HyperparameterType) -> int:
         """
         Get the size of the index into the sample tensor corresponding to the hyperparameter.
 
@@ -106,13 +107,13 @@ class HyperparameterCollection:
         """
         return hyperparameter.numel() // self.sample_shape[0]
 
-    def _update_hyperparameter_value(self, owner_module, hyperparameter):
+    def _update_hyperparameter_value(self, owner_module: ModuleType, hyperparameter: HyperparameterType) -> None:
         """Update the value of a hyperparameter within its owner module."""
         index = self._hyperparameter_to_index[(owner_module, hyperparameter.raw_name)]
         sliced_tensor = self.sample_tensor[index].reshape(hyperparameter.raw_shape)
         setattr(owner_module, hyperparameter.raw_name, sliced_tensor)
 
-    def _delete_point_estimate_hyperparameters(self):
+    def _delete_point_estimate_hyperparameters(self) -> None:
         for owner_module, hyperparameter in self.module_hyperparameter_pairs:
             try:
                 delattr(owner_module, hyperparameter.raw_name)
@@ -128,11 +129,11 @@ class OnePointHyperparameterCollection:
     the representation of the hyperparameters as a single combined tensor.
     It also manages the prior placed over the hyperparameters.
     """
-    def __init__(self, module_hyperparameter_pairs):
+    def __init__(self, module_hyperparameter_pairs: List[Tuple[ModuleType, HyperparameterType]]):
         """
         Initialise self.
 
-        :param list[tuple] module_hyperparameter_pairs: A list of (module, hyperparameter) pairs.
+        :param module_hyperparameter_pairs: A list of (module, hyperparameter) pairs.
         """
         self.module_hyperparameter_pairs = module_hyperparameter_pairs
 
@@ -153,14 +154,14 @@ class OnePointHyperparameterCollection:
         self.prior = MultivariateNormal(self.prior_mean, prior_covariance_matrix)
         self.log_partition_function = self.prior.log_prob(self.prior_mean)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         return (getattr(module, hyperparameter.raw_name) for module, hyperparameter in self.module_hyperparameter_pairs)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.module_hyperparameter_pairs)
 
     @property
-    def hyperparameter_tensor(self):
+    def hyperparameter_tensor(self) -> torch.Tensor:
         tensor = torch.zeros(self.hyperparameter_dimension)
         for owner_module, hyperparameter in self.module_hyperparameter_pairs:
             index = self._hyperparameter_to_index[(owner_module, hyperparameter.raw_name)]
@@ -168,7 +169,7 @@ class OnePointHyperparameterCollection:
         return tensor
 
     @hyperparameter_tensor.setter
-    def hyperparameter_tensor(self, value):
+    def hyperparameter_tensor(self, value) -> None:
         for owner_module, hyperparameter in self.module_hyperparameter_pairs:
             index = self._hyperparameter_to_index[(owner_module, hyperparameter.raw_name)]
             shape = getattr(owner_module, hyperparameter.raw_name).shape
@@ -178,18 +179,16 @@ class OnePointHyperparameterCollection:
                 delattr(owner_module, hyperparameter.raw_name)
                 setattr(owner_module, hyperparameter.raw_name, value[index].reshape(shape))
 
-    def log_prior_term(self):
+    def log_prior_term(self) -> torch.Tensor:
         """
         Compute the log un-normalised prior density.
 
         The partition function has in principle no effect on the optimisation
         but can skew the loss values unhelpfully, so we remove it.
-
-        :rtype: torch.Tensor
         """
         return self.prior.log_prob(self.hyperparameter_tensor) - self.log_partition_function
 
-    def _initialise_hyperparameter_indices(self):
+    def _initialise_hyperparameter_indices(self) -> None:
         """Infer an index into the sample tensor for each hyperparameter, and initialise accordingly."""
         variational_index = 0
 
@@ -206,7 +205,7 @@ class OnePointHyperparameterCollection:
 
             variational_index += index_size
 
-    def _parameter_index_size(self, hyperparameter):
+    def _parameter_index_size(self, hyperparameter: HyperparameterType) -> int:
         """
         Get the size of the index into the sample tensor corresponding to the hyperparameter.
 
