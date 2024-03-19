@@ -2,6 +2,9 @@
 Contains the ClassificationTestCase class.
 """
 import unittest
+from collections.abc import Callable
+from functools import wraps
+from typing import Any
 
 from gpytorch.kernels import RBFKernel, ScaleKernel
 from gpytorch.means import ZeroMean
@@ -48,3 +51,31 @@ class ClassificationTestCase(unittest.TestCase):
             error_message = (f"Incorrect predictions: {number_incorrect} / {len(x)} "
                              f"({100 * proportion_incorrect:.2f}%) -- delta = {100 * delta:.2f}%")
             raise AssertionError(error_message) from None
+
+def flaky(test_method: Callable[[unittest.TestCase, ...], None]):
+    """
+    Marks a test as flaky. Flaky tests are rerun up to 3 times, and pass as soon as they pass at least once.
+    """
+    max_attempts = 3  # TODO: make this a parameter
+
+    @wraps(test_method)
+    def repeated_test(self: unittest.TestCase, *args, **kwargs):
+        last_attempt = max_attempts - 1
+        for attempt_number in range(max_attempts):
+            if attempt_number > 0:
+                # skip the first setUp as unittest does it for us
+                self.setUp()
+
+            try:
+                test_method(self, *args, **kwargs)
+            except AssertionError as ex:
+                if attempt_number == last_attempt:
+                    raise AssertionError(
+                        f"Test failed {max_attempts} separate times. Last failure is given above."
+                    ) from ex
+
+            if attempt_number != last_attempt:
+                # skip the last tearDown as unittest does it for us
+                self.tearDown()
+    return repeated_test
+

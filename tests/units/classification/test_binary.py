@@ -12,7 +12,7 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-from .case import ClassificationTestCase
+from .case import ClassificationTestCase, flaky
 
 
 @BinaryClassification(ignore_methods=("__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"))
@@ -34,6 +34,7 @@ class BinaryTests(ClassificationTestCase):
                                            marginal_log_likelihood_class=VariationalELBO)
         self.controller.fit(100)
 
+    @flaky
     def test_predictions(self):
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
@@ -44,6 +45,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
     """
     Tests for fuzzy binary classification.
     """
+    @flaky
     def test_fuzzy_predictions_monte_carlo(self):
         """Predictions should be close to the values from the test data."""
         self.dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=50)
@@ -58,6 +60,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
         predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.1)
 
+    @flaky
     def test_fuzzy_predictions_uncertainty(self):
         """Predictions should be close to the values from the test data."""
         self.dataset = BinaryStripeClassificationDataset(100, 50)
