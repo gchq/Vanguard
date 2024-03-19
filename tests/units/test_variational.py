@@ -20,9 +20,10 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the decorator.
     """
-    @unittest.expectedFailure  # TODO
     def test_bad_marginal_log_likelihood(self):
-        """Should raise a ValueError."""
+        """
+        Ensure that the underlying TypeError is converted to a ValueError.
+        """
         dataset = SyntheticDataset()
         with self.assertRaises(ValueError):
             VariationalGPController(dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std,

@@ -113,10 +113,10 @@ class VariationalInference(Decorator):
                     super().__init__(train_x=train_x, train_y=train_y, gp_kwargs=gp_kwargs, mll_kwargs=mll_kwargs,
                                      **all_parameters_as_kwargs)
                 except TypeError as error:
-                    if str(error) == "__init__() got an unexpected keyword argument 'num_data'":
+                    if "__init__() got an unexpected keyword argument 'num_data'" in str(error):
                         raise ValueError("The class passed to ``marginal_log_likelihood_class`` must take a "
                                          "``num_data`` class:`int` argument since we run "
-                                         "variational inference with SGD.")
+                                         "variational inference with SGD.") from error
                     else:
                         raise
 
