@@ -1,10 +1,10 @@
 """
 Contains the ClassificationTestCase class.
 """
+from __future__ import annotations
 import unittest
 from collections.abc import Callable
 from functools import wraps
-from typing import Any
 
 from gpytorch.kernels import RBFKernel, ScaleKernel
 from gpytorch.means import ZeroMean
