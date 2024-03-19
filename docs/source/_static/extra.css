@@ -1,0 +1,52 @@
+.wy-side-nav-search > a > img.logo {
+    filter: drop-shadow(1px 1px 1px white) drop-shadow(-1px -1px 1px white);
+}
+
+.wy-side-nav-search > a {
+    margin-bottom: 0;
+}
+
+.wy-side-nav-search > div[role=search] {
+    padding-top: 20px;
+}
+
+.wy-side-nav-search>div.version {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.wy-breadcrumbs li {
+    display: inline-block;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+#contributors > a > img {
+    border-radius: 50%;
+}
+
+.wy-nav-content {
+    max-width: 850px;
+}
+
+blockquote {
+  background: #f3f3f3;
+  border-left: 5px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+}
+
+blockquote p {
+  display: inline;
+}
+
+.rst-versions.shift-up {
+  overflow-y: inherit;
+}
+
+div.citation {
+    grid-template-columns: minmax(20%,auto) auto minmax(0.65rem,auto) minmax(40%,95%) !important;
+}

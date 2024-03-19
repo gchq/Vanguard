@@ -3,7 +3,7 @@ Keep track of loss and other metrics when training.
 
 Vanguard supports a number of metrics pre-attached and tracked to all
 controller classes. These are calculated per iteration by the
-:py:class:`MetricsTracker` class.
+:class:`MetricsTracker` class.
 """
 from contextlib import contextmanager
 import itertools
@@ -99,7 +99,7 @@ class MetricsTracker:
         Each metric in the tracker will be run on the arguments of this method,
         and then stored for future reference. Iterations do not need to be passed.
         Additional information passed as keyword arguments can be displayed to
-        the user when combined with :py:meth:`print_metrics` and a
+        the user when combined with :meth:`print_metrics` and a
         customised format string.
 
         :param float loss_value: The loss.
@@ -129,7 +129,7 @@ class MetricsTracker:
         :param int every: How often to print the output. Does not start on the
             first iteration. Defaults to 1 (print always).
         :param str,None format_string: Used to format the output. Keys passed here
-            must match with information passed to the :py:meth:`run_metrics` method.
+            must match with information passed to the :meth:`run_metrics` method.
             If None, all metrics will be printed.
         """
         if format_string is None:

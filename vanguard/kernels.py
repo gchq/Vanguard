@@ -1,5 +1,5 @@
 """
-Vanguard includes :py:class:`gpytorch.kernels.Kernel` subclasses which are recommended for use in controllers.
+Vanguard includes :class:`gpytorch.kernels.Kernel` subclasses which are recommended for use in controllers.
 """
 from gpytorch import constraints, kernels
 import torch
