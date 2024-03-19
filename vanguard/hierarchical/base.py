@@ -1,15 +1,19 @@
 """
 Contains the BaseHierarchicalHyperparameters decorator.
 """
+from __future__ import annotations
 import warnings
 
 from gpytorch.kernels import ScaleKernel
+from numpy.typing import ArrayLike
 import torch
+from typing import Iterable, Type, TypeVar
 
 from ..base import GPController
 from ..decoratorutils import Decorator, wraps_class
 from ..warnings import _JITTER_WARNING, NumericalWarning
 
+T = TypeVar('T')
 
 class BaseHierarchicalHyperparameters(Decorator):
     """
@@ -19,7 +23,7 @@ class BaseHierarchicalHyperparameters(Decorator):
     :py:class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
     for Bayesian inference. The remaining hyperparameters will be inferred as point estimates.
     """
-    def __init__(self, num_mc_samples=100, **kwargs):
+    def __init__(self, num_mc_samples: int = 100, **kwargs):
         """
         Initialise self.
 
@@ -30,19 +34,19 @@ class BaseHierarchicalHyperparameters(Decorator):
         self.sample_shape = torch.Size([num_mc_samples])
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[T]) -> Type[T]:
         decorator = self
 
         @wraps_class(cls)
         class InnerClass(cls):
             @classmethod
-            def new(cls, instance, **kwargs):
+            def new(cls, instance: Type[T], **kwargs):
                 """Make sure that the hyperparameter collection is copied over."""
                 new_instance = super().new(instance, **kwargs)
                 new_instance.hyperparameter_collection = instance.hyperparameter_collection
                 return new_instance
 
-            def _get_posterior_over_point(self, x):
+            def _get_posterior_over_point(self, x: ArrayLike[float]):
                 """
                 Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
 
