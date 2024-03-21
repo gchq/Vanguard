@@ -10,7 +10,7 @@ import gpytorch
 from gpytorch.utils.warnings import GPInputWarning
 import numpy as np
 import torch
-from numpy.typing import NDArray, ArrayLike
+from numpy.typing import NDArray
 
 from ..base import GPController
 from ..base.posteriors import Posterior
@@ -22,8 +22,8 @@ from .partitioners import KMeansPartitioner, KMedoidsPartitioner, BasePartitione
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
 
-TController = TypeVar("TController", bound=GPController)
-class Distributed(TopMostDecorator, Generic[TController]):
+ControllerT = TypeVar("ControllerT", bound=GPController)
+class Distributed(TopMostDecorator, Generic[ControllerT]):
     """
     Uses multiple controller classes to aggregate predictions.
 
@@ -43,7 +43,7 @@ class Distributed(TopMostDecorator, Generic[TController]):
     def __init__(self,
                  n_experts: int = 3,
                  subset_fraction: float = 0.1,
-                 seed: int = 42,
+                 seed: int | None = 42,
                  aggregator_class: type[BaseAggregator] = RBCMAggregator,
                  partitioner_class: type[BasePartitioner] = KMeansPartitioner,
                  **kwargs):
@@ -74,7 +74,7 @@ class Distributed(TopMostDecorator, Generic[TController]):
         self.partitioner_kwargs = kwargs.pop("partitioner_kwargs", {})
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: type[TController]) -> type[TController]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
@@ -106,7 +106,7 @@ class Distributed(TopMostDecorator, Generic[TController]):
                 self.partitioner = partitioner_class(train_x=self._full_train_x, n_experts=decorator.n_experts,
                                                      communication=communications_expert, **partitioner_kwargs)
 
-                self._expert_controllers: list[TController] = []
+                self._expert_controllers: list[ControllerT] = []
 
                 train_x_subset, train_y_subset, y_std_subset = _create_subset(self._full_train_x,
                                                                               self._full_train_y,
@@ -147,18 +147,18 @@ class Distributed(TopMostDecorator, Generic[TController]):
                         losses.append(loss.detach().cpu().item())
                 return losses
 
-            def posterior_over_point(self, x: ArrayLike[float]) -> Posterior:
+            def posterior_over_point(self, x: NDArray[np.floating] | torch.Tensor) -> Posterior:
                 """Aggregate expert posteriors."""
                 expert_posteriors = (expert.posterior_over_point(x) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
-            def posterior_over_fuzzy_point(self, x: ArrayLike[float], x_std: float) -> Posterior:
+            def posterior_over_fuzzy_point(self, x: NDArray[np.floating] | torch.Tensor, x_std: float) -> Posterior:
                 """Aggregate expert fuzzy posteriors."""
                 expert_posteriors = (expert.posterior_over_fuzzy_point(x, x_std) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
             def _aggregate_expert_posteriors(self,
-                                             x: torch.Tensor,
+                                             x: NDArray[np.floating] | torch.Tensor,
                                              expert_posteriors: Iterable[Posterior]
                                              ) -> Posterior:
                 """
@@ -177,7 +177,7 @@ class Distributed(TopMostDecorator, Generic[TController]):
                 aggregated_posterior = self.posterior_class(aggregated_distribution)
                 return aggregated_posterior
 
-            def _create_expert_controller(self, subset_indices) -> TController:
+            def _create_expert_controller(self, subset_indices) -> ControllerT:
                 """Create an expert controller with respect to a subset of the input data."""
                 train_x_subset, train_y_subset = self._full_train_x[subset_indices], self._full_train_y[subset_indices]
                 try:
@@ -194,7 +194,7 @@ class Distributed(TopMostDecorator, Generic[TController]):
                 return expect_controller
 
             def _aggregate_expert_predictions(self,
-                                              x: ArrayLike,
+                                              x: NDArray[np.floating] | torch.Tensor,
                                               means_and_covars: list[tuple[torch.Tensor, torch.Tensor]]
                                               ) -> tuple[torch.Tensor, torch.Tensor]:
                 """

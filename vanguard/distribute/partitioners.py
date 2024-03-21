@@ -19,13 +19,12 @@ import torch
 
 
 # TODO: should this be an abstract base class?
-# TODO: should we demand that train_x has a specific dtype (e.g. floats)?
 # TODO: Should we make BasePartitioner generic in the NDArray dtype?
 class BasePartitioner:
     """
     Generate a partition over index space using various methods. All partitioners should inherit from this class.
     """
-    def __init__(self, train_x: NDArray, n_experts: int = 3, communication: bool = False, seed: int = 42):
+    def __init__(self, train_x: NDArray[np.floating], n_experts: int = 3, communication: bool = False, seed: int | None = 42):
         """
         Initialise self.
 
@@ -156,11 +155,11 @@ class KMedoidsPartitioner(BasePartitioner):
     Create a partition using KMedoids with similarity defined by the kernel.
     """
     def __init__(self,
-                 train_x: NDArray,
+                 train_x: NDArray[np.floating],
                  kernel: gpytorch.kernels.Kernel,
                  n_experts: int = 2,
                  communication: bool = False,
-                 seed: int = 42
+                 seed: int | None = 42
                  ):
         """
         Initialise self.
