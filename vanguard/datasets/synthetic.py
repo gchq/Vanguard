@@ -4,16 +4,17 @@ Synthetic data is particularly useful when running tests, as the data can be spe
 from __future__ import annotations
 
 from collections.abc import Iterable, Callable
-from typing import TypedDict, Unpack
+from typing import TypedDict
+from typing_extensions import Unpack
 
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
 
 from .basedataset import Dataset
 
 
-def simple_f(x: ArrayLike[np.floating]) -> ArrayLike[np.floating]:
+def simple_f(x: NDArray[np.floating]) -> NDArray[np.floating]:
     r"""
     Map values through a simple equation.
 
@@ -23,7 +24,7 @@ def simple_f(x: ArrayLike[np.floating]) -> ArrayLike[np.floating]:
     return np.sin(2 * np.pi * x)
 
 
-def complicated_f(x: ArrayLike[np.floating]) -> ArrayLike[np.floating]:
+def complicated_f(x: NDArray[np.floating]) -> NDArray[np.floating]:
     r"""
     Map values through a complicated equation.
 
@@ -33,7 +34,7 @@ def complicated_f(x: ArrayLike[np.floating]) -> ArrayLike[np.floating]:
     return -x ** 3 / 2 + x * simple_f(x) ** 2
 
 
-def very_complicated_f(x: ArrayLike[np.floating]) -> ArrayLike[np.floating]:
+def very_complicated_f(x: NDArray[np.floating]) -> NDArray[np.floating]:
     r"""
     Map values through a *very* complicated equation.
 
@@ -48,10 +49,10 @@ class SyntheticDataset(Dataset):
     Synthetic data with homoskedastic noise for testing.
     """
 
-    functions: list[Callable[[ArrayLike[np.floating]], ArrayLike[np.floating]]]
+    functions: list[Callable[[NDArray[np.floating]], NDArray[np.floating]]]
 
     def __init__(self,
-                 functions: Iterable[Callable[[ArrayLike[np.floating]], ArrayLike[np.floating]]] = (simple_f,),
+                 functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
                  output_noise: float = 0.1,
                  train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
                  test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
@@ -133,7 +134,7 @@ class _SyntheticDataParams(TypedDict, total=False):
 class MultidimensionalSyntheticDataset(Dataset):
     """Synthetic data with multiple input dimensions."""
     def __init__(self,
-                 functions: Iterable[Callable[[ArrayLike[np.floating]], ArrayLike[np.floating]]] = (simple_f, complicated_f),
+                 functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f, complicated_f),
                  **kwargs: Unpack[_SyntheticDataParams]
                  ):
         """
@@ -157,8 +158,6 @@ class MultidimensionalSyntheticDataset(Dataset):
                          kwargs.pop("significance", 0.025))
 
 
-dd = MultidimensionalSyntheticDataset((simple_f,), output=23)
-
 class HeteroskedasticSyntheticDataset(SyntheticDataset):
     """
     Synthetic data with heteroskedastic noise for testing.
@@ -167,7 +166,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
     on the value of the ``output_noise`` parameter.
     """
     def __init__(self,
-                 functions: Iterable[Callable[[ArrayLike[np.floating]], ArrayLike[np.floating]]] = (simple_f,),
+                 functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
                  output_noise: float = 0.1,
                  train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
                  test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
@@ -199,10 +198,10 @@ class HigherRankSyntheticDataset(Dataset):
     Synthetic data with rank 2 input features. In this case each x is a 2x2 matrix.
     """
 
-    functions: list[Callable[[ArrayLike[np.floating]], ArrayLike[np.floating]]]
+    functions: list[Callable[[NDArray[np.floating]], NDArray[np.floating]]]
 
     def __init__(self,
-                 functions: Iterable[Callable[[ArrayLike[np.floating]], ArrayLike[np.floating]]] = (simple_f,),
+                 functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
                  output_noise: float = 0.1,
                  train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
                  test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
