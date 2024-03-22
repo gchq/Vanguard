@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 from contextlib import contextmanager
+from typing import Generator
 
 import numpy as np
 import urllib3
@@ -101,7 +102,7 @@ class FileDataset(Dataset):
 
     @staticmethod
     @contextmanager
-    def _large_file_downloader(url) -> BaseHTTPResponse:
+    def _large_file_downloader(url) -> Generator[BaseHTTPResponse, None, None]:
         """Download a file within a context manager."""
         http = urllib3.PoolManager()
         request = http.request("GET", url, preload_content=False)
