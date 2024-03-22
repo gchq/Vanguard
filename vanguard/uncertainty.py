@@ -20,7 +20,7 @@ class GaussianUncertaintyGPController(GPController):
     Allows the user to pass the standard deviation of the input values.
 
     Base class for implementing the HNIGP of [CITATION NEEDED]_. This is a generalised version of the NIGP method in
-    [Mchutchon11]_ and our implementation here exploits :py:mod:`torch.autograd` to circumvent any by-hand
+    :cite:`Mchutchon11` and our implementation here exploits mod:`torch.autograd` to circumvent any by-hand
     calculations of GP derivatives.
     """
     def __init__(self, train_x, train_x_std, train_y, y_std, kernel_class, mean_class=gpytorch.means.ConstantMean,
@@ -39,23 +39,23 @@ class GaussianUncertaintyGPController(GPController):
             * None: heteroskedastic (among input dimension) std dev is inferred from given noisy inputs.
 
         :param array_like[float] train_y: (n_samples,) or (n_samples, 1) The responsive values.
-        :param type kernel_class: An uninstantiated subclass of :py:class:`gpytorch.kernels.Kernel`.
-        :param type mean_class: An uninstantiated subclass of :py:class:`gpytorch.means.Mean` to use in the prior GP.
-                Defaults to :py:class:`gpytorch.means.ConstantMean`.
+        :param type kernel_class: An uninstantiated subclass of :class:`gpytorch.kernels.Kernel`.
+        :param type mean_class: An uninstantiated subclass of :class:`gpytorch.means.Mean` to use in the prior GP.
+                Defaults to :class:`gpytorch.means.ConstantMean`.
         :param array_like[float],float y_std: The observation noise standard deviation:
 
             * *array_like[float]* (n_samples,): known heteroskedastic noise,
             * *float*: known homoskedastic noise assumed.
 
-        :param type gp_model_class: An uninstantiated subclass of a GP model from :py:mod:`gpytorch.models`.
-                The default is :py:class:`vanguard.models.ExactGPModel`.
-        :param type likelihood_class: An uninstantiated subclass of :py:class:`gpytorch.likelihoods.Likelihood`.
-                The default is :py:class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
+        :param type gp_model_class: An uninstantiated subclass of a GP model from mod:`gpytorch.models`.
+                The default is :class:`vanguard.models.ExactGPModel`.
+        :param type likelihood_class: An uninstantiated subclass of :class:`gpytorch.likelihoods.Likelihood`.
+                The default is :class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
         :param type marginal_log_likelihood_class: An uninstantiated subclass of of an MLL from
-                :py:mod:`gpytorch.mlls`. The default is :py:class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
-        :param type optimiser_class: An uninstantiated :py:class:`torch.optim.Optimizer` class used for
-                gradient-based learning of hyperparameters. The default is :py:class:`torch.optim.Adam`.
-        :param kwargs: For a complete list, see :py:class:`~vanguard.base.gpcontroller.GPController`.
+                mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
+        :param type optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
+                gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
+        :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(train_x=train_x, train_y=train_y, kernel_class=kernel_class, mean_class=mean_class,
                          y_std=y_std, likelihood_class=likelihood_class,
@@ -158,7 +158,7 @@ class GaussianUncertaintyGPController(GPController):
 
     def _get_additive_grad_noise(self, x, x_var):
         """
-        Use :py:mod:`torch.autograd` to find the gradient of the posterior mean and derived additive covariance term.
+        Use mod:`torch.autograd` to find the gradient of the posterior mean and derived additive covariance term.
 
         :param torch.Tensor x: (n_samples, self.dim) The input samples at which to compute the gradient.
         :param torch.Tensor x_var: Input dimension variances:
@@ -202,7 +202,7 @@ class GaussianUncertaintyGPController(GPController):
         Obtain posterior predictive mean and covariance at a point with variance.
 
         .. warning:
-            The ``n_features`` must match with :py:attr:`self.dim`.
+            The ``n_features`` must match with :attr:`self.dim`.
 
         :param array_like[float] x: (n_preds, n_features) The predictive inputs.
         :param array_like[float],float x_std: The input noise standard deviations:

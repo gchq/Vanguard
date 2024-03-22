@@ -1,7 +1,10 @@
 """
 Contains the CategoricalClassification decorator.
 """
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
@@ -10,7 +13,7 @@ from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 from vanguard.base.posteriors.posterior import Posterior
 
-from typing import TypeVar, Type, NoReturn
+from typing import TypeVar, Type
 
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -26,8 +29,8 @@ class CategoricalClassification(Decorator):
         Passing ``y_std=0`` is suggested.
 
     .. note::
-        The :py:class:`~vanguard.variational.VariationalInference` and
-        :py:class:`~vanguard.multitask.decorator.Multitask` decorators are required for this decorator to be applied.
+        The :class:`~vanguard.variational.VariationalInference` and
+        :class:`~vanguard.multitask.decorator.Multitask` decorators are required for this decorator to be applied.
 
     :Example:
         >>> from gpytorch.likelihoods import BernoulliLikelihood
@@ -61,7 +64,7 @@ class CategoricalClassification(Decorator):
         Initialise self.
 
         :param num_classes: The number of target classes.
-        :param kwargs: Keyword arguments passed to :py:class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference, Multitask}, **kwargs)
         self.num_classes = num_classes
@@ -85,18 +88,20 @@ class CategoricalClassification(Decorator):
                 super().__init__(likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs,
                                  **all_parameters_as_kwargs)
 
-            def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_points(self, x: float | numpy.typing.NDArray[np.floating]) -> tuple[numpy.typing.NDArray[np.integer], float | numpy.typing.NDArray[np.floating]]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
-            def classify_fuzzy_points(self, x: np.typing.ArrayLike[float][float], x_std: np.typing.ArrayLike[float][float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_fuzzy_points(
+                    self, x: float | numpy.typing.NDArray[[np.floating, np.floating]], x_std: float | numpy.typing.NDArray[[np.floating, np.floating]]
+            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             @staticmethod
-            def _get_predictions_from_posterior(posterior: Posterior) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def _get_predictions_from_posterior(posterior: Posterior) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get predictions from a posterior distribution.
 

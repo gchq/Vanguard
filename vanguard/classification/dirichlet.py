@@ -1,10 +1,13 @@
 """
 Contains the DirichletMulticlassClassification decorator.
 """
+from __future__ import annotations
+
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 import torch
 import gpytorch
 import numpy as np
+import numpy.typing
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
@@ -23,7 +26,7 @@ class DirichletMulticlassClassification(Decorator):
     Implements multiclass Gaussian process classification using a Dirichlet transformation.
 
     This decorator allows multiclass classification with exact gaussian processes.
-    The implementation is based on a GPyTorch example notebook [Maddox21]_ and the paper [Milios18]_.
+    The implementation is based on a GPyTorch example notebook :cite:`Maddox21` and the paper :cite:`Milios18`.
 
     :Example:
         >>> from gpytorch.kernels import RBFKernel, ScaleKernel
@@ -125,7 +128,7 @@ class DirichletMulticlassClassification(Decorator):
 
                         Return a representative distribution of the posterior, with 1-dimensional
                         mean and 2-dimensional covariance. In this case, return a distribution
-                        based on the mean and covariance returned by :py:meth:`_tensor_prediction`.
+                        based on the mean and covariance returned by :meth:`_tensor_prediction`.
                         """
                         mean, covar = self._tensor_prediction()
                         return self._add_jitter(self._make_multivariate_normal(mean.T, covar))
@@ -136,13 +139,13 @@ class DirichletMulticlassClassification(Decorator):
                 super().__init__(train_y=transformed_targets.detach().cpu().numpy(), likelihood_class=likelihood_class,
                                  likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs)
 
-            def classify_points(self, x: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_points(self, x: float | numpy.typing.NDArray[np.floating]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify points.
 
                 .. note::
                     The predictions are generated from the
-                    :py:attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
+                    :attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_point(x)
@@ -153,13 +156,15 @@ class DirichletMulticlassClassification(Decorator):
                 predictions = detached_probs.argmax(axis=1)
                 return predictions, detached_probs.max(axis=1)
 
-            def classify_fuzzy_points(self, x: np.typing.ArrayLike[float], x_std: np.typing.ArrayLike[float]) -> tuple[np.ndarray[int], np.ndarray[float]]:
+            def classify_fuzzy_points(
+                    self, x: float | numpy.typing.NDArray[np.floating], x_std: float | numpy.typing.NDArray[np.floating]
+            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify fuzzy points.
 
                 .. note::
                     The predictions are generated from the
-                    :py:attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
+                    :attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_fuzzy_point(x, x_std)
@@ -175,7 +180,7 @@ class DirichletMulticlassClassification(Decorator):
                 return super()._loss(train_x, train_y).sum()
 
             @staticmethod
-            def _noise_transform(gamma: np.typing.ArrayLike[float]) -> torch.Tensor:
+            def _noise_transform(gamma: float | numpy.typing.NDArray[np.floating]) -> torch.Tensor:
                 return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze().T
 
             @staticmethod

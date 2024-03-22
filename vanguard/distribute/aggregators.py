@@ -1,5 +1,5 @@
 """
-A suite of aggregators to be used with the :py:class:`~vanguard.distribute.decorator.Distributed` decorator.
+A suite of aggregators to be used with the class:`~vanguard.distribute.decorator.Distributed` decorator.
 
 These are responsible for combining the predictions of several independent expert controllers.
 """
@@ -55,8 +55,8 @@ class BaseAggregator:
 
         .. note::
             Delta is as defined in [CITATION NEEDED]_ and [CITATION NEEDED]_ (difference in differential entropy between
-            prior and posterior [Deisenroth15]_). ``delta_diff`` and ``delta_val`` are the same in
-            :py:class:`XBCMAggregator`.
+            prior and posterior :cite:`Deisenroth15`). ``delta_diff`` and ``delta_val`` are the same in
+            class:`XBCMAggregator`.
 
         :param torch.Tensor delta_diff: The delta used to determine if correction is applied
                 (proxy for in-vs-out of training data).
@@ -82,7 +82,7 @@ class BaseAggregator:
 
 class POEAggregator(BaseAggregator):
     r"""
-    Implements the Product-of-Experts method of [Deisenroth15]_. Formulae for covariances from [Cao14]_.
+    Implements the Product-of-Experts method of :cite:`Deisenroth15`. Formulae for covariances from :cite:`Cao14`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -121,7 +121,7 @@ class EKPOEAggregator(POEAggregator):
 
 class GPOEAggregator(BaseAggregator):
     r"""
-    Implements the Generalised Product-of-Experts method of [Deisenroth15]_.
+    Implements the Generalised Product-of-Experts method of :cite:`Deisenroth15`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -141,7 +141,7 @@ class GPOEAggregator(BaseAggregator):
 
 class BCMAggregator(BaseAggregator):
     r"""
-    Implements the Bayesian Committee Machine method of [Deisenroth15]_.
+    Implements the Bayesian Committee Machine method of :cite:`Deisenroth15`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -163,7 +163,7 @@ class BCMAggregator(BaseAggregator):
 
 class RBCMAggregator(BaseAggregator):
     r"""
-    Implements the Robust Bayesian Committee Machine method of [Deisenroth15]_.
+    Implements the Robust Bayesian Committee Machine method of :cite:`Deisenroth15`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -187,8 +187,8 @@ class XBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in :py:class:`RBCMAggregator`, but with a correction on \beta.
-    (For further details see :py:meth:`BaseAggregator._beta_correction`.)
+    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
     def aggregate(self):
         delta = 0.5 * (torch.log(self.prior_var) - torch.log(self.variances)).reshape(self.n_experts, -1)
@@ -200,7 +200,7 @@ class XBCMAggregator(BaseAggregator):
 
 class GRBCMAggregator(BaseAggregator):
     r"""
-    Implements the Generalised Robust Bayesian Committee Machine method of [Liu18]_.
+    Implements the Generalised Robust Bayesian Committee Machine method of :cite:`Liu18`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -237,8 +237,8 @@ class XGRBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Generalised Robust Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in :py:class:`RBCMAggregator`, but with a correction on \beta.
-    (For further details see :py:meth:`BaseAggregator._beta_correction`.)
+    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
     def aggregate(self):
         comm_mean = self.means[0]

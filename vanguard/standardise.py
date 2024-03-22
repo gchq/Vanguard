@@ -1,5 +1,5 @@
 """
-The :py:class:`DisableStandardScaling` decorator will disable the default input standard scaling.
+The :class:`DisableStandardScaling` decorator will disable the default input standard scaling.
 """
 from .base import GPController
 from .decoratorutils import Decorator, wraps_class
@@ -31,7 +31,7 @@ class DisableStandardScaling(Decorator):
         """
         Initialise self.
 
-        :param kwargs: Keyword arguments passed to :py:class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
