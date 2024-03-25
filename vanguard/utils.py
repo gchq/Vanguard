@@ -38,7 +38,7 @@ def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.ty
     return np.concatenate([stackable_time_variable, data], axis=-1)
 
 
-def instantiate_with_subset_of_kwargs(cls: type, **kwargs):
+def instantiate_with_subset_of_kwargs(cls, **kwargs):
     """
     Instantiate a class with a kwargs, where some may not be required.
 
