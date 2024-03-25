@@ -1,8 +1,6 @@
 """
 Contains the CategoricalClassification decorator.
 """
-from __future__ import annotations
-
 import numpy as np
 import numpy.typing
 
@@ -13,7 +11,7 @@ from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 from vanguard.base.posteriors.posterior import Posterior
 
-from typing import TypeVar, Type
+from typing import TypeVar, Type, Union
 
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -88,13 +86,15 @@ class CategoricalClassification(Decorator):
                 super().__init__(likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs,
                                  **all_parameters_as_kwargs)
 
-            def classify_points(self, x: float | numpy.typing.NDArray[np.floating]) -> tuple[numpy.typing.NDArray[np.integer], float | numpy.typing.NDArray[np.floating]]:
+            def classify_points(
+                    self, x: Union[float, numpy.typing.NDArray[np.floating]]
+            ) -> tuple[numpy.typing.NDArray[np.integer], Union[float, numpy.typing.NDArray[np.floating]]]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             def classify_fuzzy_points(
-                    self, x: float | numpy.typing.NDArray[[np.floating, np.floating]], x_std: float | numpy.typing.NDArray[[np.floating, np.floating]]
+                    self, x: Union[float, numpy.typing.NDArray[[np.floating, np.floating]]], x_std: Union[float, numpy.typing.NDArray[[np.floating, np.floating]]]
             ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)

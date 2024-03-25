@@ -5,8 +5,6 @@ Vanguard supports a number of metrics pre-attached and tracked to all
 controller classes. These are calculated per iteration by the
 :class:`MetricsTracker` class.
 """
-from __future__ import annotations
-
 from contextlib import contextmanager
 import itertools
 from typing import Callable, TYPE_CHECKING, Optional, Union

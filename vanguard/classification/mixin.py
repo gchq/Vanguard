@@ -8,11 +8,9 @@ will have :meth:`~ClassificationMixin.classify_points` and
 When creating new decorators, include the class:`ClassificationMixin` as a
 mixin for the inner class which will be returned to enable this.
 """
-from __future__ import annotations
-
 import numpy as np
 import numpy.typing
-from typing import NoReturn
+from typing import NoReturn, Union
 
 
 class ClassificationMixin:
@@ -23,7 +21,7 @@ class ClassificationMixin:
     automatically 'closes' the standard posterior methods and adds the framework
     for the :meth:`classify_points` and :meth:`classify_fuzzy_points` methods.
     """
-    def classify_points(self, x: float | numpy.typing.NDArray[np.floating]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+    def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
         """
         Classify points.
 
@@ -36,7 +34,7 @@ class ClassificationMixin:
         raise NotImplementedError
 
     def classify_fuzzy_points(
-            self, x: float | numpy.typing.NDArray[np.floating], x_std: float | numpy.typing.NDArray[np.floating]
+            self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
     ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
         """
         Classify fuzzy points.
@@ -54,18 +52,18 @@ class ClassificationMixin:
         """
         raise NotImplementedError
 
-    def posterior_over_point(self, x: float | numpy.typing.NDArray[np.floating]) -> NoReturn:
+    def posterior_over_point(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> NoReturn:
         """Use :meth:`classify_points` instead."""
         raise TypeError("The 'classify_points' method should be used instead.")
 
-    def posterior_over_fuzzy_point(self, x: float | numpy.typing.NDArray[np.floating], x_std: float | numpy.typing.NDArray[np.floating]) -> NoReturn:
+    def posterior_over_fuzzy_point(self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]) -> NoReturn:
         """Use :meth:`classify_fuzzy_points` instead."""
         raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
 
-    def predictive_likelihood(self, x: float | numpy.typing.NDArray[np.floating]) -> NoReturn:
+    def predictive_likelihood(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> NoReturn:
         """Use :meth:`classify_points` instead."""
         raise TypeError("The 'classify_points' method should be used instead.")
 
-    def fuzzy_predictive_likelihood(self, x: float | numpy.typing.NDArray[np.floating], x_std: float | numpy.typing.NDArray[np.floating]) -> NoReturn:
+    def fuzzy_predictive_likelihood(self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]) -> NoReturn:
         """Use :meth:`classify_fuzzy_points` instead."""
         raise TypeError("The 'classify_fuzzy_points' method should be used instead.")

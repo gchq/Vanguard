@@ -1,8 +1,6 @@
 """
 Contains the Posterior class.
 """
-from __future__ import annotations
-
 import gpytorch
 import numpy as np
 from numpy.typing import ArrayLike

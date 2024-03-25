@@ -1,8 +1,6 @@
 """
 Contains the DirichletMulticlassClassification decorator.
 """
-from __future__ import annotations
-
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 import torch
 import gpytorch
@@ -14,7 +12,7 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from .mixin import ClassificationMixin
 
 from typing_extensions import Self
-from typing import TypeVar, Type
+from typing import TypeVar, Type, Union
 
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -139,7 +137,7 @@ class DirichletMulticlassClassification(Decorator):
                 super().__init__(train_y=transformed_targets.detach().cpu().numpy(), likelihood_class=likelihood_class,
                                  likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs)
 
-            def classify_points(self, x: float | numpy.typing.NDArray[np.floating]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify points.
 
@@ -157,7 +155,7 @@ class DirichletMulticlassClassification(Decorator):
                 return predictions, detached_probs.max(axis=1)
 
             def classify_fuzzy_points(
-                    self, x: float | numpy.typing.NDArray[np.floating], x_std: float | numpy.typing.NDArray[np.floating]
+                    self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
             ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify fuzzy points.
@@ -180,7 +178,7 @@ class DirichletMulticlassClassification(Decorator):
                 return super()._loss(train_x, train_y).sum()
 
             @staticmethod
-            def _noise_transform(gamma: float | numpy.typing.NDArray[np.floating]) -> torch.Tensor:
+            def _noise_transform(gamma: Union[float, numpy.typing.NDArray[np.floating]]) -> torch.Tensor:
                 return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze().T
 
             @staticmethod

@@ -1,8 +1,6 @@
 """
 Contains the MonteCarloPosteriorCollection class.
 """
-from __future__ import annotations
-
 import numpy
 import torch
 from typing import Generator, NoReturn
