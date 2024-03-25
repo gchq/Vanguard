@@ -4,11 +4,9 @@ Base datasets for Vanguard.
 For the ease of the user, Vanguard contains a number of datasets commonly referenced in examples, and used in tests.
 The dataset instances allow for easy access to the training and testing data through attributes.
 """
-from __future__ import annotations
-
 import os
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, Union
 
 import numpy as np
 import urllib3
@@ -22,25 +20,25 @@ class Dataset:
     """
 
     train_x: NDArray[np.floating]
-    train_x_std: float | NDArray[np.floating]
+    train_x_std: Union[float, NDArray[np.floating]]
     train_y: NDArray[np.floating]
-    train_y_std: float | NDArray[np.floating]
+    train_y_std: Union[float, NDArray[np.floating]]
     test_x: NDArray[np.floating]
-    test_x_std: float | NDArray[np.floating]
+    test_x_std: Union[float, NDArray[np.floating]]
     test_y: NDArray[np.floating]
-    test_y_std: float | NDArray[np.floating]
+    test_y_std: Union[float, NDArray[np.floating]]
     significance: float
 
     def __init__(
         self,
         train_x: NDArray[np.floating],
-        train_x_std: float | NDArray[np.floating],
+        train_x_std: Union[float, NDArray[np.floating]],
         train_y: NDArray[np.floating],
-        train_y_std: float | NDArray[np.floating],
+        train_y_std: Union[float, NDArray[np.floating]],
         test_x: NDArray[np.floating],
-        test_x_std: float | NDArray[np.floating],
+        test_x_std: Union[float, NDArray[np.floating]],
         test_y: NDArray[np.floating],
-        test_y_std: float | NDArray[np.floating],
+        test_y_std: Union[float, NDArray[np.floating]],
         significance: float,
     ):
         """

@@ -1,9 +1,8 @@
 """
 The following datasets allow for straightforward experiments with synthetic classification data.
 """
-from __future__ import annotations
-
 import itertools
+from typing import Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -62,7 +61,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         plt.show()
     """
     def __init__(self, num_train_points: int, num_test_points: int, num_classes: int,
-                 covariance_scale: float = 1.0, seed: int | None = None):
+                 covariance_scale: float = 1.0, seed: Optional[int] = None):
         """
         Initialise self.
 
@@ -88,7 +87,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         """Return the training data as a one-hot encoded array."""
         return sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y)
 
-    def plot(self, cmap: str | Colormap = "Set1", alpha: float = 0.5) -> None:
+    def plot(self, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5) -> None:
         """
         Plot the data.
 
@@ -101,7 +100,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         legend = ax.legend(*scatter.legend_elements(), title="Classes")
         ax.add_artist(legend)
 
-    def plot_prediction(self, prediction: NDArray, cmap: str | Colormap = "Set1", alpha: float = 0.5) -> None:
+    def plot_prediction(self, prediction: NDArray, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5) -> None:
         """
         Plot a prediction.
 
@@ -123,7 +122,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         ax.add_artist(legend_incorrect)
         plt.title(f"Proportion correct: {100 * proportion_correct:.2f}%")
 
-    def plot_confusion_matrix(self, prediction: NDArray, cmap: str | Colormap = "OrRd", text_size: str = "xx-large") -> None:
+    def plot_confusion_matrix(self, prediction: NDArray, cmap: Union[str, Colormap] = "OrRd", text_size: str = "xx-large") -> None:
         """
         Plot a confusion matrix based on a specific prediction.
 
@@ -161,7 +160,7 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
                  num_train_points: int,
                  num_test_points: int,
                  covariance_scale: float = 1.0,
-                 seed: int | None = None
+                 seed: Optional[int] = None
                  ):
         """
         Initialise self.

@@ -1,8 +1,6 @@
 """
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
-from __future__ import annotations
-
 from collections.abc import Iterable, Callable
 from typing import TypedDict
 from typing_extensions import Unpack
