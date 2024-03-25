@@ -95,7 +95,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
         return cls()
 
 
-def infinite_tensor_generator(batch_size: int, device: torch.DeviceObjType, *tensor_axis_pairs: tuple[torch.Tensor, int]) -> Generator[torch.Tensor]:
+def infinite_tensor_generator(batch_size: int, device: torch.DeviceObjType, *tensor_axis_pairs: tuple[torch.Tensor, int]) -> Generator[torch.Tensor, None, None]:
     """
     Return a never-ending generator that return random mini-batches of tensors with a shared first dimension.
 
@@ -142,7 +142,7 @@ def infinite_tensor_generator(batch_size: int, device: torch.DeviceObjType, *ten
         yield batch_tensors
 
 
-def generator_append_constant(generator: Generator[tuple], constant: Any) -> Generator[tuple]:
+def generator_append_constant(generator: Generator[tuple, None, None], constant: Any) -> Generator[tuple, None, None]:
     """
     Augment a generator of tuples by appending a fixed item to each tuple.
 
