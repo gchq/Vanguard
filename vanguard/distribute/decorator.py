@@ -4,7 +4,7 @@ Contains the Distributed decorator.
 from __future__ import annotations
 
 import warnings
-from typing import TypeVar, Generic, Iterable
+from typing import TypeVar, Generic, Iterable, Union, Optional
 
 import gpytorch
 from gpytorch.utils.warnings import GPInputWarning
@@ -23,6 +23,8 @@ _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
+
+
 class Distributed(TopMostDecorator, Generic[ControllerT]):
     """
     Uses multiple controller classes to aggregate predictions.
@@ -43,7 +45,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
     def __init__(self,
                  n_experts: int = 3,
                  subset_fraction: float = 0.1,
-                 seed: int | None = 42,
+                 seed: Union[int, None] = 42,
                  aggregator_class: type[BaseAggregator] = RBCMAggregator,
                  partitioner_class: type[BasePartitioner] = KMeansPartitioner,
                  **kwargs):
@@ -90,7 +92,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
                 self._full_train_x: NDArray = all_parameters_as_kwargs.pop("train_x")
                 self._full_train_y: NDArray = all_parameters_as_kwargs.pop("train_y")
-                self._full_y_std: int | float = all_parameters_as_kwargs.pop("y_std")
+                self._full_y_std: Union[int, float] = all_parameters_as_kwargs.pop("y_std")
 
                 if not isinstance(self._full_y_std, (float, int)):
                     raise TypeError(f"The {type(self).__name__} class has been distributed, and can only accept a "
@@ -147,18 +149,18 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                         losses.append(loss.detach().cpu().item())
                 return losses
 
-            def posterior_over_point(self, x: NDArray[np.floating] | torch.Tensor) -> Posterior:
+            def posterior_over_point(self, x: Union[NDArray[np.floating], torch.Tensor]) -> Posterior:
                 """Aggregate expert posteriors."""
                 expert_posteriors = (expert.posterior_over_point(x) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
-            def posterior_over_fuzzy_point(self, x: NDArray[np.floating] | torch.Tensor, x_std: float) -> Posterior:
+            def posterior_over_fuzzy_point(self, x: Union[NDArray[np.floating], torch.Tensor], x_std: float) -> Posterior:
                 """Aggregate expert fuzzy posteriors."""
                 expert_posteriors = (expert.posterior_over_fuzzy_point(x, x_std) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
             def _aggregate_expert_posteriors(self,
-                                             x: NDArray[np.floating] | torch.Tensor,
+                                             x: Union[NDArray[np.floating], torch.Tensor],
                                              expert_posteriors: Iterable[Posterior]
                                              ) -> Posterior:
                 """
@@ -194,7 +196,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 return expect_controller
 
             def _aggregate_expert_predictions(self,
-                                              x: NDArray[np.floating] | torch.Tensor,
+                                              x: Union[NDArray[np.floating], torch.Tensor],
                                               means_and_covars: list[tuple[torch.Tensor, torch.Tensor]]
                                               ) -> tuple[torch.Tensor, torch.Tensor]:
                 """
@@ -231,10 +233,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         return InnerClass
 
 
-def _create_subset(*arrays: NDArray[np.floating] | float,
+def _create_subset(*arrays: Union[NDArray[np.floating], float],
                    subset_fraction: float = 0.1,
-                   seed: int | None = None
-                   ) -> list[NDArray[np.floating] | float]:
+                   seed: Optional[int] = None
+                   ) -> list[Union[NDArray[np.floating], float]]:
     """
     Return subsets of the arrays along the same random indices.
 

@@ -4,7 +4,7 @@ A suite of aggregators to be used with the class:`~vanguard.distribute.decorator
 These are responsible for combining the predictions of several independent expert controllers.
 """
 import torch
-
+from typing import Optional
 
 class BadPriorVarShapeError(ValueError):
     pass
@@ -16,7 +16,7 @@ class BaseAggregator:
 
     All aggregators should inherit from this class.
     """
-    def __init__(self, means: list[torch.Tensor], covars: list[torch.Tensor], prior_var: torch.Tensor | None = None):
+    def __init__(self, means: list[torch.Tensor], covars: list[torch.Tensor], prior_var: Optional[torch.Tensor] = None):
         """
         Initialise self.
 
