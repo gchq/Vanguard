@@ -168,7 +168,7 @@ class BaseGPController:
         self.warn_normalise_y()
 
     @property
-    def dtype(self) -> dtype | None:
+    def dtype(self) -> Union[dtype, None]:
         """Return the default dtype of the controller."""
         return self._default_tensor_type.dtype
 
@@ -446,7 +446,7 @@ class BaseGPController:
     @classmethod
     def set_default_tensor_type(
             cls,
-            tensor_type: ttypes | ttypes_cuda,
+            tensor_type: Union[ttypes, ttypes_cuda],
     ) -> None:
         """
         Set the default tensor type for the class, subsequent subclasses, and external tensors.

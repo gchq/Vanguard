@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import itertools
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:
     from .gpcontroller import BaseGPController
@@ -106,7 +106,7 @@ class MetricsTracker:
     def run_metrics(
             self,
             loss_value: float,
-            controller: BaseGPController | None,
+            controller: Union[BaseGPController, None],
             **additional_info,
     ) -> None:
         """
@@ -141,7 +141,7 @@ class MetricsTracker:
     def print_metrics(
             self,
             every: int = 1,
-            format_string: str | None = None,
+            format_string: Optional[str] = None,
     ) -> None:
         """
         Temporarily enabling printing the metrics within a context manager.
