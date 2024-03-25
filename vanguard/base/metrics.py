@@ -7,10 +7,9 @@ controller classes. These are calculated per iteration by the
 """
 from contextlib import contextmanager
 import itertools
-from typing import Callable, TYPE_CHECKING, Optional, Union
+from typing import Callable, Optional, Union
 
-if TYPE_CHECKING:
-    from .basecontroller import BaseGPController
+from .basecontroller import BaseGPController
 
 
 class MetricsTracker:
