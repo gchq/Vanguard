@@ -5,11 +5,14 @@ Vanguard supports a number of metrics pre-attached and tracked to all
 controller classes. These are calculated per iteration by the
 :class:`MetricsTracker` class.
 """
+from __future__ import annotations
+
 from contextlib import contextmanager
 import itertools
-from typing import Callable, Optional, Union
+from typing import Callable, TYPE_CHECKING, Optional, Union
 
-import basecontroller
+if TYPE_CHECKING:
+    from .basecontroller import BaseGPController
 
 
 class MetricsTracker:
@@ -104,7 +107,7 @@ class MetricsTracker:
     def run_metrics(
             self,
             loss_value: float,
-            controller: Union['basecontroller.BaseGPController', None],
+            controller: Union[BaseGPController, None],
             **additional_info,
     ) -> None:
         """
