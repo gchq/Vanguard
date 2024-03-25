@@ -58,7 +58,7 @@ class Posterior:
     def confidence_interval(
             self,
             alpha: float = 0.05,
-    ) -> Tuple[numpy.typing.NDArray[float], numpy.typing.NDArray[float], numpy.typing.NDArrayndarray[float]]:
+    ) -> Tuple[numpy.typing.NDArray[float], numpy.typing.NDArray[float], numpy.typing.NDArray[float]]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
