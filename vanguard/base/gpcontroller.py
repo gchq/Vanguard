@@ -4,8 +4,8 @@ The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPCon
 import warnings
 
 import torch
-from typing import Optional
-from numpy.typing import ArrayLike
+from typing import Optional, Union
+import numpy.typing
 
 from .basecontroller import BaseGPController
 from ..decoratorutils import Decorator
@@ -130,7 +130,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_point(
             self,
-            x: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.
@@ -142,8 +142,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_fuzzy_point(
             self,
-            x: ArrayLike[float],
-            x_std: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a fuzzy point.
@@ -163,7 +163,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def predictive_likelihood(
             self,
-            x: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -175,8 +175,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def fuzzy_predictive_likelihood(
             self,
-            x: ArrayLike[float],
-            x_std: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.

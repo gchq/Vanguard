@@ -12,7 +12,7 @@ from gpytorch import constraints
 from gpytorch.utils.errors import NanError
 import torch
 from typing import Callable, Generator, Type, Union
-from numpy.typing import ArrayLike
+import numpy.typing
 from numpy import dtype
 
 from . import metrics
@@ -84,11 +84,11 @@ class BaseGPController:
 
     def __init__(
             self,
-            train_x: ArrayLike[float],
-            train_y: ArrayLike[float],
+            train_x: Union[numpy.typing.NDArray[float], float],
+            train_y: Union[numpy.typing.NDArray[float], float],
             kernel_class: Type[gpytorch.kernels.Kernel],
             mean_class: Type[gpytorch.means.Mean],
-            y_std: ArrayLike[float],
+            y_std: Union[numpy.typing.NDArray[float], float],
             likelihood_class: Type[gpytorch.likelihoods.Likelihood],
             marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
             optimiser_class: Type[torch.optim.Optimizer],
@@ -195,7 +195,7 @@ class BaseGPController:
 
     def _predictive_likelihood(
             self,
-            x: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -218,8 +218,8 @@ class BaseGPController:
 
     def _fuzzy_predictive_likelihood(
             self,
-            x: ArrayLike[float],
-            x_std: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.
@@ -236,8 +236,8 @@ class BaseGPController:
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
             self,
-            x: ArrayLike[float],
-            x_std: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
@@ -367,7 +367,7 @@ class BaseGPController:
 
     def _get_posterior_over_point_in_eval_mode(
             self,
-            x: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Predict the y-value of a single point in evaluation mode.
@@ -380,7 +380,7 @@ class BaseGPController:
 
     def _gp_forward(
             self,
-            x: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> ExactGPModel:
         """Pass inputs through the base GPyTorch GP model."""
         with warnings.catch_warnings():
@@ -394,7 +394,7 @@ class BaseGPController:
 
     def _get_posterior_over_point(
             self,
-            x: ArrayLike[float]
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
@@ -408,7 +408,7 @@ class BaseGPController:
 
     def _process_x_std(
             self,
-            std: ArrayLike[float],
+            std: Union[numpy.typing.NDArray[float], float],
     ) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.

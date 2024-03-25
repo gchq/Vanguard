@@ -3,10 +3,10 @@ Contains the Posterior class.
 """
 import gpytorch
 import numpy as np
-from numpy.typing import ArrayLike
+import numpy.typing
 from scipy import stats
 import torch
-from typing import TypeVar, Tuple
+from typing import TypeVar, Tuple, Union
 from typing_extensions import Self
 
 T = TypeVar("T")
@@ -43,7 +43,7 @@ class Posterior:
         """
         return self.distribution
 
-    def prediction(self) -> Tuple[np.ndarray, np.ndarray]:
+    def prediction(self) -> Tuple[numpy.typing.NDArray[float], numpy.typing.NDArray[float]]:
         """
         Return the prediction as a numpy array.
 
@@ -58,7 +58,7 @@ class Posterior:
     def confidence_interval(
             self,
             alpha: float = 0.05,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[np.ndarray[float], numpy.typing.NDArray[float], numpy.typing.NDArrayndarray[float]]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
@@ -71,7 +71,7 @@ class Posterior:
 
     def mse(
             self,
-            y: ArrayLike[float],
+            y: Union[numpy.typing.NDArray[float], float],
     ) -> float:
         r"""
         Compute the mean-squared of some values under the posterior.
@@ -85,8 +85,8 @@ class Posterior:
 
     def nll(
             self,
-            y: ArrayLike[float],
-            noise_variance: ArrayLike[float] = 0,
+            y: Union[numpy.typing.NDArray[float], float],
+            noise_variance: Union[numpy.typing.NDArray[float], float] = 0,
             alpha: float = stats.norm.cdf(-1)*2,
     ) -> float:
         """
@@ -108,7 +108,7 @@ class Posterior:
 
     def log_probability(
             self,
-            y: ArrayLike[float],
+            y: Union[numpy.typing.NDArray[float], float],
     ) -> float:
         r"""
         Compute the log-likelihood of some values under the posterior.
@@ -123,7 +123,7 @@ class Posterior:
     def sample(
             self,
             n_samples: int = 1
-    ):
+    ) -> numpy.typing.NDArray[float]:
         """
         Draw independent samples from the posterior.
 

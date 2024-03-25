@@ -1,7 +1,7 @@
 """
 Contains the MonteCarloPosteriorCollection class.
 """
-import numpy
+import numpy.typing
 import torch
 from typing import Generator, NoReturn
 
@@ -50,7 +50,7 @@ class MonteCarloPosteriorCollection(Posterior):
     def sample(
             self,
             n_samples: int = 1
-    ) -> numpy.array:
+    ) -> numpy.typing.NDArray:
         """
         Draw independent samples from the posterior.
 

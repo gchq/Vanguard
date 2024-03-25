@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import itertools
-from typing import Callable, TYPE_CHECKING, Optional, Union
+from typing import Callable, TYPE_CHECKING, Optional, Union, Any
 
 if TYPE_CHECKING:
     from .basecontroller import BaseGPController
@@ -166,6 +166,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float, controller) -> float:
+def loss(loss_value: float, controller: Any) -> float:
     """Return the loss value."""
     return loss_value
