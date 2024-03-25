@@ -6,34 +6,34 @@ They are syntactically similar to the standard model classes used in GPyTorch.
 import gpytorch
 from gpytorch.models import ExactGP
 import numpy as np
+import torch
 
 
 class ExactGPModel(ExactGP):
     """
     Standard GPyTorch exact GP model subclassing :class:`gpytorch.models.ExactGP` with flexible prior kernel, mean.
     """
-    def __init__(self, train_x, train_y, likelihood, mean_module, covar_module, **kwargs):
+    def __init__(self, train_x: torch.Tensor, train_y: torch.Tensor, likelihood: gpytorch.likelihoods.GaussianLikelihood,
+                 mean_module: gpytorch.means.Mean, covar_module: gpytorch.kernels.Kernel, **kwargs):
         """
         Initialise self.
 
-        :param torch.Tensor train_x: (n_samples, n_features) The training inputs (features).
-        :param torch.Tensor train_y: (n_samples,) The training targets (response).
-        :param gpytorch.likelihoods.GaussianLikelihood likelihood:  Likelihood to use with model.
-                Since we're using exact inference, the likelihood must be Gaussian.
-        :param gpytorch.means.Mean mean_module: The prior mean function to use.
-        :param gpytorch.kernels.Kernel covar_module:  The prior kernel function to use.
+        :param train_x: (n_samples, n_features) The training inputs (features).
+        :param train_y: (n_samples,) The training targets (response).
+        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must be Gaussian.
+        :param mean_module: The prior mean function to use.
+        :param covar_module: The prior kernel function to use.
         """
         super().__init__(train_x, train_y, likelihood)
         self.mean_module = mean_module
         self.covar_module = covar_module
 
-    def forward(self, x):
+    def forward(self, x:  torch.Tensor) -> gpytorch.distributions.MultivariateNormal:
         """
         Compute the prior latent distribution on a given input.
 
-        :param torch.Tensor x: (n_samples, n_features) The inputs.
+        :param x: (n_samples, n_features) The inputs.
         :returns: The prior distribution.
-        :rtype: gpytorch.distributions.MultivariateNormal
         """
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
@@ -47,17 +47,17 @@ class InducingPointKernelGPModel(ExactGPModel):
     GPyTorch exact GP model subclassing :class:`gpytorch.models.ExactGP` with flexible prior kernel, mean and an
     inducing point sparse approximation to the kernel a la :cite:`Titsias09`.
     """
-    def __init__(self, train_x, train_y, likelihood, mean_module, covar_module, n_inducing_points):
+    def __init__(self, train_x: torch.Tensor, train_y: torch.Tensor, likelihood: gpytorch.likelihoods.GaussianLikelihood,
+                 mean_module: gpytorch.means.Mean, covar_module: gpytorch.kernels.Kernel, n_inducing_points: int):
         """
         Initialise self.
 
-        :param torch.Tensor train_x: (n_samples, n_features) The training inputs (features).
-        :param torch.Tensor train_y: (n_samples,) The training targets (response).
-        :param gpytorch.likelihoods.GaussianLikelihood likelihood:  Likelihood to use with model.
-                Since we're using exact inference, the likelihood must be Gaussian.
-        :param gpytorch.means.Mean mean_module: The prior mean function to use.
-        :param gpytorch.kernels.Kernel covar_module:  The prior kernel function to use.
-        :param int n_inducing_points: The number of inducing points in the sparse kernel approximation.
+        :param train_x: (n_samples, n_features) The training inputs (features).
+        :param train_y: (n_samples,) The training targets (response).
+        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must be Gaussian.
+        :param mean_module: The prior mean function to use.
+        :param covar_module: The prior kernel function to use.
+        :param n_inducing_points: The number of inducing points in the sparse kernel approximation.
         """
         inducing_point_indices = np.random.choice(train_x.shape[0], size=n_inducing_points, replace=True)
         inducing_points = train_x[inducing_point_indices, :].clone()

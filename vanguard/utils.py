@@ -2,11 +2,14 @@
 Contain some small utilities of use in some cases.
 """
 import numpy as np
+import numpy.typing
+import torch
+from typing import Generator, NoReturn, Any
 
 from .warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
 
-def add_time_dimension(data, normalise=True):
+def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.typing.NDArray:
     """
     Add an equal sample spacing dummy time dimension to some time series data.
 
@@ -16,12 +19,11 @@ def add_time_dimension(data, normalise=True):
     but this choice leads to greater numerical stability for long
     time series.
 
-    :param np.ndarray data: The time series of shape (..., n_timesteps, n_dimensions).
-    :param bool normalise: Whether to normalise time as above.
+    :param data: The time series of shape (..., n_timesteps, n_dimensions).
+    :param normalise: Whether to normalise time as above.
 
     :returns: data but with new time dimension as the first dimension
                 (..., n_timesteps, n_dimension + 1)
-    :rtype: np.ndarray
     """
     time_steps = data.shape[-2]
     if normalise:
@@ -36,14 +38,14 @@ def add_time_dimension(data, normalise=True):
     return np.concatenate([stackable_time_variable, data], axis=-1)
 
 
-def instantiate_with_subset_of_kwargs(cls, **kwargs):
+def instantiate_with_subset_of_kwargs(cls: type, **kwargs):
     """
     Instantiate a class with a kwargs, where some may not be required.
 
     This is useful if you intend to vary a class which may not need all
     of the parameters you wish to pass.
 
-    :param type cls: The class to be instantiated.
+    :param cls: The class to be instantiated.
     :param kwargs: A set of keyword arguments containing a subset of arguments
                    which will successfully instantiate the class.
 
@@ -93,15 +95,14 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
         return cls()
 
 
-def infinite_tensor_generator(batch_size, device, *tensor_axis_pairs):
+def infinite_tensor_generator(batch_size: int, device: torch.DeviceObjType, *tensor_axis_pairs: tuple[torch.Tensor, int]) -> Generator[torch.Tensor]:
     """
     Return a never-ending generator that return random mini-batches of tensors with a shared first dimension.
 
-    :param tuple[torch.Tensor,int] tensor_axis_pairs: Any number of (tensor, axis) pairs, where each tensor
+    :param tensor_axis_pairs: Any number of (tensor, axis) pairs, where each tensor
         is of shape (n, ...), where n is shared between tensors, and ``axis`` denotes the axis along which
         the tensor should be batched. If an axis is out of range, the maximum axis value is used instead.
     :returns: A tensor generator.
-    :rtype: Generator[torch.Tensor]
     """
     first_tensor, first_axis = tensor_axis_pairs[0]
     first_tensor_length = first_tensor.shape[first_axis]
@@ -109,12 +110,12 @@ def infinite_tensor_generator(batch_size, device, *tensor_axis_pairs):
     if batch_size is None:
         batch_size = first_tensor_length
 
-        def shuffle(array):
+        def shuffle(array: Any) -> NoReturn:
             """Identity shuffle function."""
             pass
     else:
 
-        def shuffle(array):
+        def shuffle(array: numpy.typing.NDArray) -> NoReturn:
             """Random shuffle function."""
             np.random.shuffle(array)
 
@@ -141,12 +142,12 @@ def infinite_tensor_generator(batch_size, device, *tensor_axis_pairs):
         yield batch_tensors
 
 
-def generator_append_constant(generator, constant):
+def generator_append_constant(generator: Generator[tuple], constant: Any) -> Generator[tuple]:
     """
     Augment a generator of tuples by appending a fixed item to each tuple.
 
-    :param generator[tuple] generator: The generator to augment.
-    :param Any constant: The fixed element to append to each tuple in the generator.
+    :param generator: The generator to augment.
+    :param constant: The fixed element to append to each tuple in the generator.
     """
     for item in generator:
         yield item + (constant,)

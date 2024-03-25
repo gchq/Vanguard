@@ -14,7 +14,7 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from .mixin import ClassificationMixin
 
 from typing_extensions import Self
-from typing import TypeVar, Type, NoReturn
+from typing import TypeVar, Type
 
 
 ControllerT = TypeVar("ControllerT", bound=GPController)

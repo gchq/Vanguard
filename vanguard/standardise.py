@@ -3,6 +3,9 @@ The :class:`DisableStandardScaling` decorator will disable the default input sta
 """
 from .base import GPController
 from .decoratorutils import Decorator, wraps_class
+from typing import TypeVar, Type
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
 
 
 class DisableStandardScaling(Decorator):
@@ -35,7 +38,7 @@ class DisableStandardScaling(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
         @wraps_class(cls)
         class InnerClass(cls):
             """

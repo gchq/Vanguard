@@ -16,7 +16,7 @@ import numpy as np
 import numpy.typing
 
 from .models import DummyKernelDistribution
-from typing import Union, Optional, NoReturn
+from typing import Union, Optional
 
 
 class DummyNoise:
