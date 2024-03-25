@@ -1,24 +1,29 @@
 """
 Contains the Distributed decorator.
 """
+from __future__ import annotations
+
 import warnings
+from typing import TypeVar, Generic, Iterable
 
 import gpytorch
 from gpytorch.utils.warnings import GPInputWarning
 import numpy as np
 import torch
+from numpy.typing import NDArray
 
 from ..base import GPController
+from ..base.posteriors import Posterior
 from ..decoratorutils import TopMostDecorator, process_args, wraps_class
 from .aggregators import (BadPriorVarShapeError, BCMAggregator, GRBCMAggregator, RBCMAggregator, XBCMAggregator,
-                          XGRBCMAggregator)
-from .partitioners import KMeansPartitioner, KMedoidsPartitioner
+                          XGRBCMAggregator, BaseAggregator)
+from .partitioners import KMeansPartitioner, KMedoidsPartitioner, BasePartitioner
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
 
-
-class Distributed(TopMostDecorator):
+ControllerT = TypeVar("ControllerT", bound=GPController)
+class Distributed(TopMostDecorator, Generic[ControllerT]):
     """
     Uses multiple controller classes to aggregate predictions.
 
@@ -35,8 +40,13 @@ class Distributed(TopMostDecorator):
         ... class DistributedGPController(GPController):
         ...     pass
     """
-    def __init__(self, n_experts=3, subset_fraction=0.1, seed=42, aggregator_class=RBCMAggregator,
-                 partitioner_class=KMeansPartitioner, **kwargs):
+    def __init__(self,
+                 n_experts: int = 3,
+                 subset_fraction: float = 0.1,
+                 seed: int | None = 42,
+                 aggregator_class: type[BaseAggregator] = RBCMAggregator,
+                 partitioner_class: type[BasePartitioner] = KMeansPartitioner,
+                 **kwargs):
         """
         Initialise self.
 
@@ -64,7 +74,7 @@ class Distributed(TopMostDecorator):
         self.partitioner_kwargs = kwargs.pop("partitioner_kwargs", {})
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
@@ -78,9 +88,9 @@ class Distributed(TopMostDecorator):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
-                self._full_train_x = all_parameters_as_kwargs.pop("train_x")
-                self._full_train_y = all_parameters_as_kwargs.pop("train_y")
-                self._full_y_std = all_parameters_as_kwargs.pop("y_std")
+                self._full_train_x: NDArray = all_parameters_as_kwargs.pop("train_x")
+                self._full_train_y: NDArray = all_parameters_as_kwargs.pop("train_y")
+                self._full_y_std: int | float = all_parameters_as_kwargs.pop("y_std")
 
                 if not isinstance(self._full_y_std, (float, int)):
                     raise TypeError(f"The {type(self).__name__} class has been distributed, and can only accept a "
@@ -96,7 +106,7 @@ class Distributed(TopMostDecorator):
                 self.partitioner = partitioner_class(train_x=self._full_train_x, n_experts=decorator.n_experts,
                                                      communication=communications_expert, **partitioner_kwargs)
 
-                self._expert_controllers = []
+                self._expert_controllers: list[ControllerT] = []
 
                 train_x_subset, train_y_subset, y_std_subset = _create_subset(self._full_train_x,
                                                                               self._full_train_y,
@@ -108,7 +118,7 @@ class Distributed(TopMostDecorator):
                 super().__init__(train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset,
                                  **self._expert_init_kwargs)
 
-            def fit(self, n_sgd_iters=10, gradient_every=10):
+            def fit(self, n_sgd_iters: int = 10, gradient_every: int = 10) -> torch.Tensor:
                 """Also create the expert controllers."""
                 loss = super().fit(n_sgd_iters, gradient_every=gradient_every)
                 partition = self.partitioner.create_partition()
@@ -116,7 +126,7 @@ class Distributed(TopMostDecorator):
                                             for subset_indices in partition]
                 return loss
 
-            def expert_losses(self):
+            def expert_losses(self) -> list[float]:
                 """
                 Get the loss from each expert as evaluated on their subset of the data.
 
@@ -137,17 +147,20 @@ class Distributed(TopMostDecorator):
                         losses.append(loss.detach().cpu().item())
                 return losses
 
-            def posterior_over_point(self, x):
+            def posterior_over_point(self, x: NDArray[np.floating] | torch.Tensor) -> Posterior:
                 """Aggregate expert posteriors."""
                 expert_posteriors = (expert.posterior_over_point(x) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
-            def posterior_over_fuzzy_point(self, x, x_std):
+            def posterior_over_fuzzy_point(self, x: NDArray[np.floating] | torch.Tensor, x_std: float) -> Posterior:
                 """Aggregate expert fuzzy posteriors."""
                 expert_posteriors = (expert.posterior_over_fuzzy_point(x, x_std) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
-            def _aggregate_expert_posteriors(self, x, expert_posteriors):
+            def _aggregate_expert_posteriors(self,
+                                             x: NDArray[np.floating] | torch.Tensor,
+                                             expert_posteriors: Iterable[Posterior]
+                                             ) -> Posterior:
                 """
                 Aggregate an iterable of posteriors.
 
@@ -164,10 +177,12 @@ class Distributed(TopMostDecorator):
                 aggregated_posterior = self.posterior_class(aggregated_distribution)
                 return aggregated_posterior
 
-            def _create_expert_controller(self, subset_indices):
+            def _create_expert_controller(self, subset_indices) -> ControllerT:
                 """Create an expert controller with respect to a subset of the input data."""
                 train_x_subset, train_y_subset = self._full_train_x[subset_indices], self._full_train_y[subset_indices]
                 try:
+                    # TODO: note to reviewer - why is this here? full_y_std is not allowed to be anything other than
+                    #  an int or float
                     y_std_subset = self._full_y_std[subset_indices]
                 except (TypeError, IndexError):
                     y_std_subset = self._full_y_std
@@ -178,7 +193,10 @@ class Distributed(TopMostDecorator):
 
                 return expect_controller
 
-            def _aggregate_expert_predictions(self, x, means_and_covars):
+            def _aggregate_expert_predictions(self,
+                                              x: NDArray[np.floating] | torch.Tensor,
+                                              means_and_covars: list[tuple[torch.Tensor, torch.Tensor]]
+                                              ) -> tuple[torch.Tensor, torch.Tensor]:
                 """
                 Aggregate the means and variances from the expert predictions.
 
@@ -213,11 +231,14 @@ class Distributed(TopMostDecorator):
         return InnerClass
 
 
-def _create_subset(*arrays, subset_fraction=0.1, seed=None):
+def _create_subset(*arrays: NDArray[np.floating] | float,
+                   subset_fraction: float = 0.1,
+                   seed: int | None = None
+                   ) -> list[NDArray[np.floating] | float]:
     """
     Return subsets of the arrays along the same random indices.
 
-    :param numpy.ndarray,Any arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is.
+    :param numpy.ndarray arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is.
     :returns: The subsetted arrays.
     :rtype: list[array_like,Any]
 
@@ -238,7 +259,7 @@ def _create_subset(*arrays, subset_fraction=0.1, seed=None):
         except AttributeError:
             continue
     else:
-        return arrays  # contains no subscriptable arrays
+        return list(arrays)  # contains no subscriptable arrays
 
     np.random.seed(seed)
     total_number_of_indices = length_of_first_subscriptable_array
