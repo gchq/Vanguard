@@ -9,7 +9,7 @@ from contextlib import contextmanager
 import itertools
 from typing import Callable, Optional, Union
 
-from .basecontroller import BaseGPController
+import basecontroller
 
 
 class MetricsTracker:
@@ -104,7 +104,7 @@ class MetricsTracker:
     def run_metrics(
             self,
             loss_value: float,
-            controller: Union['BaseGPController', None],
+            controller: Union['basecontroller.BaseGPController', None],
             **additional_info,
     ) -> None:
         """
