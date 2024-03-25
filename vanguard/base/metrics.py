@@ -10,7 +10,8 @@ import itertools
 from typing import Callable, TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:
-    from .gpcontroller import BaseGPController
+    from .basecontroller import BaseGPController
+
 
 class MetricsTracker:
     """
