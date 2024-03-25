@@ -6,6 +6,7 @@ These are responsible for combining the predictions of several independent exper
 import torch
 from typing import Optional
 
+
 class BadPriorVarShapeError(ValueError):
     pass
 

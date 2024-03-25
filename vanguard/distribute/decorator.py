@@ -1,8 +1,6 @@
 """
 Contains the Distributed decorator.
 """
-from __future__ import annotations
-
 import warnings
 from typing import TypeVar, Generic, Iterable, Union, Optional
 
