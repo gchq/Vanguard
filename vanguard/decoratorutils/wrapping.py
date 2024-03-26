@@ -9,12 +9,12 @@ to a function into a dictionary for straightforward access.
 from functools import WRAPPER_ASSIGNMENTS, wraps
 import inspect
 import types
-from typing import Type, TypeVar
+from typing import Callable, Dict, Tuple, Type, TypeVar
 
 T = TypeVar('T')
 
 
-def process_args(func, *args: tuple, **kwargs: dict) -> dict:
+def process_args(func: Callable, *args: Tuple, **kwargs: Dict) -> Dict:
     """
     Process the arguments for a function.
 
@@ -24,14 +24,13 @@ def process_args(func, *args: tuple, **kwargs: dict) -> dict:
     function, then it will be converted into a bound function
     before :py:func:`inspect.getcallargs` is called.
 
-    :param function func: The function for which to process the arguments.
-    :param tuple args: Arguments to be passed to the function. Must be passed as args,
+    :param func: The function for which to process the arguments.
+    :param args: Arguments to be passed to the function. Must be passed as args,
                         i.e. ``process_args(func, 1, 2)``.
-    :param dict kwargs: Keyword arguments to be passed to the function. Must be passed as kwargs,
+    :param kwargs: Keyword arguments to be passed to the function. Must be passed as kwargs,
                             i.e. ``process_args(func, c=1)``.
 
     :returns: A mapping of parameter name to value for all parameters (including default ones) of the function.
-    :rtype: dict
 
     :Example:
         >>> def f(a, b, c=3, **kwargs):

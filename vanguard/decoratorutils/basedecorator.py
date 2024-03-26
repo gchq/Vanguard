@@ -4,7 +4,7 @@ Contains the BaseDecorator class.
 from __future__ import annotations
 
 from inspect import getmembers, isfunction
-from typing import Iterable, Type, TypeVar
+from typing import Iterable, Set, Type, TypeVar
 import warnings
 
 from . import errors
@@ -50,13 +50,13 @@ class Decorator:
         """
         Initialise self.
 
-        :param type framework_class: All unexpected/overwritten methods are relative to this class.
-        :param Iterable[type] required_decorators: A set (or other iterable) of decorators which must have been
+        :param framework_class: All unexpected/overwritten methods are relative to this class.
+        :param required_decorators: A set (or other iterable) of decorators which must have been
                 applied before (i.e. below) this one.
-        :param Iterable[str] ignore_methods: If these method names are found to have been added or overwritten,
+        :param ignore_methods: If these method names are found to have been added or overwritten,
                 then an error or warning will not be raised.
-        :param bool ignore_all: If True, all unexpected/overwritten methods will be ignored.
-        :param bool raise_instead: If True, unexpected/overwritten methods will raise errors
+        :param ignore_all: If True, all unexpected/overwritten methods will be ignored.
+        :param raise_instead: If True, unexpected/overwritten methods will raise errors
                 instead of emitting warnings.
         """
         self.framework_class = framework_class
@@ -80,7 +80,7 @@ class Decorator:
         """
         Verify that a class can be decorated by this instance.
 
-        :param type cls: The class to be decorated.
+        :param cls: The class to be decorated.
         :raises TypeError: If cls is not a subclass of the framework_class.
         """
         if not issubclass(cls, self.framework_class):
@@ -111,12 +111,12 @@ class Decorator:
                 self._verify_class_has_no_newly_added_methods(other_class,
                                                               super_methods)
 
-    def _verify_class_has_no_newly_added_methods(self, cls: Type[T], super_methods: set[str]) -> None:
+    def _verify_class_has_no_newly_added_methods(self, cls: Type[T], super_methods: Set[str]) -> None:
         """
         Verify that a class has not overwritten methods in the framework class or declared any new ones.
 
-        :param type cls: The class to be checked.
-        :param set[str] super_methods: A set of method names found in the framework class.
+        :param cls: The class to be checked.
+        :param super_methods: A set of method names found in the framework class.
         :raises errors.UnexpectedMethodError: If an unexpected method is found, and the
             :py:attr:`vanguard.decoratorutils.basedecorator.Decorator.raise_instead` is ``True``.
         :raises errors.OverwrittenMethodError: If a method has been overwritten, and the
