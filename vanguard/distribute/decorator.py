@@ -2,7 +2,7 @@
 Contains the Distributed decorator.
 """
 import warnings
-from typing import TypeVar, Generic, Iterable, Optional, Union
+from typing import TypeVar, Generic, Iterable, Optional, Union, List, Tuple, Type
 
 import gpytorch
 from gpytorch.utils.warnings import GPInputWarning
@@ -42,8 +42,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                  n_experts: int = 3,
                  subset_fraction: float = 0.1,
                  seed: Optional[int] = 42,
-                 aggregator_class: type[BaseAggregator] = RBCMAggregator,
-                 partitioner_class: type[BasePartitioner] = KMeansPartitioner,
+                 aggregator_class: Type[BaseAggregator] = RBCMAggregator,
+                 partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
                  **kwargs):
         """
         Initialise self.
@@ -72,7 +72,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self.partitioner_kwargs = kwargs.pop("partitioner_kwargs", {})
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
@@ -104,7 +104,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self.partitioner = partitioner_class(train_x=self._full_train_x, n_experts=decorator.n_experts,
                                                      communication=communications_expert, **partitioner_kwargs)
 
-                self._expert_controllers: list[ControllerT] = []
+                self._expert_controllers: List[ControllerT] = []
 
                 train_x_subset, train_y_subset, y_std_subset = _create_subset(self._full_train_x,
                                                                               self._full_train_y,
@@ -124,7 +124,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                                             for subset_indices in partition]
                 return loss
 
-            def expert_losses(self) -> list[float]:
+            def expert_losses(self) -> List[float]:
                 """
                 Get the loss from each expert as evaluated on their subset of the data.
 
@@ -195,8 +195,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
             def _aggregate_expert_predictions(self,
                                               x: Union[NDArray[np.floating], torch.Tensor],
-                                              means_and_covars: list[tuple[torch.Tensor, torch.Tensor]]
-                                              ) -> tuple[torch.Tensor, torch.Tensor]:
+                                              means_and_covars: List[Tuple[torch.Tensor, torch.Tensor]]
+                                              ) -> Tuple[torch.Tensor, torch.Tensor]:
                 """
                 Aggregate the means and variances from the expert predictions.
 
@@ -234,7 +234,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 def _create_subset(*arrays: Union[NDArray[np.floating], float],
                    subset_fraction: float = 0.1,
                    seed: Optional[int] = None
-                   ) -> list[Union[NDArray[np.floating], float]]:
+                   ) -> List[Union[NDArray[np.floating], float]]:
     """
     Return subsets of the arrays along the same random indices.
 
