@@ -1,7 +1,6 @@
 """
 Contains the BaseDecorator class.
 """
-from __future__ import annotations
 
 from inspect import getmembers, isfunction
 from typing import Iterable, Set, Type, TypeVar
