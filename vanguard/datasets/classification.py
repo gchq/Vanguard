@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sklearn
 from matplotlib.colors import Colormap
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import NDArray
 from sklearn.datasets import make_gaussian_quantiles
 
 from .basedataset import Dataset
@@ -43,7 +43,7 @@ class BinaryStripeClassificationDataset(Dataset):
                          test_x, np.array([]), test_y, np.array([]), 0)
 
     @staticmethod
-    def even_split(x: ArrayLike[float]) -> ArrayLike[float]:
+    def even_split(x: NDArray[np.floating]) -> NDArray[np.floating]:
         """Return the reals, divided into two distinct values."""
         return (np.sign(np.cos(x * (4 * np.pi))) + 1) / 2
 
