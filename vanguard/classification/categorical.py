@@ -94,7 +94,7 @@ class CategoricalClassification(Decorator):
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             def classify_fuzzy_points(
-                    self, x: Union[float, numpy.typing.NDArray[[np.floating, np.floating]]], x_std: Union[float, numpy.typing.NDArray[[np.floating, np.floating]]]
+                    self, x: Union[float, numpy.typing.NDArray[np.floating, np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating, np.floating]]
             ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
