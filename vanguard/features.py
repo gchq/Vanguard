@@ -4,8 +4,9 @@ Contains decorators to deal with input features that aren't vectors.
 from functools import partial
 
 import numpy as np
-from typing import TypeVar, Type, Union
+from typing import TypeVar, Type, Union, Tuple
 import torch
+from gpytorch import kernels
 
 from .base import GPController
 from .decoratorutils import Decorator, process_args, wraps_class
@@ -34,7 +35,7 @@ class HigherRankFeatures(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.rank = rank
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         rank = self.rank
 
         @wraps_class(cls)
@@ -63,7 +64,7 @@ class _HigherRankFeaturesModel:
     correctly. The data are then returned to their native shape before any actual
     computation (e.g. inside kernels) is performed.
     """
-    def __init__(self, shape: Union[tuple[int], torch.Size]):
+    def __init__(self, shape: Union[Tuple[int], torch.Size]):
         """
         :param shape: The native shape of a single data point.
         """
@@ -92,7 +93,7 @@ class _HigherRankFeaturesModel:
         return InnerClass
 
     @staticmethod
-    def _flatten(tensor: torch.Tensor, item_shape: tuple[int], item_flat_shape: int) -> torch.Tensor:
+    def _flatten(tensor: torch.Tensor, item_shape: Tuple[int], item_flat_shape: int) -> torch.Tensor:
         """
         Reshapes tensors to flat (rank - 1) features.
 
@@ -107,7 +108,7 @@ class _HigherRankFeaturesModel:
         return tensor.reshape(new_shape)
 
     @staticmethod
-    def _unflatten(tensor: torch.Tensor, item_shape: tuple[int]) -> torch.Tensor:
+    def _unflatten(tensor: torch.Tensor, item_shape: Tuple[int]) -> torch.Tensor:
         """
         Reshapes flatten tensors to native feature shape.
 
@@ -134,14 +135,14 @@ class _HigherRankFeaturesKernel(_HigherRankFeaturesModel):
     to the model forward method, this method is exposed directly to the flattened
     data.
     """
-    def __init__(self, shape: Union[tuple[int], torch.Size]):
+    def __init__(self, shape: Union[Tuple[int], torch.Size]):
         """
         :param shape: The native shape of a single data point.
         """
         self.shape = tuple(shape)
         self.flat_shape = np.prod(self.shape)
 
-    def __call__(self, kernel_cls: Type[ControllerT]) -> ControllerT:
+    def __call__(self, kernel_cls: Type[kernels.Kernel]) -> Type[kernels.Kernel]:
         shape = self.shape
         _unflatten = partial(self._unflatten, item_shape=shape)
 

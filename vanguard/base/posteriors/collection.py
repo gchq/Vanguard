@@ -3,7 +3,7 @@ Contains the MonteCarloPosteriorCollection class.
 """
 import numpy.typing
 import torch
-from typing import Generator, NoReturn
+from typing import Generator, NoReturn, Tuple
 
 from .posterior import Posterior
 
@@ -76,7 +76,7 @@ class MonteCarloPosteriorCollection(Posterior):
         raise NotImplementedError("Constructed a MonteCarloPosteriorCollection from a single mean and covariance of a"
                                   "Gaussian is not supported.")
 
-    def _tensor_prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
+    def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Return the prediction as a tensor.
 
@@ -96,14 +96,13 @@ class MonteCarloPosteriorCollection(Posterior):
     def _tensor_confidence_interval(
             self,
             alpha: float,
-    ):
+    ) -> Tuple[torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
         :param alpha: The significance level of the CIs.
         :returns: The (``median``, ``lower``, ``upper``) bounds of the confidence interval for the
                     predictive posterior, each of shape (n_preds,).
-        :rtype: tuple[torch.tensor]
         """
         minimum_number_of_samples_needed = self._decide_mc_num_samples(alpha)
         current_number_of_samples = self.distribution.mean.shape[0]
@@ -118,7 +117,7 @@ class MonteCarloPosteriorCollection(Posterior):
     def _update_existing_distribution(
             self,
             n_new_samples: int
-    ):
+    ) -> None:
         """
         Add new samples and update the distribution, also caching new samples.
 

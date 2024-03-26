@@ -6,7 +6,7 @@ import torch
 
 from .base import GPController
 from .decoratorutils import Decorator, process_args, wraps_class
-from typing import TypeVar, Type
+from typing import TypeVar, Type, Tuple
 from .base.posteriors import Posterior
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -53,7 +53,7 @@ class NormaliseY(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         @wraps_class(cls)
         class InnerClass(cls):
             """
@@ -76,14 +76,14 @@ class NormaliseY(Decorator):
                 train_y = (train_y - _normalising_mean) / _normalising_std
                 y_std = y_std / _normalising_std
 
-                def normalise_posterior_class(posterior_class: Type[Posterior]) -> Posterior:
+                def normalise_posterior_class(posterior_class: Type[Posterior]) -> Type[Posterior]:
                     """Wrap a posterior class to enable normalisation."""
                     @wraps_class(posterior_class)
                     class NormalisedPosterior(posterior_class):
                         """
                         Un-scale the distribution at initialisation.
                         """
-                        def prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
+                        def prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
                             """
                             Un-normalise values.
 
@@ -94,7 +94,7 @@ class NormaliseY(Decorator):
                             unscaled_covar = covar * _normalising_std ** 2
                             return unscaled_mean, unscaled_covar
 
-                        def confidence_interval(self, alpha: float = 0.05) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+                        def confidence_interval(self, alpha: float = 0.05) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
                             """
                             Un-normalise values.
 

@@ -11,7 +11,7 @@ import gpytorch
 from gpytorch import constraints
 from gpytorch.utils.errors import NanError
 import torch
-from typing import Callable, Generator, Type, Union
+from typing import Callable, Generator, Type, Union, Optional
 import numpy.typing
 from numpy import dtype
 
@@ -166,7 +166,7 @@ class BaseGPController:
         self.warn_normalise_y()
 
     @property
-    def dtype(self) -> Union[dtype, None]:
+    def dtype(self) -> Optional[dtype, None]:
         """Return the default dtype of the controller."""
         return self._default_tensor_type.dtype
 
@@ -458,7 +458,7 @@ class BaseGPController:
     def _decide_noise_shape(
             posterior: Posterior,
             x: torch.Tensor,
-    ) -> tuple[int]:
+    ) -> Tuple[int]:
         """
         Determine the correct shape of the likelihood noise.
 

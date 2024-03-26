@@ -147,7 +147,7 @@ class Posterior:
         """
         return cls(cls._make_multivariate_normal(mean, covariance))
 
-    def _tensor_prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
+    def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Return the prediction as a tensor.
 
@@ -169,7 +169,7 @@ class Posterior:
     def _tensor_confidence_interval(
             self,
             alpha: float,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
@@ -247,7 +247,7 @@ class Posterior:
             mean: torch.Tensor,
             covariance: torch.Tensor,
             alpha: float = 0.05,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Get pointwise (diagonal) confidence intervals for a multivariate Gaussian's coordinates.
 

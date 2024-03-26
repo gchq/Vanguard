@@ -73,7 +73,7 @@ class BinaryClassification(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """

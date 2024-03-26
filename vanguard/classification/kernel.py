@@ -62,7 +62,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         num_classes = self.num_classes
 
         @wraps_class(cls)

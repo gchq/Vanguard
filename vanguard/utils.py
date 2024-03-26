@@ -4,7 +4,7 @@ Contain some small utilities of use in some cases.
 import numpy as np
 import numpy.typing
 import torch
-from typing import Generator, NoReturn, Any
+from typing import Generator, NoReturn, Any, Tuple
 
 from .warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
@@ -95,7 +95,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
         return cls()
 
 
-def infinite_tensor_generator(batch_size: int, device: torch.DeviceObjType, *tensor_axis_pairs: tuple[torch.Tensor, int]) -> Generator[torch.Tensor, None, None]:
+def infinite_tensor_generator(batch_size: int, device: torch.DeviceObjType, *tensor_axis_pairs: Tuple[torch.Tensor, int]) -> Generator[torch.Tensor, None, None]:
     """
     Return a never-ending generator that return random mini-batches of tensors with a shared first dimension.
 
@@ -110,12 +110,12 @@ def infinite_tensor_generator(batch_size: int, device: torch.DeviceObjType, *ten
     if batch_size is None:
         batch_size = first_tensor_length
 
-        def shuffle(array: Any) -> NoReturn:
+        def shuffle(array: numpy.typing.NDArray) -> None:
             """Identity shuffle function."""
             pass
     else:
 
-        def shuffle(array: numpy.typing.NDArray) -> NoReturn:
+        def shuffle(array: numpy.typing.NDArray) -> None:
             """Random shuffle function."""
             np.random.shuffle(array)
 

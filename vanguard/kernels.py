@@ -3,14 +3,14 @@ Vanguard includes :class:`gpytorch.kernels.Kernel` subclasses which are recommen
 """
 from gpytorch import constraints, kernels
 import torch
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 
 class ScaledRBFKernel(kernels.ScaleKernel):
     """
     The recommended starting place for a kernel.
     """
-    def __init__(self, batch_shape: Union[tuple[int], torch.Size] = torch.Size(), ard_num_dims: Optional[int] = None):
+    def __init__(self, batch_shape: Union[Tuple[int], torch.Size] = torch.Size(), ard_num_dims: Optional[int] = None):
         """
         Initialise self.
 

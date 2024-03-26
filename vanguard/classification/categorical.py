@@ -67,7 +67,7 @@ class CategoricalClassification(Decorator):
         super().__init__(framework_class=GPController, required_decorators={VariationalInference, Multitask}, **kwargs)
         self.num_classes = num_classes
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)

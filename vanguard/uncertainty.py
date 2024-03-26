@@ -12,7 +12,7 @@ import gpytorch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 import torch
-from typing import Type, NoReturn, Union
+from typing import Type, NoReturn, Union, Tuple
 
 from .base import GPController
 from .base.posteriors import Posterior
@@ -101,7 +101,7 @@ class GaussianUncertaintyGPController(GPController):
         return self._gradient_variance
 
     @gradient_variance.setter
-    def gradient_variance(self, value: Iterable) -> NoReturn:
+    def gradient_variance(self, value: Iterable[torch.Tensor]) -> None:
         """
         Set the gradient variance.
 
@@ -162,13 +162,13 @@ class GaussianUncertaintyGPController(GPController):
         self._smart_optimiser.set_parameters()
         return detached_loss
 
-    def _set_requires_grad(self, value: bool) -> NoReturn:
+    def _set_requires_grad(self, value: bool) -> None:
         """Set the requires grad flag of all trainable params."""
         super()._set_requires_grad(value)
         if self._learn_input_noise:
             self.train_x_std.requires_grad = value
 
-    def _get_additive_grad_noise(self, x: torch.Tensor, x_var: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def _get_additive_grad_noise(self, x: torch.Tensor, x_var: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Use mod:`torch.autograd` to find the gradient of the posterior mean and derived additive covariance term.
 
@@ -234,7 +234,7 @@ class GaussianUncertaintyGPController(GPController):
 
         return self.posterior_class.from_mean_and_covariance(preds.squeeze(), covar + jitter)
 
-    def _process_x_std(self, std: Union[numpy.typing.NDArray[float], float, None]) -> torch.Tensor:
+    def _process_x_std(self, std: Optional[numpy.typing.NDArray[float], float]) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
 
@@ -256,5 +256,5 @@ class GaussianUncertaintyGPController(GPController):
         return std_tensor
 
     @staticmethod
-    def _noise_transform(gamma: Iterable) -> torch.Tensor:
+    def _noise_transform(gamma: Iterable[torch.Tensor]) -> torch.Tensor:
         return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze()

@@ -12,7 +12,7 @@ import numpy as np
 
 from .base import GPController
 from .decoratorutils import Decorator, process_args, wraps_class
-from typing import TypeVar, Type, Union
+from typing import TypeVar, Type, Union, Tuple
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -39,7 +39,7 @@ class LearnYNoise(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> ControllerT:
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
@@ -85,7 +85,7 @@ class LearnYNoise(Decorator):
         return InnerClass
 
 
-def _process_y_std(y_std: Union[float, numpy.typing.NDArray[np.floating]], shape: tuple[int], dtype: type, device: torch.DeviceObjType) -> torch.Tensor:
+def _process_y_std(y_std: Union[float, numpy.typing.NDArray[np.floating]], shape: Tuple[int], dtype: type, device: torch.DeviceObjType) -> torch.Tensor:
     """
     Create default y_std value or make sure given value is a tensor of the right type and shape.
 
