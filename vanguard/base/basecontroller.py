@@ -166,7 +166,7 @@ class BaseGPController:
         self.warn_normalise_y()
 
     @property
-    def dtype(self) -> Optional[dtype, None]:
+    def dtype(self) -> Optional[dtype]:
         """Return the default dtype of the controller."""
         return self._default_tensor_type.dtype
 
