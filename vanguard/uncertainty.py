@@ -234,7 +234,7 @@ class GaussianUncertaintyGPController(GPController):
 
         return self.posterior_class.from_mean_and_covariance(preds.squeeze(), covar + jitter)
 
-    def _process_x_std(self, std: Optional[numpy.typing.NDArray[float], float]) -> torch.Tensor:
+    def _process_x_std(self, std: Optional[Union[numpy.typing.NDArray[float], float]]) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
 
