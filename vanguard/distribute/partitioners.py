@@ -1,10 +1,8 @@
 """
 Partitioners are responsible for separating the training data into subsets to be assigned to each expert controller.
 """
-from __future__ import annotations
-
 from collections import defaultdict
-from typing import Iterable
+from typing import Iterable, Optional, Union
 
 import gpytorch.kernels
 import matplotlib.pyplot as plt
@@ -24,7 +22,13 @@ class BasePartitioner:
     """
     Generate a partition over index space using various methods. All partitioners should inherit from this class.
     """
-    def __init__(self, train_x: NDArray[np.floating], n_experts: int = 3, communication: bool = False, seed: int | None = 42):
+    def __init__(
+            self,
+            train_x: NDArray[np.floating],
+            n_experts: int = 3,
+            communication: bool = False,
+            seed: Optional[int] = 42
+    ):
         """
         Initialise self.
 
@@ -56,7 +60,7 @@ class BasePartitioner:
 
         return partition
 
-    def plot_partition(self, partition: list[list[int]], cmap: str | Colormap | None = "Set3", **plot_kwargs) -> None:
+    def plot_partition(self, partition: list[list[int]], cmap: Optional[Union[str, Colormap]] = "Set3", **plot_kwargs) -> None:
         """Plot a partition on a T-SNE graph."""
         embedding = TSNE().fit_transform(self.train_x)
 
@@ -159,7 +163,7 @@ class KMedoidsPartitioner(BasePartitioner):
                  kernel: gpytorch.kernels.Kernel,
                  n_experts: int = 2,
                  communication: bool = False,
-                 seed: int | None = 42
+                 seed: Optional[int] = 42
                  ):
         """
         Initialise self.
