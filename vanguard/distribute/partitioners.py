@@ -2,7 +2,7 @@
 Partitioners are responsible for separating the training data into subsets to be assigned to each expert controller.
 """
 from collections import defaultdict
-from typing import Iterable, Union
+from typing import Iterable, Optional, Union, List
 
 import gpytorch.kernels
 import matplotlib.pyplot as plt
@@ -22,7 +22,13 @@ class BasePartitioner:
     """
     Generate a partition over index space using various methods. All partitioners should inherit from this class.
     """
-    def __init__(self, train_x: NDArray[np.floating], n_experts: int = 3, communication: bool = False, seed: Union[int, None] = 42):
+    def __init__(
+            self,
+            train_x: NDArray[np.floating],
+            n_experts: int = 3,
+            communication: bool = False,
+            seed: Optional[int] = 42
+    ):
         """
         Initialise self.
 
@@ -38,7 +44,7 @@ class BasePartitioner:
 
         self.n_examples = self.train_x.shape[0]
 
-    def create_partition(self) -> list[list[int]]:
+    def create_partition(self) -> List[List[int]]:
         """
         Create a partition of ``self.train_x`` across ``self.n_experts``.
 
@@ -54,7 +60,7 @@ class BasePartitioner:
 
         return partition
 
-    def plot_partition(self, partition: list[list[int]], cmap: Union[str, Colormap, None] = "Set3", **plot_kwargs) -> None:
+    def plot_partition(self, partition: List[List[int]], cmap: Optional[Union[str, Colormap]] = "Set3", **plot_kwargs) -> None:
         """Plot a partition on a T-SNE graph."""
         embedding = TSNE().fit_transform(self.train_x)
 
@@ -65,7 +71,7 @@ class BasePartitioner:
 
         plt.scatter(embedding[:, 0], embedding[:, 1], c=colours, cmap=cmap, **plot_kwargs)
 
-    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         """
         Create the partition.
 
@@ -76,7 +82,7 @@ class BasePartitioner:
         # TODO: should this be an abstract method?
         raise NotImplementedError
 
-    def _create_cluster_communication_partition(self) -> list[list[int]]:
+    def _create_cluster_communication_partition(self) -> List[List[int]]:
         """
         Create a partition with a communications expert.
 
@@ -95,7 +101,7 @@ class BasePartitioner:
         return partition
 
     @staticmethod
-    def _group_indices_by_label(labels: Iterable[int]) -> list[list[int]]:
+    def _group_indices_by_label(labels: Iterable[int]) -> List[List[int]]:
         """
         Group the indices of the labels by their value.
 
@@ -120,7 +126,7 @@ class RandomPartitioner(BasePartitioner):
     """
     Generates a random partition.
     """
-    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         size = (n_clusters, self.n_examples // n_clusters)
         partition = np.random.choice(self.n_examples, size=size, replace=False).tolist()
         return partition
@@ -130,7 +136,7 @@ class KMeansPartitioner(BasePartitioner):
     """
     Create a partition using K-Means.
     """
-    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         clusterer = _KMeans(n_clusters=n_clusters, random_state=self.seed)
         labels = clusterer.fit(self.train_x).labels_
         partition = self._group_indices_by_label(labels)
@@ -141,7 +147,7 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
     """
     Create a partition using Mini-batch K-Means.
     """
-    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         clusterer = _MiniBatchKMeans(n_clusters=n_clusters, random_state=self.seed)
         labels = clusterer.fit(self.train_x).labels_
         partition = self._group_indices_by_label(labels)
@@ -157,7 +163,7 @@ class KMedoidsPartitioner(BasePartitioner):
                  kernel: gpytorch.kernels.Kernel,
                  n_experts: int = 2,
                  communication: bool = False,
-                 seed: Union[int, None] = 42
+                 seed: Optional[int] = 42
                  ):
         """
         Initialise self.
@@ -172,7 +178,7 @@ class KMedoidsPartitioner(BasePartitioner):
         super().__init__(train_x=train_x, n_experts=n_experts, communication=communication, seed=seed)
         self.kernel = kernel
 
-    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         dist_matrix = self._construct_distance_matrix()
         clusterer = _KMedoids(n_clusters=n_clusters, metric='precomputed', random_state=self.seed)
         labels = clusterer.fit(dist_matrix).labels_
