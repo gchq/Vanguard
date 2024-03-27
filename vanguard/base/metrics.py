@@ -5,9 +5,14 @@ Vanguard supports a number of metrics pre-attached and tracked to all
 controller classes. These are calculated per iteration by the
 :class:`MetricsTracker` class.
 """
+from __future__ import annotations
+
 from contextlib import contextmanager
 import itertools
+from typing import Callable, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from .gpcontroller import BaseGPController
 
 class MetricsTracker:
     """
@@ -43,7 +48,10 @@ class MetricsTracker:
         loss: 1
         loss: 3
     """
-    def __init__(self, *metrics):
+    def __init__(
+            self,
+            *metrics: Callable,
+    ):
         """
         Initialise self.
 
@@ -69,7 +77,7 @@ class MetricsTracker:
         return len(self._metric_outputs)
 
     @property
-    def _default_format_string(self):
+    def _default_format_string(self) -> str:
         """Get the default format string used for printing."""
         format_string_components = ["iteration: {iteration}"]
         for metric in self._metric_outputs:
@@ -78,12 +86,15 @@ class MetricsTracker:
         format_string = ", ".join(format_string_components)
         return format_string
 
-    def reset(self):
+    def reset(self) -> None:
         """Remove the stored metrics outputs and reset the iteration count."""
         self._metric_outputs = {metric: [] for metric in self._metric_outputs}
         self._iteration = 0
 
-    def add_metrics(self, *metrics):
+    def add_metrics(
+            self,
+            *metrics: Callable,
+    ) -> None:
         """
         Add metrics to the tracker.
 
@@ -92,7 +103,12 @@ class MetricsTracker:
         for metric in metrics:
             self._metric_outputs[metric] = [float("nan")] * self._iteration
 
-    def run_metrics(self, loss_value, controller, **additional_info):
+    def run_metrics(
+            self,
+            loss_value: float,
+            controller: BaseGPController | None,
+            **additional_info,
+    ) -> None:
         """
         Register the components of an iteration.
 
@@ -103,7 +119,7 @@ class MetricsTracker:
         customised format string.
 
         :param float loss_value: The loss.
-        :param vanguard.base.gpcontroller.GPController,None controller: The controller instance.
+        :param controller: The controller instance.
         """
         self._iteration += 1
 
@@ -122,13 +138,17 @@ class MetricsTracker:
             print(output_string)
 
     @contextmanager
-    def print_metrics(self, every=1, format_string=None):
+    def print_metrics(
+            self,
+            every: int = 1,
+            format_string: str | None = None,
+    ) -> None:
         """
         Temporarily enabling printing the metrics within a context manager.
 
-        :param int every: How often to print the output. Does not start on the
+        :param every: How often to print the output. Does not start on the
             first iteration. Defaults to 1 (print always).
-        :param str,None format_string: Used to format the output. Keys passed here
+        :param format_string: Used to format the output. Keys passed here
             must match with information passed to the :meth:`run_metrics` method.
             If None, all metrics will be printed.
         """
@@ -145,6 +165,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value, controller):
+def loss(loss_value: float, controller) -> float:
     """Return the loss value."""
     return loss_value
