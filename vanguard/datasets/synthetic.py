@@ -3,11 +3,11 @@ Synthetic data is particularly useful when running tests, as the data can be spe
 """
 from collections.abc import Iterable, Callable
 from typing import TypedDict
-from typing_extensions import Unpack
 
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
+from typing_extensions import Unpack
 
 from .basedataset import Dataset
 
