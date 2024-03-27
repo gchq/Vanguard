@@ -2,10 +2,11 @@
 The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPController` class.
 """
 import warnings
-
-import torch
 from typing import Optional, Union
+
 import numpy.typing
+import torch
+from torch import Tensor
 
 from .basecontroller import BaseGPController
 from ..decoratorutils import Decorator
@@ -63,14 +64,14 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
     __decorators__: list[Decorator] = []
 
     @property
-    def likelihood_noise(self) -> float:
+    def likelihood_noise(self) -> Tensor:
         """Return the noise of the likelihood."""
         return self._likelihood.noise
 
     @likelihood_noise.setter
     def likelihood_noise(
             self,
-            value: float,
+            value: Tensor,
     ) -> None:
         """Set the noise of the likelihood."""
         self._likelihood.noise = value
