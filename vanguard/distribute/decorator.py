@@ -21,6 +21,8 @@ _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
+
+
 class Distributed(TopMostDecorator, Generic[ControllerT]):
     """
     Uses multiple controller classes to aggregate predictions.

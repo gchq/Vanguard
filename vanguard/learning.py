@@ -1,13 +1,20 @@
 """
 Contains the LearnYNoise decorator.
 """
+from __future__ import annotations
+
 import re
 import warnings
 
 import torch
+import numpy.typing
+import numpy as np
 
 from .base import GPController
 from .decoratorutils import Decorator, process_args, wraps_class
+from typing import TypeVar, Type, Union, Tuple
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
 
 _RE_NOT_LEARN_ERROR = re.compile(r"__init__\(\) got an unexpected keyword argument 'learn_additional_noise'")
 
@@ -32,7 +39,7 @@ class LearnYNoise(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
@@ -78,8 +85,16 @@ class LearnYNoise(Decorator):
         return InnerClass
 
 
-def _process_y_std(y_std, shape, dtype, device):
-    """Create default y_std value or make sure given value is a tensor of the right type and shape."""
+def _process_y_std(y_std: Union[float, numpy.typing.NDArray[np.floating]], shape: Tuple[int], dtype: type, device: torch.DeviceObjType) -> torch.Tensor:
+    """
+    Create default y_std value or make sure given value is a tensor of the right type and shape.
+
+    :param y_std: Values to use for standard deviations of data.
+    :param shape: Shape of the output tensor to produce.
+    :param dtype: Datatype of the output tensor produced.
+    :param device: Torch device to place tensor on.
+    :return: Tensor with each element being the standard deviation values defined in y_std.
+    """
     tensor_value = torch.as_tensor(y_std, dtype=dtype, device=device)
     if tensor_value.shape == torch.Size([]):
         tensor_value = tensor_value * torch.ones(shape, dtype=dtype, device=device).squeeze(dim=-1)

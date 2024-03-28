@@ -4,8 +4,6 @@ The (non-user-facing) base class of Vanguard controllers.
 The :class:`~vanguard.base.basecontroller.BaseGPController` class contains the
 machinery of the :class:`~vanguard.base.gpcontroller.GPController`.
 """
-from __future__ import annotations
-
 from itertools import islice
 import warnings
 
@@ -13,8 +11,8 @@ import gpytorch
 from gpytorch import constraints
 from gpytorch.utils.errors import NanError
 import torch
-from typing import Callable, Generator, Type, Union
-from numpy.typing import ArrayLike
+from typing import Callable, Generator, Type, Union, Optional, Tuple
+import numpy.typing
 from numpy import dtype
 
 from . import metrics
@@ -86,11 +84,11 @@ class BaseGPController:
 
     def __init__(
             self,
-            train_x: ArrayLike[float],
-            train_y: ArrayLike[float],
+            train_x: Union[numpy.typing.NDArray[float], float],
+            train_y: Union[numpy.typing.NDArray[float], float],
             kernel_class: Type[gpytorch.kernels.Kernel],
             mean_class: Type[gpytorch.means.Mean],
-            y_std: ArrayLike[float],
+            y_std: Union[numpy.typing.NDArray[float], float],
             likelihood_class: Type[gpytorch.likelihoods.Likelihood],
             marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
             optimiser_class: Type[torch.optim.Optimizer],
@@ -168,7 +166,7 @@ class BaseGPController:
         self.warn_normalise_y()
 
     @property
-    def dtype(self) -> dtype | None:
+    def dtype(self) -> Optional[dtype]:
         """Return the default dtype of the controller."""
         return self._default_tensor_type.dtype
 
@@ -197,7 +195,7 @@ class BaseGPController:
 
     def _predictive_likelihood(
             self,
-            x: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -220,8 +218,8 @@ class BaseGPController:
 
     def _fuzzy_predictive_likelihood(
             self,
-            x: ArrayLike[float],
-            x_std: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.
@@ -238,8 +236,8 @@ class BaseGPController:
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
             self,
-            x: ArrayLike[float],
-            x_std: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
@@ -369,7 +367,7 @@ class BaseGPController:
 
     def _get_posterior_over_point_in_eval_mode(
             self,
-            x: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Predict the y-value of a single point in evaluation mode.
@@ -382,7 +380,7 @@ class BaseGPController:
 
     def _gp_forward(
             self,
-            x: ArrayLike[float],
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> ExactGPModel:
         """Pass inputs through the base GPyTorch GP model."""
         with warnings.catch_warnings():
@@ -396,7 +394,7 @@ class BaseGPController:
 
     def _get_posterior_over_point(
             self,
-            x: ArrayLike[float]
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
@@ -410,7 +408,7 @@ class BaseGPController:
 
     def _process_x_std(
             self,
-            std: ArrayLike[float],
+            std: Union[numpy.typing.NDArray[float], float],
     ) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
@@ -431,7 +429,7 @@ class BaseGPController:
     def _input_standardise_modules(
             self,
             *modules: torch.nn.Module,
-    ) -> list[torch.Module]:
+    ) -> list[torch.nn.Module]:
         """
         Apply standard input scaling (mean zero, variance 1) to the supplied PyTorch nn.Modules.
 
@@ -446,7 +444,7 @@ class BaseGPController:
     @classmethod
     def set_default_tensor_type(
             cls,
-            tensor_type: ttypes | ttypes_cuda,
+            tensor_type: Union[ttypes, ttypes_cuda],
     ) -> None:
         """
         Set the default tensor type for the class, subsequent subclasses, and external tensors.
@@ -460,7 +458,7 @@ class BaseGPController:
     def _decide_noise_shape(
             posterior: Posterior,
             x: torch.Tensor,
-    ) -> tuple[int]:
+    ) -> Tuple[int]:
         """
         Determine the correct shape of the likelihood noise.
 

@@ -6,8 +6,14 @@ from gpytorch.means import ConstantMean
 from gpytorch.mlls import ExactMarginalLogLikelihood
 import torch
 
+import numpy as np
+import numpy.typing
+from typing import Type, Union
+import gpytorch
+
 from .base import GPController
 from .optimise import GreedySmartOptimiser
+from .optimise.optimiser import SmartOptimiser
 
 
 class GaussianGPController(GPController):
@@ -17,28 +23,31 @@ class GaussianGPController(GPController):
     This is the best starting point for users, containing many sensible default values.
     The standard reference is :cite:`Rasmussen06`.
     """
-    def __init__(self, train_x, train_y, kernel_class, y_std, mean_class=ConstantMean,
-                 likelihood_class=FixedNoiseGaussianLikelihood,
-                 marginal_log_likelihood_class=ExactMarginalLogLikelihood, optimiser_class=torch.optim.Adam,
-                 smart_optimiser_class=GreedySmartOptimiser, **kwargs):
+    def __init__(self, train_x: numpy.typing.NDArray[np.floating], train_y: numpy.typing.NDArray[np.floating],
+                 kernel_class: Type[gpytorch.kernels.Kernel], y_std: Union[numpy.typing.NDArray[np.floating], float],
+                 mean_class: Type[gpytorch.means.Mean] = ConstantMean,
+                 likelihood_class: Type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
+                 marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
+                 optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam, smart_optimiser_class: Type[SmartOptimiser] = GreedySmartOptimiser,
+                 **kwargs):
         """
         Initialise self.
 
-        :param array_like[float] train_x: (n_samples, n_features) The inputs (or the observed values)
-        :param array_like[float] train_y: (n_samples,) or (n_samples, 1) The responsive values.
-        :param type kernel_class: An uninstantiated subclass of :class:`gpytorch.kernels.Kernel`.
-        :param type mean_class: An uninstantiated subclass of :class:`gpytorch.means.Mean` to use in the prior GP.
+        :param train_x: (n_samples, n_features) The inputs (or the observed values)
+        :param train_y: (n_samples,) or (n_samples, 1) The responsive values.
+        :param kernel_class: An uninstantiated subclass of :class:`gpytorch.kernels.Kernel`.
+        :param mean_class: An uninstantiated subclass of :class:`gpytorch.means.Mean` to use in the prior GP.
                 Defaults to :class:`gpytorch.means.ConstantMean`.
-        :param array_like[float],float y_std: The observation noise standard deviation:
+        :param y_std: The observation noise standard deviation:
 
             * *array_like[float]* (n_samples,): known heteroskedastic noise,
             * *float*: known homoskedastic noise assumed.
 
-        :param type likelihood_class: An uninstantiated subclass of :class:`gpytorch.likelihoods.Likelihood`.
+        :param likelihood_class: An uninstantiated subclass of :class:`gpytorch.likelihoods.Likelihood`.
                 The default is :class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
-        :param type marginal_log_likelihood_class: An uninstantiated subclass of of an MLL from
+        :param marginal_log_likelihood_class: An uninstantiated subclass of of an MLL from
                 mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
-        :param type optimiser_class: An uninstantiated class:`torch.optim.Optimizer` class used for
+        :param optimiser_class: An uninstantiated class:`torch.optim.Optimizer` class used for
                 gradient-based learning of hyperparameters. The default is class:`torch.optim.Adam`.
         :param kwargs: For a complete list, see class:`~vanguard.base.gpcontroller.GPController`.
         """
