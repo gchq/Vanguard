@@ -9,6 +9,7 @@ import warnings
 from . import errors
 
 T = TypeVar('T')
+ControllerType = TypeVar('ControllerType', bound='GPController')
 DecoratorType = TypeVar('DecoratorType', bound='Decorator')
 
 
@@ -155,14 +156,14 @@ class TopMostDecorator(Decorator):
         >>> from vanguard.decoratorutils import wraps_class
         >>>
         >>> class MyDecorator(Decorator):
-        ...     def _decorate_class(self, cls: Type[T]) -> Type[T]:
+        ...     def _decorate_class(self, cls: Type[ControllerType]) -> Type[ControllerType]:
         ...         @wraps_class(cls)
         ...         class InnerClass(cls):
         ...             pass
         ...         return InnerClass
         >>>
         >>> class MyTopMostDecorator(TopMostDecorator):
-        ...     def _decorate_class(self, cls: Type[T]) -> Type[T]:
+        ...     def _decorate_class(self, cls: Type[ControllerType]) -> Type[ControllerType]:
         ...         @wraps_class(cls)
         ...         class InnerClass(cls):
         ...             pass
