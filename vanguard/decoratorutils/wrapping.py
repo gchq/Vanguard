@@ -9,12 +9,12 @@ to a function into a dictionary for straightforward access.
 from functools import WRAPPER_ASSIGNMENTS, wraps
 import inspect
 import types
-from typing import Callable, Dict, Tuple, Type, TypeVar
+from typing import Any, Callable, Type, TypeVar
 
 T = TypeVar('T')
 
 
-def process_args(func: Callable, *args: Tuple, **kwargs: Dict) -> Dict:
+def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
     """
     Process the arguments for a function.
 
@@ -69,7 +69,7 @@ def process_args(func: Callable, *args: Tuple, **kwargs: Dict) -> Dict:
     return parameters_as_kwargs
 
 
-def wraps_class(base_class: Type[T]) -> Type[T]:
+def wraps_class(base_class: Type[T]) -> Callable:
     r"""
     Update the names and docstrings of an inner class to those of a base class.
 
