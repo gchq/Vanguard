@@ -18,7 +18,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     A post-hoc Laplace approximation is to obtain an approximation hyperparameter posterior.
     Note that only those hyperparameters specified using the
-    :py:class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
+    :class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
     for Bayesian inference. The remaining hyperparameters will be inferred as point estimates.
 
     :Example:
@@ -56,7 +56,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                                     predictive posterior.
         :param gpytorch.variational._VariationalDistribution,None variational_distribution_class:
             The variational distribution to use for the raw hyperparameters' posterior. Defaults
-            to :py:class:`~gpytorch.variational.CholeskyVariationalDistribution`.
+            to :class:`~gpytorch.variational.CholeskyVariationalDistribution`.
         """
         super().__init__(num_mc_samples=num_mc_samples, **kwargs)
         self.temperature = temperature

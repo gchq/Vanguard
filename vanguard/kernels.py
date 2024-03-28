@@ -1,21 +1,21 @@
 """
-Vanguard includes :py:class:`gpytorch.kernels.Kernel` subclasses which are recommended for use in controllers.
+Vanguard includes :class:`gpytorch.kernels.Kernel` subclasses which are recommended for use in controllers.
 """
 from gpytorch import constraints, kernels
 import torch
+from typing import Optional, Union, Tuple
 
 
 class ScaledRBFKernel(kernels.ScaleKernel):
     """
     The recommended starting place for a kernel.
     """
-    def __init__(self, batch_shape=torch.Size(), ard_num_dims=None):
+    def __init__(self, batch_shape: Union[Tuple[int], torch.Size] = torch.Size(), ard_num_dims: Optional[int] = None):
         """
         Initialise self.
 
-        :param torch.Size,tuple batch_shape: The batch shape. Defaults to no batching.
-        :param int,None ard_num_dims: Set this if you want a separate lengthscale for each input dimension.
-                                        Defaults to none.
+        :param batch_shape: The batch shape. Defaults to no batching.
+        :param ard_num_dims: Set this if you want a separate lengthscale for each input dimension. Defaults to none.
         """
         super().__init__(kernels.RBFKernel(ard_num_dims=ard_num_dims, batch_shape=batch_shape), batch_shape=batch_shape)
 
@@ -33,9 +33,11 @@ class TimeSeriesKernel(kernels.AdditiveKernel):
     """
     A kernel suited to time series.
     """
-    def __init__(self, time_dimension=0):
+    def __init__(self, time_dimension: int = 0):
         """
         Initialise self.
+
+        :param time_dimension: The dimension in the data that corresponds to time.
         """
         scaled_rbf_t = kernels.ScaleKernel(kernels.RBFKernel(active_dims=[time_dimension]))
         scaled_periodic_rbf = kernels.ScaleKernel(
