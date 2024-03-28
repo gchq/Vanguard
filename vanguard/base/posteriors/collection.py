@@ -1,7 +1,9 @@
 """
 Contains the MonteCarloPosteriorCollection class.
 """
+import numpy.typing
 import torch
+from typing import Generator, NoReturn, Tuple
 
 from .posterior import Posterior
 
@@ -14,18 +16,19 @@ class MonteCarloPosteriorCollection(Posterior):
     uncertainty.
     Samples are lazily loaded if more are needed for a better prediction.
 
+    :param posterior_generator: A :class:`~vanguard.posteriors.posterior.Posterior` object defining an infinite generator of posteriors.
+
     .. warning::
         In order to ensure reproducible output for predictions and confidence
         intervals, a cached sample is used.
     """
-    INITIAL_NUMBER_OF_SAMPLES = 100
+    INITIAL_NUMBER_OF_SAMPLES: int = 100
 
-    def __init__(self, posterior_generator):
-        """
-        Initialise self.
-
-        :param Generator[Posterior] posterior_generator: An infinite generator of posteriors.
-        """
+    def __init__(
+            self,
+            posterior_generator: Generator[Posterior, None, None]
+    ):
+        """Initialise self."""
         self._posterior_generator = posterior_generator
         self._posteriors_skipped = 0
         distribution = self._create_updated_distribution(self.INITIAL_NUMBER_OF_SAMPLES)
@@ -33,39 +36,47 @@ class MonteCarloPosteriorCollection(Posterior):
         self._cached_samples = self._tensor_sample()
 
     @property
-    def condensed_distribution(self):
+    def condensed_distribution(self) -> torch.distributions.MultivariateNormal:
         """
         Return the condensed distribution.
 
         Return a representative distribution of the posterior, with 1-dimensional
         mean and 2-dimensional covariance. In this case, return a distribution
-        based on the mean and covariance returned by :py:meth:`_tensor_prediction`.
-
-        :rtype: gpytorch.distributions.MultivariateNormal
+        based on the mean and covariance returned by :meth:`_tensor_prediction`.
         """
         mean, covar = self._tensor_prediction()
         return self._add_jitter(self._make_multivariate_normal(mean, covar))
 
-    def sample(self, n_samples=1):
-        """Draw independent samples from the posterior."""
+    def sample(
+            self,
+            n_samples: int = 1
+    ) -> numpy.typing.NDArray:
+        """
+        Draw independent samples from the posterior.
+
+        :param n_samples: An integer specifying the number of samples to draw.
+        """
         new_distribution = self._create_updated_distribution(n_samples)
         return new_distribution.sample().detach().cpu().numpy()[-n_samples:]
 
     @classmethod
-    def from_mean_and_covariance(cls, mean, covariance):
+    def from_mean_and_covariance(
+            cls,
+            mean: torch.Tensor,
+            covariance: torch.Tensor
+    ) -> NoReturn:
         """
         Construct from the mean and covariance of a Gaussian.
 
-        :param torch.Tensor mean: (d,) or (d, t) The mean of the Gaussian.
-        :param torch.Tensor covariance: (d, d) or (dt, dt) The covariance matrix of the Gaussian.
+        :param mean: (d,) or (d, t) The mean of the Gaussian.
+        :param covariance: (d, d) or (dt, dt) The covariance matrix of the Gaussian.
         :returns: The multivariate Gaussian distribution for either a single task or multiple tasks, depending on the
                   shape of the args.
-        :rtype: gpytorch.distributions.MultivariateNormal
         """
         raise NotImplementedError("Constructed a MonteCarloPosteriorCollection from a single mean and covariance of a"
                                   "Gaussian is not supported.")
 
-    def _tensor_prediction(self):
+    def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Return the prediction as a tensor.
 
@@ -76,21 +87,22 @@ class MonteCarloPosteriorCollection(Posterior):
             * ``means``: (n_preds,) The posterior predictive mean,
             * ``covar``: (n_preds, n_preds) The posterior predictive covariance matrix.
 
-        :rtype: tuple[torch.tensor]
         """
         preds = sum(self._cached_samples) / len(self._cached_samples)
         diffs = [(sample - preds).reshape(-1, 1) for sample in self._cached_samples]
         covar = sum([diff @ diff.T for diff in diffs]) / (len(self._cached_samples) - 1)
         return preds, covar
 
-    def _tensor_confidence_interval(self, alpha):
+    def _tensor_confidence_interval(
+            self,
+            alpha: float,
+    ) -> Tuple[torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
-        :param float alpha: The significance level of the CIs.
+        :param alpha: The significance level of the CIs.
         :returns: The (``median``, ``lower``, ``upper``) bounds of the confidence interval for the
                     predictive posterior, each of shape (n_preds,).
-        :rtype: tuple[torch.tensor]
         """
         minimum_number_of_samples_needed = self._decide_mc_num_samples(alpha)
         current_number_of_samples = self.distribution.mean.shape[0]
@@ -102,17 +114,23 @@ class MonteCarloPosteriorCollection(Posterior):
         lower, median, upper = torch.quantile(self._cached_samples, quantile_probs, dim=0)
         return median, lower, upper
 
-    def _update_existing_distribution(self, n_new_samples):
+    def _update_existing_distribution(
+            self,
+            n_new_samples: int
+    ) -> None:
         """
         Add new samples and update the distribution, also caching new samples.
 
-        :param int n_new_samples: The number of new samples to be added.
+        :param n_new_samples: An integer defining the number of new samples to be added.
         """
         new_distribution = self._create_updated_distribution(n_new_samples)
         self.distribution = new_distribution
         self._cached_samples = self._tensor_sample()
 
-    def _create_updated_distribution(self, n_new_samples):
+    def _create_updated_distribution(
+            self,
+            n_new_samples: int
+    ) -> torch.distributions.MultivariateNormal:
         """
         Create a new distribution building upon the old one.
 
@@ -120,9 +138,9 @@ class MonteCarloPosteriorCollection(Posterior):
         number of samples used. Calling this method will make new samples, and
         return a new distribution built upon the old one.
 
-        :param int n_new_samples: The number of new samples to be added.
+        :param n_new_samples: The number of new samples to be added.
         :return: The new distribution, with the same class as the existing distribution.
-        :raises TypeError: If the posteriors in :py:class:`self._posterior_generator` have
+        :raises TypeError: If the posteriors in :class:`self._posterior_generator` have
             different types, or if they do not match the type of the existing distribution.
         """
         try:
@@ -154,8 +172,15 @@ class MonteCarloPosteriorCollection(Posterior):
 
         return new_distribution_class(new_collective_mean, new_collective_covar)
 
-    def _yield_posteriors(self, num_posteriors):
-        """Yield a number of posteriors from the infinite generator."""
+    def _yield_posteriors(
+            self,
+            num_posteriors: int,
+    ) -> Generator[Posterior, None, None]:
+        """
+        Yield a number of posteriors from the infinite generator.
+
+        :param num_posteriors: The number of posteriors to yield.
+        """
         num_yielded = 0
         while num_yielded < num_posteriors:
             posterior = next(self._posterior_generator)
@@ -167,16 +192,18 @@ class MonteCarloPosteriorCollection(Posterior):
                 yield posterior
                 num_yielded += 1
 
-    def _tensor_log_probability(self, y):
+    def _tensor_log_probability(
+            self,
+            y: torch.Tensor,
+    ) -> torch.Tensor:
         r"""
         Compute the MC approximated log-probability under the posterior.
 
-        :param torch.Tensor y: (n, d) or (d,) where d is the dimension of the space on which
+        :param y: (n, d) or (d,) where d is the dimension of the space on which
             the posterior is defined. Sum over first dimension if two dimensional.
         :returns: The log-likelihood of the given y values, i.e. :math:`\sum_{i} \log P(y_i)` where :math:`P` is the
                   posterior density. :math:`P` is approximated by :math:`P(y) = \frac{1}{N}\sum_{i=1}^N \log P_i(y)`
                    as a sum over a collection of posterior log probabilities.
-        :rtype: torch.Tensor
         """
         log_probs = self.distribution.log_prob(y)
         sum_dimensions = list(range(1, log_probs.ndim))
@@ -187,21 +214,22 @@ class MonteCarloPosteriorCollection(Posterior):
         return log_prob
 
     @staticmethod
-    def _decide_mc_num_samples(alpha):
+    def _decide_mc_num_samples(
+            alpha: float,
+    ) -> int:
         r"""
         Determine an appropriately large number of Monte Carlo samples.
 
         Determine an appropriately large number of Monte Carlo samples for a desired confidence level when computing
-        confidence intervals with Monte Carlo integration. This method is motivated by a simple remark in [Owen13]_.
+        confidence intervals with Monte Carlo integration. This method is motivated by a simple remark in :cite:`Owen13`.
         The factor is arbitrary, we just want the number of samples to be a lot larger than
         :math:`\frac{1}{\min(alpha, 1-alpha)}`.
 
         .. warning::
             The current method should give reasonable default behaviour, but it doesn't come with any guarantees.
-            Moreover, we may be demanding too may samples, which is inefficient.
+            Moreover, we may be demanding too many samples, which is inefficient.
 
-        :param float alpha: The significance level.
+        :param alpha: The significance level.
         :return: The number of samples.
-        :rtype: int
         """
         return int(5 / min(alpha / 2, 1 - alpha / 2))

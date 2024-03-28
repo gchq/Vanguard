@@ -51,7 +51,7 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
 
     .. note::
         This warp function needs to be activated before use.
-        See :py:mod:`vanguard.warps.intermediate`.
+        See mod:`vanguard.warps.intermediate`.
     """
     def __init__(self, a=1, b=0):
         """
@@ -108,7 +108,7 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
 
 class BoxCoxWarpFunction(WarpFunction):
     r"""
-    The Box-Cox warp as in [Rios19]_.
+    The Box-Cox warp as in :cite:`Rios19`.
 
     The transformation is given by:
 
