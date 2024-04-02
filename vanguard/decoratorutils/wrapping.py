@@ -69,7 +69,7 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
     return parameters_as_kwargs
 
 
-def wraps_class(base_class: Type[T]) -> Callable:
+def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
     r"""
     Update the names and docstrings of an inner class to those of a base class.
 

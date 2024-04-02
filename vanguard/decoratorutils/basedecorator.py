@@ -9,7 +9,6 @@ import warnings
 from . import errors
 
 T = TypeVar('T')
-ControllerType = TypeVar('ControllerType', bound='GPController')
 DecoratorType = TypeVar('DecoratorType', bound='Decorator')
 
 
@@ -152,8 +151,12 @@ class TopMostDecorator(Decorator):
     sense to add any more functionality, and should be used sparingly.
 
     :Example:
+        >>> from typing import Type, TypeVar
+        >>>
         >>> from vanguard.base import GPController
         >>> from vanguard.decoratorutils import wraps_class
+        >>>
+        >>> ControllerType = TypeVar('ControllerType', bound='GPController')
         >>>
         >>> class MyDecorator(Decorator):
         ...     def _decorate_class(self, cls: Type[ControllerType]) -> Type[ControllerType]:
