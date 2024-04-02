@@ -70,7 +70,7 @@ def flaky(test_method: Callable[[unittest.TestCase, ...], None]):
             except AssertionError as ex:
                 if attempt_number == last_attempt:
                     raise AssertionError(
-                        f"Test failed {max_attempts} separate times. Last failure is given above."
+                        f"Flaky test failed {max_attempts} separate times. Last failure is given above."
                     ) from ex
 
             if attempt_number != last_attempt:
