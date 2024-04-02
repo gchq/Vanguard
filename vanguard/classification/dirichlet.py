@@ -12,8 +12,7 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from .mixin import ClassificationMixin
 
 from typing_extensions import Self
-from typing import TypeVar, Type, Union
-
+from typing import TypeVar, Type, Union, Tuple
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
@@ -96,7 +95,7 @@ class DirichletMulticlassClassification(Decorator):
                     Dirichlet works with batch multivariate normal, so we need to reshape predictions and samples for
                     compatibility downstream.
                     """
-                    def _tensor_prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
+                    def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
                         """Return a transposed version of the mean of the prediction."""
                         mean, covar = super()._tensor_prediction()
                         return mean.T, torch.block_diag(*covar)
@@ -137,7 +136,7 @@ class DirichletMulticlassClassification(Decorator):
                 super().__init__(train_y=transformed_targets.detach().cpu().numpy(), likelihood_class=likelihood_class,
                                  likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs)
 
-            def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify points.
 
@@ -156,7 +155,7 @@ class DirichletMulticlassClassification(Decorator):
 
             def classify_fuzzy_points(
                     self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
-            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify fuzzy points.
 

@@ -10,7 +10,7 @@ mixin for the inner class which will be returned to enable this.
 """
 import numpy as np
 import numpy.typing
-from typing import NoReturn, Union
+from typing import NoReturn, Union, Tuple
 
 
 class ClassificationMixin:
@@ -21,7 +21,7 @@ class ClassificationMixin:
     automatically 'closes' the standard posterior methods and adds the framework
     for the :meth:`classify_points` and :meth:`classify_fuzzy_points` methods.
     """
-    def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+    def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
         """
         Classify points.
 
@@ -35,7 +35,7 @@ class ClassificationMixin:
 
     def classify_fuzzy_points(
             self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
-    ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+    ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
         """
         Classify fuzzy points.
 

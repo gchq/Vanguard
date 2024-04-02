@@ -11,7 +11,7 @@ import gpytorch
 from gpytorch import constraints
 from gpytorch.utils.errors import NanError
 import torch
-from typing import Callable, Generator, Type, Union, Optional, Tuple
+from typing import Callable, Generator, Type, Union, Optional, Tuple, List
 import numpy.typing
 from numpy import dtype
 
@@ -429,7 +429,7 @@ class BaseGPController:
     def _input_standardise_modules(
             self,
             *modules: torch.nn.Module,
-    ) -> list[torch.nn.Module]:
+    ) -> List[torch.nn.Module]:
         """
         Apply standard input scaling (mean zero, variance 1) to the supplied PyTorch nn.Modules.
 

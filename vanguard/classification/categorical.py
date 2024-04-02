@@ -11,8 +11,7 @@ from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 from vanguard.base.posteriors.posterior import Posterior
 
-from typing import TypeVar, Type, Union
-
+from typing import TypeVar, Type, Union, Tuple
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -88,20 +87,20 @@ class CategoricalClassification(Decorator):
 
             def classify_points(
                     self, x: Union[float, numpy.typing.NDArray[np.floating]]
-            ) -> tuple[numpy.typing.NDArray[np.integer], Union[float, numpy.typing.NDArray[np.floating]]]:
+            ) -> Tuple[numpy.typing.NDArray[np.integer], Union[float, numpy.typing.NDArray[np.floating]]]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             def classify_fuzzy_points(
                     self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
-            ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             @staticmethod
-            def _get_predictions_from_posterior(posterior: Posterior) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            def _get_predictions_from_posterior(posterior: Posterior) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get predictions from a posterior distribution.
 
