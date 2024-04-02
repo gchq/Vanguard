@@ -51,6 +51,9 @@ class ClassificationTestCase(unittest.TestCase):
                              f"({100 * proportion_incorrect:.2f}%) -- delta = {100 * delta:.2f}%")
             raise AssertionError(error_message) from None
 
+class FlakyTestError(AssertionError):
+     """Raised when a flaky test fails repeatedly."""
+
 def flaky(test_method: Callable[[unittest.TestCase, ...], None]):
     """
     Marks a test as flaky. Flaky tests are rerun up to 3 times, and pass as soon as they pass at least once.
@@ -69,7 +72,7 @@ def flaky(test_method: Callable[[unittest.TestCase, ...], None]):
                 test_method(self, *args, **kwargs)
             except AssertionError as ex:
                 if attempt_number == last_attempt:
-                    raise AssertionError(
+                    raise FlakyTestError(
                         f"Flaky test failed {max_attempts} separate times. Last failure is given above."
                     ) from ex
 
