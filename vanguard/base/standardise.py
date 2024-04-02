@@ -1,11 +1,10 @@
 """
 Contains a class decorator to apply input standard scaling to means and kernels.
 """
-from __future__ import annotations
-
 import torch
+from typing import Union, Optional
 from typing_extensions import Self
-from numpy.typing import ArrayLike, DTypeLike
+import numpy.typing
 
 from ..decoratorutils import wraps_class
 
@@ -16,10 +15,10 @@ class StandardiseXModule:
     """
     def __init__(
             self,
-            mean: ArrayLike[float],
-            scale: ArrayLike[float],
-            device: torch.device | None,
-            dtype: DTypeLike | None,
+            mean: Union[numpy.typing.NDArray[float], float],
+            scale: Union[numpy.typing.NDArray[float], float],
+            device: Optional[torch.device],
+            dtype: Optional[numpy.typing.DTypeLike],
     ) -> None:
         """
         Initialise self.
@@ -29,6 +28,7 @@ class StandardiseXModule:
         :param scale: The scale (i.e. standard deviation) of the standard scaling.
                 Can be an array in the case of multiple features.
         :param torch.device,None device: The device on which the mean and scale parameters should live.
+        :param dtype: Datatype to specify when creating torch tensors.
         """
         self.mean = torch.as_tensor(mean, device=device, dtype=dtype)
         self.scale = torch.as_tensor(scale, device=device, dtype=dtype)
@@ -59,14 +59,15 @@ class StandardiseXModule:
     def from_data(
             cls,
             x: torch.Tensor,
-            device: torch.device | None,
-            dtype: DTypeLike | None,
+            device: Optional[torch.device],
+            dtype: Optional[numpy.typing.DTypeLike],
     ) -> Self:
         """
         Create an instance of self with the mean and scale of the standard scaling obtained from the given data.
 
         :param x: (n_sample, n_features) The input data on which to learn to mean and scale.
         :param device: Where the mean and scale will reside.
+        :param dtype: Datatype to specify when creating torch tensors.
         """
         mean, scale = x.mean(dim=0), x.std(dim=0)
         return cls(mean, scale, device, dtype)
