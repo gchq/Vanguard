@@ -1,11 +1,9 @@
 """
 Tests for the VariationalHierarchicalHyperparameters and BayesianHyperparameters decorators.
 """
-from __future__ import annotations
-
 import abc
 import unittest
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Type
 
 from gpytorch.constraints import Positive
 from gpytorch.kernels import RBFKernel, ScaleKernel
@@ -81,7 +79,7 @@ class AbstractTests:
         """
         @property
         @abc.abstractmethod
-        def controller_class(self) -> type[T_GPController]:
+        def controller_class(self) -> Type[T_GPController]:
             """
             The GPController subclass to be tested.
 
