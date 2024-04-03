@@ -5,8 +5,7 @@ from itertools import islice
 import warnings
 import numpy.typing
 import numpy as np
-from typing import Optional
-from collections.abc import Iterable
+from typing import Optional, Iterable
 
 import gpytorch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood

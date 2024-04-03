@@ -2,7 +2,7 @@
 Contains the ClassificationTestCase class.
 """
 import unittest
-from collections.abc import Callable
+from typing import Callable
 from functools import wraps
 
 from gpytorch.kernels import RBFKernel, ScaleKernel
