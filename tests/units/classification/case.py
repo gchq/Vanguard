@@ -54,7 +54,7 @@ class ClassificationTestCase(unittest.TestCase):
 class FlakyTestError(AssertionError):
      """Raised when a flaky test fails repeatedly."""
 
-def flaky(test_method: Callable[[unittest.TestCase, ...], None]):
+def flaky(test_method: Callable[..., None]):
     """
     Marks a test as flaky. Flaky tests are rerun up to 3 times, and pass as soon as they pass at least once.
     """
