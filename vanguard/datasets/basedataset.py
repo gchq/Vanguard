@@ -100,7 +100,7 @@ class FileDataset(Dataset):
 
     @staticmethod
     @contextmanager
-    def _large_file_downloader(url) -> Generator[BaseHTTPResponse, None, None]:
+    def _large_file_downloader(url: str) -> Generator[BaseHTTPResponse, None, None]:
         """Download a file within a context manager."""
         http = urllib3.PoolManager()
         request = http.request("GET", url, preload_content=False)
@@ -110,7 +110,7 @@ class FileDataset(Dataset):
             request.release_conn()
 
     @staticmethod
-    def _get_data_path(file_name) -> str:
+    def _get_data_path(file_name: str) -> str:
         """
         Get the full path to the file name within the data folder.
 
