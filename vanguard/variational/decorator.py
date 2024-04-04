@@ -4,11 +4,14 @@ Enable variational inference in a controller.
 The class:`VariationalInference` decorator primes a class:`~vanguard.base.gpcontroller.GPController` class
 for variational inference.
 """
-from typing import Optional, Type, TypeVar
+from typing import Optional, Type, TypeVar, Union
 
 import gpytorch.settings
+import numpy as np
+import numpy.typing
 
 from ..base import GPController
+from ..base.posteriors import Posterior
 from ..decoratorutils import Decorator, process_args, wraps_class
 from .models import SVGPModel
 
@@ -132,11 +135,15 @@ class VariationalInference(Decorator):
                     else:
                         raise
 
-            def _predictive_likelihood(self, x):
+            def _predictive_likelihood(self, x: Union[numpy.typing.NDArray[np.floating], float]) -> Posterior:
                 with gpytorch.settings.num_likelihood_samples(decorator.n_likelihood_samples):
                     return super()._predictive_likelihood(x)
 
-            def _fuzzy_predictive_likelihood(self, x, x_std):
+            def _fuzzy_predictive_likelihood(
+                self,
+                x: Union[numpy.typing.NDArray[np.floating], float],
+                x_std: Union[numpy.typing.NDArray[np.floating], float],
+            ) -> Posterior:
                 with gpytorch.settings.num_likelihood_samples(decorator.n_likelihood_samples):
                     return super()._fuzzy_predictive_likelihood(x, x_std)
 
