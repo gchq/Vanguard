@@ -156,7 +156,7 @@ class TopMostDecorator(Decorator):
         >>> from vanguard.base import GPController
         >>> from vanguard.decoratorutils import wraps_class
         >>>
-        >>> ControllerType = TypeVar('ControllerType', bound='GPController')
+        >>> ControllerType = TypeVar('ControllerType', bound=GPController)
         >>>
         >>> class MyDecorator(Decorator):
         ...     def _decorate_class(self, cls: Type[ControllerType]) -> Type[ControllerType]:
