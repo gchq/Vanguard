@@ -25,7 +25,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     Convert a controller so that variational inference is performed over its hyperparameters.
 
     Note that only those hyperparameters specified using the
-    :py:class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
+    :class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
     for variational inference. The remaining hyperparameters will be inferred as point estimates.
 
     :Example:
@@ -63,7 +63,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                                     predictive posterior.
         :param variational_distribution_class:
             The variational distribution to use for the raw hyperparameters' posterior. Defaults
-            to :py:class:`~gpytorch.variational.CholeskyVariationalDistribution`.
+            to :class:`~gpytorch.variational.CholeskyVariationalDistribution`.
         """
         super().__init__(num_mc_samples=num_mc_samples, **kwargs)
         self.variational_distribution_class = variational_distribution_class
@@ -200,7 +200,7 @@ def _safe_index_batched_multivariate_normal(distribution: VariationalDistributio
     """
     Delazifies the batched covariance matrix and yields recreated non-batch normals.
 
-    Indexing into the batch dimension of batch :py:class:`~gpytorch.distributions.MultivariateNormal`
+    Indexing into the batch dimension of batch :class:`~gpytorch.distributions.MultivariateNormal`
     is somewhat brittle when the underlying covariance matrix is lazy (which happens when the covariance
     matrix is larger than an obscure threshold). Hopefully this will change, but for now, we will work
     around it. This function delazifies the batched covariance matrix and yields recreated non-batch

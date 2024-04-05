@@ -29,7 +29,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     A post-hoc Laplace approximation is to obtain an approximation hyperparameter posterior.
     Note that only those hyperparameters specified using the
-    :py:class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
+    :class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
     for Bayesian inference. The remaining hyperparameters will be inferred as point estimates.
 
     :Example:

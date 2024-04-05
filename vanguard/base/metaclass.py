@@ -9,7 +9,7 @@ class _StoreInitValues(type):
     A metaclass to store initialisation values.
 
     When this metaclass is applied to a class, the parameters passed to ``__init__``
-    will be stored in the :py:attr:`_init_params` attribute.
+    will be stored in the :attr:`_init_params` attribute.
     """
     def __call__(cls, *args, **kwargs):
         instance = super().__call__(*args, **kwargs)
