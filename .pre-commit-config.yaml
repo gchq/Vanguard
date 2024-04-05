@@ -105,7 +105,6 @@ repos:
         args: [ --drop-empty-cells, "--extra-keys=metadata.kernelspec metadata.language_info.version" ]
   - repo: local
     hooks:
-      # Check for non-ascii characters in files
       - id: require-ascii
         name: Check file encoding
         description: Ensure file is ascii-encoded
@@ -115,9 +114,18 @@ repos:
           - text
         exclude:
           .pylintrc
-      # Python static analysis tool
+      - id: docstring-spaces
+        name: Forbid docstring spaces
+        description: Ensure there are no blank lines after docstrings
+        entry: python pre_commit_hooks/docstring_spaces.py
+        language: python
+        types:
+          - python
+        exclude:
+          .pylintrc
       - id: pylint
         name: pylint
+        description: Run Pylint static analysis
         entry: pylint
         language: system
         types:
