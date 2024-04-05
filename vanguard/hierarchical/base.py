@@ -2,13 +2,21 @@
 Contains the BaseHierarchicalHyperparameters decorator.
 """
 import warnings
-
+import gpytorch
 from gpytorch.kernels import ScaleKernel
+import numpy as np
+from numpy.typing import NDArray
 import torch
+from typing import Any, Generator, Tuple, Type, TypeVar, Union
 
 from ..base import GPController
+from ..base.posteriors import Posterior, MonteCarloPosteriorCollection
 from ..decoratorutils import Decorator, wraps_class
 from ..warnings import _JITTER_WARNING, NumericalWarning
+
+ControllerT = TypeVar('ControllerT', bound=GPController)
+PosteriorT = TypeVar('PosteriorT', bound=Posterior)
+ModuleT = TypeVar('ModuleT', bound=gpytorch.module.Module)
 
 
 class BaseHierarchicalHyperparameters(Decorator):
@@ -19,70 +27,67 @@ class BaseHierarchicalHyperparameters(Decorator):
     :py:class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
     for Bayesian inference. The remaining hyperparameters will be inferred as point estimates.
     """
-    def __init__(self, num_mc_samples=100, **kwargs):
+    def __init__(self, num_mc_samples: int = 100, **kwargs: Any):
         """
         Initialise self.
 
-        :param int num_mc_samples: The number of Monte Carlo samples to use when approximating
+        :param num_mc_samples: The number of Monte Carlo samples to use when approximating
                                     intractable integrals in the variational ELBO and the
                                     predictive posterior.
         """
         self.sample_shape = torch.Size([num_mc_samples])
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
         class InnerClass(cls):
             @classmethod
-            def new(cls, instance, **kwargs):
+            def new(cls, instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
                 """Make sure that the hyperparameter collection is copied over."""
                 new_instance = super().new(instance, **kwargs)
-                new_instance.hyperparameter_collection = instance.hyperparameter_collection
+                new_instance.hyperparameter_collection = instance.hyperparameter_collection # type: ignore[reportAttributeAccessIssue]
                 return new_instance
 
-            def _get_posterior_over_point(self, x):
+            def _get_posterior_over_point(self, x: NDArray[np.floating]) -> Type[PosteriorT]:
                 """
                 Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
 
-                :param array_like[float] x: (n_preds, n_features) The predictive inputs.
+                :param x: (n_preds, n_features) The predictive inputs.
                 :returns: The prior distribution.
-                :rtype: vanguard.base.posteriors.Posterior
                 """
                 posteriors = (self.posterior_class(posterior_sample)
                               for posterior_sample in decorator._infinite_posterior_samples(self, x))
                 posterior_collection = self.posterior_collection_class(posteriors)
                 return posterior_collection
 
-            def _predictive_likelihood(self, x):
+            def _predictive_likelihood(self, x: NDArray[np.floating]) -> Type[PosteriorT]:
                 """
                 Predict the likelihood value of a single point. The mode (eval vs train) of the model is not changed.
 
-                :param array_like[float] x: (n_preds, n_features) The predictive inputs.
+                :param x: (n_preds, n_features) The predictive inputs.
                 :returns: The prior distribution.
-                :rtype: vanguard.base.posteriors.Posterior
                 """
                 likelihoods = (self.posterior_class(posterior_sample)
                                for posterior_sample in decorator._infinite_likelihood_samples(self, x))
                 likelihood_collection = self.posterior_collection_class(likelihoods)
                 return likelihood_collection
 
-            def _get_posterior_over_fuzzy_point_in_eval_mode(self, x, x_std):
+            def _get_posterior_over_fuzzy_point_in_eval_mode(self, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
 
                 .. warning:
                     The ``n_features`` must match with :py:attr:`self.dim`.
 
-                :param array_like[float] x: (n_preds, n_features) The predictive inputs.
+                :param x: (n_preds, n_features) The predictive inputs.
                 :param array_like[float],float x_std: The input noise standard deviations:
 
                     * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
                     * float: Assume homoskedastic noise.
 
                 :returns: The prior distribution.
-                :rtype: vanguard.base.posteriors.MonteCarloPosteriorCollection
                 """
                 self.set_to_evaluation_mode()
                 posteriors = (self.posterior_class(x_sample)
@@ -90,21 +95,20 @@ class BaseHierarchicalHyperparameters(Decorator):
                 posterior_collection = self.posterior_collection_class(posteriors)
                 return posterior_collection
 
-            def _fuzzy_predictive_likelihood(self, x, x_std):
+            def _fuzzy_predictive_likelihood(self, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive likelihood with Gaussian input noise.
 
                 .. warning:
                     The ``n_features`` must match with :py:attr:`self.dim`.
 
-                :param array_like[float] x: (n_preds, n_features) The predictive inputs.
-                :param array_like[float],float x_std: The input noise standard deviations:
+                :param x: (n_preds, n_features) The predictive inputs.
+                :param x_std: The input noise standard deviations:
 
                     * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
                     * float: Assume homoskedastic noise.
 
                 :returns: The prior distribution.
-                :rtype: vanguard.base.posteriors.MonteCarloPosteriorCollection
                 """
                 self.set_to_evaluation_mode()
                 likelihoods = (self.posterior_class(posterior_sample)
@@ -112,7 +116,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 likelihood_collection = self.posterior_collection_class(likelihoods)
                 return likelihood_collection
 
-            def _gp_forward(self, x):
+            def _gp_forward(self, x: NDArray[np.floating]) -> Type[ControllerT]:
                 """
                 Run the forward method of the internal GP model.
 
@@ -129,23 +133,23 @@ class BaseHierarchicalHyperparameters(Decorator):
         return InnerClass
 
     @staticmethod
-    def _infinite_posterior_samples(controller, x):
+    def _infinite_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_fuzzy_posterior_samples(controller, x, x_std):
+    def _infinite_fuzzy_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating], x_std: NDArray[np.floating]) -> Generator:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_likelihood_samples(controller, x):
+    def _infinite_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_fuzzy_likelihood_samples(controller, x, x_std):
+    def _infinite_fuzzy_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator:
         raise NotImplementedError
 
 
-def _get_bayesian_hyperparameters(module):
+def _get_bayesian_hyperparameters(module: ModuleT) -> Tuple[list, ...]:
     """
     Find the bayesian hyperparameters of a GPyTorch module (mean, kernel or likelihood).
 
@@ -159,12 +163,11 @@ def _get_bayesian_hyperparameters(module):
         :py:class:`~vanguard.hierarchical.module.BayesianHyperparameters`. If that
         decorator has not been applied, then this function does nothing.
 
-    :param gpytorch.module.Module module: The module from which to extract the hyperparameters.
+    :param module: The module from which to extract the hyperparameters.
 
     :returns:
         * The module, hyperparameter pairs,
         * The modules (at any depth) corresponding to ScaleKernels with point estimate hyperparameters.
-    :rtype: tuple
     """
     point_estimates_scale_kernels = []
 
@@ -183,7 +186,7 @@ def _get_bayesian_hyperparameters(module):
     return module_hyperparameter_pairs, point_estimates_scale_kernels
 
 
-def extract_bayesian_hyperparameters(controller):
+def extract_bayesian_hyperparameters(controller: Type[ControllerT]) -> Tuple[list, ...]:
     """Pull hyperparameters and any point-estimate kernels from a controller's mean, kernel and likelihood."""
     hyperparameter_pairs = []
 
@@ -193,7 +196,7 @@ def extract_bayesian_hyperparameters(controller):
     return hyperparameter_pairs, point_estimate_kernels
 
 
-def set_batch_shape(kwargs, module_name, batch_shape):
+def set_batch_shape(kwargs: Any, module_name: str, batch_shape: Tuple[int, ...]) -> None:
     """Set the batch shape in kwargs dictionary which may not exist."""
     kwargs_name = f"{module_name}_kwargs"
     module_kwargs = kwargs.pop(kwargs_name, {})

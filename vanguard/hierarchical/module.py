@@ -6,8 +6,10 @@ to a module will make its parameters Bayesian, so posteriors can be inferred
 over them rather than point estimates.
 """
 from functools import partial
-
+import gpytorch
 from gpytorch import constraints
+import torch
+from typing import Iterable, List, Tuple, Type, TypeVar, Union
 
 from .hyperparameter import BayesianHyperparameter
 
@@ -18,6 +20,7 @@ DEFAULT_PRIORS = {constraints.Positive: HALF_INTERVAL_PRIOR,
                   constraints.Interval: (0., 1.6**2),
                   type(None): (0., 10.**2)}
 
+ModuleT = TypeVar('ModuleT', bound=gpytorch.module.Module)
 
 class BayesianHyperparameters:
     """
@@ -37,11 +40,11 @@ class BayesianHyperparameters:
         That is, only parameters that are directly created by the init of the class will be
         affected (even if they are buried in further sub-modules).
     """
-    def __init__(self, ignored_parameters=frozenset(), prior_means=None, prior_variances=None):
+    def __init__(self, ignored_parameters: Union[Iterable[str], None] = frozenset(), prior_means: Union[dict, None] = None, prior_variances:  Union[dict, None] = None):
         """
         Initialise self.
 
-        :param Iterable[str],None ignored_parameters: Names of module hyperparameters which
+        :param ignored_parameters: Names of module hyperparameters which
                                                         should not be converted to Bayesian
                                                         parameters.
         """
@@ -53,7 +56,7 @@ class BayesianHyperparameters:
         self.prior_means.update({f"raw_{param}": value for param, value in self.prior_means.items()})
         self.prior_variances.update({f"raw_{param}": value for param, value in self.prior_variances.items()})
 
-    def __call__(self, module_class):
+    def __call__(self, module_class: Type[ModuleT]) -> Type[ModuleT]:
         ignored_parameters = self.ignored_parameters
 
         process_hyperparameter = partial(_process_hyperparameter,
@@ -79,7 +82,7 @@ class BayesianHyperparameters:
         return InnerClass
 
 
-def _process_hyperparameter(module, raw_parameter_name, prior_means, prior_variances):
+def _process_hyperparameter(module: Type[ModuleT], raw_parameter_name: str, prior_means: Union[dict, None], prior_variances: Union[dict, None]) -> Type[BayesianHyperparameter]:
     """
     Determine the information to construct a torch parameter.
 
@@ -87,16 +90,15 @@ def _process_hyperparameter(module, raw_parameter_name, prior_means, prior_varia
     and return the information. The information returned is sufficient to construct
     a hierarchical Bayesian variational version of the same parameter.
 
-    :param gpytorch.Module module: The module that owns the parameter.
-    :param str raw_parameter_name: The name of parameter as an attribute of the module.
+    :param module: The module that owns the parameter.
+    :param raw_parameter_name: The name of parameter as an attribute of the module.
 
-    :returns:
-        * parameter name [str]
-        * parameter shape [torch.Size]
+    :returns: BayesianHyperparameter object with attributes:
+        * parameter raw_name [str]
+        * parameter raw_shape [torch.Size]
         * parameter constraint [gpytorch.constraints.Constraint,None]
-        * parameter prior [(float, float)] - the mean and variance of the
-            diagonal normal prior on the raw parameter
-    :rtype: tuple[type]
+        * parameter prior_mean [float] - the mean of the diagonal normal prior on the raw parameter
+        * parameter prior_variance [float] - the variance of the diagonal normal prior on the raw parameter
     """
     constraint = getattr(module, f"{raw_parameter_name}_constraint", None)
     prior_mean = prior_means.get(raw_parameter_name, None)
@@ -107,7 +109,7 @@ def _process_hyperparameter(module, raw_parameter_name, prior_means, prior_varia
     return BayesianHyperparameter(raw_parameter_name, raw_parameter_shape, constraint, prior_mean, prior_variance)
 
 
-def _discover_modules_and_parameters(top_module, base_modules):
+def _discover_modules_and_parameters(top_module: torch.nn.Module, base_modules: Iterable[torch.nn.Module]) -> Tuple[List[str], List[Tuple[Type[ModuleT], str]]]:
     """
     Recursively identify all recursive modules and corresponding parameters.
 
@@ -117,14 +119,13 @@ def _discover_modules_and_parameters(top_module, base_modules):
     applied to an RBFKernel, and base_modules contained that RBFKernel, then only the parameters
     of the ScaleKernel would be identified.
 
-    :param torch.nn.Module top_module: The module whose parameters will be discovered.
-    :param iterable[torch.nn.Module] base_modules: The modules that will be ignored if found
+    :param top_module: The module whose parameters will be discovered.
+    :param base_modules: The modules that will be ignored if found
                                                     to be sub-modules of top_module.
 
     :returns:
         * The parameters belonging directly to the top_module.
         * The parameters belonging to sub-modules of the top_module.
-    :rtype: tuple[list[tuple[type]]]
     """
     top_level_parameter_names, lower_level_parameter_names = [], []
     for parameter_name, _ in top_module.named_parameters():
@@ -138,17 +139,16 @@ def _discover_modules_and_parameters(top_module, base_modules):
     return top_level_parameter_names, lower_level_parameter_names
 
 
-def _descend_module_tree(top_module, parameter_ancestry):
+def _descend_module_tree(top_module: Type[ModuleT], parameter_ancestry: List[str]) -> Tuple[Type[ModuleT], str]:
     """
     Step through the submodules of a GPyTorch module to find the sub module in direct possession of a parameter.
 
-    :param gpytorch.Module top_module: The top module to search through.
-    :param list[str] parameter_ancestry: Descending list of submodule names and the param name.
+    :param top_module: The top module to search through.
+    :param parameter_ancestry: Descending list of submodule names and the param name.
 
     :returns:
         * The module in direct possession of the parameter.
         * The parameter name only as an attribute of the returned module.
-    :rtype: tuple[str]
     """
     if len(parameter_ancestry) == 1:
         return top_module, parameter_ancestry[0]
