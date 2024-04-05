@@ -197,7 +197,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         return InnerClass
 
     @staticmethod
-    def _infinite_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[PosteriorT]:
+    def _infinite_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[PosteriorT, None, None]:
         """
         Yield posterior samples forever.
 
@@ -210,7 +210,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             yield controller._gp_forward(tx).add_jitter(1e-3)
 
     @staticmethod
-    def _infinite_fuzzy_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[PosteriorT]:
+    def _infinite_fuzzy_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[PosteriorT, None, None]:
         """
         Yield fuzzy posterior samples forever.
 
@@ -232,7 +232,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             yield output
 
     @staticmethod
-    def _infinite_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[LikelihoodT]:
+    def _infinite_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[LikelihoodT, None, None]:
         """Yield likelihood samples forever."""
         func = _posterior_to_likelihood_samples(
             LaplaceHierarchicalHyperparameters._infinite_posterior_samples)
@@ -240,7 +240,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             yield sample
 
     @staticmethod
-    def _infinite_fuzzy_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[LikelihoodT]:
+    def _infinite_fuzzy_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[LikelihoodT, None, None]:
         """Yield fuzzy likelihood samples forever."""
         func = _posterior_to_likelihood_samples(
             LaplaceHierarchicalHyperparameters._infinite_fuzzy_posterior_samples)
@@ -267,10 +267,10 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float=1e-3) -> 
     return inverse_eigenvalues, eigenvectors
 
 
-def _posterior_to_likelihood_samples(posterior_generator: Generator[PosteriorT]) -> Callable:
+def _posterior_to_likelihood_samples(posterior_generator: Generator[PosteriorT, None, None]) -> Callable:
     """Convert an infinite posterior sample generator to generate likelihood samples."""
 
-    def generator(controller: Type[ControllerT], x: NDArray[np.floating], *args) -> Generator[LikelihoodT]:
+    def generator(controller: Type[ControllerT], x: NDArray[np.floating], *args) -> Generator[LikelihoodT, None, None]:
         """Yield likelihood samples forever."""
         for sample in posterior_generator(controller, x, *args):
             shape = controller._decide_noise_shape(controller.posterior_class(sample),

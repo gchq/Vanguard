@@ -99,7 +99,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         return InnerClass
 
     @staticmethod
-    def _infinite_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[PosteriorT]:
+    def _infinite_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[PosteriorT, None, None]:
         """
         Yield posterior samples forever.
 
@@ -113,7 +113,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             yield from output
 
     @staticmethod
-    def _infinite_fuzzy_posterior_samples(controller: Type[ControllerT], x:NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[PosteriorT]:
+    def _infinite_fuzzy_posterior_samples(controller: Type[ControllerT], x:NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[PosteriorT, None, None]:
         """
         Yield fuzzy posterior samples forever.
 
@@ -137,7 +137,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             yield from output
 
     @staticmethod
-    def _infinite_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[LikelihoodT]:
+    def _infinite_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator[LikelihoodT, None, None]:
         """
         Yield likelihood samples forever.
 
@@ -155,7 +155,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 yield likelihood_output
 
     @staticmethod
-    def _infinite_fuzzy_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[LikelihoodT]:
+    def _infinite_fuzzy_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[LikelihoodT, None, None]:
         """
         Yield fuzzy likelihood samples forever.
 
@@ -196,7 +196,7 @@ def _correct_point_estimate_shapes(point_estimate_kernels: List[Type[KernelT]]) 
                                                        parameter=torch.nn.Parameter(torch.zeros([1, ])))
 
 
-def _safe_index_batched_multivariate_normal(distribution: VariationalDistributionT) -> Generator[Any]:
+def _safe_index_batched_multivariate_normal(distribution: VariationalDistributionT) -> Generator[Any, None, None]:
     """
     Delazifies the batched covariance matrix and yields recreated non-batch normals.
 
