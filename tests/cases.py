@@ -2,6 +2,8 @@
 Contains test cases for Vanguard testing.
 """
 import unittest
+from functools import wraps
+from typing import Callable
 
 import numpy as np
 from scipy import stats
@@ -46,3 +48,35 @@ class VanguardTestCase(unittest.TestCase):
             upper = mu + std_dev * sig_fac
         lower = mu - std_dev * sig_fac
         return lower, upper
+
+
+class FlakyTestError(AssertionError):
+    """Raised when a flaky test fails repeatedly."""
+
+
+def flaky(test_method: Callable[..., None]) -> Callable[..., None]:
+    """
+    Mark a test as flaky - flaky tests are rerun up to 3 times, and pass as soon as they pass at least once.
+    """
+    max_attempts = 3  # TODO: make this a parameter
+
+    @wraps(test_method)
+    def repeated_test(self: unittest.TestCase, *args, **kwargs) -> None:
+        last_attempt = max_attempts - 1
+        for attempt_number in range(max_attempts):
+            if attempt_number > 0:
+                # skip the first setUp as unittest does it for us
+                self.setUp()
+
+            try:
+                test_method(self, *args, **kwargs)
+            except AssertionError as ex:
+                if attempt_number == last_attempt:
+                    raise FlakyTestError(
+                        f"Flaky test failed {max_attempts} separate times. Last failure is given above."
+                    ) from ex
+
+            if attempt_number != last_attempt:
+                # skip the last tearDown as unittest does it for us
+                self.tearDown()
+    return repeated_test

@@ -9,7 +9,8 @@ from vanguard.datasets.classification import MulticlassGaussianClassificationDat
 from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 
-from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase, flaky
+from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase
+from ...cases import flaky
 
 
 @DirichletMulticlassClassification(num_classes=4, ignore_methods=("__init__",))

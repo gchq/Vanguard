@@ -8,7 +8,8 @@ from vanguard.classification.likelihoods import DirichletKernelClassifierLikelih
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.vanilla import GaussianGPController
 
-from .case import ClassificationTestCase, flaky
+from .case import ClassificationTestCase
+from ...cases import flaky
 
 
 @DirichletKernelMulticlassClassification(num_classes=4, ignore_methods=("__init__",))
