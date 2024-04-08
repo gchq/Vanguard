@@ -9,9 +9,12 @@ to a function into a dictionary for straightforward access.
 from functools import WRAPPER_ASSIGNMENTS, wraps
 import inspect
 import types
+from typing import Any, Callable, Type, TypeVar
+
+T = TypeVar('T')
 
 
-def process_args(func, *args, **kwargs):
+def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
     """
     Process the arguments for a function.
 
@@ -21,14 +24,13 @@ def process_args(func, *args, **kwargs):
     function, then it will be converted into a bound function
     before :func:`inspect.getcallargs` is called.
 
-    :param function :func: The function for which to process the arguments.
-    :param tuple args: Arguments to be passed to the function. Must be passed as args,
+    :param func: The function for which to process the arguments.
+    :param args: Arguments to be passed to the function. Must be passed as args,
                         i.e. ``process_args(func, 1, 2)``.
-    :param dict kwargs: Keyword arguments to be passed to the function. Must be passed as kwargs,
+    :param kwargs: Keyword arguments to be passed to the function. Must be passed as kwargs,
                             i.e. ``process_args(func, c=1)``.
 
     :returns: A mapping of parameter name to value for all parameters (including default ones) of the function.
-    :rtype: dict
 
     :Example:
         >>> def f(a, b, c=3, **kwargs):
@@ -67,7 +69,7 @@ def process_args(func, *args, **kwargs):
     return parameters_as_kwargs
 
 
-def wraps_class(base_class):
+def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
     r"""
     Update the names and docstrings of an inner class to those of a base class.
 
@@ -103,7 +105,7 @@ def wraps_class(base_class):
         >>> Second.__wrapped__
         <class 'vanguard.decoratorutils.wrapping.First'>
     """
-    def inner_function(inner_class):
+    def inner_function(inner_class: Type[T]) -> Type[T]:
         """Update the values in the inner class."""
         for attribute in WRAPPER_ASSIGNMENTS:
             try:

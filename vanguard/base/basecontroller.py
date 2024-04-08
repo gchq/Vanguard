@@ -4,24 +4,25 @@ The (non-user-facing) base class of Vanguard controllers.
 The :class:`~vanguard.base.basecontroller.BaseGPController` class contains the
 machinery of the :class:`~vanguard.base.gpcontroller.GPController`.
 """
-from itertools import islice
 import warnings
+from itertools import islice
+from typing import Callable, Generator, List, Optional, Tuple, Type, Union
 
 import gpytorch
+import numpy.typing
+import torch
 from gpytorch import constraints
 from gpytorch.models import ApproximateGP, ExactGP
 from gpytorch.utils.errors import NanError
-import torch
-from typing import Callable, Generator, Type, Union, Optional, Tuple
-import numpy.typing
 from numpy import dtype
 
-from . import metrics
 from ..decoratorutils import wraps_class
 from ..models import ExactGPModel
 from ..optimise import NoImprovementError, SmartOptimiser
-from ..utils import infinite_tensor_generator, instantiate_with_subset_of_kwargs
+from ..utils import (infinite_tensor_generator,
+                     instantiate_with_subset_of_kwargs)
 from ..warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
+from . import metrics
 from .posteriors import MonteCarloPosteriorCollection, Posterior
 from .standardise import StandardiseXModule
 
@@ -430,7 +431,7 @@ class BaseGPController:
     def _input_standardise_modules(
             self,
             *modules: torch.nn.Module,
-    ) -> list[torch.nn.Module]:
+    ) -> List[torch.nn.Module]:
         """
         Apply standard input scaling (mean zero, variance 1) to the supplied PyTorch nn.Modules.
 
