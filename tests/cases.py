@@ -3,6 +3,7 @@ Contains test cases for Vanguard testing.
 """
 import unittest
 from functools import wraps
+from typing import TypeVar
 
 import numpy as np
 from scipy import stats
@@ -55,16 +56,17 @@ class FlakyTestError(AssertionError):
 
 
 P = ParamSpec("P")
+T = TypeVar("T")
 
 
-def flaky(test_method: Callable[P, None]) -> Callable[P, None]:
+def flaky(test_method: Callable[P, T]) -> Callable[P, T]:
     """
     Mark a test as flaky - flaky tests are rerun up to 3 times, and pass as soon as they pass at least once.
     """
     max_attempts = 3  # TODO: make this a parameter
 
     @wraps(test_method)
-    def repeated_test(self: unittest.TestCase, *args: P.args, **kwargs: P.kwargs) -> None:
+    def repeated_test(self: unittest.TestCase, *args: P.args, **kwargs: P.kwargs) -> T:
         last_attempt = max_attempts - 1
         for attempt_number in range(max_attempts):
             if attempt_number > 0:
@@ -72,7 +74,7 @@ def flaky(test_method: Callable[P, None]) -> Callable[P, None]:
                 self.setUp()
 
             try:
-                test_method(self, *args, **kwargs)
+                return test_method(self, *args, **kwargs)
             except AssertionError as ex:
                 if attempt_number == last_attempt:
                     raise FlakyTestError(
