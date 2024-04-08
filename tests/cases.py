@@ -3,11 +3,11 @@ Contains test cases for Vanguard testing.
 """
 import unittest
 from functools import wraps
-from typing import TypeVar
+from typing import TypeVar, Callable
 
 import numpy as np
 from scipy import stats
-from typing_extensions import ParamSpec, Callable
+from typing_extensions import ParamSpec
 
 
 class VanguardTestCase(unittest.TestCase):
