@@ -5,11 +5,16 @@ from collections import deque
 from functools import total_ordering
 from heapq import heappush, heappushpop, nlargest
 import inspect
+from typing import TypeVar, Generic, Type, Optional, Generator, Any, Callable, Deque, List, Dict, overload
 
 import numpy as np
+import torch.nn
+from torch import Tensor
+from torch.nn import Module
+from torch.optim import Optimizer
 
-
-class SmartOptimiser:
+OptimiserT = TypeVar("OptimiserT", bound=Optimizer)
+class SmartOptimiser(Generic[OptimiserT]):
     """
     A smart wrapper around the standard optimisers found in PyTorch which can enable early stopping.
 
@@ -17,7 +22,17 @@ class SmartOptimiser:
         When setting the learning rate, using the :meth:`learning_rate` property,
         the parameters for each registered module are re-initialised.
     """
-    def __init__(self, optimiser_class, *initial_modules, early_stop_patience=None, **optimiser_kwargs):
+
+    _stored_initial_state_dicts: Dict[Module, Dict[str, Tensor]]
+    last_n_losses: Deque[float]
+    _internal_optimiser: OptimiserT
+
+    def __init__(self,
+                 optimiser_class: Type[OptimiserT],
+                 *initial_modules: Module,
+                 early_stop_patience: Optional[int] = None,
+                 **optimiser_kwargs
+                 ):
         """
         Initialise self.
 
@@ -27,7 +42,7 @@ class SmartOptimiser:
             internal optimiser.
         :param int,None early_stop_patience: How many consecutive gradient steps of worsening loss to allow before
             stopping early. Defaults to ``None`` which disables early stopping.
-        :param dict optimiser_kwargs: Additional keyword arguments to be passed to the internal optimiser.
+        :param optimiser_kwargs: Additional keyword arguments to be passed to the internal optimiser.
         """
         self._internal_optimiser_class = optimiser_class
         self._internal_optimiser_kwargs = optimiser_kwargs
@@ -47,35 +62,43 @@ class SmartOptimiser:
         self._set_step_method()
 
     @property
-    def learning_rate(self):
+    def learning_rate(self) -> float:
         """Return the learning rate."""
         return self._learning_rate
 
     @learning_rate.setter
-    def learning_rate(self, value):
+    def learning_rate(self, value: float) -> None:
         """Set the value of the learning rate."""
         self._learning_rate = value
         self.reset()
 
-    def parameters(self):
+    def parameters(self) -> Generator[Any, None, None]:
         """Get all parameters known to the optimiser."""
         for param_group in self._internal_optimiser.param_groups:
             yield from param_group["params"]
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset everything."""
         self._reset_module_parameters()
         self._reset_internal_optimiser()
         self.last_n_losses = self._get_last_n_losses_structure(self._early_stop_patience)
 
-    def zero_grad(self, set_to_none=False):
+    def zero_grad(self, set_to_none: bool = False) -> None:
         """Set the gradients of all optimized class:`torch.Tensor`s to zero."""
-        return self._internal_optimiser.zero_grad(set_to_none=set_to_none)
+        self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
-    def step(self, loss, closure=None):
+    @overload
+    def step(self, loss: float, closure: None = ...) -> None:
+        ...
+
+    @overload
+    def step(self, loss: float, closure: Callable[[], float]) -> float:
+        ...
+
+    def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
         step_result = self._step(loss, closure=closure)
-        self.last_n_losses.append(loss.item())
+        self.last_n_losses.append(float(loss))
 
         no_improvement = self.last_n_losses[0] <= min(self.last_n_losses)
         if no_improvement:
@@ -84,24 +107,24 @@ class SmartOptimiser:
                                      f"consecutive steps: [{print_friendly_losses}]")
         return step_result
 
-    def register_module(self, module):
+    def register_module(self, module: Module) -> None:
         """Register the parameters for a module."""
         self._cache_module_parameters(module)
         parameters = {"params": module.parameters()}
         self._internal_optimiser.add_param_group(parameters)
 
-    def update_registered_module(self, module):
+    def update_registered_module(self, module: Module) -> None:
         """Update the parameters of a registered module if the module has been modified."""
         if module not in self._stored_initial_state_dicts:
             raise KeyError("Trying to update a module that isn't registered. Use register_module instead.")
         self._cache_module_parameters(module)
         self._reset_internal_optimiser()
 
-    def set_parameters(self):
+    def set_parameters(self) -> None:
         """Tidy up after optimisation is completed."""
         pass
 
-    def _reset_module_parameters(self):
+    def _reset_module_parameters(self) -> None:
         """
         Load afresh the stored initialisation values for all registered modules' parameters into the module.
 
@@ -112,7 +135,7 @@ class SmartOptimiser:
         for module, state_dict in self._stored_initial_state_dicts.items():
             module.load_state_dict(state_dict)
 
-    def _reset_internal_optimiser(self):
+    def _reset_internal_optimiser(self) -> None:
         """
         Reset the internal optimiser.
 
@@ -124,18 +147,26 @@ class SmartOptimiser:
         self._internal_optimiser = self._internal_optimiser_class(parameters, lr=self._learning_rate,
                                                                   **self._internal_optimiser_kwargs)
 
-    def _step(self, loss, closure=None):
+    @overload
+    def _step(self, loss: float, closure: None = ...) -> None:
+        ...
+
+    @overload
+    def _step(self, loss: float, closure: Callable[[], float]) -> float:
+        ...
+
+    def _step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
         raise NotImplementedError
 
-    def _cache_module_parameters(self, module):
+    def _cache_module_parameters(self, module: Module) -> None:
         """Cache the parameters for a module."""
         state_dict = module.state_dict()
         for parameter_name, parameter in state_dict.items():
             state_dict[parameter_name] = parameter.detach().clone()
         self._stored_initial_state_dicts[module] = state_dict
 
-    def _set_step_method(self):
+    def _set_step_method(self) -> None:
         """Create and set the :meth:`_step` method according to the internal optimiser."""
         internal_step_signature = inspect.signature(self._internal_optimiser.step)
         if "loss" in internal_step_signature.parameters:
@@ -143,14 +174,14 @@ class SmartOptimiser:
                 """Pass the loss to the step function."""
                 return self._internal_optimiser.step(loss, closure=closure)
         else:
-            def new_step(loss, closure=None):
+            def new_step(_, closure=None):
                 """Don't pass the loss to the step function."""
                 return self._internal_optimiser.step(closure=closure)
 
         self._step = new_step
 
     @staticmethod
-    def _get_last_n_losses_structure(n):
+    def _get_last_n_losses_structure(n: Optional[int]) -> Deque[float]:
         """
         Get the structure which will contain the last :math`n` losses.
 
@@ -201,48 +232,51 @@ class Parameters:
     """
     Wrapped for module state_dicts and an objective value of their quality.
     """
-    def __init__(self, module_state_dicts, value=np.inf):
+    def __init__(self, module_state_dicts: Dict[Module, Dict[str, Tensor]], value: float = np.inf):
         """Initialise self."""
         self.parameters = {module: self._clone_state_dict(state_dict)
                            for module, state_dict in module_state_dicts.items()}
         self.priority_value = value
 
-    def __lt__(self, other):
+    def __lt__(self, other: "Parameters") -> bool:
+        # TODO: this should check whether `isinstance(other, Parameters)` and if not return `NotImplemented`
         return self.priority_value < other.priority_value
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Parameters") -> bool:
+        # TODO: as for __lt__ above
         return self.priority_value == other.priority_value
 
     @staticmethod
-    def _clone_state_dict(state_dict):
+    def _clone_state_dict(state_dict: Dict[str, Tensor]) -> Dict[str, Tensor]:
         """Detach and clone a state_dict so its tensors are not changed external to this class."""
         return {key: value.detach().clone() for key, value in state_dict.items()}
 
 
-class MaxLengthHeapQ:
+T = TypeVar("T")
+class MaxLengthHeapQ(Generic[T]):
     """A heapq of fixed maximum length."""
-    def __init__(self, max_length):
+    def __init__(self, max_length: int):
         """Initialise self."""
         self.max_length = max_length
         self.heap = []
 
-    def push(self, item):
+    def push(self, item: T) -> None:
         """Push to the heapq."""
         if len(self.heap) < self.max_length:
             heappush(self.heap, item)
         else:
             heappushpop(self.heap, item)
 
-    def nlargest(self, n):
+    def nlargest(self, n: int) -> List[T]:
         """Get the top elements on the heapq."""
         return nlargest(n, self.heap)
 
-    def best(self):
+    def best(self) -> T:
         """Get the top element."""
         return self.nlargest(1)[0]
 
 
-class GreedySmartOptimiser(SmartOptimiser):
+class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
     """
     Always choose parameters with the minimum loss value, regardless of the iteration at which they occur.
 
@@ -255,26 +289,35 @@ class GreedySmartOptimiser(SmartOptimiser):
     """
     N_RETAINED_PARAMETERS = 1
 
-    def __init__(self, *args, **kwargs):
-        """Initialise self."""
-        super().__init__(*args, **kwargs)
+    def __init__(self,
+                 optimiser_class: Type[OptimiserT],
+                 *initial_modules: Module,
+                 early_stop_patience: Optional[int] = None,
+                 **optimiser_kwargs
+                 ):
+        super().__init__(
+            optimiser_class,
+            *initial_modules,
+            early_stop_patience=early_stop_patience,
+            **optimiser_kwargs
+        )
         self._top_n_parameters = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
 
-    def step(self, *args, **kwargs):
+    def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> None:
         """Step the optimiser and update the record best parameters."""
-        super().step(*args, **kwargs)
+        super().step(loss, closure=closure)
         state_dicts = {module: module.state_dict() for module in self._stored_initial_state_dicts}
         loss_at_current_step = self.last_n_losses[-1]
         parameters = Parameters(state_dicts, -loss_at_current_step)
         self._top_n_parameters.push(parameters)
 
-    def set_parameters(self):
+    def set_parameters(self) -> None:
         """Tidy up after optimisation by setting the parameters to the best."""
         best_parameters = self._top_n_parameters.best().parameters
         for module, state_dict in best_parameters.items():
             module.load_state_dict(state_dict)
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all parameters to start values and clear record of best parameters."""
         super().reset()
         self._top_n_parameters = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
