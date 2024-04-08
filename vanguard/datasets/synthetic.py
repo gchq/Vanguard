@@ -1,7 +1,7 @@
 """
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
-from typing import Callable, Iterable, TypedDict
+from typing import Callable, Iterable, List, Tuple, TypedDict
 
 import numpy as np
 from numpy.typing import NDArray
@@ -46,13 +46,13 @@ class SyntheticDataset(Dataset):
     Synthetic data with homoskedastic noise for testing.
     """
 
-    functions: list[Callable[[NDArray[np.floating]], NDArray[np.floating]]]
+    functions: List[Callable[[NDArray[np.floating]], NDArray[np.floating]]]
 
     def __init__(self,
                  functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
                  output_noise: float = 0.1,
-                 train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
-                 test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
+                 train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
+                 test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
                  n_train_points: int = 30,
                  n_test_points: int = 50,
                  significance: float = 0.025
@@ -87,10 +87,10 @@ class SyntheticDataset(Dataset):
 
     def make_sample_data(self,
                          n_points: int,
-                         input_noise_bounds: tuple[float, float],
+                         input_noise_bounds: Tuple[float, float],
                          output_noise_level: float,
                          interval_length: float = 1
-                         ) -> tuple[tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
+                         ) -> Tuple[Tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
         """
         Create some sample data.
 
@@ -121,8 +121,8 @@ class SyntheticDataset(Dataset):
 
 class _SyntheticDataParams(TypedDict, total=False):
     output_noise: float
-    train_input_noise_bounds: tuple[float, float]
-    test_input_noise_bounds: tuple[float, float]
+    train_input_noise_bounds: Tuple[float, float]
+    test_input_noise_bounds: Tuple[float, float]
     n_train_points: int
     n_test_points: int
     significance: float
@@ -165,8 +165,8 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
     def __init__(self,
                  functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
                  output_noise: float = 0.1,
-                 train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
-                 test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
+                 train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
+                 test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
                  n_train_points: int = 30,
                  n_test_points: int = 50,
                  significance: float = 0.025
@@ -195,13 +195,13 @@ class HigherRankSyntheticDataset(Dataset):
     Synthetic data with rank 2 input features. In this case each x is a 2x2 matrix.
     """
 
-    functions: list[Callable[[NDArray[np.floating]], NDArray[np.floating]]]
+    functions: List[Callable[[NDArray[np.floating]], NDArray[np.floating]]]
 
     def __init__(self,
                  functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
                  output_noise: float = 0.1,
-                 train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
-                 test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
+                 train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
+                 test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
                  n_train_points: int = 30,
                  n_test_points: int = 50,
                  significance: float = 0.025
@@ -238,10 +238,10 @@ class HigherRankSyntheticDataset(Dataset):
 
     def make_sample_data(self,
                          n_points: int,
-                         input_noise_bounds: tuple[float, float],
+                         input_noise_bounds: Tuple[float, float],
                          output_noise_level: float,
                          interval_length: float = 1
-                         ) -> tuple[tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
+                         ) -> Tuple[Tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
         """
         Create some sample data.
 
