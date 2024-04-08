@@ -2,9 +2,9 @@
 The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPController` class.
 """
 import warnings
+from typing import List, Optional, Union
 
 import torch
-from typing import Optional, Union
 import numpy.typing
 
 from .basecontroller import BaseGPController
@@ -60,7 +60,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         For more options see the :class:`~vanguard.base.metrics.MetricsTracker` class.
     """
     _init_params = {}
-    __decorators__: list[Decorator] = []
+    __decorators__: List[Decorator] = []
 
     @property
     def likelihood_noise(self) -> float:
