@@ -2,7 +2,7 @@
 Contains decorators for torch optimisers to apply LR schedulers as part of the optimisation step.
 """
 import inspect
-from typing import Type, TypeVar, Optional, Callable, Generic
+from typing import Type, TypeVar, Optional, Callable, Generic, overload
 
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
@@ -37,6 +37,12 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
                 super().__init__(*args, **kwargs)
                 self._applied_scheduler = scheduler_class(self, *scheduler_args, **scheduler_kwargs)
 
+            @overload
+            def step(self, loss: float, closure: None) -> None: ...
+
+            @overload
+            def step(self, loss: float, closure: Callable[[], float]) -> float: ...
+
             def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
                 ret = super().step(closure=closure)
                 scheduler_step_func(self._applied_scheduler, loss)
@@ -45,9 +51,9 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
         return InnerClass
 
     @staticmethod
-    def _step_scheduler(scheduler: LRSchedulerT, _):
+    def _step_scheduler(scheduler: LRSchedulerT, _) -> None:
         scheduler.step()
 
     @staticmethod
-    def _step_scheduler_with_loss(scheduler: LRSchedulerT, loss):
+    def _step_scheduler_with_loss(scheduler: LRSchedulerT, loss: float) -> None:
         scheduler.step(loss)
