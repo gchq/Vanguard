@@ -247,7 +247,7 @@ class Parameters:
         return self.priority_value == other.priority_value
 
     @staticmethod
-    def _clone_state_dict(state_dict: Dict[str, Tensor]) -> dict[str, Tensor]:
+    def _clone_state_dict(state_dict: Dict[str, Tensor]) -> Dict[str, Tensor]:
         """Detach and clone a state_dict so its tensors are not changed external to this class."""
         return {key: value.detach().clone() for key, value in state_dict.items()}
 
