@@ -44,6 +44,7 @@ class BayesianScaledRBFKernel(ScaleKernel):
     def __init__(self, *args, batch_shape=torch.Size([]), **kwargs):
         super().__init__(BayesianRBFKernel(*args, batch_shape=batch_shape, **kwargs), batch_shape=batch_shape)
 
+
 class KernelConversionTests(unittest.TestCase):
     def test_kernel_bayesian_hyperparameters_prepared(self):
         kernel = BayesianRBFKernel()
@@ -70,7 +71,10 @@ class KernelConversionTests(unittest.TestCase):
                                                  dataset.train_y_std)
         self.assertEqual(gp.hyperparameter_collection.sample_tensor.shape, torch.Size([N_MC_SAMPLES, 1]))
 
+
 T_GPController = TypeVar("T_GPController", bound=GPController)
+
+
 class AbstractTests:
     # namespace the test case ABCs below so they don't get run by unittest
     class TrainingTests(unittest.TestCase, Generic[T_GPController], metaclass=abc.ABCMeta):

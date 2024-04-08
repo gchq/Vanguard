@@ -2,16 +2,15 @@
 Gaussian processes can be trained on inputs with uncertainty.
 """
 from itertools import islice
+from typing import Iterable, NoReturn, Optional, Tuple, Type, Union
 import warnings
 import numpy.typing
 import numpy as np
-from typing import Optional, Iterable
 
 import gpytorch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 import torch
-from typing import Type, NoReturn, Union, Tuple
 
 from .base import GPController
 from .base.posteriors import Posterior

@@ -11,7 +11,7 @@ import gpytorch
 from gpytorch import constraints
 from gpytorch.utils.errors import NanError
 import torch
-from typing import Callable, Generator, Type, Union, Optional, Tuple, List
+from typing import Callable, Generator, List, Optional, Tuple, Type, Union
 import numpy.typing
 from numpy import dtype
 

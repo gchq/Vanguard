@@ -1,6 +1,8 @@
 """
 Contains the CategoricalClassification decorator.
 """
+from typing import Tuple, Type, TypeVar, Union
+
 import numpy as np
 import numpy.typing
 
@@ -11,7 +13,6 @@ from ..variational import VariationalInference
 from .mixin import ClassificationMixin
 from vanguard.base.posteriors.posterior import Posterior
 
-from typing import TypeVar, Type, Union, Tuple
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

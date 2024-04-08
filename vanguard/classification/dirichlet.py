@@ -1,18 +1,19 @@
 """
 Contains the DirichletMulticlassClassification decorator.
 """
+from typing import Tuple, Type, TypeVar, Union
+
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 import torch
 import gpytorch
 import numpy as np
 import numpy.typing
+from typing_extensions import Self
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from .mixin import ClassificationMixin
 
-from typing_extensions import Self
-from typing import TypeVar, Type, Union, Tuple
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2

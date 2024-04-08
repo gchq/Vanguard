@@ -3,10 +3,9 @@ A suite of aggregators to be used with the class:`~vanguard.distribute.decorator
 
 These are responsible for combining the predictions of several independent expert controllers.
 """
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
 
 import torch
-from typing import Optional
 
 
 class BadPriorVarShapeError(ValueError):

@@ -2,9 +2,9 @@
 The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPController` class.
 """
 import warnings
+from typing import List, Optional, Union
 
 import torch
-from typing import Optional, Union, List
 import numpy.typing
 
 from .basecontroller import BaseGPController

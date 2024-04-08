@@ -1,6 +1,8 @@
 """
 Contains the DirichletKernelMulticlassClassification decorator.
 """
+from typing import Tuple, Type, TypeVar, Union
+
 import numpy as np
 import numpy.typing
 import torch
@@ -11,7 +13,6 @@ from .likelihoods import DirichletKernelClassifierLikelihood
 from .mixin import ClassificationMixin
 from .models import InertKernelModel
 
-from typing import TypeVar, Type, Union, Tuple
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
