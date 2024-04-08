@@ -5,19 +5,17 @@ Contains the multitask_model decorator.
 from typing import Type, TypeVar
 
 import gpytorch
-from gpytorch.distributions import MultitaskMultivariateNormal, MultivariateNormal
+import numpy as np
+import torch
+from gpytorch.distributions import (MultitaskMultivariateNormal,
+                                    MultivariateNormal)
 from gpytorch.kernels import Kernel
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.means import Mean
-from gpytorch.models import ApproximateGP, ExactGP, GP
-from gpytorch.variational import (
-    CholeskyVariationalDistribution,
-    IndependentMultitaskVariationalStrategy,
-    LMCVariationalStrategy,
-    VariationalStrategy,
-)
-import numpy as np
-import torch
+from gpytorch.models import GP, ApproximateGP, ExactGP
+from gpytorch.variational import (CholeskyVariationalDistribution,
+                                  IndependentMultitaskVariationalStrategy,
+                                  LMCVariationalStrategy, VariationalStrategy)
 from torch import Tensor
 
 from vanguard.decoratorutils import wraps_class
@@ -92,26 +90,17 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
         """
         Implements an independent multitask variational approximation i.e. entirely separate GPs for each task.
         """
-        def __init__(
-                self,
-                train_x: Tensor,
-                train_y: Tensor,
-                likelihood: GaussianLikelihood,
-                mean_module: Mean,
-                covar_module: Kernel,
-                n_inducing_points: int,
-                num_tasks: int,
-        ) -> None:
+        def __init__(self, train_x: Tensor, train_y: Tensor,
+                     likelihood: GaussianLikelihood, mean_module: Mean,
+                     covar_module: Kernel, n_inducing_points: int, num_tasks: int
+                     ) -> None:
             self.num_tasks = num_tasks
             self.num_latents = self._get_num_latents(mean_module)
             # No suitable base class for ``cls`` to specify this protocol
             super().__init__(train_x, train_y, likelihood, mean_module, covar_module, n_inducing_points)  # pyright: ignore [reportCallIssue]
 
-        def _init_inducing_points(
-                self,
-                train_x: Tensor,
-                n_inducing_points: int,
-        ) -> Tensor:
+        def _init_inducing_points(self, train_x: Tensor,
+                                  n_inducing_points: int) -> Tensor:
             """
             Create the initial inducing points by sampling from the training inputs.
 
@@ -126,17 +115,14 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
                  for latent_dim in range(self.num_latents)])
             return inducing_points
 
-        def _build_variational_strategy(
-                self,
-                base_variational_strategy: VariationalStrategy,
-        ) -> IndependentMultitaskVariationalStrategy:
+        def _build_variational_strategy(self,
+                                        base_variational_strategy: VariationalStrategy
+                                        ) -> IndependentMultitaskVariationalStrategy:
             return gpytorch.variational.IndependentMultitaskVariationalStrategy(base_variational_strategy,
                                                                                 num_tasks=self.num_tasks)
 
-        def _build_variational_distribution(
-                self,
-                n_inducing_points: int,
-        ) -> CholeskyVariationalDistribution:
+        def _build_variational_distribution(self, n_inducing_points: int
+                                            ) -> CholeskyVariationalDistribution:
             return gpytorch.variational.CholeskyVariationalDistribution(
                 n_inducing_points, batch_shape=torch.Size([self.num_latents]))
 
@@ -180,10 +166,9 @@ def lmc_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
         """
         Implements a linear model of co-regionalisation :cite:`Wackernagel03` multitask variational approximation.
         """
-        def _build_variational_strategy(
-                self,
-                base_variational_strategy: VariationalStrategy,
-        ) -> LMCVariationalStrategy:
+        def _build_variational_strategy(self,
+                                        base_variational_strategy: VariationalStrategy
+                                        ) -> LMCVariationalStrategy:
             return gpytorch.variational.LMCVariationalStrategy(base_variational_strategy,
                                                                num_tasks=self.num_tasks,
                                                                num_latents=self.num_latents,

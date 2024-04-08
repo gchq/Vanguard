@@ -7,16 +7,17 @@ converts a controller class into a multitask controller.
 
 from typing import Any, Dict, Optional, Type, TypeVar
 
+import torch
 from gpytorch.kernels import Kernel, MultitaskKernel
 from gpytorch.means import ConstantMean, Mean, MultitaskMean
-import torch
 from torch import Tensor
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .kernel import BatchCompatibleMultitaskKernel
-from .models import independent_variational_multitask_model, lmc_variational_multitask_model, multitask_model
+from .models import (independent_variational_multitask_model,
+                     lmc_variational_multitask_model, multitask_model)
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 T = TypeVar("T")
@@ -33,13 +34,8 @@ class Multitask(Decorator):
             ... class MyController(GPController):
             ...     pass
     """
-    def __init__(
-            self,
-            num_tasks: int,
-            lmc_dimension: Optional[int] = None,
-            rank: int = 1,
-            **kwargs: Any,
-    ) -> None:
+    def __init__(self, num_tasks: int, lmc_dimension: Optional[int] = None,
+                 rank: int = 1, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -48,7 +44,7 @@ class Multitask(Decorator):
                                         to use. Bigger means a more complicated model. Should probably be at least
                                         as big as the number of tasks, unless you want to specifically make low-rank
                                         assumptions about the relationship between tasks.
-                                        Default (None) means LMC isn't not used at all.
+                                        Default (None) means LMC is not used at all.
         :param rank: The rank of the task-task covar matrix in a Kronecker product multitask kernel.
                             Only relevant for exact GP inference.
         """
@@ -128,12 +124,11 @@ class Multitask(Decorator):
                 self._likelihood.fixed_noise = value
 
             @staticmethod
-            def _match_mean_shape_to_kernel(
-                    mean_class: Type[Mean],
-                    kernel_class: Type[Kernel],
-                    mean_kwargs: Dict[str, Any],
-                    kernel_kwargs: Dict[str, Any],
-            ) -> Type[Mean]:
+            def _match_mean_shape_to_kernel(mean_class: Type[Mean],
+                                            kernel_class: Type[Kernel],
+                                            mean_kwargs: Dict[str, Any],
+                                            kernel_kwargs: Dict[str, Any],
+                                            ) -> Type[Mean]:
                 """
                 Construct a mean class suitable for multitask GPs that matches the form of the kernel, if possible.
 
@@ -162,12 +157,8 @@ class Multitask(Decorator):
         return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _batchify(
-        module_class: Type[T],
-        _kwargs: Dict[str, Any],
-        num_tasks: int,
-        lmc_dimension: Optional[int],
-) -> Type[T]:
+def _batchify(module_class: Type[T], _kwargs: Dict[str, Any], num_tasks: int,
+              lmc_dimension: Optional[int]) -> Type[T]:
     """
     Add a batch shape to a class so it can be used for multitask variational GPs.
 
@@ -182,7 +173,7 @@ def _batchify(
 
     @wraps_class(module_class)
     class InnerClass(module_class):
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             batch_shape = kwargs.pop("batch_shape", torch.Size([])) + torch.Size([batch_size])
             kwargs["batch_shape"] = batch_shape
             super().__init__(*args, **kwargs)
@@ -191,11 +182,8 @@ def _batchify(
     return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _multitaskify_kernel(
-        kernel_class: Type[Kernel],
-        num_tasks: int,
-        rank: int = 1,
-) -> Type[MultitaskKernel]:
+def _multitaskify_kernel(kernel_class: Type[Kernel], num_tasks: int, rank: int = 1
+                         ) -> Type[MultitaskKernel]:
     """
     If necessary, make a kernel multitask using the GPyTorch Multitask kernel.
 
