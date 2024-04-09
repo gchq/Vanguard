@@ -4,20 +4,33 @@ Base datasets for Vanguard.
 For the ease of the user, Vanguard contains a number of datasets commonly referenced in examples, and used in tests.
 The dataset instances allow for easy access to the training and testing data through attributes.
 """
-from contextlib import contextmanager
 import os
+from contextlib import contextmanager
+from typing import Generator, Union
 
 import numpy as np
 import urllib3
+from numpy.typing import NDArray
+from urllib3 import BaseHTTPResponse
 
 
 class Dataset:
     """
     Represents an experimental dataset used by Vanguard.
     """
-    def __init__(self, train_x, train_x_std, train_y, train_y_std,
-                 test_x, test_x_std, test_y, test_y_std,
-                 significance):
+
+    def __init__(
+        self,
+        train_x: NDArray[np.floating],
+        train_x_std: Union[float, NDArray[np.floating]],
+        train_y: NDArray[np.floating],
+        train_y_std: Union[float, NDArray[np.floating]],
+        test_x: NDArray[np.floating],
+        test_x_std: Union[float, NDArray[np.floating]],
+        test_y: NDArray[np.floating],
+        test_y_std: Union[float, NDArray[np.floating]],
+        significance: float,
+    ):
         """
         Initialise self.
 
@@ -43,22 +56,22 @@ class Dataset:
         self.significance = significance
 
     @property
-    def num_features(self):
+    def num_features(self) -> int:
         """Return the number of features."""
         return self.train_x.shape[1]
 
     @property
-    def num_training_points(self):
+    def num_training_points(self) -> int:
         """Return the number of training points."""
         return self.train_x.shape[0]
 
     @property
-    def num_testing_points(self):
+    def num_testing_points(self) -> int:
         """Return the number of testing points."""
         return self.test_x.shape[0]
 
     @property
-    def num_points(self):
+    def num_points(self) -> int:
         """Return the number of data points."""
         return self.num_training_points + self.num_testing_points
 
@@ -77,7 +90,7 @@ class FileDataset(Dataset):
 
     @staticmethod
     @contextmanager
-    def _large_file_downloader(url):
+    def _large_file_downloader(url: str) -> Generator[BaseHTTPResponse, None, None]:
         """Download a file within a context manager."""
         http = urllib3.PoolManager()
         request = http.request("GET", url, preload_content=False)
@@ -87,7 +100,7 @@ class FileDataset(Dataset):
             request.release_conn()
 
     @staticmethod
-    def _get_data_path(file_name):
+    def _get_data_path(file_name: str) -> str:
         """
         Get the full path to the file name within the data folder.
 
