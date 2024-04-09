@@ -14,7 +14,7 @@ class BasicTests(unittest.TestCase):
     Basic tests for the LearningRateFinder decorator.
     """
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Code to run before all tests."""
         cls.dataset = SyntheticDataset()
 
@@ -27,6 +27,6 @@ class BasicTests(unittest.TestCase):
         cls.lr_finder = LearningRateFinder(cls.controller)
         cls.lr_finder.find(max_iterations=10, num_divisions=25)
 
-    def test_learning_rate_is_within_bounds(self):
+    def test_learning_rate_is_within_bounds(self) -> None:
         self.assertGreater(self.lr_finder.best_learning_rate, 1e-5)
         self.assertLess(self.lr_finder.best_learning_rate, 10)

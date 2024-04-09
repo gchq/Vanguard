@@ -18,48 +18,48 @@ class CompositionTests(VanguardTestCase):
     """
     Tests for the composition of warp functions.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.affine = warpfunctions.AffineWarpFunction(1, 2)
         self.sinh = warpfunctions.SinhWarpFunction()
 
-    def test_components(self):
+    def test_components(self) -> None:
         """Check the components property."""
         box_cox = warpfunctions.BoxCoxWarpFunction(3)
         composed = self.affine @ self.sinh @ box_cox
         self.assertListEqual([self.affine, self.sinh, box_cox], composed.components)
 
-    def test_bad_compose(self):
+    def test_bad_compose(self) -> None:
         """Should throw a TypeError."""
         with self.assertRaises(TypeError):
             self.affine.compose("bad")
 
-    def test_warp_compose_with_function(self):
+    def test_warp_compose_with_function(self) -> None:
         """Should still be a warp function."""
         composed = self.affine.compose(self.sinh)
         self.assertIsInstance(composed, WarpFunction)
 
-    def test_matmul_with_function(self):
+    def test_matmul_with_function(self) -> None:
         """Should still be a warp function."""
         composed = self.affine @ self.sinh
         self.assertIsInstance(composed, WarpFunction)
 
-    def test_matmul_with_int(self):
+    def test_matmul_with_int(self) -> None:
         """Should still be a warp function."""
         composed = self.affine @ 3
         self.assertIsInstance(composed, WarpFunction)
 
-    def test_matmul_with_negative_int(self):
+    def test_matmul_with_negative_int(self) -> None:
         """Should raise a TypeError."""
         with self.assertRaises(TypeError):
             self.affine @ -3
 
-    def test_matmul_with_float(self):
+    def test_matmul_with_float(self) -> None:
         """Should raise a TypeError."""
         with self.assertRaises(TypeError):
             self.affine @ 2.3
 
-    def test_matmul_with_zero(self):
+    def test_matmul_with_zero(self) -> None:
         """Should be the identity."""
         composed = self.affine @ 0
         self.assertIsInstance(composed, WarpFunction)
@@ -70,7 +70,7 @@ class AssociativityTests(VanguardTestCase):
     """
     Tests for the associativity of warp functions.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         affine = warpfunctions.AffineWarpFunction(1, 2)
         sinh = warpfunctions.SinhWarpFunction()
@@ -83,21 +83,21 @@ class AssociativityTests(VanguardTestCase):
         self.x = torch.as_tensor(np.array([1, 2, 3, 4]), dtype=torch.float32)
         self.y = torch.as_tensor(np.array([10, 14, 18, 2]), dtype=torch.float32)
 
-    def test_forward(self):
+    def test_forward(self) -> None:
         """Results should be the same."""
         np.testing.assert_array_equal(self.warp_1(self.x).detach().cpu().numpy(),
                                       self.warp_2(self.x).detach().cpu().numpy())
         np.testing.assert_array_equal(self.warp_1(self.x).detach().cpu().numpy(),
                                       self.warp_3(self.x).detach().cpu().numpy())
 
-    def test_inverse(self):
+    def test_inverse(self) -> None:
         """Results should be the same."""
         np.testing.assert_array_equal(self.warp_1.inverse(self.y).detach().cpu().numpy(),
                                       self.warp_2.inverse(self.y).detach().cpu().numpy())
         np.testing.assert_array_equal(self.warp_1.inverse(self.y).detach().cpu().numpy(),
                                       self.warp_3.inverse(self.y).detach().cpu().numpy())
 
-    def test_deriv(self):
+    def test_deriv(self) -> None:
         """Results should be the same."""
         np.testing.assert_array_equal(self.warp_1.deriv(self.x).detach().cpu().numpy(),
                                       self.warp_2.deriv(self.x).detach().cpu().numpy())
@@ -109,7 +109,7 @@ class ParameterTests(VanguardTestCase):
 
     DATASET = SyntheticDataset()
 
-    def test_simple_warp_functions_are_different(self):
+    def test_simple_warp_functions_are_different(self) -> None:
         """Two distinct controller instances should have different warp function."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
 
@@ -129,7 +129,7 @@ class ParameterTests(VanguardTestCase):
         self.assertIsNot(gp_1.warp.a, gp_2.warp.a)
         self.assertIsNot(gp_1.warp.b, gp_2.warp.b)
 
-    def test_complicated_warp_functions_are_different(self):
+    def test_complicated_warp_functions_are_different(self) -> None:
         """Two distinct, composed controller instances should have different warp function."""
         affine_1 = warpfunctions.AffineWarpFunction(a=1, b=2)
         sinh = warpfunctions.SinhWarpFunction()
@@ -153,7 +153,7 @@ class ParameterTests(VanguardTestCase):
             for param_1, param_2 in zip(component_1.parameters(), component_2.parameters()):
                 self.assertIsNot(param_1, param_2)
 
-    def test_repeated_warp_functions_are_different(self):
+    def test_repeated_warp_functions_are_different(self) -> None:
         """The components of a repeated warp function should be different."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
 
@@ -171,7 +171,7 @@ class ParameterTests(VanguardTestCase):
         for param_1, param_2 in zip(affine_1.parameters(), affine_2.parameters()):
             self.assertIsNot(param_1, param_2)
 
-    def test_frozen_warp_parameters_do_not_change(self):
+    def test_frozen_warp_parameters_do_not_change(self) -> None:
         """Parameters of a frozen warp should not be altered by fitting."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2).freeze()
         box_cox = warpfunctions.SinhWarpFunction()
@@ -190,7 +190,7 @@ class ParameterTests(VanguardTestCase):
         self.assertEqual(1, fitted_affine.a.item())
         self.assertEqual(2, fitted_affine.b.item())
 
-    def test_simple_warp_parameters_do_change(self):
+    def test_simple_warp_parameters_do_change(self) -> None:
         """Parameters should change after fitting."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
 
@@ -207,7 +207,7 @@ class ParameterTests(VanguardTestCase):
         self.assertNotEqual(1, gp.warp.a.item())
         self.assertNotEqual(0, gp.warp.b.item())
 
-    def test_complicated_warp_parameters_do_change(self):
+    def test_complicated_warp_parameters_do_change(self) -> None:
         """Parameters should change after fitting."""
         arcsinh = warpfunctions.ArcSinhWarpFunction()
         affine_1 = warpfunctions.AffineWarpFunction(a=1, b=2)
@@ -230,7 +230,7 @@ class ParameterTests(VanguardTestCase):
         self.assertNotEqual(3, fitted_affine_2.a.item())
         self.assertNotEqual(-1, fitted_affine_2.b.item())
 
-    def test_repeated_warp_parameters_do_change(self):
+    def test_repeated_warp_parameters_do_change(self) -> None:
         """Parameters should change after fitting."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
 
@@ -261,7 +261,7 @@ class ConstraintTests(VanguardTestCase):
     """
     DATASET = SyntheticDataset()
 
-    def test_fitting_with_unconstrained_warp(self):
+    def test_fitting_with_unconstrained_warp(self) -> None:
         """Should throw a RuntimeError."""
         box_cox = warpfunctions.BoxCoxWarpFunction(lambda_=0)
         affine = warpfunctions.AffineWarpFunction()
@@ -279,7 +279,7 @@ class ConstraintTests(VanguardTestCase):
         with self.assertRaisesRegex(NanError, expected_regex):
             gp.fit(100)
 
-    def test_fitting_with_constrained_warp(self):
+    def test_fitting_with_constrained_warp(self) -> None:
         """Should NOT throw a RuntimeError."""
         box_cox = warpfunctions.BoxCoxWarpFunction(lambda_=0)
         affine = warpfunctions.PositiveAffineWarpFunction(a=1, b=2)

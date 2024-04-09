@@ -9,6 +9,8 @@ from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.mlls import VariationalELBO
 
+from typing import Tuple, List, Any, Callable, TypeVar, Optional
+
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_f
@@ -23,6 +25,10 @@ from vanguard.normalise import NormaliseY
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 from vanguard.warps import SetInputWarp, SetWarp, warpfunctions
+from vanguard.base import GPController
+from vanguard.datasets import Dataset
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
 
 
 @BayesianHyperparameters()
@@ -113,7 +119,7 @@ class CombinationTests(unittest.TestCase):
     """
     Tests for the pairwise combinations of decorators.
     """
-    def test_combinations(self):
+    def test_combinations(self) -> None:
         """Shouldn't throw any errors."""
         for upper_decorator, lower_decorator, controller_kwargs, dataset in self._yield_initialised_decorators():
             with self.subTest(upper=type(upper_decorator).__name__, lower=type(lower_decorator).__name__):
@@ -189,7 +195,7 @@ class CombinationTests(unittest.TestCase):
                     except Exception as error:
                         self.fail(f"Could not predict: {error}")
 
-    def _yield_initialised_decorators(self):
+    def _yield_initialised_decorators(self) -> None:
         """Yield pairs of initialised decorators."""
         for upper_decorator_details, lower_decorator_details in itertools.permutations(DECORATORS.items(), r=2):
             upper_decorator, upper_controller_kwargs, upper_dataset = self._create_decorator(upper_decorator_details)
@@ -210,7 +216,7 @@ class CombinationTests(unittest.TestCase):
             yield upper_decorator, lower_decorator, controller_kwargs, dataset
 
     @staticmethod
-    def _create_decorator(details):
+    def _create_decorator(details: Tuple[Callable, List[Any]]) -> Tuple[Callable, ControllerT, Optional[Dataset]]:
         """Unpack decorator details."""
         decorator_class, all_decorator_kwargs = details
         decorator = decorator_class(ignore_all=True, **all_decorator_kwargs["decorator"])

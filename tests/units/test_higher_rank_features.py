@@ -2,7 +2,12 @@
 Tests for the HigherRankFeatures decorator.
 """
 import unittest
+import torch
 
+from typing import Type, Any
+from typing_extensions import Self
+
+import gpytorch
 from gpytorch.lazy import LazyEvaluatedKernelTensor
 from gpytorch.means import ConstantMean
 
@@ -16,7 +21,7 @@ from vanguard.vanilla import GaussianGPController
 class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
 
     @classmethod
-    def from_lazy_evaluated_kernel_tensor(cls, lazy_tensor):
+    def from_lazy_evaluated_kernel_tensor(cls: Type[Self], lazy_tensor: gpytorch.lazy.Tensor) -> Self:
         kernel = lazy_tensor.kernel
         x1 = lazy_tensor.x1
         x2 = lazy_tensor.x2
@@ -24,7 +29,7 @@ class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
         params = lazy_tensor.params
         return cls(x1, x2, kernel=kernel, last_dim_is_batch=last_dim_is_batch, **params)
 
-    def _size(self):
+    def _size(self) -> torch.Size:
         backup_x1 = self.x1.clone()
         backup_x2 = self.x2.clone()
         self.x1 = self.x1[..., 0]
@@ -36,11 +41,11 @@ class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
 
 
 class HigherRankKernel(ScaledRBFKernel):
-    def forward(self, x1, x2, diag=False, last_dim_is_batch=False, **params):
+    def forward(self, x1: torch.Tensor, x2: torch.Tensor, diag: bool = False, last_dim_is_batch: bool = False, **params: Any) -> torch.Tensor:
         return super().forward(x1.reshape(x1.shape[0], 4), x2.reshape(x2.shape[0], 4), diag=diag,
                                last_dim_is_batch=last_dim_is_batch, **params)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -> torch.Tensor:
         return_tensor = super().__call__(*args, **kwargs)
         if isinstance(return_tensor, LazyEvaluatedKernelTensor):
             return_tensor = TwoDimensionalLazyEvaluatedKernelTensor.from_lazy_evaluated_kernel_tensor(
@@ -49,7 +54,7 @@ class HigherRankKernel(ScaledRBFKernel):
 
 
 class HigherRankMean(ConstantMean):
-    def forward(self, x, *args, **kwargs):
+    def forward(self, x: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
         return super().forward(x.reshape(x.shape[0], 4), *args, **kwargs)
 
 
@@ -64,7 +69,7 @@ class BasicTests(unittest.TestCase):
     Basic tests for the HigherRankFeatures decorator.
     """
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Code to run before all tests."""
         cls.dataset = HigherRankSyntheticDataset()
 
@@ -77,7 +82,7 @@ class BasicTests(unittest.TestCase):
 
         cls.controller.fit(10)
 
-    def test_posterior_shape(self):
+    def test_posterior_shape(self) -> None:
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
         mean, lower, upper = posterior.confidence_interval()
         self.assertEqual(mean.shape, self.dataset.test_y.shape)

@@ -6,15 +6,17 @@ import importlib
 import io
 import os
 import unittest
+from typing import Generator, Optional, Tuple, Any
+from types import ModuleType
 
 import vanguard
 
 
-def yield_all_modules(package):
+def yield_all_modules(package: ModuleType) -> Generator[ModuleType, None, None]:
     """
     Yield all modules in a package.
 
-    :param module package: The package to search.
+    :param package: The package to search.
     """
     package_path = package.__path__[0]
     for root, _, files in os.walk(package_path):
@@ -37,7 +39,7 @@ class DoctestMetaClass(type):
     Each module within Vanguard will lead to the creation of a specific test
     method in the class, which will test the doctests.
     """
-    def __new__(mcs, name, bases, namespace):
+    def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
         cls = super().__new__(mcs, name, bases, namespace)
 
         cls.names_to_suites = {}
@@ -51,7 +53,7 @@ class DoctestMetaClass(type):
 
         for test_name in cls.names_to_suites:
 
-            def inner_test(self):
+            def inner_test(self) -> None:
                 """
                 Should not throw any errors.
 
@@ -78,7 +80,7 @@ class DoctestMetaClass(type):
 class Doctests(unittest.TestCase, metaclass=DoctestMetaClass):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Code to run before all tests."""
         test_stream = io.StringIO()
         cls.test_runner = unittest.TextTestRunner(stream=test_stream)

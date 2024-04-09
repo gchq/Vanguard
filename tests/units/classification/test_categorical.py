@@ -59,7 +59,7 @@ class MulticlassTests(ClassificationTestCase):
     """
     Tests for binary classification.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100,
                                                                num_classes=4)
@@ -69,7 +69,7 @@ class MulticlassTests(ClassificationTestCase):
                                                        marginal_log_likelihood_class=VariationalELBO)
         self.controller.fit(100)
 
-    def test_predictions(self):
+    def test_predictions(self) -> None:
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
@@ -79,7 +79,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
     """
     Tests for fuzzy multiclass classification.
     """
-    def test_fuzzy_predictions_monte_carlo(self):
+    def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20,
                                                                num_classes=4)
@@ -95,7 +95,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.5)
 
-    def test_fuzzy_predictions_uncertainty(self):
+    def test_fuzzy_predictions_uncertainty(self) -> None:
         """Predictions should be close to the values from the test data."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=50,
                                                                num_classes=4)
@@ -124,7 +124,7 @@ class SoftmaxLMCTests(unittest.TestCase):
     """
     Tests for softmax multi-class classification with LMC
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500,
                                                                num_classes=4)
@@ -134,7 +134,7 @@ class SoftmaxLMCTests(unittest.TestCase):
                                                likelihood_class=SoftmaxLikelihood,
                                                marginal_log_likelihood_class=VariationalELBO)
 
-    def test_fitting(self):
+    def test_fitting(self) -> None:
         """Test that fitting is possible."""
         self.controller.fit(10)
 
@@ -143,7 +143,7 @@ class SoftmaxTests(unittest.TestCase):
     """
     Tests for softmax multi-class classification without LMC.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500,
                                                                num_classes=4)
@@ -153,11 +153,11 @@ class SoftmaxTests(unittest.TestCase):
                                             likelihood_class=SoftmaxLikelihood,
                                             marginal_log_likelihood_class=VariationalELBO)
 
-    def test_fitting(self):
+    def test_fitting(self) -> None:
         """Test that fitting is possible."""
         self.controller.fit(10)
 
-    def test_fitting_with_mismatch_mean_errors(self):
+    def test_fitting_with_mismatch_mean_errors(self) -> None:
         """Test for error when creating controller with a mean of the wrong shape."""
         with self.assertRaises(TypeError):
             self.controller = SoftmaxClassifier(self.dataset.train_x, self.dataset.train_y,
@@ -171,7 +171,7 @@ class MultitaskBernoulliClassifierTests(unittest.TestCase):
     """
     Tests for softmax multi-class classification with LMC
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500,
                                                                num_classes=4)
@@ -181,6 +181,6 @@ class MultitaskBernoulliClassifierTests(unittest.TestCase):
                                                        likelihood_class=MultitaskBernoulliLikelihood,
                                                        marginal_log_likelihood_class=VariationalELBO)
 
-    def test_fitting(self):
+    def test_fitting(self) -> None:
         """Test that fitting is possible."""
         self.controller.fit(10)

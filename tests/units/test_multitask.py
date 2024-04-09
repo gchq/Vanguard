@@ -14,11 +14,11 @@ class ErrorTests(unittest.TestCase):
     """
     Tests that the correct error messages are thrown.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = SyntheticDataset()
 
-    def test_single_task_variational(self):
+    def test_single_task_variational(self) -> None:
         """Should throw an error."""
         @Multitask(num_tasks=1)
         @VariationalInference()
@@ -28,7 +28,7 @@ class ErrorTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             MultitaskController(self.dataset.train_x, self.dataset.train_y, ScaledRBFKernel, self.dataset.train_y_std)
 
-    def test_bad_batch_shape(self):
+    def test_bad_batch_shape(self) -> None:
         """Should throw an error."""
         @Multitask(num_tasks=1)
         class MultitaskController(GaussianGPController):

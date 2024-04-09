@@ -8,12 +8,15 @@ from gpytorch.means import ZeroMean
 import numpy as np
 import torch
 
+import numpy.typing
+from typing import Union
+
 
 class BatchScaledRBFKernel(ScaleKernel):
     """
     The recommended starting place for a kernel.
     """
-    def __init__(self, batch_shape):
+    def __init__(self, batch_shape: torch.Size):
         batch_shape = batch_shape if isinstance(batch_shape, torch.Size) else torch.Size([batch_shape])
         super().__init__(RBFKernel(batch_shape=batch_shape), batch_shape=batch_shape)
 
@@ -22,7 +25,7 @@ class BatchScaledMean(ZeroMean):
     """
     A basic mean with batch shape to match the above kernel.
     """
-    def __init__(self, batch_shape):
+    def __init__(self, batch_shape: torch.Size):
         batch_shape = batch_shape if isinstance(batch_shape, torch.Size) else torch.Size([batch_shape])
         super().__init__(batch_shape=batch_shape)
 
@@ -32,13 +35,13 @@ class ClassificationTestCase(unittest.TestCase):
     A base class for classification tests.
     """
     @staticmethod
-    def assertPredictionsEqual(x, y, delta=0):
+    def assertPredictionsEqual(x: numpy.typing.NDArray[np.floating], y: numpy.typing.NDArray[np.floating], delta: Union[float, int] = 0) -> None:
         """
         Assert true if predictions are correct.
 
-        :param array-like x: The first set of predictions.
-        :param array-like y: The second set of predictions.
-        :param float,int delta: The proportion of elements which can be outside of the interval.
+        :param x: The first set of predictions.
+        :param y: The second set of predictions.
+        :param delta: The proportion of elements which can be outside of the interval.
         """
         if x.shape != y.shape:
             raise RuntimeError(f"Shape {x.shape} does not match {y.shape}")

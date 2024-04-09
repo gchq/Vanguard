@@ -3,7 +3,7 @@ Tests for the VariationalHierarchicalHyperparameters and BayesianHyperparameters
 """
 import abc
 import unittest
-from typing import TypeVar, Generic, Type
+from typing import TypeVar, Generic, Type, Any
 
 from gpytorch.constraints import Positive
 from gpytorch.kernels import RBFKernel, ScaleKernel
@@ -35,18 +35,18 @@ class BayesianRBFKernel(RBFKernel):
 
 
 class ScaledBayesianRBFKernel(ScaleKernel):
-    def __init__(self, *args, batch_shape=torch.Size([]), **kwargs):
+    def __init__(self, *args: Any, batch_shape: torch.Size = torch.Size([]), **kwargs: Any):
         super().__init__(BayesianRBFKernel(*args, batch_shape=batch_shape, **kwargs), batch_shape=batch_shape)
 
 
 @BayesianHyperparameters()
 class BayesianScaledRBFKernel(ScaleKernel):
-    def __init__(self, *args, batch_shape=torch.Size([]), **kwargs):
+    def __init__(self, *args: Any, batch_shape: torch.Size = torch.Size([]), **kwargs: Any):
         super().__init__(BayesianRBFKernel(*args, batch_shape=batch_shape, **kwargs), batch_shape=batch_shape)
 
 
 class KernelConversionTests(unittest.TestCase):
-    def test_kernel_bayesian_hyperparameters_prepared(self):
+    def test_kernel_bayesian_hyperparameters_prepared(self) -> None:
         kernel = BayesianRBFKernel()
         self.assertEqual(len(kernel.bayesian_hyperparameters), 1)
         self.assertEqual(kernel.bayesian_hyperparameters[0].raw_name, "raw_lengthscale")
@@ -55,17 +55,17 @@ class KernelConversionTests(unittest.TestCase):
         self.assertEqual(kernel.bayesian_hyperparameters[0].prior_mean, 8)
         self.assertEqual(kernel.bayesian_hyperparameters[0].prior_variance, 6 ** 2)
 
-    def test_kernel_bayesian_hyperparameters_prepared_ard_shape(self):
+    def test_kernel_bayesian_hyperparameters_prepared_ard_shape(self) -> None:
         kernel = BayesianRBFKernel(ard_num_dims=5)
         self.assertEqual(kernel.bayesian_hyperparameters[0].raw_shape, torch.Size([1, 5]))
 
-    def test_kernel_bayesian_hyperparameters_variational_samples(self):
+    def test_kernel_bayesian_hyperparameters_variational_samples(self) -> None:
         dataset = SyntheticDataset()
         gp = VariationalFullBayesianGPController(dataset.train_x, dataset.train_y, BayesianRBFKernel,
                                                  dataset.train_y_std)
         self.assertEqual(gp.kernel.raw_lengthscale.shape, torch.Size([N_MC_SAMPLES, 1, 1]))
 
-    def test_dimension_of_bayesian_variational_hyperparameters(self):
+    def test_dimension_of_bayesian_variational_hyperparameters(self) -> None:
         dataset = SyntheticDataset()
         gp = VariationalFullBayesianGPController(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel,
                                                  dataset.train_y_std)
@@ -91,14 +91,14 @@ class AbstractTests:
             here so that I can type hint it without implementing it!
             """
 
-        def test_non_bayesian_hyperparameters_are_point_estimates(self):
+        def test_non_bayesian_hyperparameters_are_point_estimates(self) -> None:
             dataset = SyntheticDataset()
             gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel,
                                        dataset.train_y_std)
             gp.fit(10)
             self.assertNotEqual(gp.kernel.raw_outputscale.item(), 0.)
 
-        def test_posterior_does_not_fail(self):
+        def test_posterior_does_not_fail(self) -> None:
             dataset = SyntheticDataset()
             gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel,
                                        dataset.train_y_std)
@@ -109,14 +109,14 @@ class AbstractTests:
             self.assertNoNans(upper)
             self.assertNoNans(lower)
 
-        def test_2d_non_bayesian_hyperparameters_are_point_estimates(self):
+        def test_2d_non_bayesian_hyperparameters_are_point_estimates(self) -> None:
             dataset = MultidimensionalSyntheticDataset()
             gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel,
                                        dataset.train_y_std, kernel_kwargs={"ard_num_dims": 2})
             gp.fit(10)
             self.assertNotEqual(gp.kernel.raw_outputscale.item(), 0.)
 
-        def test_2d_posterior_does_not_fail(self):
+        def test_2d_posterior_does_not_fail(self) -> None:
             dataset = MultidimensionalSyntheticDataset()
             gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel,
                                        dataset.train_y_std, kernel_kwargs={"ard_num_dims": 2})
@@ -127,7 +127,7 @@ class AbstractTests:
             self.assertNoNans(upper)
             self.assertNoNans(lower)
 
-        def assertNoNans(self, array):
+        def assertNoNans(self, array) -> None:
             self.assertFalse(np.isnan(array).any())
 
 
@@ -144,7 +144,7 @@ class LaplaceTrainingTests(AbstractTests.TrainingTests[LaplaceFullBayesianGPCont
     """
     controller_class = LaplaceFullBayesianGPController
 
-    def test_set_temperature(self):
+    def test_set_temperature(self) -> None:
         dataset = SyntheticDataset()
         gp = self.controller_class(dataset.train_x, dataset.train_y, BayesianScaledRBFKernel,
                                    dataset.train_y_std)

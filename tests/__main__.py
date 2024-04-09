@@ -5,6 +5,7 @@ import argparse
 import importlib.util
 import unittest
 import warnings
+from typing import List, Any
 
 TESTS = {
     "u": {"help": "run unit tests.", "path": "units"},
@@ -13,7 +14,7 @@ TESTS = {
 }
 
 
-def parse_args():
+def parse_args() -> argparse.ArgumentParser:
     """Parse the command line arguments."""
     parser = argparse.ArgumentParser(description="Run tests for Vanguard.")
 
@@ -38,7 +39,7 @@ def parse_args():
     return args
 
 
-def run_tests():
+def run_tests() -> None:
     """Run all of the tests."""
     args = parse_args()
 
@@ -74,14 +75,14 @@ def run_tests():
         print(result.wasSuccessful())
 
 
-def get_tests_from_module(relative_module_path):
+def get_tests_from_module(relative_module_path: str) -> unittest.TestSuite:
     """Get tests from a module."""
     module = importlib.import_module(get_absolute_import_path(relative_module_path), package=__package__)
     tests = unittest.defaultTestLoader.loadTestsFromModule(module)
     return tests
 
 
-def get_tests_from_package(relative_package_path, components):
+def get_tests_from_package(relative_package_path: str, components: List[Any]) -> unittest.TestSuite:
     """Get all tests from a package."""
     try:
         *directory_path_components, test_pattern_component = components
@@ -99,7 +100,7 @@ def get_tests_from_package(relative_package_path, components):
     return tests
 
 
-def get_absolute_import_path(relative_import_path):
+def get_absolute_import_path(relative_import_path: str) -> str:
     """Get the absolute import path."""
     return __package__ + "." + relative_import_path
 
