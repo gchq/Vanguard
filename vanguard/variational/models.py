@@ -1,7 +1,8 @@
 """
 Contains base models for approximate inference.
 """
-import gpytorch
+from typing import Any
+
 from gpytorch.distributions import MultivariateNormal
 from gpytorch.kernels import Kernel
 from gpytorch.likelihoods import GaussianLikelihood
@@ -14,7 +15,6 @@ import torch
 from torch import Tensor
 
 from vanguard.decoratorutils.wrapping import wraps_class
-
 
 class SVGPModel(ApproximateGP):
     """
@@ -29,16 +29,8 @@ class SVGPModel(ApproximateGP):
     else:
         device = torch.device("cpu")
 
-    def __init__(
-        self,
-        train_x: Tensor,
-        train_y: Tensor,
-        likelihood: GaussianLikelihood,
-        mean_module: Mean,
-        covar_module: Kernel,
-        n_inducing_points: int,
-        **kwargs
-    ):
+    def __init__(self, train_x: Tensor, train_y: Tensor, likelihood: GaussianLikelihood, mean_module: Mean,
+                 covar_module: Kernel, n_inducing_points: int, **kwargs: Any):
         """
         Initialise self.
 
@@ -60,7 +52,7 @@ class SVGPModel(ApproximateGP):
         @wraps_class(variational_strategy_class)
         class SafeVariationalStrategy(variational_strategy_class):
             """A temporary class which will raise an appropriate error when the __call__ method fails."""
-            def __call__(self, *args, **kwargs) -> MultivariateNormal:
+            def __call__(self, *args: Any, **kwargs: Any) -> MultivariateNormal:
                 try:
                     return super().__call__(*args, **kwargs)
                 except RuntimeError:
@@ -98,9 +90,7 @@ class SVGPModel(ApproximateGP):
         inducing_points = train_x[induce_indices]
         return inducing_points.to(self.device)
 
-    def _build_variational_strategy(
-        self, base_variational_strategy: _VariationalStrategy
-    ) -> _VariationalStrategy:
+    def _build_variational_strategy(self, base_variational_strategy: _VariationalStrategy) -> _VariationalStrategy:
         """
         Construct the final variational strategy from the intermediate strategy.
 
@@ -118,9 +108,8 @@ class SVGPModel(ApproximateGP):
         """
         return CholeskyVariationalDistribution(n_inducing_points)
 
-    def _build_base_variational_strategy(
-        self, inducing_points: Tensor, variational_distribution: _VariationalDistribution
-    ) -> _VariationalStrategy:
+    def _build_base_variational_strategy(self, inducing_points: Tensor,
+                                         variational_distribution: _VariationalDistribution) -> _VariationalStrategy:
         """
         Build the base variational strategy.
 
