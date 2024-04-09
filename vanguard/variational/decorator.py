@@ -53,17 +53,17 @@ class VariationalInference(Decorator):
         """
         Initialise self.
 
-        :param int,None n_inducing_points: The size of the inducing point approximation. Defaults to None, meaning
+        :param n_inducing_points: The size of the inducing point approximation. Defaults to None, meaning
                                            that the number of inducing points will be set to the number of points.
-        :param int n_likelihood_samples: If the marginal likelihood cannot be computed exactly (which is usually the
+        :param n_likelihood_samples: If the marginal likelihood cannot be computed exactly (which is usually the
                                          case when using variational inference), it is approximated using
                                          MC integration by sampling from the variational posterior and averaging over
                                          the likelihood values for each sample. This is the number of samples to use.
-        :param type,None variational_strategy_class: The class for the variational strategy to use.
+        :param variational_strategy_class: The class for the variational strategy to use.
                                                      Default behaviour is defined in
                                                      class:`gpytorch.variational.VariationalStrategy`
                                                      (:cite:`Hensman15`).
-        :param type,None variational_distribution_class: The class for the variational distribution to use.
+        :param variational_distribution_class: The class for the variational distribution to use.
             Default behaviour is defined in
             class:`gpytorch.variational.CholeskyVariationalDistribution` (Cholesky).
         """
