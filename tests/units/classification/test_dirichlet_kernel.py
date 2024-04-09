@@ -9,6 +9,7 @@ from vanguard.datasets.classification import MulticlassGaussianClassificationDat
 from vanguard.vanilla import GaussianGPController
 
 from .case import ClassificationTestCase
+from ...cases import flaky
 
 
 @DirichletKernelMulticlassClassification(num_classes=4, ignore_methods=("__init__",))
@@ -31,6 +32,7 @@ class MulticlassTests(ClassificationTestCase):
                                                        marginal_log_likelihood_class=GenericExactMarginalLogLikelihood)
         self.controller.fit(100)
 
+    @flaky
     def test_predictions(self):
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)

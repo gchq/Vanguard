@@ -1,7 +1,7 @@
 """
 Enabling multitask Gaussian processes.
 
-The :py:class:`~vanguard.multitask.decorator.Multitask` decorator
+The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
 from gpytorch.kernels import MultitaskKernel
@@ -118,15 +118,15 @@ class Multitask(Decorator):
                 """
                 Construct a mean class suitable for multitask GPs that matches the form of the kernel, if possible.
 
-                :param mean_class: An uninstantiated :py:class:`gpytorch.means.Mean`.
-                :param kernel_class: An uninstantiated :py:class:`gpytorch.kernels.Kernel`.
+                :param mean_class: An uninstantiated :class:`gpytorch.means.Mean`.
+                :param kernel_class: An uninstantiated :class:`gpytorch.kernels.Kernel`.
                 :param dict mean_kwargs: Keyword arguments to be passed to the mean_class constructor.
                 :param dict kernel_kwargs: Keyword arguments to be passed to the kernel_class constructor.
-                :returns: An uninstantiated :py:class:`gpytorch.means.Mean` like mean_class but modified to have the
+                :returns: An uninstantiated class:`gpytorch.means.Mean` like mean_class but modified to have the
                           same form/shape as kernel_class, if possible.
                 :rtype: type
                 :raises TypeError: If the supplied mean_class has a batch_shape and it doesn't match the batch_shape of
-                                    the kernel_class, or is a :py:class:`gpytorch.kernels.MultitaskKernel` and has
+                                    the kernel_class, or is a class:`gpytorch.kernels.MultitaskKernel` and has
                                     num_tasks which doesn't match that of the kernel_class.
                 """
                 example_kernel = kernel_class(**kernel_kwargs)

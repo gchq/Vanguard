@@ -1,34 +1,36 @@
 """
 Wrapping functions for use in Vanguard decorators.
 
-Applying the :py:func:`wraps_class` decorator to a class will
+Applying the :func:`wraps_class` decorator to a class will
 update all method names and docstrings with those of the super class. The
-:py:func:`process_args` function is a helper function for organising arguments
+:func:`process_args` function is a helper function for organising arguments
 to a function into a dictionary for straightforward access.
 """
 from functools import WRAPPER_ASSIGNMENTS, wraps
 import inspect
 import types
+from typing import Any, Callable, Type, TypeVar
+
+T = TypeVar('T')
 
 
-def process_args(func, *args, **kwargs):
+def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
     """
     Process the arguments for a function.
 
-    Similar to :py:func:`inspect.getcallargs`, except it
+    Similar to :func:`inspect.getcallargs`, except it
     will repeatedly follow the ``__wrapped__`` attribute to
     get the correct function.  If func is passed as a bound
     function, then it will be converted into a bound function
-    before :py:func:`inspect.getcallargs` is called.
+    before :func:`inspect.getcallargs` is called.
 
-    :param function func: The function for which to process the arguments.
-    :param tuple args: Arguments to be passed to the function. Must be passed as args,
+    :param func: The function for which to process the arguments.
+    :param args: Arguments to be passed to the function. Must be passed as args,
                         i.e. ``process_args(func, 1, 2)``.
-    :param dict kwargs: Keyword arguments to be passed to the function. Must be passed as kwargs,
+    :param kwargs: Keyword arguments to be passed to the function. Must be passed as kwargs,
                             i.e. ``process_args(func, c=1)``.
 
     :returns: A mapping of parameter name to value for all parameters (including default ones) of the function.
-    :rtype: dict
 
     :Example:
         >>> def f(a, b, c=3, **kwargs):
@@ -67,18 +69,18 @@ def process_args(func, *args, **kwargs):
     return parameters_as_kwargs
 
 
-def wraps_class(base_class):
+def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
     r"""
     Update the names and docstrings of an inner class to those of a base class.
 
     This decorator controls the wrapping of an inner class, ensuring that all
     methods of the final class maintain the same names and docstrings as the
-    inner class. Very similar to :py:func:`functools.wraps`.
+    inner class. Very similar to :func:`functools.wraps`.
 
     .. note::
         This decorator will return a class which seems almost identical to the
         base class, but a ``__wrapped__`` attribute will be added to point to the
-        original class. All methods will be wrapped using :py:func:`functools.wraps`.
+        original class. All methods will be wrapped using :func:`functools.wraps`.
 
     :Example:
         >>> import inspect
@@ -103,7 +105,7 @@ def wraps_class(base_class):
         >>> Second.__wrapped__
         <class 'vanguard.decoratorutils.wrapping.First'>
     """
-    def inner_function(inner_class):
+    def inner_function(inner_class: Type[T]) -> Type[T]:
         """Update the values in the inner class."""
         for attribute in WRAPPER_ASSIGNMENTS:
             try:

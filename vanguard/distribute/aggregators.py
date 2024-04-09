@@ -1,8 +1,10 @@
 """
-A suite of aggregators to be used with the :py:class:`~vanguard.distribute.decorator.Distributed` decorator.
+A suite of aggregators to be used with the class:`~vanguard.distribute.decorator.Distributed` decorator.
 
 These are responsible for combining the predictions of several independent expert controllers.
 """
+from typing import List, Optional, Tuple
+
 import torch
 
 
@@ -16,7 +18,7 @@ class BaseAggregator:
 
     All aggregators should inherit from this class.
     """
-    def __init__(self, means, covars, prior_var=None):
+    def __init__(self, means: List[torch.Tensor], covars: List[torch.Tensor], prior_var: Optional[torch.Tensor] = None):
         """
         Initialise self.
 
@@ -40,7 +42,7 @@ class BaseAggregator:
                 raise BadPriorVarShapeError(f"Prior var shape {self.prior_var.shape} "
                                             f"doesn't match variances shape {self.variances.shape}")
 
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single PoE prediction.
 
@@ -49,14 +51,14 @@ class BaseAggregator:
         """
         raise NotImplementedError
 
-    def _beta_correction(self, delta_diff, delta_val):
+    def _beta_correction(self, delta_diff: torch.Tensor, delta_val: torch.Tensor) -> torch.Tensor:
         """
         Implement the correction to experts' weights found in [CITATION NEEDED]_ and [CITATION NEEDED]_.
 
         .. note::
             Delta is as defined in [CITATION NEEDED]_ and [CITATION NEEDED]_ (difference in differential entropy between
-            prior and posterior [Deisenroth15]_). ``delta_diff`` and ``delta_val`` are the same in
-            :py:class:`XBCMAggregator`.
+            prior and posterior :cite:`Deisenroth15`). ``delta_diff`` and ``delta_val`` are the same in
+            class:`XBCMAggregator`.
 
         :param torch.Tensor delta_diff: The delta used to determine if correction is applied
                 (proxy for in-vs-out of training data).
@@ -72,7 +74,7 @@ class BaseAggregator:
         return corrected_weights
 
     @staticmethod
-    def _make_pseudo_covar(variance):
+    def _make_pseudo_covar(variance: torch.Tensor) -> torch.Tensor:
         """Convert a variance to a covariance matrix, where all entries except the diagonal are zeros."""
         dim = variance.size(-1)
         covar = torch.zeros((dim, dim), dtype=variance.dtype)
@@ -82,7 +84,7 @@ class BaseAggregator:
 
 class POEAggregator(BaseAggregator):
     r"""
-    Implements the Product-of-Experts method of [Deisenroth15]_. Formulae for covariances from [Cao14]_.
+    Implements the Product-of-Experts method of :cite:`Deisenroth15`. Formulae for covariances from :cite:`Cao14`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -91,7 +93,7 @@ class POEAggregator(BaseAggregator):
         \mu &= \sigma^{2} \sum_{i} \sigma_{i}^{-2}(x) \mu_{i}(x) \\
         \sigma^{-2} &= \sum_{i} \sigma_{i}^{-2}(x)
     """
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         covar_inverses = torch.stack([torch.inverse(covar) for covar in self.covars])
         covar = torch.inverse(torch.sum(covar_inverses, dim=0))
         mean = torch.tensordot(
@@ -114,14 +116,14 @@ class EKPOEAggregator(POEAggregator):
         \mu &= M \sigma^{2} \sum_{i} \sigma_{i}^{-2}(x) \mu_{i}(x) \\
         \sigma^{-2} &= \frac{1}{M} \sum_{i} \sigma_{i}^{-2}(x)
     """
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         mean, variance = super().aggregate()
         return mean, variance * self.n_experts
 
 
 class GPOEAggregator(BaseAggregator):
     r"""
-    Implements the Generalised Product-of-Experts method of [Deisenroth15]_.
+    Implements the Generalised Product-of-Experts method of :cite:`Deisenroth15`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -132,7 +134,7 @@ class GPOEAggregator(BaseAggregator):
 
     where :math:`\beta_{i}=\frac{1}{M}`.
     """
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         beta = torch.ones_like(self.means) / self.n_experts
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
         variance = torch.sum(beta / self.variances, dim=0)
@@ -141,7 +143,7 @@ class GPOEAggregator(BaseAggregator):
 
 class BCMAggregator(BaseAggregator):
     r"""
-    Implements the Bayesian Committee Machine method of [Deisenroth15]_.
+    Implements the Bayesian Committee Machine method of :cite:`Deisenroth15`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -153,7 +155,7 @@ class BCMAggregator(BaseAggregator):
     where :math:`\sigma_{**}^{-2}` is the diagonal of the covariance matrix formed by applying the kernel
     on all pairs of points in :math:`x`.
     """
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         beta = torch.ones_like(self.means)
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
         variance = torch.sum(beta / self.variances, dim=0)
@@ -163,7 +165,7 @@ class BCMAggregator(BaseAggregator):
 
 class RBCMAggregator(BaseAggregator):
     r"""
-    Implements the Robust Bayesian Committee Machine method of [Deisenroth15]_.
+    Implements the Robust Bayesian Committee Machine method of :cite:`Deisenroth15`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -176,7 +178,7 @@ class RBCMAggregator(BaseAggregator):
     between the prior and the posterior, and :math:`\sigma_{**}^{-2}` is the diagonal of the
     covariance matrix formed by applying the kernel on all pairs of points in :math:`x`.
     """
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         beta = 0.5 * (torch.log(self.prior_var) - torch.log(self.variances)).reshape(self.n_experts, -1)
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
         variance = torch.sum((beta / self.variances) - (beta / self.prior_var), dim=0) + (1 / self.prior_var)
@@ -187,10 +189,10 @@ class XBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in :py:class:`RBCMAggregator`, but with a correction on \beta.
-    (For further details see :py:meth:`BaseAggregator._beta_correction`.)
+    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         delta = 0.5 * (torch.log(self.prior_var) - torch.log(self.variances)).reshape(self.n_experts, -1)
         beta = self._beta_correction(delta, delta)
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
@@ -200,7 +202,7 @@ class XBCMAggregator(BaseAggregator):
 
 class GRBCMAggregator(BaseAggregator):
     r"""
-    Implements the Generalised Robust Bayesian Committee Machine method of [Liu18]_.
+    Implements the Generalised Robust Bayesian Committee Machine method of :cite:`Liu18`.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -219,7 +221,7 @@ class GRBCMAggregator(BaseAggregator):
             0.5(\log \sigma_{1}^{2}(x) - \log \sigma_{i}^{2}(x)), & 3 \leq i \leq M
         \end{cases}
     """
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         comm_mean = self.means[0]
         comm_var = self.variances[0]
         means = self.means[1:]
@@ -237,10 +239,10 @@ class XGRBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Generalised Robust Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in :py:class:`RBCMAggregator`, but with a correction on \beta.
-    (For further details see :py:meth:`BaseAggregator._beta_correction`.)
+    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
-    def aggregate(self):
+    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         comm_mean = self.means[0]
         comm_var = self.variances[0]
         means = self.means[1:]

@@ -91,7 +91,7 @@ class FileDataset(Dataset):
     A Vanguard dataset which requires a file to be loaded.
 
     If missing, this file can be
-    downloaded with the :py:meth:`~vanguard.datasets.basedataset.FileDataset.download` method.
+    downloaded with the :meth:`~vanguard.datasets.basedataset.FileDataset.download` method.
     """
     @classmethod
     def download(cls):

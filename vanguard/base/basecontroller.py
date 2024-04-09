@@ -1,8 +1,8 @@
 """
 The (non-user-facing) base class of Vanguard controllers.
 
-The :py:class:`~vanguard.base.basecontroller.BaseGPController` class contains the
-machinery of the :py:class:`~vanguard.base.gpcontroller.GPController`.
+The :class:`~vanguard.base.basecontroller.BaseGPController` class contains the
+machinery of the :class:`~vanguard.base.gpcontroller.GPController`.
 """
 from itertools import islice
 import warnings
@@ -11,27 +11,68 @@ import gpytorch
 from gpytorch import constraints
 from gpytorch.utils.errors import NanError
 import torch
+from typing import Callable, Generator, List, Optional, Tuple, Type, Union
+import numpy.typing
+from numpy import dtype
 
 from . import metrics
 from ..decoratorutils import wraps_class
 from ..models import ExactGPModel
-from ..optimise import NoImprovementError
+from ..optimise import NoImprovementError, SmartOptimiser
 from ..utils import infinite_tensor_generator, instantiate_with_subset_of_kwargs
 from ..warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
 from .posteriors import MonteCarloPosteriorCollection, Posterior
 from .standardise import StandardiseXModule
 
 NOISE_LOWER_BOUND = 1e-3
+ttypes = Type[Union[torch.FloatTensor, torch.DoubleTensor, torch.IntTensor, torch.BoolTensor,
+              torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor,
+              torch.ShortTensor, torch.LongTensor]]
+ttypes_cuda = Type[Union[torch.cuda.FloatTensor, torch.cuda.DoubleTensor, torch.cuda.IntTensor,
+                   torch.cuda.BoolTensor, torch.cuda.HalfTensor, torch.cuda.BFloat16Tensor,
+                   torch.cuda.ByteTensor, torch.cuda.CharTensor, torch.cuda.ShortTensor,
+                   torch.cuda.LongTensor]]
 
 
 class BaseGPController:
     """
-    Contains the base machinery for the :py:class:`~vanguard.base.gpcontroller.GPController` class.
+    Contains the base machinery for the :class:`~vanguard.base.gpcontroller.GPController` class.
+
+    :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values)
+    :param train_y: (n_samples,) or (n_samples, 1) The responsive values.
+    :param kernel_class: An uninstantiated subclass of :py:class:`gpytorch.kernels.Kernel`.
+    :param mean_class: An uninstantiated subclass of :py:class:`gpytorch.means.Mean` to use in the prior GP.
+    :param y_std: The observation noise standard deviation:
+
+        * *ArrayLike[float]* (n_samples,): known heteroskedastic noise,
+        * *float*: known homoskedastic noise assumed.
+
+    :param likelihood_class: An uninstantiated subclass of :py:class:`gpytorch.likelihoods.Likelihood`.
+            The default is :py:class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
+    :param marginal_log_likelihood_class: An uninstantiated subclass of an MLL from
+            :py:mod:`gpytorch.mlls`. The default is :py:class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
+    :param optimiser_class: An uninstantiated :py:class:`torch.optim.Optimizer` class used for
+            gradient-based learning of hyperparameters. The default is :py:class:`torch.optim.Adam`.
+
+    :Keyword Arguments:
+
+        * **kernel_kwargs** *(dict)*: Keyword arguments to be passed to the kernel_class constructor.
+        * **mean_kwargs** *(dict)*: Keyword arguments to be passed to the mean_class constructor.
+        * **likelihood_kwargs** *(dict)*: Keyword arguments to be passed to the likelihood_class constructor.
+        * **gp_kwargs** *(dict)*: Keyword arguments to be passed to the gp_model_class constructor.
+        * **mll_kwargs** *(dict)*: Keyword arguments to be passed to the
+          marginal_log_likelihood_class constructor.
+        * **optim_kwargs** *(dict)*: Keyword arguments to be passed to the optimiser_class constructor.
+        * **batch_size** *(int,None)*: The batch size to use in SGD. If ``None``, the whole dataset is
+          used at each iteration.
+        * **additional_metrics** *(List[function])*: A list of additional metrics to track.
+
+
     """
     if torch.cuda.is_available():
-        _default_tensor_type = torch.cuda.FloatTensor
+        _default_tensor_type: ttypes_cuda = torch.cuda.FloatTensor
     else:
-        _default_tensor_type = torch.FloatTensor
+        _default_tensor_type: ttypes = torch.FloatTensor
 
     torch.set_default_tensor_type(_default_tensor_type)
 
@@ -39,43 +80,22 @@ class BaseGPController:
     posterior_class = Posterior
     posterior_collection_class = MonteCarloPosteriorCollection
 
-    _y_batch_axis = 0
+    _y_batch_axis: int = 0
 
-    def __init__(self, train_x, train_y, kernel_class, mean_class, y_std, likelihood_class,
-                 marginal_log_likelihood_class, optimiser_class, smart_optimiser_class, **kwargs):
-        """
-        Initialise self.
-
-        :param array_like[float] train_x: (n_samples, n_features) The mean of the inputs (or the observed values)
-        :param array_like[float] train_y: (n_samples,) or (n_samples, 1) The responsive values.
-        :param type kernel_class: An uninstantiated subclass of :py:class:`gpytorch.kernels.Kernel`.
-        :param type mean_class: An uninstantiated subclass of :py:class:`gpytorch.means.Mean` to use in the prior GP.
-        :param array_like[float],float y_std: The observation noise standard deviation:
-
-            * *array_like[float]* (n_samples,): known heteroskedastic noise,
-            * *float*: known homoskedastic noise assumed.
-
-        :param type likelihood_class: An uninstantiated subclass of :py:class:`gpytorch.likelihoods.Likelihood`.
-                The default is :py:class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
-        :param type marginal_log_likelihood_class: An uninstantiated subclass of of an MLL from
-                :py:mod:`gpytorch.mlls`. The default is :py:class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
-        :param type optimiser_class: An uninstantiated :py:class:`torch.optim.Optimizer` class used for
-                gradient-based learning of hyperparameters. The default is :py:class:`torch.optim.Adam`.
-
-        :Keyword Arguments:
-
-            * **kernel_kwargs** *(dict)*: Keyword arguments to be passed to the kernel_class constructor.
-            * **mean_kwargs** *(dict)*: Keyword arguments to be passed to the mean_class constructor.
-            * **likelihood_kwargs** *(dict)*: Keyword arguments to be passed to the likelihood_class constructor.
-            * **gp_kwargs** *(dict)*: Keyword arguments to be passed to the gp_model_class constructor.
-            * **mll_kwargs** *(dict)*: Keyword arguments to be passed to the
-              marginal_log_likelihood_class constructor.
-            * **optim_kwargs** *(dict)*: Keyword arguments to be passed to the optimiser_class constructor.
-            * **batch_size** *(int,None)*: The batch size to use in SGD. If ``None``, the whole dataset is
-              used at each iteration.
-            * **additional_metrics** *(List[function])*: A list of additional metrics to track.
-
-        """
+    def __init__(
+            self,
+            train_x: Union[numpy.typing.NDArray[float], float],
+            train_y: Union[numpy.typing.NDArray[float], float],
+            kernel_class: Type[gpytorch.kernels.Kernel],
+            mean_class: Type[gpytorch.means.Mean],
+            y_std: Union[numpy.typing.NDArray[float], float],
+            likelihood_class: Type[gpytorch.likelihoods.Likelihood],
+            marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
+            optimiser_class: Type[torch.optim.Optimizer],
+            smart_optimiser_class: Type[SmartOptimiser],
+            **kwargs
+    ):
+        """Initialise self."""
         if train_x.ndim == 1:
             self.train_x = torch.tensor(train_x, dtype=self.dtype, device="cpu").unsqueeze(1)
         else:
@@ -146,12 +166,12 @@ class BaseGPController:
         self.warn_normalise_y()
 
     @property
-    def dtype(self):
+    def dtype(self) -> Optional[dtype]:
         """Return the default dtype of the controller."""
         return self._default_tensor_type.dtype
 
     @property
-    def device(self):
+    def device(self) -> torch.device:
         """Return the default device of the controller."""
         if self._default_tensor_type.is_cuda:
             return torch.device("cuda:0")
@@ -159,30 +179,32 @@ class BaseGPController:
             return torch.device("cpu")
 
     @property
-    def _likelihood(self):
+    def _likelihood(self) -> gpytorch.likelihoods.Likelihood:
         """Return the likelihood of the model."""
         return self._gp.likelihood
 
-    def set_to_training_mode(self):
+    def set_to_training_mode(self) -> None:
         """Set trainable parameters to training mode."""
         self._gp.train()
         self._set_requires_grad(True)
 
-    def set_to_evaluation_mode(self):
+    def set_to_evaluation_mode(self) -> None:
         """Set trainable parameters to evaluation mode."""
         self._gp.eval()
         self._set_requires_grad(False)
 
-    def _predictive_likelihood(self, x):
+    def _predictive_likelihood(
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
+    ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
 
         .. warning:
             We assume either a homoskedastic noise model, or a pre-specified noise level via the y_std arg.
 
-        :param array_like[float] x: (n_preds, n_features) The points at which to obtain the likelihood.
+        :param x: (n_preds, n_features) The points at which to obtain the likelihood.
         :returns: The marginal distribution.
-        :rtype: vanguard.base.posteriors.Posterior
         """
         posterior = self._get_posterior_over_point_in_eval_mode(x)
         try:
@@ -194,14 +216,17 @@ class BaseGPController:
         output = self._likelihood(posterior.distribution, noise=noise)
         return self.posterior_class(output)
 
-    def _fuzzy_predictive_likelihood(self, x, x_std):
+    def _fuzzy_predictive_likelihood(
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
+    ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.
 
-        :param array_like[float] x: (n_preds, n_features) The points at which to obtain the likelihood.
-        :param array_like[float] x_std: (n_preds, n_features) The std-dev of input points.
+        :param x: (n_preds, n_features) The points at which to obtain the likelihood.
+        :param x_std: (n_preds, n_features) The std-dev of input points.
         :returns: The marginal distribution.
-        :rtype: vanguard.base.posteriors.Posterior
         """
         prediction_output = self._get_posterior_over_fuzzy_point_in_eval_mode(x, x_std)
         shape = self._decide_noise_shape(prediction_output, x)
@@ -209,27 +234,36 @@ class BaseGPController:
         output = self._likelihood(prediction_output.condensed_distribution, noise=noise)
         return self.posterior_class(output)
 
-    def _get_posterior_over_fuzzy_point_in_eval_mode(self, x, x_std):
+    def _get_posterior_over_fuzzy_point_in_eval_mode(
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
+    ) -> Posterior:
         """
         Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
 
         .. warning:
-            The ``n_features`` must match with :py:attr:`self.dim`.
+            The ``n_features`` must match with :attr:`self.dim`.
 
-        :param array_like[float] x: (n_preds, n_features) The predictive inputs.
-        :param array_like[float],float x_std: The input noise standard deviations:
+        :param x: (n_preds, n_features) The predictive inputs.
+        :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
             * float: Assume homoskedastic noise.
 
         :returns: The prior distribution.
-        :rtype: vanguard.base.posteriors.MonteCarloPosteriorCollection
         """
         tx = torch.tensor(x, dtype=self.dtype, device=self.device)
         tx_std = self._process_x_std(x_std).to(self.device)
 
-        def infinite_x_samples(group_size=100):
-            """Yield infinitely many samples."""
+        def infinite_x_samples(
+                group_size: int = 100,
+        ) -> Generator[torch.Tensor, None, None]:
+            """
+            Yield infinitely many samples.
+
+            :param group_size: The group size for sampling.
+            """
             while True:
                 sample_shape = torch.Size([group_size]) + tx.shape
                 group_of_samples = torch.randn(size=sample_shape) * tx_std + tx
@@ -239,19 +273,29 @@ class BaseGPController:
         posterior_collection = self.posterior_collection_class(posteriors)
         return posterior_collection
 
-    def _set_requires_grad(self, value):
-        """Set the requires grad flag of all trainable params."""
+    def _set_requires_grad(
+            self,
+            value: bool,
+    ) -> None:
+        """
+        Set the required grad flag of all trainable params.
+
+        :param value: value to set for requires_grad attribute
+        """
         for param in self._smart_optimiser.parameters():
             param.requires_grad = value
 
-    def _sgd_round(self, n_iters=10, gradient_every=10):
+    def _sgd_round(
+            self,
+            n_iters: int = 10,
+            gradient_every: int = 10,
+    ) -> torch.Tensor:
         """
         Use gradient based optimiser to tune the hyperparameters.
 
-        :param int n_iters: The number of gradient updates.
-        :param int gradient_every: Ignored.
+        :param n_iters: The number of gradient updates.
+        :param gradient_every: How often (in iterations) to do HNIGP input gradient steps.
         :return: The training loss at the last iteration.
-        :rtype: float
         """
         self.set_to_training_mode()
         loss, detached_loss = torch.tensor(float("nan"), dtype=self.dtype, device=self.device), float("nan")
@@ -284,14 +328,18 @@ class BaseGPController:
         self._smart_optimiser.set_parameters()
         return detached_loss
 
-    def _single_optimisation_step(self, x, y, retain_graph=False):
+    def _single_optimisation_step(
+            self,
+            x: torch.Tensor,
+            y: torch.Tensor,
+            retain_graph: bool = False,
+    ) -> torch.Tensor:
         """
         Take do a single forward pass and optimisation backward pass.
 
-        :param torch.Tensor x: (n_samples, n_features) The inputs.
-        :param torch.Tensor y: (n_samples, ?) The response values.
+        :param x: (n_samples, n_features) The inputs.
+        :param y: (n_samples, ?) The response values.
         :returns: The loss.
-        :rtype: torch.Tensor
         """
         self._smart_optimiser.zero_grad()
         loss = self._loss(x, y)
@@ -299,14 +347,17 @@ class BaseGPController:
         self._smart_optimiser.step(loss, closure=lambda: self._loss(x, y))
         return loss
 
-    def _loss(self, train_x, train_y):
+    def _loss(
+            self,
+            train_x: torch.Tensor,
+            train_y: torch.Tensor,
+    ) -> torch.Tensor:
         """
         Compute the training loss (negative marginal log likelihood).
 
-        :param torch.Tensor train_x: The observed values.
-        :param torch.Tensor train_y: The responsive values.
+        :param train_x: The observed values.
+        :param train_y: The responsive values.
         :returns: The loss.
-        :rtype: torch.Tensor
         """
         output = self._gp_forward(train_x)
         with warnings.catch_warnings():
@@ -314,18 +365,23 @@ class BaseGPController:
             warnings.filterwarnings("ignore", category=NumericalWarning, message=_CHOLESKY_WARNING)
             return -self._mll(output, train_y.squeeze(dim=-1))
 
-    def _get_posterior_over_point_in_eval_mode(self, x):
+    def _get_posterior_over_point_in_eval_mode(
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
+    ) -> Posterior:
         """
         Predict the y-value of a single point in evaluation mode.
 
-        :param array_like[float] x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_preds, n_features) The predictive inputs.
         :returns: The prior distribution.
-        :rtype: vanguard.base.posteriors.Posterior
         """
         self.set_to_evaluation_mode()
         return self._get_posterior_over_point(x)
 
-    def _gp_forward(self, x):
+    def _gp_forward(
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
+    ) -> ExactGPModel:
         """Pass inputs through the base GPyTorch GP model."""
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=NumericalWarning, message=_JITTER_WARNING)
@@ -336,19 +392,24 @@ class BaseGPController:
                 output = self._gp(x)
         return output
 
-    def _get_posterior_over_point(self, x):
+    def _get_posterior_over_point(
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
+    ) -> Posterior:
         """
         Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
 
-        :param array_like[float] x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_preds, n_features) The predictive inputs.
         :returns: The prior distribution.
-        :rtype: vanguard.base.posteriors.Posterior
         """
         tx = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         output = self._gp_forward(tx)
         return self.posterior_class(output)
 
-    def _process_x_std(self, std):
+    def _process_x_std(
+            self,
+            std: Union[numpy.typing.NDArray[float], float],
+    ) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
 
@@ -359,43 +420,56 @@ class BaseGPController:
 
         :return: The parsed standard deviation of shape (self.dim,) or (std.shape[0], self.dim) depending on
                     the shape of ``std``. If ``std`` is ``None`` then trainable values are returned.
-        :rtype: torch.Tensor
         """
         std_tensor = torch.as_tensor(std, dtype=self.dtype, device="cpu")
         if std_tensor.dim() == 0:
             std_tensor = torch.ones(self.dim, dtype=self.dtype, device=self.device) * std_tensor
         return std_tensor
 
-    def _input_standardise_modules(self, *modules):
+    def _input_standardise_modules(
+            self,
+            *modules: torch.nn.Module,
+    ) -> List[torch.nn.Module]:
         """
         Apply standard input scaling (mean zero, variance 1) to the supplied PyTorch nn.Modules.
 
         The mean and variance are computed from the training inputs of self.
+
+        :param *modules: Modules to apply mean and variance to.
         """
         norm_module = StandardiseXModule.from_data(self.train_x, device=self.device, dtype=self.dtype)
         scaled_modules = [norm_module.apply(module) for module in modules]
         return scaled_modules
 
     @classmethod
-    def set_default_tensor_type(cls, tensor_type):
-        """Set the default tensor type for the class, subsequent subclasses, and external tensors."""
+    def set_default_tensor_type(
+            cls,
+            tensor_type: Union[ttypes, ttypes_cuda],
+    ) -> None:
+        """
+        Set the default tensor type for the class, subsequent subclasses, and external tensors.
+
+        :param tensor_type: The tensor type to apply as the default
+        """
         cls._default_tensor_type = tensor_type
         torch.set_default_tensor_type(tensor_type)
 
     @staticmethod
-    def _decide_noise_shape(posterior, x):
+    def _decide_noise_shape(
+            posterior: Posterior,
+            x: torch.Tensor,
+    ) -> Tuple[int]:
         """
         Determine the correct shape of the likelihood noise.
 
-        Given and posterior distribution and and an arrays of predictive inputs,
+        Given a posterior distribution and an array of predictive inputs,
         determine the correct size of a noise term to supply to the likelihood
         to match the model and the number of predictive points.
 
-        :param vanguard.base.posteriors.Posterior posterior: The posterior distribution that will combined
+        :param posterior: The posterior distribution that will combined
             with the noise in a likelihood.
-        :param  torch.Tensor x: The predictive input points.
+        :param x: The predictive input points.
         :returns: The correct shape for the likelihood noise in this case.
-        :rtype: tuple[int]
         """
         mean, covar = posterior.distribution.mean, posterior.distribution.covariance_matrix
 
@@ -414,7 +488,7 @@ class BaseGPController:
         return shape
 
     @staticmethod
-    def warn_normalise_y():
+    def warn_normalise_y() -> None:
         """
         Give a warning to indicate that y values have not been standard scaled.
 
@@ -425,13 +499,17 @@ class BaseGPController:
                       "scaled. Using the NormaliseY decorator will likely help.")
 
 
-def _catch_and_check_module_errors(controller):
+def _catch_and_check_module_errors(
+        controller: BaseGPController,
+) -> Callable:
     """
     Handle some hard to detect errors that may occur within GP model classes.
 
-    :param BaseGPController controller: The controller that owns the module class.
+    :param controller: The controller that owns the module class.
     """
-    def decorator(module_class):
+    def decorator(
+            module_class: torch.nn.Module,
+    ) -> torch.nn.Module:
         """
         Decorate a particular module (mean/kernel).
 
