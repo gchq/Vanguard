@@ -21,7 +21,7 @@ from vanguard.vanilla import GaussianGPController
 class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
 
     @classmethod
-    def from_lazy_evaluated_kernel_tensor(cls: Type[Self], lazy_tensor: gpytorch.lazy.Tensor) -> Self:
+    def from_lazy_evaluated_kernel_tensor(cls: Type[Self], lazy_tensor: gpytorch.lazy.LazyTensor) -> Self:
         kernel = lazy_tensor.kernel
         x1 = lazy_tensor.x1
         x2 = lazy_tensor.x2
