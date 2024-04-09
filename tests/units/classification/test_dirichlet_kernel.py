@@ -3,12 +3,9 @@ Tests for the DirichletKernelMulticlassClassification decorator.
 """
 from gpytorch import kernels, means
 
-from vanguard.classification.kernel import \
-    DirichletKernelMulticlassClassification
-from vanguard.classification.likelihoods import (
-    DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood)
-from vanguard.datasets.classification import \
-    MulticlassGaussianClassificationDataset
+from vanguard.classification.kernel import DirichletKernelMulticlassClassification
+from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
+from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.vanilla import GaussianGPController
 
 from ...cases import flaky

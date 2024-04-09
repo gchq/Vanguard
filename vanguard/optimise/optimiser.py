@@ -5,8 +5,7 @@ import inspect
 from collections import deque
 from functools import total_ordering
 from heapq import heappush, heappushpop, nlargest
-from typing import (Any, Callable, Deque, Dict, Generator, Generic, List,
-                    Optional, Type, TypeVar, overload)
+from typing import Any, Callable, Deque, Dict, Generator, Generic, List, Optional, Type, TypeVar, overload
 
 import numpy as np
 import torch.nn

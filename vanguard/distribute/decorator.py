@@ -2,8 +2,7 @@
 Contains the Distributed decorator.
 """
 import warnings
-from typing import (Generic, Iterable, List, Optional, Tuple, Type, TypeVar,
-                    Union)
+from typing import Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -14,11 +13,9 @@ from numpy.typing import NDArray
 from ..base import GPController
 from ..base.posteriors import Posterior
 from ..decoratorutils import TopMostDecorator, process_args, wraps_class
-from .aggregators import (BadPriorVarShapeError, BaseAggregator, BCMAggregator,
-                          GRBCMAggregator, RBCMAggregator, XBCMAggregator,
-                          XGRBCMAggregator)
-from .partitioners import (BasePartitioner, KMeansPartitioner,
-                           KMedoidsPartitioner)
+from .aggregators import (BadPriorVarShapeError, BaseAggregator, BCMAggregator, GRBCMAggregator, RBCMAggregator,
+                          XBCMAggregator, XGRBCMAggregator)
+from .partitioners import BasePartitioner, KMeansPartitioner, KMedoidsPartitioner
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"

@@ -12,8 +12,7 @@ from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .kernel import BatchCompatibleMultitaskKernel
-from .models import (independent_variational_multitask_model,
-                     lmc_variational_multitask_model, multitask_model)
+from .models import independent_variational_multitask_model, lmc_variational_multitask_model, multitask_model
 
 
 class Multitask(Decorator):

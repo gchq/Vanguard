@@ -11,10 +11,8 @@ from gpytorch.constraints import Positive
 from gpytorch.kernels import RBFKernel, ScaleKernel
 
 from vanguard.base import GPController
-from vanguard.datasets.synthetic import (MultidimensionalSyntheticDataset,
-                                         SyntheticDataset)
-from vanguard.hierarchical import (BayesianHyperparameters,
-                                   LaplaceHierarchicalHyperparameters,
+from vanguard.datasets.synthetic import MultidimensionalSyntheticDataset, SyntheticDataset
+from vanguard.hierarchical import (BayesianHyperparameters, LaplaceHierarchicalHyperparameters,
                                    VariationalHierarchicalHyperparameters)
 from vanguard.vanilla import GaussianGPController
 

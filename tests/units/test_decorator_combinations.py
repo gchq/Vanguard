@@ -6,27 +6,19 @@ import re
 import unittest
 
 from gpytorch.kernels import RBFKernel
-from gpytorch.likelihoods import (BernoulliLikelihood,
-                                  DirichletClassificationLikelihood,
-                                  FixedNoiseGaussianLikelihood)
+from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.mlls import VariationalELBO
 
-from vanguard.classification import (BinaryClassification,
-                                     DirichletMulticlassClassification)
-from vanguard.datasets.classification import \
-    MulticlassGaussianClassificationDataset
-from vanguard.datasets.synthetic import (SyntheticDataset, complicated_f,
-                                         simple_f)
-from vanguard.decoratorutils.errors import (MissingRequirementsError,
-                                            TopmostDecoratorError)
+from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
+from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
+from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_f
+from vanguard.decoratorutils.errors import MissingRequirementsError, TopmostDecoratorError
 from vanguard.distribute import Distributed
-from vanguard.hierarchical import (BayesianHyperparameters,
-                                   VariationalHierarchicalHyperparameters)
+from vanguard.hierarchical import BayesianHyperparameters, VariationalHierarchicalHyperparameters
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.learning import LearnYNoise
 from vanguard.multitask import Multitask
-from vanguard.multitask.likelihoods import \
-    FixedNoiseMultitaskGaussianLikelihood
+from vanguard.multitask.likelihoods import FixedNoiseMultitaskGaussianLikelihood
 from vanguard.normalise import NormaliseY
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference

@@ -5,8 +5,7 @@ import gpytorch
 import numpy as np
 import torch
 from gpytorch.models import ApproximateGP
-from gpytorch.variational import (CholeskyVariationalDistribution,
-                                  VariationalStrategy)
+from gpytorch.variational import CholeskyVariationalDistribution, VariationalStrategy
 
 from vanguard.decoratorutils.wrapping import wraps_class
 

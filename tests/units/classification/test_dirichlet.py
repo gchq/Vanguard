@@ -5,8 +5,7 @@ import numpy as np
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 
 from vanguard.classification import DirichletMulticlassClassification
-from vanguard.datasets.classification import \
-    MulticlassGaussianClassificationDataset
+from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 
