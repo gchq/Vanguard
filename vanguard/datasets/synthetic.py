@@ -46,8 +46,6 @@ class SyntheticDataset(Dataset):
     Synthetic data with homoskedastic noise for testing.
     """
 
-    functions: List[Callable[[NDArray[np.floating]], NDArray[np.floating]]]
-
     def __init__(self,
                  functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
                  output_noise: float = 0.1,
@@ -194,8 +192,6 @@ class HigherRankSyntheticDataset(Dataset):
     """
     Synthetic data with rank 2 input features. In this case each x is a 2x2 matrix.
     """
-
-    functions: List[Callable[[NDArray[np.floating]], NDArray[np.floating]]]
 
     def __init__(self,
                  functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),

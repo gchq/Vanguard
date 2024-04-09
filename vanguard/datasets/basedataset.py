@@ -19,16 +19,6 @@ class Dataset:
     Represents an experimental dataset used by Vanguard.
     """
 
-    train_x: NDArray[np.floating]
-    train_x_std: Union[float, NDArray[np.floating]]
-    train_y: NDArray[np.floating]
-    train_y_std: Union[float, NDArray[np.floating]]
-    test_x: NDArray[np.floating]
-    test_x_std: Union[float, NDArray[np.floating]]
-    test_y: NDArray[np.floating]
-    test_y_std: Union[float, NDArray[np.floating]]
-    significance: float
-
     def __init__(
         self,
         train_x: NDArray[np.floating],
