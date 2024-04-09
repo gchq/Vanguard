@@ -37,9 +37,9 @@ class VanguardTestCase(unittest.TestCase):
             raise AssertionError(error_message) from None
 
     @staticmethod
-    def confidence_interval(mu: Union[float, numpy.testing.NDArray[np.floating]],
-                            sigma: Union[float, numpy.testing.NDArray[np.floating]], alpha: float
-                            ) -> Union[Tuple[float, float], Tuple[numpy.testing.NDArray[np.floating], numpy.testing.NDArray[np.floating]]]:
+    def confidence_interval(mu: Union[float, numpy.typing.NDArray[np.floating]],
+                            sigma: Union[float, numpy.typing.NDArray[np.floating]], alpha: float
+                            ) -> Union[Tuple[float, float], Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]]:
         """Create a confidence interval."""
         sig_fac = stats.norm.ppf(1 - alpha / 2)
         std_dev = np.sqrt(np.diag(sigma))
