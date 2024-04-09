@@ -3,10 +3,10 @@ Contains the ClassificationTestCase class.
 """
 import unittest
 
-from gpytorch.kernels import RBFKernel, ScaleKernel
-from gpytorch.means import ZeroMean
 import numpy as np
 import torch
+from gpytorch.kernels import RBFKernel, ScaleKernel
+from gpytorch.means import ZeroMean
 
 
 class BatchScaledRBFKernel(ScaleKernel):

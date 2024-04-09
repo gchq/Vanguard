@@ -1,9 +1,9 @@
 """
 Tests for the BinaryClassification decorator.
 """
+import numpy as np
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO
-import numpy as np
 
 from vanguard.classification import BinaryClassification
 from vanguard.datasets.classification import BinaryStripeClassificationDataset
@@ -12,8 +12,8 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-from .case import ClassificationTestCase
 from ...cases import flaky
+from .case import ClassificationTestCase
 
 
 @BinaryClassification(ignore_methods=("__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"))

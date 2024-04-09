@@ -3,13 +3,15 @@ Tests for the CategoricalClassification decorator.
 """
 import unittest
 
-from gpytorch.mlls import VariationalELBO
 import numpy as np
 import sklearn
+from gpytorch.mlls import VariationalELBO
 
 from vanguard.classification import CategoricalClassification
-from vanguard.classification.likelihoods import MultitaskBernoulliLikelihood, SoftmaxLikelihood
-from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
+from vanguard.classification.likelihoods import (MultitaskBernoulliLikelihood,
+                                                 SoftmaxLikelihood)
+from vanguard.datasets.classification import \
+    MulticlassGaussianClassificationDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.multitask import Multitask
 from vanguard.uncertainty import GaussianUncertaintyGPController

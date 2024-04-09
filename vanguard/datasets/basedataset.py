@@ -18,7 +18,6 @@ class Dataset:
     """
     Represents an experimental dataset used by Vanguard.
     """
-
     def __init__(
         self,
         train_x: NDArray[np.floating],

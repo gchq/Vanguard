@@ -2,9 +2,9 @@
 Contains the multitask_model decorator.
 """
 import gpytorch
-from gpytorch.models import ApproximateGP, ExactGP
 import numpy as np
 import torch
+from gpytorch.models import ApproximateGP, ExactGP
 
 from ..decoratorutils import wraps_class
 

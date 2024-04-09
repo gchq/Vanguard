@@ -1,9 +1,10 @@
 """
 Contains the MonteCarloPosteriorCollection class.
 """
+from typing import Generator, NoReturn, Tuple
+
 import numpy.typing
 import torch
-from typing import Generator, NoReturn, Tuple
 
 from .posterior import Posterior
 

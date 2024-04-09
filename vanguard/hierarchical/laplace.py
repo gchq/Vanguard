@@ -5,7 +5,8 @@ from math import ceil
 import torch
 
 from ..decoratorutils import wraps_class
-from .base import BaseHierarchicalHyperparameters, extract_bayesian_hyperparameters, set_batch_shape
+from .base import (BaseHierarchicalHyperparameters,
+                   extract_bayesian_hyperparameters, set_batch_shape)
 from .collection import OnePointHyperparameterCollection
 from .distributions import SpectralRegularisedMultivariateNormal
 

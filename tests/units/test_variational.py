@@ -3,7 +3,8 @@ Test the behaviour of the VariationalInference decorator.
 """
 import unittest
 
-from gpytorch.mlls import ExactMarginalLogLikelihood as InappropriateMarginalLogLikelihood
+from gpytorch.mlls import \
+    ExactMarginalLogLikelihood as InappropriateMarginalLogLikelihood
 
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel

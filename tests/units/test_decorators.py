@@ -5,7 +5,8 @@ import inspect
 import unittest
 
 from vanguard.base import GPController
-from vanguard.decoratorutils import Decorator, errors, process_args, wraps_class
+from vanguard.decoratorutils import (Decorator, errors, process_args,
+                                     wraps_class)
 
 
 class DummyDecorator1(Decorator):

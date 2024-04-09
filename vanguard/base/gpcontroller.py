@@ -4,11 +4,11 @@ The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPCon
 import warnings
 from typing import List, Optional, Union
 
-import torch
 import numpy.typing
+import torch
 
-from .basecontroller import BaseGPController
 from ..decoratorutils import Decorator
+from .basecontroller import BaseGPController
 from .metaclass import _StoreInitValues
 from .metrics import MetricsTracker
 from .posteriors.posterior import Posterior

@@ -1,16 +1,17 @@
 """
 Tests for the DirichletMulticlassClassification decorator.
 """
-from gpytorch.likelihoods import DirichletClassificationLikelihood
 import numpy as np
+from gpytorch.likelihoods import DirichletClassificationLikelihood
 
 from vanguard.classification import DirichletMulticlassClassification
-from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
+from vanguard.datasets.classification import \
+    MulticlassGaussianClassificationDataset
 from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 
-from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase
 from ...cases import flaky
+from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase
 
 
 @DirichletMulticlassClassification(num_classes=4, ignore_methods=("__init__",))
@@ -47,7 +48,6 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     """
     Tests for fuzzy dirichlet multiclass classification.
     """
-
     @flaky
     def test_fuzzy_predictions_monte_carlo(self):
         """Predictions should be close to the values from the test data."""

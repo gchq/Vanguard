@@ -6,13 +6,13 @@ from typing import Tuple, Type, TypeVar, Union
 import numpy as np
 import numpy.typing
 
+from vanguard.base.posteriors.posterior import Posterior
+
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..multitask import Multitask
 from ..variational import VariationalInference
 from .mixin import ClassificationMixin
-from vanguard.base.posteriors.posterior import Posterior
-
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

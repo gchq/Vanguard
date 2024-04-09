@@ -3,13 +3,14 @@ Tests for the Distributed decorator.
 """
 import unittest
 
+import torch
 from gpytorch.kernels import RBFKernel
 from scipy.spatial import distance_matrix
-import torch
 
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.distribute import Distributed, aggregators
-from vanguard.hierarchical import (BayesianHyperparameters, LaplaceHierarchicalHyperparameters,
+from vanguard.hierarchical import (BayesianHyperparameters,
+                                   LaplaceHierarchicalHyperparameters,
                                    VariationalHierarchicalHyperparameters)
 from vanguard.vanilla import GaussianGPController
 
