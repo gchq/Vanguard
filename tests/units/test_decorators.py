@@ -475,11 +475,11 @@ class SignatureTests(unittest.TestCase):
 
     def test_signature_before(self) -> None:
         """Signature should contain number."""
-        self.assertEqual("(self, number)", str(inspect.signature(self.SimilarNumberBefore.__init__)))
+        self.assertEqual("(self, number: Union[int, float])", str(inspect.signature(self.SimilarNumberBefore.__init__)))
 
     def test_signature_after(self) -> None:
         """Signature should contain number."""
-        self.assertEqual("(self, number)", str(inspect.signature(self.SimilarNumberAfter.__init__)))
+        self.assertEqual("(self, number: Union[int, float])", str(inspect.signature(self.SimilarNumberAfter.__init__)))
 
     def test_argspec_before(self) -> None:
         """Signature should contain number."""
