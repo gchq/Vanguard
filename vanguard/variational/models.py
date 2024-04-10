@@ -3,18 +3,19 @@ Contains base models for approximate inference.
 """
 from typing import Any
 
+import numpy as np
+import torch
 from gpytorch.distributions import MultivariateNormal
 from gpytorch.kernels import Kernel
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.means import Mean
 from gpytorch.models import ApproximateGP
-from gpytorch.variational import CholeskyVariationalDistribution, VariationalStrategy, _VariationalStrategy, \
-    _VariationalDistribution
-import numpy as np
-import torch
+from gpytorch.variational import (CholeskyVariationalDistribution, VariationalStrategy, _VariationalDistribution,
+                                  _VariationalStrategy)
 from torch import Tensor
 
 from vanguard.decoratorutils.wrapping import wraps_class
+
 
 class SVGPModel(ApproximateGP):
     """
