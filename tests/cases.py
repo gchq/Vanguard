@@ -3,7 +3,7 @@ Contains test cases for Vanguard testing.
 """
 import unittest
 from functools import wraps
-from typing import TypeVar, Callable
+from typing import Callable, TypeVar
 
 import numpy as np
 from scipy import stats

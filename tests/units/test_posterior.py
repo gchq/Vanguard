@@ -1,8 +1,8 @@
 import unittest
 
 import numpy as np
-from scipy import stats
 import torch
+from scipy import stats
 
 from vanguard.base.posteriors import Posterior
 

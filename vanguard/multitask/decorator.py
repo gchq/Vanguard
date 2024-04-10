@@ -4,9 +4,9 @@ Enabling multitask Gaussian processes.
 The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
+import torch
 from gpytorch.kernels import MultitaskKernel
 from gpytorch.means import ConstantMean, MultitaskMean
-import torch
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class

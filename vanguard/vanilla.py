@@ -1,15 +1,15 @@
 """
 The :class:`GaussianGPController` provides the user with a standard GP model with no extra features.
 """
+from typing import Type, Union
+
+import gpytorch
+import numpy as np
+import numpy.typing
+import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.means import ConstantMean
 from gpytorch.mlls import ExactMarginalLogLikelihood
-import torch
-
-import numpy as np
-import numpy.typing
-from typing import Type, Union
-import gpytorch
 
 from .base import GPController
 from .optimise import GreedySmartOptimiser

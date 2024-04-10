@@ -1,10 +1,11 @@
 """
 Contains the LearningRateFinder class to aid with choosing the largest possible learning rate.
 """
-from gpytorch.utils.errors import NanError
+import typing
+
 import matplotlib.pyplot as plt
 import numpy as np
-import typing
+from gpytorch.utils.errors import NanError
 
 if typing.TYPE_CHECKING:
     from vanguard.base import GPController

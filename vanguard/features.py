@@ -2,9 +2,9 @@
 Contains decorators to deal with input features that aren't vectors.
 """
 from functools import partial
+from typing import Tuple, Type, TypeVar, Union
 
 import numpy as np
-from typing import TypeVar, Type, Union, Tuple
 import torch
 from gpytorch import kernels
 

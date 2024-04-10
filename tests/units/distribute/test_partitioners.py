@@ -3,8 +3,8 @@ Tests for partitioner classes.
 """
 import unittest
 
-from gpytorch.kernels import RBFKernel
 import numpy as np
+from gpytorch.kernels import RBFKernel
 
 from vanguard.distribute import partitioners
 

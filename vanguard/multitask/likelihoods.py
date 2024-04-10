@@ -1,9 +1,9 @@
 """
 Contains GPyTorch likelihoods required in Vanguard but not implemented in GPyTorch.
 """
+import torch
 from gpytorch.lazy import DiagLazyTensor
 from gpytorch.likelihoods import MultitaskGaussianLikelihood
-import torch
 
 
 class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):

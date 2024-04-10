@@ -2,18 +2,18 @@
 Partitioners are responsible for separating the training data into subsets to be assigned to each expert controller.
 """
 from collections import defaultdict
-from typing import Iterable, Optional, Union, List
+from typing import Iterable, List, Optional, Union
 
 import gpytorch.kernels
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 from sklearn.cluster import KMeans as _KMeans
 from sklearn.cluster import MiniBatchKMeans as _MiniBatchKMeans
 from sklearn.manifold import TSNE
 from sklearn_extra.cluster import KMedoids as _KMedoids
-import torch
 
 
 # TODO: should this be an abstract base class?

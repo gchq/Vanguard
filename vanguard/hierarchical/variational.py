@@ -1,9 +1,9 @@
 """
 Contains the VariationalHierarchicalHyperparameters decorator.
 """
+import torch
 from gpytorch.lazy import lazify
 from gpytorch.variational import CholeskyVariationalDistribution
-import torch
 
 from ..decoratorutils import wraps_class
 from .base import BaseHierarchicalHyperparameters, extract_bayesian_hyperparameters, set_batch_shape
