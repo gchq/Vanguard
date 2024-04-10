@@ -1,9 +1,12 @@
 """
 Contains GPyTorch likelihoods required in Vanguard but not implemented in GPyTorch.
 """
+from typing import Any, Optional
+
+from gpytorch.distributions import MultitaskMultivariateNormal
 from gpytorch.lazy import DiagLazyTensor
 from gpytorch.likelihoods import MultitaskGaussianLikelihood
-import torch
+from torch import Size, Tensor
 
 
 class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
@@ -15,31 +18,34 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
     where a fixed heteroskedastic observation noise can be specified for each training point and task,
     but there is covariance between the points or the tasks.
     """
-    def __init__(self, noise, learn_additional_noise=False, batch_shape=torch.Size(), **kwargs):
+    def __init__(self, noise: Tensor, learn_additional_noise: bool = False,
+                 batch_shape: Size = Size(), **kwargs: Any) -> None:
         """
         Initialise self.
 
-        :param torch.Tensor noise: (n_samples, n_tasks) The fixed observation noise.
-        :param bool learn_additional_noise: If to learn additional observation (likelihood) noise covariance
+        :param noise: (n_samples, n_tasks) The fixed observation noise.
+        :param learn_additional_noise: If to learn additional observation (likelihood) noise covariance
             along with the specified fixed noise. Takes the same form as the covariance in
             :class:`gpytorch.likelihoods.MultitaskGaussianLikelihood`.
-        :param batch_shape: The batch shape of the learned noise parameter, defaults to ``torch.Size()``.
+        :param batch_shape: The batch shape of the learned noise parameter, defaults to empty :class:`~torch.Size`.
         """
         super().__init__(batch_shape=batch_shape, **kwargs)
         self._fixed_noise = noise
         self.learn_additional_noise = learn_additional_noise
 
     @property
-    def fixed_noise(self):
+    def fixed_noise(self) -> Tensor:
         """Get the fixed noise."""
         return self._fixed_noise
 
     @fixed_noise.setter
-    def fixed_noise(self, value):
+    def fixed_noise(self, value: Tensor) -> None:
         """Set the fixed noise."""
         self._fixed_noise = value
 
-    def marginal(self, function_dist, *params, noise=None, **kwargs):
+    def marginal(self, function_dist: MultitaskMultivariateNormal, *params: Any,
+                 noise: Optional[Tensor] = None,
+                 **kwargs: Any) -> MultitaskMultivariateNormal:
         r"""
         Return the marginal distribution.
 
@@ -62,14 +68,12 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         The final covariance matrix after this method is then
         :math:`K + D_{t} \otimes I_{n} + \sigma^{2}I_{nt} + diag(\sigma^*)`.
 
-        :param gpytorch.distributions.MultitaskMultivariateNormal function_dist: Random variable whose covariance
+        :param function_dist: Random variable whose covariance
             matrix is a :class:`gpytorch.lazy.LazyTensor` we intend to augment.
-        :param torch.Tensor,None noise: The noise (standard deviation) to use in the likelihood, None, to use the
+        :param noise: The noise (standard deviation) to use in the likelihood, None, to use the
             likelihoods's own fixed noise.
         :returns: A new random variable whose covariance matrix is a :class:`gpytorch.lazy.LazyTensor` with
             :math:`D_{t} \otimes I_{n}`, :math:`\sigma^{2}I_{nt}` and :math:`diag(\sigma^*)` added.
-
-        :rtype: gpytorch.distributions.MultitaskMultivariateNormal
         """
         mean, covar = function_dist.mean, function_dist.lazy_covariance_matrix
         covar_kron_lt = self._shaped_noise_covar(mean.shape, add_noise=self.has_global_noise, noise=noise)
@@ -77,15 +81,22 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
 
         return function_dist.__class__(mean, covar)
 
-    def _shaped_noise_covar(self, base_shape, add_noise=True, noise=None, *params):
+    def _shaped_noise_covar(self,  # pyright: ignore [reportIncompatibleMethodOverride]
+                            base_shape: Size, add_noise: bool = True,
+                            noise: Optional[Tensor] = None,
+                            *params: Any) -> DiagLazyTensor:
         """
         Format likelihood noise (i.e. pointwise standard-deviations) as a covariance matrix.
 
-        :param tuple[int] base_shape: The output shape (required for reshaping noise).
-        :param bool add_noise: If to include global additive noise.
-        :param torch.Tensor,None noise: Specified noise for the likelihood, or use its own noise if None.
+        .. warning::
+
+            The signature of this method is incompatible with base class
+            :class:`~gpytorch.likelihoods.multitask_gaussian_likelihood._MultitaskGaussianLikelihoodBase`.
+
+        :param base_shape: The output shape (required for reshaping noise).
+        :param add_noise: If to include global additive noise.
+        :param noise: Specified noise for the likelihood, or use its own noise if None.
         :returns: Formatted likelihood noise.
-        :rtype: gpytorch.lazy.LazyTensor
         """
         result = DiagLazyTensor(self._flatten_noise(noise if noise is not None else self.fixed_noise))
         if self.learn_additional_noise:
@@ -94,7 +105,7 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         return result
 
     @staticmethod
-    def _flatten_noise(noise):
+    def _flatten_noise(noise: Tensor) -> Tensor:
         """
         Flatten a noise tensor into a single dimension.
 
@@ -103,11 +114,9 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         matrices of shape (NT, NT). We wrap it in a convenience function for the sake of readability since
         the transformation is a little unintuitive.
 
-        :param torch.Tensor noise: (n_samples, n_tasks) The array of observation variances
+        :param noise: (n_samples, n_tasks) The array of observation variances
             for each tasks' data point.
 
         :returns: Reshaped 1d tensor. Contiguous within tasks.
-        :rtype: torch.Tensor
-
         """
         return noise.T.reshape(-1)

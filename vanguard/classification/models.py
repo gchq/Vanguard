@@ -3,13 +3,13 @@ Contains model classes to enable classification in Vanguard.
 """
 import warnings
 
+import gpytorch
+import torch
 from gpytorch import settings
 from gpytorch.lazy import DiagLazyTensor
 from gpytorch.means import ZeroMean
 from gpytorch.models import ExactGP
 from gpytorch.utils.warnings import GPInputWarning
-import gpytorch
-import torch
 
 from vanguard.models import ExactGPModel
 

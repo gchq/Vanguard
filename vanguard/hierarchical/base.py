@@ -3,8 +3,8 @@ Contains the BaseHierarchicalHyperparameters decorator.
 """
 import warnings
 
-from gpytorch.kernels import ScaleKernel
 import torch
+from gpytorch.kernels import ScaleKernel
 
 from ..base import GPController
 from ..decoratorutils import Decorator, wraps_class

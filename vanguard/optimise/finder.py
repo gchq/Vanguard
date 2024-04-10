@@ -1,9 +1,14 @@
 """
 Contains the LearningRateFinder class to aid with choosing the largest possible learning rate.
 """
-from gpytorch.utils.errors import NanError
+import typing
+
 import matplotlib.pyplot as plt
 import numpy as np
+from gpytorch.utils.errors import NanError
+
+if typing.TYPE_CHECKING:
+    from vanguard.base import GPController
 
 
 class LearningRateFinder:
@@ -13,7 +18,7 @@ class LearningRateFinder:
     Try an increasing geometric sequence of learning rates for a small number of iterations to find
     the best learning rate (i.e. the largest learning rate giving stable training).
     """
-    def __init__(self, controller):
+    def __init__(self, controller: "GPController"):
         """
         Initialise self.
 
@@ -25,10 +30,10 @@ class LearningRateFinder:
         self._losses = []
 
     @property
-    def best_learning_rate(self):
+    def best_learning_rate(self) -> float:
         return self._learning_rates[np.argmin(self._losses)]
 
-    def find(self, start_lr=1e-5, end_lr=10, num_divisions=100, max_iterations=20):
+    def find(self, start_lr: float = 1e-5, end_lr: float = 10, num_divisions: int = 100, max_iterations: int = 20) -> None:
         """
         Try the range of learning rates and record the loss obtained.
 
@@ -41,7 +46,7 @@ class LearningRateFinder:
         self._learning_rates = [start_lr * ratio ** index for index in range(num_divisions)]
         self._losses = [self._run_learning_rate(lr, max_iterations) for lr in self._learning_rates]
 
-    def plot(self, **kwargs):
+    def plot(self, **kwargs) -> None:
         """
         Plot the obtained loss-vs-lr curve.
         """
@@ -50,7 +55,7 @@ class LearningRateFinder:
         plt.ylabel("best loss")
         plt.show()
 
-    def _run_learning_rate(self, lr, max_iterations):
+    def _run_learning_rate(self, lr: float, max_iterations: int) -> float:
         """
         Do the training for a single learning rate.
 

@@ -4,9 +4,9 @@ Vanguard implements a small number of base models which are built on by various 
 They are syntactically similar to the standard model classes used in GPyTorch.
 """
 import gpytorch
-from gpytorch.models import ExactGP
 import numpy as np
 import torch
+from gpytorch.models import ExactGP
 
 
 class ExactGPModel(ExactGP):

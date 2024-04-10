@@ -1,7 +1,12 @@
 """
 Contains some multitask classification likelihoods.
 """
+from typing import Optional, Union
+
 import gpytorch.distributions
+import numpy as np
+import numpy.typing
+import torch
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.constraints import Positive
 from gpytorch.lazy import DiagLazyTensor
@@ -9,12 +14,8 @@ from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.likelihoods import SoftmaxLikelihood as _SoftmaxLikelihood
 from gpytorch.likelihoods.likelihood import _OneDimensionalLikelihood
 from gpytorch.likelihoods.noise_models import MultitaskHomoskedasticNoise
-import torch
-import numpy as np
-import numpy.typing
 
 from .models import DummyKernelDistribution
-from typing import Union, Optional
 
 
 class DummyNoise:
