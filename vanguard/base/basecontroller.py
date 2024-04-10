@@ -12,6 +12,7 @@ import gpytorch
 import numpy.typing
 import torch
 from gpytorch import constraints
+from gpytorch.models import ApproximateGP, ExactGP
 from gpytorch.utils.errors import NanError
 from numpy import dtype
 
@@ -76,7 +77,7 @@ class BaseGPController:
 
     torch.set_default_tensor_type(_default_tensor_type)
 
-    gp_model_class = ExactGPModel
+    gp_model_class: Type[Union[ExactGP, ApproximateGP]] = ExactGPModel
     posterior_class = Posterior
     posterior_collection_class = MonteCarloPosteriorCollection
 

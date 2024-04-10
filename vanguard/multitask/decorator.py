@@ -4,15 +4,21 @@ Enabling multitask Gaussian processes.
 The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
+from typing import Any, Dict, Optional, Type, TypeVar
+
 import torch
-from gpytorch.kernels import MultitaskKernel
-from gpytorch.means import ConstantMean, MultitaskMean
+from gpytorch.kernels import Kernel, MultitaskKernel
+from gpytorch.means import ConstantMean, Mean, MultitaskMean
+from torch import Tensor
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .kernel import BatchCompatibleMultitaskKernel
 from .models import independent_variational_multitask_model, lmc_variational_multitask_model, multitask_model
+
+ControllerT = TypeVar("ControllerT", bound=GPController)
+T = TypeVar("T")
 
 
 class Multitask(Decorator):
@@ -26,17 +32,18 @@ class Multitask(Decorator):
             ... class MyController(GPController):
             ...     pass
     """
-    def __init__(self, num_tasks, lmc_dimension=None, rank=1, **kwargs):
+    def __init__(self, num_tasks: int, lmc_dimension: Optional[int] = None,
+                 rank: int = 1, **kwargs: Any) -> None:
         """
         Initialise self.
 
-        :param int num_tasks: The number of tasks (i.e. y-value dimension).
-        :param int,None lmc_dimension: If using LMC (linear model of co-regionalisation), how many latent dimensions
+        :param num_tasks: The number of tasks (i.e. y-value dimension).
+        :param lmc_dimension: If using LMC (linear model of co-regionalisation), how many latent dimensions
                                         to use. Bigger means a more complicated model. Should probably be at least
                                         as big as the number of tasks, unless you want to specifically make low-rank
                                         assumptions about the relationship between tasks.
-                                        Default (None) means LMC isn't not used at all.
-        :param int rank: The rank of the task-task covar matrix in a Kronecker product multitask kernel.
+                                        Default (None) means LMC is not used at all.
+        :param rank: The rank of the task-task covar matrix in a Kronecker product multitask kernel.
                             Only relevant for exact GP inference.
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
@@ -44,7 +51,7 @@ class Multitask(Decorator):
         self.lmc_dimension = lmc_dimension
         self.rank = rank
 
-    def _decorate_class(self, cls):
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
         is_variational = VariationalInference in cls.__decorators__
 
@@ -58,7 +65,7 @@ class Multitask(Decorator):
             to multitask means and slightly modifying a few methods to deal
             with multitask Gaussian's etc.
             """
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
@@ -70,8 +77,9 @@ class Multitask(Decorator):
                 else:
                     gp_model_class = self.gp_model_class
 
+                # Pyright cannot resolve dynamic base class
                 @multitask_model
-                class MultitaskGPModelClass(gp_model_class):
+                class MultitaskGPModelClass(gp_model_class):  # pyright: ignore[reportGeneralTypeIssues]
                     """Multitask version of gp_model_class."""
                     pass
 
@@ -104,27 +112,30 @@ class Multitask(Decorator):
                                  **all_parameters_as_kwargs)
 
             @property
-            def likelihood_noise(self):
+            def likelihood_noise(self) -> Tensor:
                 """Return the fixed noise of the likelihood."""
                 return self._likelihood.fixed_noise
 
             @likelihood_noise.setter
-            def likelihood_noise(self, value):
+            def likelihood_noise(self, value: Tensor) -> None:
                 """Set the fixed noise of the likelihood."""
                 self._likelihood.fixed_noise = value
 
             @staticmethod
-            def _match_mean_shape_to_kernel(mean_class, kernel_class, mean_kwargs, kernel_kwargs):
+            def _match_mean_shape_to_kernel(mean_class: Type[Mean],
+                                            kernel_class: Type[Kernel],
+                                            mean_kwargs: Dict[str, Any],
+                                            kernel_kwargs: Dict[str, Any],
+                                            ) -> Type[Mean]:
                 """
                 Construct a mean class suitable for multitask GPs that matches the form of the kernel, if possible.
 
                 :param mean_class: An uninstantiated :class:`gpytorch.means.Mean`.
                 :param kernel_class: An uninstantiated :class:`gpytorch.kernels.Kernel`.
-                :param dict mean_kwargs: Keyword arguments to be passed to the mean_class constructor.
-                :param dict kernel_kwargs: Keyword arguments to be passed to the kernel_class constructor.
+                :param mean_kwargs: Keyword arguments to be passed to the mean_class constructor.
+                :param kernel_kwargs: Keyword arguments to be passed to the kernel_class constructor.
                 :returns: An uninstantiated class:`gpytorch.means.Mean` like mean_class but modified to have the
                           same form/shape as kernel_class, if possible.
-                :rtype: type
                 :raises TypeError: If the supplied mean_class has a batch_shape and it doesn't match the batch_shape of
                                     the kernel_class, or is a class:`gpytorch.kernels.MultitaskKernel` and has
                                     num_tasks which doesn't match that of the kernel_class.
@@ -139,41 +150,46 @@ class Multitask(Decorator):
                                     f"provided kernel has batch_shape {example_kernel.batch_shape}. "
                                     f"They must match.")
                 return mean_class
-        return InnerClass
+
+        # Pyright does not detect that wraps_class renames InnerClass
+        return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _batchify(module_class, _kwargs, num_tasks, lmc_dimension):
+def _batchify(module_class: Type[T], _kwargs: Dict[str, Any], num_tasks: int,
+              lmc_dimension: Optional[int]) -> Type[T]:
     """
-    Add a batch shape to a kernel so it can be used for multitask variational GPs.
+    Add a batch shape to a class so it can be used for multitask variational GPs.
 
-    :param gpytorch.kernels.Kernel kernel_class: The kernel to batchify.
-    :param dict _kwargs: Remaining in signature for compatibility.
-    :param int num_tasks: The number of tasks for the multitask GP.
-    :param int,None lmc_dimension: The number of LMC dimensions (if using LMC).
+    :param module_class: The class to batchify, typically a kernel or mean.
+    :param _kwargs: Remaining in signature for compatibility.
+    :param num_tasks: The number of tasks for the multitask GP.
+    :param lmc_dimension: The number of LMC dimensions (if using LMC).
 
-    :returns: The adapted kernel class.
-    :rtype: gpytorch.kernels.Kernel
+    :returns: The adapted class.
     """
     batch_size = lmc_dimension if lmc_dimension is not None else num_tasks
 
+    @wraps_class(module_class)
     class InnerClass(module_class):
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             batch_shape = kwargs.pop("batch_shape", torch.Size([])) + torch.Size([batch_size])
             kwargs["batch_shape"] = batch_shape
             super().__init__(*args, **kwargs)
-    return InnerClass
+
+    # Pyright does not detect that wraps_class renames InnerClass
+    return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _multitaskify_kernel(kernel_class, num_tasks, rank=1):
+def _multitaskify_kernel(kernel_class: Type[Kernel], num_tasks: int, rank: int = 1
+                         ) -> Type[MultitaskKernel]:
     """
     If necessary, make a kernel multitask using the GPyTorch Multitask kernel.
 
-    :param gpytorch.kernels.Kernel kernel_class: The kernel to multitaskify.
-    :param int num_tasks: The number of tasks for the multitask GP.
-    :param int rank: The rank of the task-task covariance matrix.
+    :param kernel_class: The kernel to multitaskify.
+    :param num_tasks: The number of tasks for the multitask GP.
+    :param rank: The rank of the task-task covariance matrix.
 
     :returns: The adapted kernel class.
-    :rtype: gpytorch.kernels.Kernel
     """
     if issubclass(kernel_class, MultitaskKernel):
         return kernel_class
@@ -181,26 +197,25 @@ def _multitaskify_kernel(kernel_class, num_tasks, rank=1):
         rank = min(num_tasks, rank)
 
         class InnerKernelClass(BatchCompatibleMultitaskKernel):
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 super().__init__(kernel_class(*args, **kwargs), num_tasks=num_tasks, rank=rank, **kwargs)
         return InnerKernelClass
 
 
-def _multitaskify_mean(mean_class, num_tasks):
+def _multitaskify_mean(mean_class: Type[Mean], num_tasks: int) -> Type[MultitaskMean]:
     """
     If necessary, make a mean multitask using the GPyTorch Multitask mean.
 
-    :param gpytorch.means.Mean mean_class: The mean to multitaskify.
-    :param int num_tasks: The number of tasks for the multitask GP.
+    :param mean_class: The mean to multitaskify.
+    :param num_tasks: The number of tasks for the multitask GP.
 
     :returns: The adapted mean class.
-    :rtype: gpytorch.means.Means
     """
     if issubclass(mean_class, MultitaskMean):
         return mean_class
     else:
 
         class InnerMeanClass(MultitaskMean):
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 super().__init__(mean_class(*args, **kwargs), num_tasks=num_tasks)
         return InnerMeanClass
