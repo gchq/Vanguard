@@ -3,15 +3,14 @@ Contains the BinaryClassification decorator.
 """
 from typing import Tuple, Type, TypeVar, Union
 
-from gpytorch.likelihoods import BernoulliLikelihood
 import numpy as np
 import numpy.typing
+from gpytorch.likelihoods import BernoulliLikelihood
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .mixin import ClassificationMixin
-
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

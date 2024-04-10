@@ -1,10 +1,10 @@
 """
 Test that the posterior predictions of CWGP models are sensible in various ways.
 """
-from gpytorch.utils.errors import NanError
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 import torch
+from gpytorch.utils.errors import NanError
+from sklearn.preprocessing import StandardScaler
 
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel

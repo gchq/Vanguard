@@ -1,11 +1,11 @@
 """
 Contains the SmartOptimiser class.
 """
+import inspect
 from collections import deque
 from functools import total_ordering
 from heapq import heappush, heappushpop, nlargest
-import inspect
-from typing import TypeVar, Generic, Type, Optional, Generator, Any, Callable, Deque, List, Dict, overload
+from typing import Any, Callable, Deque, Dict, Generator, Generic, List, Optional, Type, TypeVar, overload
 
 import numpy as np
 import torch.nn
@@ -22,7 +22,6 @@ class SmartOptimiser(Generic[OptimiserT]):
         When setting the learning rate, using the :meth:`learning_rate` property,
         the parameters for each registered module are re-initialised.
     """
-
     _stored_initial_state_dicts: Dict[Module, Dict[str, Tensor]]
     last_n_losses: Deque[float]
     _internal_optimiser: OptimiserT

@@ -4,7 +4,6 @@ Enabling multitask Gaussian processes.
 The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
-
 from typing import Any, Dict, Optional, Type, TypeVar
 
 import torch
@@ -16,8 +15,7 @@ from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
 from .kernel import BatchCompatibleMultitaskKernel
-from .models import (independent_variational_multitask_model,
-                     lmc_variational_multitask_model, multitask_model)
+from .models import independent_variational_multitask_model, lmc_variational_multitask_model, multitask_model
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 T = TypeVar("T")

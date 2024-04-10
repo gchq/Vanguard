@@ -13,7 +13,6 @@ from .likelihoods import DirichletKernelClassifierLikelihood
 from .mixin import ClassificationMixin
 from .models import InertKernelModel
 
-
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
 

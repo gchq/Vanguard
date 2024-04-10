@@ -1,20 +1,17 @@
 """
 Contains the multitask_model decorator.
 """
-
 from typing import Type, TypeVar
 
 import gpytorch
 import numpy as np
 import torch
-from gpytorch.distributions import (MultitaskMultivariateNormal,
-                                    MultivariateNormal)
+from gpytorch.distributions import MultitaskMultivariateNormal, MultivariateNormal
 from gpytorch.kernels import Kernel
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.means import Mean
 from gpytorch.models import GP, ApproximateGP, ExactGP
-from gpytorch.variational import (CholeskyVariationalDistribution,
-                                  IndependentMultitaskVariationalStrategy,
+from gpytorch.variational import (CholeskyVariationalDistribution, IndependentMultitaskVariationalStrategy,
                                   LMCVariationalStrategy, VariationalStrategy)
 from torch import Tensor
 

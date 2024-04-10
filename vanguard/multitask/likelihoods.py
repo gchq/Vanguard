@@ -1,7 +1,6 @@
 """
 Contains GPyTorch likelihoods required in Vanguard but not implemented in GPyTorch.
 """
-
 from typing import Any, Optional
 
 from gpytorch.distributions import MultitaskMultivariateNormal

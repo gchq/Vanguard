@@ -124,7 +124,6 @@ def setup(app):
 
 import confutils
 
-
 examples_source = os.path.join(VANGUARD_FOLDER_FILE_PATH, "examples", "notebooks")
 examples_dest = os.path.join(SOURCE_FOLDER_FILE_PATH, "examples")
 

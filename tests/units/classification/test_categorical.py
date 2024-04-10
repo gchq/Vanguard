@@ -3,9 +3,9 @@ Tests for the CategoricalClassification decorator.
 """
 import unittest
 
-from gpytorch.mlls import VariationalELBO
 import numpy as np
 import sklearn
+from gpytorch.mlls import VariationalELBO
 
 from vanguard.classification import CategoricalClassification
 from vanguard.classification.likelihoods import MultitaskBernoulliLikelihood, SoftmaxLikelihood

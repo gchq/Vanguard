@@ -19,8 +19,7 @@ from numpy import dtype
 from ..decoratorutils import wraps_class
 from ..models import ExactGPModel
 from ..optimise import NoImprovementError, SmartOptimiser
-from ..utils import (infinite_tensor_generator,
-                     instantiate_with_subset_of_kwargs)
+from ..utils import infinite_tensor_generator, instantiate_with_subset_of_kwargs
 from ..warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
 from . import metrics
 from .posteriors import MonteCarloPosteriorCollection, Posterior

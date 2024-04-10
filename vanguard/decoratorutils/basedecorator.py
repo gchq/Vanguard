@@ -2,9 +2,9 @@
 Contains the BaseDecorator class.
 """
 
+import warnings
 from inspect import getmembers, isfunction
 from typing import Iterable, Set, Type, TypeVar
-import warnings
 
 from . import errors
 
@@ -38,7 +38,6 @@ class Decorator:
         ... class NewGPController(GPController):
         ...     pass
     """
-
     def __init__(
             self,
             framework_class: Type[T],

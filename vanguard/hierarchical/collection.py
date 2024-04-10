@@ -1,8 +1,8 @@
 """
 Contains the HyperparameterCollection class.
 """
-from gpytorch.distributions import MultivariateNormal
 import torch
+from gpytorch.distributions import MultivariateNormal
 
 
 class HyperparameterCollection:
