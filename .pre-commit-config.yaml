@@ -86,10 +86,10 @@ repos:
       # Ensure import statements are sorted
       - id: isort
         name: isort (python)
-#  - repo: https://github.com/nbQA-dev/nbQA
-#    rev: 1.8.4
-#    hooks:
-#      - id: nbqa-pyupgrade
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.4
+    hooks:
+      - id: nbqa-pyupgrade
 #      - id: nbqa-isort
 #        args: [--line-length=87]
 #      - id: nbqa-ruff
