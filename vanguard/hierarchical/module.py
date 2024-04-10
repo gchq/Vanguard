@@ -9,7 +9,7 @@ from functools import partial
 import gpytorch
 from gpytorch import constraints
 import torch
-from typing import Iterable, List, Tuple, Type, TypeVar, Union
+from typing import Iterable, List, Optional, Tuple, TypeVar
 
 from .hyperparameter import BayesianHyperparameter
 
@@ -26,7 +26,7 @@ class BayesianHyperparameters:
     """
     A decorator to apply to modules (means and kernels).
 
-    It convert the module's point-estimate hyperparameters into Bayesian hyperparameters
+    It converts the module's point-estimate hyperparameters into Bayesian hyperparameters
     over which inference can be performed.
 
     .. note::
@@ -40,13 +40,15 @@ class BayesianHyperparameters:
         That is, only parameters that are directly created by the init of the class will be
         affected (even if they are buried in further sub-modules).
     """
-    def __init__(self, ignored_parameters: Union[Iterable[str], None] = frozenset(), prior_means: Union[dict, None] = None, prior_variances:  Union[dict, None] = None):
+    def __init__(self, ignored_parameters: Optional[Iterable[str]] = frozenset(), prior_means: Optional[dict] = None, prior_variances:  Optional[dict] = None):
         """
         Initialise self.
 
         :param ignored_parameters: Names of module hyperparameters which
                                                         should not be converted to Bayesian
                                                         parameters.
+        :param prior_means:
+        :param prior_variances:
         """
         self.ignored_parameters = set(ignored_parameters)
         for param in self.ignored_parameters:
@@ -56,7 +58,7 @@ class BayesianHyperparameters:
         self.prior_means.update({f"raw_{param}": value for param, value in self.prior_means.items()})
         self.prior_variances.update({f"raw_{param}": value for param, value in self.prior_variances.items()})
 
-    def __call__(self, module_class: Type[ModuleT]) -> Type[ModuleT]:
+    def __call__(self, module_class: ModuleT) -> ModuleT:
         ignored_parameters = self.ignored_parameters
 
         process_hyperparameter = partial(_process_hyperparameter,
@@ -82,7 +84,7 @@ class BayesianHyperparameters:
         return InnerClass
 
 
-def _process_hyperparameter(module: Type[ModuleT], raw_parameter_name: str, prior_means: Union[dict, None], prior_variances: Union[dict, None]) -> Type[BayesianHyperparameter]:
+def _process_hyperparameter(module: ModuleT, raw_parameter_name: str, prior_means: Optional[dict], prior_variances: Optional[dict]) -> BayesianHyperparameter:
     """
     Determine the information to construct a torch parameter.
 
@@ -109,7 +111,7 @@ def _process_hyperparameter(module: Type[ModuleT], raw_parameter_name: str, prio
     return BayesianHyperparameter(raw_parameter_name, raw_parameter_shape, constraint, prior_mean, prior_variance)
 
 
-def _discover_modules_and_parameters(top_module: torch.nn.Module, base_modules: Iterable[torch.nn.Module]) -> Tuple[List[str], List[Tuple[Type[ModuleT], str]]]:
+def _discover_modules_and_parameters(top_module: torch.nn.Module, base_modules: Iterable[torch.nn.Module]) -> Tuple[List[str], List[Tuple[ModuleT, str]]]:
     """
     Recursively identify all recursive modules and corresponding parameters.
 
@@ -139,7 +141,7 @@ def _discover_modules_and_parameters(top_module: torch.nn.Module, base_modules: 
     return top_level_parameter_names, lower_level_parameter_names
 
 
-def _descend_module_tree(top_module: Type[ModuleT], parameter_ancestry: List[str]) -> Tuple[Type[ModuleT], str]:
+def _descend_module_tree(top_module: ModuleT, parameter_ancestry: List[str]) -> Tuple[ModuleT, str]:
     """
     Step through the submodules of a GPyTorch module to find the sub module in direct possession of a parameter.
 

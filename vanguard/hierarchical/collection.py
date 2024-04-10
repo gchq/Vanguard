@@ -4,7 +4,7 @@ Contains the HyperparameterCollection class.
 import gpytorch
 from gpytorch.distributions import MultivariateNormal
 import torch
-from typing import Any, Iterator, List, Tuple, Type, TypeVar
+from typing import Any, Iterator, List, Tuple, TypeVar
 
 from ..hierarchical.base import BaseHierarchicalHyperparameters
 
@@ -21,7 +21,7 @@ class HyperparameterCollection:
     so that they can be replaced by batches of parameters representing samples
     from a distribution over those hyperparameters.
     """
-    def __init__(self, module_hyperparameter_pairs: List[Tuple], sample_shape: torch.Size, variational_distribution_class: VariationalDistributionT):
+    def __init__(self, module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]], sample_shape: torch.Size, variational_distribution_class: VariationalDistributionT):
         """
         Initialise self.
 
@@ -100,7 +100,7 @@ class HyperparameterCollection:
 
             variational_index += index_size
 
-    def _parameter_index_size(self, hyperparameter: Type[HyperparameterT]) -> int:
+    def _parameter_index_size(self, hyperparameter: HyperparameterT) -> int:
         """
         Get the size of the index into the sample tensor corresponding to the hyperparameter.
 
@@ -110,7 +110,7 @@ class HyperparameterCollection:
         """
         return hyperparameter.numel() // self.sample_shape[0]
 
-    def _update_hyperparameter_value(self, owner_module: Type[ModuleT], hyperparameter: Type[HyperparameterT]) -> None:
+    def _update_hyperparameter_value(self, owner_module: ModuleT, hyperparameter: HyperparameterT) -> None:
         """Update the value of a hyperparameter within its owner module."""
         index = self._hyperparameter_to_index[(owner_module, hyperparameter.raw_name)]
         sliced_tensor = self.sample_tensor[index].reshape(hyperparameter.raw_shape)
@@ -172,7 +172,7 @@ class OnePointHyperparameterCollection:
         return tensor
 
     @hyperparameter_tensor.setter
-    def hyperparameter_tensor(self, value: dict) -> None:
+    def hyperparameter_tensor(self, value: torch.Tensor) -> None:
         for owner_module, hyperparameter in self.module_hyperparameter_pairs:
             index = self._hyperparameter_to_index[(owner_module, hyperparameter.raw_name)]
             shape = getattr(owner_module, hyperparameter.raw_name).shape
@@ -208,7 +208,7 @@ class OnePointHyperparameterCollection:
 
             variational_index += index_size
 
-    def _parameter_index_size(self, hyperparameter: Type[HyperparameterT]) -> int:
+    def _parameter_index_size(self, hyperparameter: HyperparameterT) -> int:
         """
         Get the size of the index into the sample tensor corresponding to the hyperparameter.
 

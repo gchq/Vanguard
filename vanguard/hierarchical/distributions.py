@@ -4,7 +4,7 @@ Contains a spectral decomposition version of multivariate normal.
 import torch
 from torch.distributions import MultivariateNormal, constraints
 from torch.distributions.utils import lazy_property
-from typing import Type, TypeVar
+from typing import NoReturn, Type, TypeVar
 
 T = TypeVar('T', bound='MultivariateNormal')
 
@@ -30,7 +30,7 @@ class SpectralRegularisedMultivariateNormal(MultivariateNormal):
                        "precision_matrix": constraints.positive_definite}
 
     @lazy_property
-    def precision_matrix(self):
+    def precision_matrix(self) -> NoReturn:
         raise NotImplementedError("Precision is not available for spectral defined multivariate normals.")
 
     @classmethod

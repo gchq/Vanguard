@@ -3,14 +3,14 @@ Contains the BayesianHyperparameter class.
 """
 from gpytorch import constraints
 import torch
-from typing import Union
+from typing import Optional
 
 
 class BayesianHyperparameter:
     """
     Represents a single Bayesian hyperparameter.
     """
-    def __init__(self, raw_name: str, raw_shape: torch.Size, constraint: Union[constraints.Interval, None], prior_mean: float, prior_variance: float):
+    def __init__(self, raw_name: str, raw_shape: torch.Size, constraint: Optional[constraints.Interval], prior_mean: float, prior_variance: float):
         """
         Initialise self.
 

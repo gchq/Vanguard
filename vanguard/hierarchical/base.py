@@ -7,7 +7,7 @@ from gpytorch.kernels import ScaleKernel
 import numpy as np
 from numpy.typing import NDArray
 import torch
-from typing import Any, Generator, Tuple, Type, TypeVar, Union
+from typing import Any, Generator, List, Tuple, Type, TypeVar, Union
 
 from ..base import GPController
 from ..base.posteriors import Posterior, MonteCarloPosteriorCollection
@@ -47,7 +47,7 @@ class BaseHierarchicalHyperparameters(Decorator):
             def new(cls, instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
                 """Make sure that the hyperparameter collection is copied over."""
                 new_instance = super().new(instance, **kwargs)
-                new_instance.hyperparameter_collection = instance.hyperparameter_collection # type: ignore[reportAttributeAccessIssue]
+                new_instance.hyperparameter_collection = instance.hyperparameter_collection
                 return new_instance
 
             def _get_posterior_over_point(self, x: NDArray[np.floating]) -> Type[PosteriorT]:
@@ -82,7 +82,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                     The ``n_features`` must match with :attr:`self.dim`.
 
                 :param x: (n_preds, n_features) The predictive inputs.
-                :param array_like[float],float x_std: The input noise standard deviations:
+                :param x_std: The input noise standard deviations:
 
                     * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
                     * float: Assume homoskedastic noise.
@@ -116,7 +116,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 likelihood_collection = self.posterior_collection_class(likelihoods)
                 return likelihood_collection
 
-            def _gp_forward(self, x: NDArray[np.floating]) -> Type[ControllerT]:
+            def _gp_forward(self, x: torch.Tensor) -> Type[ControllerT]:
                 """
                 Run the forward method of the internal GP model.
 
@@ -133,19 +133,19 @@ class BaseHierarchicalHyperparameters(Decorator):
         return InnerClass
 
     @staticmethod
-    def _infinite_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator:
+    def _infinite_posterior_samples(controller: ControllerT, x: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_fuzzy_posterior_samples(controller: Type[ControllerT], x: NDArray[np.floating], x_std: NDArray[np.floating]) -> Generator:
+    def _infinite_fuzzy_posterior_samples(controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator:
+    def _infinite_likelihood_samples(controller: ControllerT, x: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_fuzzy_likelihood_samples(controller: Type[ControllerT], x: NDArray[np.floating]) -> Generator:
+    def _infinite_fuzzy_likelihood_samples(controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
 
@@ -186,7 +186,7 @@ def _get_bayesian_hyperparameters(module: ModuleT) -> Tuple[list, ...]:
     return module_hyperparameter_pairs, point_estimates_scale_kernels
 
 
-def extract_bayesian_hyperparameters(controller: Type[ControllerT]) -> Tuple[list, ...]:
+def extract_bayesian_hyperparameters(controller: ControllerT) -> Tuple[List, List]:
     """Pull hyperparameters and any point-estimate kernels from a controller's mean, kernel and likelihood."""
     hyperparameter_pairs = []
 
