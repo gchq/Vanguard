@@ -4,9 +4,11 @@ All warp functions should subclass this :class:`WarpFunction` class.
 import copy
 from functools import wraps
 from itertools import chain
+from typing import Any, Callable, Iterator, List, TypeVar, Union, overload
 
 import gpytorch
 import torch
+from typing_extensions import Never, Self
 
 
 class WarpFunction(gpytorch.Module):
@@ -38,7 +40,16 @@ class WarpFunction(gpytorch.Module):
         >>> add_ten.forward(torch.Tensor([0]))
         tensor([10.])
     """
-    def __matmul__(self, other):
+
+    @overload
+    def __matmul__(self, other: Union["WarpFunction", int]) -> Union["WarpFunction", int]:
+        ...
+
+    @overload
+    def __matmul__(self, other: Any):
+        ...
+
+    def __matmul__(self, other: Union["WarpFunction", int, Any]) -> Union["WarpFunction", int, Any]:
         if isinstance(other, WarpFunction):
             return self.compose(other)
         elif isinstance(other, int):
@@ -50,7 +61,7 @@ class WarpFunction(gpytorch.Module):
         return NotImplemented
 
     @property
-    def components(self):
+    def components(self) -> List["WarpFunction"]:
         """Get the components of the composition."""
         try:
             components = self.old_warp_left.components + self.old_warp_right.components
@@ -58,23 +69,21 @@ class WarpFunction(gpytorch.Module):
             components = [self]
         return components
 
-    def forward(self, y):
+    def forward(self, y: torch.Tensor) -> torch.Tensor:
         """
         Pass an input tensor through the warp function.
 
-        :param torch.Tensor y: An input tensor.
+        :param y: An input tensor.
         :returns: A tensor of same shape as y.
-        :rtype: torch.Tensor
         """
         raise NotImplementedError("Using base class Warp.")
 
-    def deriv(self, y):
+    def deriv(self, y: torch.Tensor) -> torch.Tensor:
         """
         Return the derivative of the warp function at a point, y.
 
-        :param torch.Tensor y: An input tensor.
+        :param y: An input tensor.
         :returns: A tensor of same shape as y, the warp function's gradient at y.
-        :rtype: torch.Tensor
         """
         g_y = y.detach().clone()
         g_y.requires_grad = True
@@ -82,23 +91,21 @@ class WarpFunction(gpytorch.Module):
         x.backward()
         return g_y.grad
 
-    def inverse(self, x):
+    def inverse(self, x: torch.Tensor) -> torch.Tensor:
         """
         Return the inverse of the warp function at a point, x.
 
-        :param torch.Tensor x: An input tensor.
+        :param x: An input tensor.
         :returns: A tensor of same shape as x, the warp function's inverse at x.
-        :rtype: torch.Tensor
         """
         raise NotImplementedError("Using base class Warp.")
 
-    def compose_with_self(self, n):
+    def compose_with_self(self, n: int) -> "WarpFunction":
         """
         Repeatedly compose a warp function with itself.
 
-        :param int n: The number of times to compose.
+        :param n: The number of times to compose.
         :return: A new WarpFunction instance with composed functions.
-        :rtype: WarpFunction
         :raises ValueError: If ``n`` is negative.
 
         .. note::
@@ -121,13 +128,12 @@ class WarpFunction(gpytorch.Module):
             raise ValueError("'n' cannot be negative.")
         return new_warp
 
-    def compose(self, other):
+    def compose(self, other: "WarpFunction") -> "WarpFunction":
         """
         Compose with another warp function.
 
-        :param WarpFunction other: The other warp function.
+        :param other: The other warp function.
         :return: A new WarpFunction instance with composed functions.
-        :rtype: WarpFunction
 
         .. note::
             For convenience, it is often easier to use the ``@`` operator in place of :meth:`compose`.
@@ -155,14 +161,14 @@ class WarpFunction(gpytorch.Module):
 
         return new_warp
 
-    def copy(self):
+    def copy(self) -> Self:
         """Return a copy guaranteed to have distinct parameters."""
         try:
             return self.old_warp_left.copy() @ self.old_warp_right.copy()
         except AttributeError:
             return copy.deepcopy(self)
 
-    def freeze(self):
+    def freeze(self) -> Self:
         """
         Return a copy of the warp with frozen parameters.
 
@@ -178,7 +184,7 @@ class WarpFunction(gpytorch.Module):
         new_warp.parameters = _empty_generator
         return new_warp
 
-    def _combined_parameters(self):
+    def _combined_parameters(self) -> Iterator[torch.nn.Module.parameters]:
         """
         Return the combined parameters of the composition.
 
@@ -192,13 +198,13 @@ class _IdentityWarpFunction(WarpFunction):
     """
     The identity map as a warp.
     """
-    def forward(self, y):
+    def forward(self, y: torch.Tensor) -> torch.Tensor:
         return y
 
-    def deriv(self, y):
+    def deriv(self, y: torch.Tensor) -> torch.Tensor:
         return torch.ones_like(y)
 
-    def inverse(self, x):
+    def inverse(self, x: torch.Tensor) -> torch.Tensor:
         return x
 
 
@@ -236,7 +242,7 @@ class MultitaskWarpFunction(WarpFunction):
         tensor([[2., 5.],
                 [0., 1.]])
     """
-    def __init__(self, *warps):
+    def __init__(self, *warps: WarpFunction):
         """
         Initialise self.
 
@@ -246,46 +252,42 @@ class MultitaskWarpFunction(WarpFunction):
         self.warps = torch.nn.ModuleList(warps)
 
     @property
-    def num_tasks(self):
+    def num_tasks(self) -> int:
         return len(self.warps)
 
-    def forward(self, stack_of_y):
+    def forward(self, stack_of_y: torch.Tensor) -> torch.Tensor:
         """
         Pass an input tensor through the warp function.
 
-        :param torch.Tensor stack_of_y: A stack of input tensors.
+        :param stack_of_y: A stack of input tensors.
         :returns: A stack of tensors in the same shape as stack_of_y.
-        :rtype: torch.Tensor
         """
         return torch.stack([warp.forward(task_y).squeeze() for warp, task_y in zip(self.warps, stack_of_y.T)], -1)
 
-    def deriv(self, y):
+    def deriv(self, y: torch.Tensor) -> torch.Tensor:
         """
         Return the derivative of the warp function at a point, y.
 
-        :param torch.Tensor y: An input tensor.
+        :param y: An input tensor.
         :returns: A tensor of same shape as y, the warp function's gradient at y.
-        :rtype: torch.Tensor
         """
         return torch.stack([warp.deriv(task_y).squeeze() for warp, task_y in zip(self.warps, y.T)], -1)
 
-    def inverse(self, x):
+    def inverse(self, x: torch.Tensor) -> torch.Tensor:
         """
         Return the inverse of the warp function at a point, x.
 
-        :param torch.Tensor x: An input tensor.
+        :param x: An input tensor.
         :returns: A tensor of same shape as x, the warp function's inverse at x.
-        :rtype: torch.Tensor
         """
         return torch.stack([warp.inverse(task_x).squeeze() for warp, task_x in zip(self.warps, x.T)], -1)
 
-    def compose(self, other):
+    def compose(self, other: "WarpFunction") -> "MultitaskWarpFunction":
         """
         Compose with another warp function.
 
-        :param MultitaskWarpFunction other: The other warp function.
+        :param other: The other warp function.
         :return: A new MultitaskWarpFunction instance with composed functions task-wise.
-        :rtype: MultitaskWarpFunction
 
         .. note::
             For convenience, it is often easier to use the ``@`` operator in place of :meth:`compose`.
@@ -309,13 +311,12 @@ class MultitaskWarpFunction(WarpFunction):
         new_warp = MultitaskWarpFunction(*new_task_warps)
         return new_warp
 
-    def compose_with_self(self, n):
+    def compose_with_self(self, n: int) -> "MultitaskWarpFunction":
         """
         Repeatedly compose a warp function with itself.
 
-        :param int n: The number of times to compose.
+        :param n: The number of times to compose.
         :return: A new WarpFunction instance with composed functions.
-        :rtype: WarpFunction
         :raises ValueError: If ``n`` is negative.
 
         .. note::
@@ -339,7 +340,10 @@ class MultitaskWarpFunction(WarpFunction):
         return new_warp
 
 
-def _composition_factory(f1, f2):
+ComposableT = TypeVar("ComposableT", WarpFunction, Callable)
+
+
+def _composition_factory(f1: ComposableT, f2: ComposableT) -> ComposableT:
     """Return the function for f1(f2(x))."""
     @wraps(f1)
     def composition(*args):
@@ -348,7 +352,7 @@ def _composition_factory(f1, f2):
     return composition
 
 
-def _multiply_factory(f1, f2):
+def _multiply_factory(f1: ComposableT, f2: ComposableT) -> ComposableT:
     """Return the function for f1(x) * f2(x)."""
     @wraps(f1)
     def composition(*args):
@@ -357,6 +361,6 @@ def _multiply_factory(f1, f2):
     return composition
 
 
-def _empty_generator():
+def _empty_generator() -> Iterator[Never]:
     """Return an empty generator for convenience."""
     return iter(())
