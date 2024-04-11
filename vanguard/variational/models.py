@@ -1,11 +1,18 @@
 """
 Contains base models for approximate inference.
 """
-import gpytorch
+from typing import Any
+
 import numpy as np
 import torch
+from gpytorch.distributions import MultivariateNormal
+from gpytorch.kernels import Kernel
+from gpytorch.likelihoods import GaussianLikelihood
+from gpytorch.means import Mean
 from gpytorch.models import ApproximateGP
-from gpytorch.variational import CholeskyVariationalDistribution, VariationalStrategy
+from gpytorch.variational import (CholeskyVariationalDistribution, VariationalStrategy, _VariationalDistribution,
+                                  _VariationalStrategy)
+from torch import Tensor
 
 from vanguard.decoratorutils.wrapping import wraps_class
 
@@ -23,17 +30,17 @@ class SVGPModel(ApproximateGP):
     else:
         device = torch.device("cpu")
 
-    def __init__(self, train_x, train_y, likelihood, mean_module, covar_module, n_inducing_points, **kwargs):
+    def __init__(self, train_x: Tensor, train_y: Tensor, likelihood: GaussianLikelihood, mean_module: Mean,
+                 covar_module: Kernel, n_inducing_points: int, **kwargs: Any):
         """
         Initialise self.
 
-        :param torch.Tensor train_x: (n_samples, n_features) The training inputs (features).
-        :param torch.Tensor train_y: (n_samples,) The training targets (response).
-        :param gpytorch.likelihoods.GaussianLikelihood likelihood:  Likelihood to use with model.
-                Included only for signature consistency.
-        :param gpytorch.means.Mean mean_module: The prior mean function to use.
-        :param gpytorch.kernels.Kernel covar_module:  The prior kernel function to use.
-        :param int n_inducing_points: The number of inducing points in the variational sparse kernel approximation.
+        :param train_x: (n_samples, n_features) The training inputs (features).
+        :param train_y: (n_samples,) The training targets (response).
+        :param likelihood:  Likelihood to use with model. Included only for signature consistency.
+        :param mean_module: The prior mean function to use.
+        :param covar_module:  The prior kernel function to use.
+        :param n_inducing_points: The number of inducing points in the variational sparse kernel approximation.
         """
         self._check_batch_shape(mean_module, covar_module)
 
@@ -46,7 +53,7 @@ class SVGPModel(ApproximateGP):
         @wraps_class(variational_strategy_class)
         class SafeVariationalStrategy(variational_strategy_class):
             """A temporary class which will raise an appropriate error when the __call__ method fails."""
-            def __call__(self, *args, **kwargs):
+            def __call__(self, *args: Any, **kwargs: Any) -> MultivariateNormal:
                 try:
                     return super().__call__(*args, **kwargs)
                 except RuntimeError:
@@ -61,64 +68,60 @@ class SVGPModel(ApproximateGP):
         self.covar_module = covar_module
         self.likelihood = likelihood
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> MultivariateNormal:
         """
         Compute the prior latent distribution on a given input.
 
-        :param torch.Tensor x: (n_samples, n_features) The inputs.
+        :param x: (n_samples, n_features) The inputs.
         :returns: The prior distribution.
-        :rtype: gpytorch.distributions.MultivariateNormal
         """
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
-        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+        return MultivariateNormal(mean_x, covar_x)
 
-    def _init_inducing_points(self, train_x, n_inducing_points):
+    def _init_inducing_points(self, train_x: Tensor, n_inducing_points: int) -> Tensor:
         """
         Create the initial inducing points by sampling from the training inputs.
 
-        :param torch.Tensor train_x: (n_training_points, n_features)
-        :param int n_inducing_points: How many inducing points to select.
+        :param train_x: (n_training_points, n_features)
+        :param n_inducing_points: How many inducing points to select.
         :returns: The inducing points sampled from the training points.
-        :rtype: torch.Tensor
         """
         induce_indices = np.random.choice(train_x.shape[0], size=n_inducing_points, replace=True)
         inducing_points = train_x[induce_indices]
         return inducing_points.to(self.device)
 
-    def _build_variational_strategy(self, base_variational_strategy):
+    def _build_variational_strategy(self, base_variational_strategy: _VariationalStrategy) -> _VariationalStrategy:
         """
         Construct the final variational strategy from the intermediate strategy.
 
-        :param gpytorch.variational._VariationalStrategy base_variational_strategy: The intermediate strategy.
+        :param base_variational_strategy: The intermediate strategy.
         :returns: The final variational strategy to use.
-        :rtype: gpytorch.variational.VariationalStrategy
         """
         return base_variational_strategy
 
-    def _build_variational_distribution(self, n_inducing_points):
+    def _build_variational_distribution(self, n_inducing_points: int) -> _VariationalDistribution:
         """
         Construct the variational distribution.
 
-        :param int n_inducing_points: How many inducing points to use in the approximation.
+        :param n_inducing_points: How many inducing points to use in the approximation.
         :returns: The variational distribution.
-        :rtype: gpytorch.variational._VariationalDistribution
         """
         return CholeskyVariationalDistribution(n_inducing_points)
 
-    def _build_base_variational_strategy(self, inducing_points, variational_distribution):
+    def _build_base_variational_strategy(self, inducing_points: Tensor,
+                                         variational_distribution: _VariationalDistribution) -> _VariationalStrategy:
         """
         Build the base variational strategy.
 
-        :param torch.Tensor inducing_points: The inducing points sampled from the training points.
-        :param gpytorch.variational._VariationalDistribution variational_distribution: The variational distribution.
+        :param inducing_points: The inducing points sampled from the training points.
+        :param variational_distribution: The variational distribution.
         :returns: The final variational strategy which will be used.
-        :rtype: gpytorch.variational._VariationalStrategy
         """
         return VariationalStrategy(self, inducing_points, variational_distribution,
                                    learn_inducing_locations=True)
 
-    def _check_batch_shape(self, mean_module, covar_module):
+    def _check_batch_shape(self, mean_module: Mean, covar_module: Kernel) -> None:
         """
         Ensure that the shapes are compatible.
 
@@ -131,7 +134,7 @@ class SVGPModel(ApproximateGP):
                             f"not have the correct variational strategy for multi-task.")
 
     @staticmethod
-    def _get_num_tasks(y):
+    def _get_num_tasks(y: Tensor) -> int:
         """Get the number of tasks implied by the shape of ``y``."""
         try:
             num_tasks = y.shape[1]
