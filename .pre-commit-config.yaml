@@ -29,8 +29,9 @@ repos:
       - id: end-of-file-fixer
       # Remove whitespace at the end of lines
       - id: trailing-whitespace
-      # Prevent commit to main/master
+      # Prevent commit directly to develop and main
       - id: no-commit-to-branch
+        args: [-b, develop, -b, main]
       # Sort spell check custom dictionary
       - id: file-contents-sorter
         files: ^.cspell/(custom_misc|library_terms|people).txt$
