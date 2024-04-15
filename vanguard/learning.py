@@ -5,14 +5,14 @@ from __future__ import annotations
 
 import re
 import warnings
+from typing import Tuple, Type, TypeVar, Union
 
-import torch
-import numpy.typing
 import numpy as np
+import numpy.typing
+import torch
 
 from .base import GPController
 from .decoratorutils import Decorator, process_args, wraps_class
-from typing import TypeVar, Type, Union, Tuple
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

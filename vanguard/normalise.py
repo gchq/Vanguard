@@ -1,13 +1,14 @@
 """
 The :class:`NormaliseY` decorator will scale the y-inputs to a unit normal distribution.
 """
+from typing import Tuple, Type, TypeVar
+
 import numpy as np
 import torch
 
 from .base import GPController
-from .decoratorutils import Decorator, process_args, wraps_class
-from typing import TypeVar, Type, Tuple
 from .base.posteriors import Posterior
+from .decoratorutils import Decorator, process_args, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

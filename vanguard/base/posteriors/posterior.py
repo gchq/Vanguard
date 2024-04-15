@@ -1,12 +1,13 @@
 """
 Contains the Posterior class.
 """
+from typing import Tuple, TypeVar, Union
+
 import gpytorch
 import numpy as np
 import numpy.typing
-from scipy import stats
 import torch
-from typing import TypeVar, Tuple, Union
+from scipy import stats
 from typing_extensions import Self
 
 T = TypeVar("T")

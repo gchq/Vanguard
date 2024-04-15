@@ -1,10 +1,11 @@
 """
 Contain some small utilities of use in some cases.
 """
+from typing import Any, Generator, Tuple
+
 import numpy as np
 import numpy.typing
 import torch
-from typing import Generator, NoReturn, Any, Tuple
 
 from .warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 

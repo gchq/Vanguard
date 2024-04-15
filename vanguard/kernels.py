@@ -1,9 +1,10 @@
 """
 Vanguard includes :class:`gpytorch.kernels.Kernel` subclasses which are recommended for use in controllers.
 """
-from gpytorch import constraints, kernels
+from typing import Optional, Tuple, Union
+
 import torch
-from typing import Optional, Union, Tuple
+from gpytorch import constraints, kernels
 
 
 class ScaledRBFKernel(kernels.ScaleKernel):

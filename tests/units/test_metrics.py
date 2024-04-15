@@ -1,10 +1,10 @@
 """
 Tests for the LossTracker class.
 """
+import unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from math import isnan
-import unittest
 
 from vanguard.base.metrics import MetricsTracker, loss
 from vanguard.datasets.synthetic import SyntheticDataset

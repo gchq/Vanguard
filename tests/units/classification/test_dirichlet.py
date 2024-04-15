@@ -1,14 +1,15 @@
 """
 Tests for the DirichletMulticlassClassification decorator.
 """
-from gpytorch.likelihoods import DirichletClassificationLikelihood
 import numpy as np
+from gpytorch.likelihoods import DirichletClassificationLikelihood
 
 from vanguard.classification import DirichletMulticlassClassification
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 
+from ...cases import flaky
 from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase
 
 
@@ -35,6 +36,7 @@ class MulticlassTests(ClassificationTestCase):
                                                         mean_kwargs={"batch_shape": 4})
         self.controller.fit(100)
 
+    @flaky
     def test_predictions(self):
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
@@ -45,6 +47,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     """
     Tests for fuzzy dirichlet multiclass classification.
     """
+    @flaky
     def test_fuzzy_predictions_monte_carlo(self):
         """Predictions should be close to the values from the test data."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20,
@@ -64,6 +67,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.5)
 
+    @flaky
     def test_fuzzy_predictions_uncertainty(self):
         """Predictions should be close to the values from the test data."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100,

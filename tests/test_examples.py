@@ -5,8 +5,8 @@ import os
 import re
 import unittest
 
-from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
+from nbconvert.preprocessors import ExecutePreprocessor
 
 _RE_SPHINX_EXPECT = re.compile("^# sphinx expect (.*Error)$")
 TIMEOUT = 2400
