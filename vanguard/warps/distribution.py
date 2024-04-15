@@ -62,7 +62,7 @@ class WarpedGaussian(Normal):
         :param lr: The learning rate for optimisation.
         :returns: A fit distribution.
         """
-        t_samples = torch.as_tensor(samples, dtype=BaseGPController._default_tensor_type.dtype)
+        t_samples = torch.as_tensor(samples, dtype=BaseGPController._default_tensor_type.dtype)  # pyright: ignore [reportCallIssue]
         optim = optimiser(params=[{"params": warp.parameters(), "lr": lr}])
 
         for i in range(n_iterations):
@@ -70,7 +70,7 @@ class WarpedGaussian(Normal):
             loss.backward(retain_graph=i < n_iterations-1)
             optim.step()
         w_samples = warp(t_samples)
-        loc = w_samples.mean(dim=0).detach()
+        loc = w_samples.mean(dim=0).detach()  # pyright: ignore [reportCallIssue]
         scale = w_samples.std(dim=0).detach() + 1e-4
         distribution = cls(warp, loc=loc, scale=scale)
 
@@ -87,6 +87,6 @@ class WarpedGaussian(Normal):
         w_data = warp(data)
         loc = w_data.mean(dim=0).detach()
         scale = w_data.std(dim=0).detach() + 1e-4
-        gaussian_log_prob = (-(w_data - loc) ** 2 / (2 * scale ** 2) - torch.log(scale)).sum()
+        gaussian_log_prob = (-(w_data - loc) ** 2 / (2 * scale ** 2) - torch.log(scale)).sum()  # pyright: ignore [reportOperatorIssue]
         log_jacobian = torch.log(warp.deriv(data).abs()).sum()
         return gaussian_log_prob + log_jacobian

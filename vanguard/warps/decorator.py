@@ -6,7 +6,7 @@ from typing import Any, Tuple, Type, TypeVar
 import numpy as np
 import numpy.typing
 import torch
-from typing_extensions import TypeVarTuple
+from typing_extensions import TypeVarTuple, Unpack
 
 from ..base import GPController
 from ..base.posteriors import Posterior
@@ -63,7 +63,7 @@ class SetWarp(Decorator):
                 self._smart_optimiser.register_module(self.warp)
                 self.train_y = self.train_y.to(self.device)
 
-                def _unwarp_values(*values: ArrayTupleT) -> ArrayTupleT:
+                def _unwarp_values(*values: numpy.typing.NDArray[np.floating]) -> ArrayTupleT:
                     """Map values back through the warp."""
                     values_as_tensors = (torch.as_tensor(value, dtype=self.dtype, device=self.device)
                                          for value in values)
@@ -72,7 +72,7 @@ class SetWarp(Decorator):
                                                       for tensor in unwarped_values_as_tensors)
                     return unwarped_values_as_arrays
 
-                def _warp_values(*values: ArrayTupleT) -> ArrayTupleT:
+                def _warp_values(*values: numpy.typing.NDArray[np.floating]) -> ArrayTupleT:
                     """Map values through the warp."""
                     values_as_tensors = (torch.as_tensor(value, dtype=self.dtype, device=self.device)
                                          for value in values)
@@ -97,7 +97,7 @@ class SetWarp(Decorator):
                         """
                         Un-scale the distribution at initialisation.
                         """
-                        def prediction(self) -> torch.tensor:
+                        def prediction(self) -> torch.tensor:  # pytest: ignore [reportGeneralTypeIssues]
                             """Un-warp values."""
                             raise TypeError("The mean and covariance of a warped GP cannot be computed exactly.")
 
@@ -126,7 +126,7 @@ class SetWarp(Decorator):
                 new_instance._gp.train_targets = new_instance.warp(new_instance._gp.train_targets).squeeze(dim=-1)
                 return new_instance
 
-            def _sgd_round(self, n_iters: int = 100, gradient_every: int = 100) -> float:
+            def _sgd_round(self, n_iters: int = 100, gradient_every: int = 100) -> torch.Tensor:
                 """Calculate loss and warp train_y."""
                 loss = super()._sgd_round(n_iters=n_iters, gradient_every=gradient_every)
                 warped_train_y = self.warp(self.train_y).squeeze(dim=-1)

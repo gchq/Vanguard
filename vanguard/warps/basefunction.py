@@ -89,7 +89,10 @@ class WarpFunction(gpytorch.Module):
         g_y.requires_grad = True
         x = self.forward(g_y).sum()
         x.backward()
-        return g_y.grad
+        # Note that requires_grad is set to true, so we can ignore pyright warnings
+        # about this potentially being None, and hence conflicting with the type
+        # annotation
+        return g_y.grad  # pyright: ignore [reportReturnType]
 
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -121,7 +124,8 @@ class WarpFunction(gpytorch.Module):
         if n > 0:
             new_warp = self
             for _ in range(n - 1):
-                new_warp = new_warp @ self
+                # Note that @ usage is defined in __matmul__ so warnings can be ignored
+                new_warp = new_warp @ self  # pyright: ignore [reportOperatorIssue]
         elif n == 0:
             new_warp = _IdentityWarpFunction()
         else:
@@ -152,7 +156,8 @@ class WarpFunction(gpytorch.Module):
             new_warp.forward = _composition_factory(self, other)
             new_warp.inverse = _composition_factory(other.inverse, self.inverse)
             new_warp.deriv = _multiply_factory(_composition_factory(self.deriv, other), other.deriv)
-            new_warp.parameters = new_warp._combined_parameters
+            # Overwrite parameters method with an iterator
+            new_warp.parameters = new_warp._combined_parameters  # pyright: ignore [reportAttributeAccessIssue]
         except AttributeError:
             if not isinstance(other, WarpFunction):
                 raise TypeError("Must be passed a valid WarpFunction instance.")
@@ -181,7 +186,8 @@ class WarpFunction(gpytorch.Module):
         :rtype: WarpFunction
         """
         new_warp = self.copy()
-        new_warp.parameters = _empty_generator
+        # Overwrite parameters method with an iterator
+        new_warp.parameters = _empty_generator  # pyright: ignore [reportAttributeAccessIssue]
         return new_warp
 
     def _combined_parameters(self) -> Iterator[torch.nn.Module.parameters]:
@@ -332,7 +338,8 @@ class MultitaskWarpFunction(WarpFunction):
         if n > 0:
             new_warp = self
             for _ in range(n - 1):
-                new_warp = new_warp @ self
+                # Operator usage defined in __matmul__
+                new_warp = new_warp @ self  # pyright: ignore [reportOperatorIssue]
         elif n == 0:
             new_warp = type(self)([_IdentityWarpFunction()] * self.num_tasks)
         else:
@@ -357,7 +364,7 @@ def _multiply_factory(f1: ComposableT, f2: ComposableT) -> ComposableT:
     @wraps(f1)
     def composition(*args):
         """Inner function."""
-        return f1(*args) * f2(*args)
+        return f1(*args) * f2(*args)  # pyright: ignore [reportOperatorIssue]
     return composition
 
 
