@@ -116,7 +116,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 likelihood_collection = self.posterior_collection_class(likelihoods)
                 return likelihood_collection
 
-            def _gp_forward(self, x: torch.Tensor) -> Type[ControllerT]:
+            def _gp_forward(self, x: torch.Tensor) -> gpytorch.distributions.MultivariateNormal:
                 """
                 Run the forward method of the internal GP model.
 

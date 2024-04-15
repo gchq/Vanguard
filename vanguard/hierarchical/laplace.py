@@ -267,10 +267,10 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float=1e-3) -> 
     return inverse_eigenvalues, eigenvectors
 
 
-def _posterior_to_likelihood_samples(posterior_generator: Generator[torch.Tensor, None, None]) -> Callable:
+def _posterior_to_likelihood_samples(posterior_generator: Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]]) -> Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]]:
     """Convert an infinite posterior sample generator to generate likelihood samples."""
 
-    def generator(controller: Type[ControllerT], x: torch.Tensor, *args) -> Generator[torch.Tensor, None, None]:
+    def generator(controller: ControllerT, x: NDArray[np.floating], *args) -> Generator[torch.Tensor, None, None]:
         """Yield likelihood samples forever."""
         for sample in posterior_generator(controller, x, *args):
             shape = controller._decide_noise_shape(controller.posterior_class(sample),
