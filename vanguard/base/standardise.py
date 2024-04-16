@@ -1,10 +1,11 @@
 """
 Contains a class decorator to apply input standard scaling to means and kernels.
 """
-import torch
-from typing import Union, Optional
-from typing_extensions import Self
+from typing import Optional, Union
+
 import numpy.typing
+import torch
+from typing_extensions import Self
 
 from ..decoratorutils import wraps_class
 

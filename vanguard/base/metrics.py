@@ -7,9 +7,9 @@ controller classes. These are calculated per iteration by the
 """
 from __future__ import annotations
 
-from contextlib import contextmanager
 import itertools
-from typing import Callable, TYPE_CHECKING, Optional
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Callable, Optional
 
 if TYPE_CHECKING:
     from .basecontroller import BaseGPController

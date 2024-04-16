@@ -4,14 +4,14 @@ Tests for the GPController class.
 import unittest
 
 import gpytorch
+import numpy as np
+import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.means import ConstantMean
 from gpytorch.mlls import ExactMarginalLogLikelihood
-import numpy as np
 import numpy.typing
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
-import torch
 
 from typing import Union
 

@@ -7,8 +7,8 @@ import unittest
 from typing import Optional, Tuple, Any
 
 
-from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
+from nbconvert.preprocessors import ExecutePreprocessor
 
 _RE_SPHINX_EXPECT = re.compile("^# sphinx expect (.*Error)$")
 TIMEOUT = 2400
@@ -82,7 +82,8 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
             if output.output_type == "error":
                 self._verify_expected_errors(cell, cell_no, output)
 
-    def _verify_expected_errors(self, cell, cell_no: int, output) -> None:
+    def _verify_expected_errors(self, cell: nbformat.notebooknode.NotebookNode, cell_no: int,
+                                output: nbformat.notebooknode.NotebookNode) -> None:
         """Verify if an error is expected in a cell."""
         cell_source_lines = cell.source.split("\n")
         match_if_cell_expected_to_ignore = _RE_SPHINX_EXPECT.match(cell_source_lines[0])

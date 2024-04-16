@@ -4,23 +4,24 @@ The (non-user-facing) base class of Vanguard controllers.
 The :class:`~vanguard.base.basecontroller.BaseGPController` class contains the
 machinery of the :class:`~vanguard.base.gpcontroller.GPController`.
 """
-from itertools import islice
 import warnings
+from itertools import islice
+from typing import Callable, Generator, List, Optional, Tuple, Type, Union
 
 import gpytorch
-from gpytorch import constraints
-from gpytorch.utils.errors import NanError
-import torch
-from typing import Callable, Generator, List, Optional, Tuple, Type, Union
 import numpy.typing
+import torch
+from gpytorch import constraints
+from gpytorch.models import ApproximateGP, ExactGP
+from gpytorch.utils.errors import NanError
 from numpy import dtype
 
-from . import metrics
 from ..decoratorutils import wraps_class
 from ..models import ExactGPModel
 from ..optimise import NoImprovementError, SmartOptimiser
 from ..utils import infinite_tensor_generator, instantiate_with_subset_of_kwargs
 from ..warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
+from . import metrics
 from .posteriors import MonteCarloPosteriorCollection, Posterior
 from .standardise import StandardiseXModule
 
@@ -76,7 +77,7 @@ class BaseGPController:
 
     torch.set_default_tensor_type(_default_tensor_type)
 
-    gp_model_class = ExactGPModel
+    gp_model_class: Type[Union[ExactGP, ApproximateGP]] = ExactGPModel
     posterior_class = Posterior
     posterior_collection_class = MonteCarloPosteriorCollection
 

@@ -3,11 +3,11 @@ Test the behaviour of the StandardiseXModule class.
 """
 import unittest
 
-from gpytorch.kernels import RBFKernel
-from gpytorch.means import LinearMean
 import numpy as np
 import numpy.typing
 import torch
+from gpytorch.kernels import RBFKernel
+from gpytorch.means import LinearMean
 
 from vanguard.base.standardise import StandardiseXModule
 from vanguard.standardise import DisableStandardScaling

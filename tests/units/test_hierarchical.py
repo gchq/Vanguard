@@ -3,12 +3,12 @@ Tests for the VariationalHierarchicalHyperparameters and BayesianHyperparameters
 """
 import abc
 import unittest
-from typing import TypeVar, Generic, Type, Any
+from typing import Generic, Type, TypeVar, Any
 
-from gpytorch.constraints import Positive
-from gpytorch.kernels import RBFKernel, ScaleKernel
 import numpy as np
 import torch
+from gpytorch.constraints import Positive
+from gpytorch.kernels import RBFKernel, ScaleKernel
 
 from vanguard.base import GPController
 from vanguard.datasets.synthetic import MultidimensionalSyntheticDataset, SyntheticDataset

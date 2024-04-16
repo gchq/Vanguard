@@ -2,7 +2,7 @@
 Contains decorators for torch optimisers to apply LR schedulers as part of the optimisation step.
 """
 import inspect
-from typing import Type, TypeVar, Optional, Callable, Generic, overload
+from typing import Callable, Generic, Optional, Type, TypeVar, overload
 
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
