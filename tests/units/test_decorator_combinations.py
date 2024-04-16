@@ -216,7 +216,7 @@ class CombinationTests(unittest.TestCase):
             yield upper_decorator, lower_decorator, controller_kwargs, dataset
 
     @staticmethod
-    def _create_decorator(details: Tuple[Callable, Dict[str: Any]]) -> Tuple[Callable, ControllerT, Optional[Dataset]]:
+    def _create_decorator(details: Tuple[Callable, Dict[str, Any]]) -> Tuple[Callable, ControllerT, Optional[Dataset]]:
         """Unpack decorator details."""
         decorator_class, all_decorator_kwargs = details
         decorator = decorator_class(ignore_all=True, **all_decorator_kwargs["decorator"])
