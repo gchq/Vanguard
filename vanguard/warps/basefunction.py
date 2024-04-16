@@ -41,15 +41,7 @@ class WarpFunction(gpytorch.Module):
         tensor([10.])
     """
 
-    @overload
-    def __matmul__(self, other: Union["WarpFunction", int]) -> Union["WarpFunction", int]:
-        ...
-
-    @overload
-    def __matmul__(self, other: Any):
-        ...
-
-    def __matmul__(self, other: Union["WarpFunction", int, Any]) -> Union["WarpFunction", int, Any]:
+    def __matmul__(self, other: Union["WarpFunction", int]) -> "WarpFunction":
         if isinstance(other, WarpFunction):
             return self.compose(other)
         elif isinstance(other, int):
@@ -89,10 +81,8 @@ class WarpFunction(gpytorch.Module):
         g_y.requires_grad = True
         x = self.forward(g_y).sum()
         x.backward()
-        # Note that requires_grad is set to true, so we can ignore pyright warnings
-        # about this potentially being None, and hence conflicting with the type
-        # annotation
-        return g_y.grad  # pyright: ignore [reportReturnType]
+        assert g_y.grad is not None
+        return g_y.grad
 
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -124,8 +114,7 @@ class WarpFunction(gpytorch.Module):
         if n > 0:
             new_warp = self
             for _ in range(n - 1):
-                # Note that @ usage is defined in __matmul__ so warnings can be ignored
-                new_warp = new_warp @ self  # pyright: ignore [reportOperatorIssue]
+                new_warp = new_warp @ self
         elif n == 0:
             new_warp = _IdentityWarpFunction()
         else:

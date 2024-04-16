@@ -6,7 +6,6 @@ from typing import Any, Tuple, Type, TypeVar
 import numpy as np
 import numpy.typing
 import torch
-from typing_extensions import TypeVarTuple, Unpack
 
 from ..base import GPController
 from ..base.posteriors import Posterior
@@ -15,7 +14,6 @@ from .basefunction import WarpFunction
 from .intermediate import is_intermediate_warp_function
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
-ArrayTupleT = TypeVarTuple("ArrayTupleT")
 
 
 class SetWarp(Decorator):
@@ -63,7 +61,7 @@ class SetWarp(Decorator):
                 self._smart_optimiser.register_module(self.warp)
                 self.train_y = self.train_y.to(self.device)
 
-                def _unwarp_values(*values: numpy.typing.NDArray[np.floating]) -> ArrayTupleT:
+                def _unwarp_values(*values: numpy.typing.NDArray[np.floating]) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
                     """Map values back through the warp."""
                     values_as_tensors = (torch.as_tensor(value, dtype=self.dtype, device=self.device)
                                          for value in values)
@@ -72,7 +70,7 @@ class SetWarp(Decorator):
                                                       for tensor in unwarped_values_as_tensors)
                     return unwarped_values_as_arrays
 
-                def _warp_values(*values: numpy.typing.NDArray[np.floating]) -> ArrayTupleT:
+                def _warp_values(*values: numpy.typing.NDArray[np.floating]) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
                     """Map values through the warp."""
                     values_as_tensors = (torch.as_tensor(value, dtype=self.dtype, device=self.device)
                                          for value in values)
