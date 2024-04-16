@@ -101,6 +101,7 @@ repos:
         args:
           - --drop-empty-cells
           - "--extra-keys=metadata.kernelspec metadata.language_info.version"
+          - --keep-id
   - repo: local
     hooks:
       - id: require-ascii
