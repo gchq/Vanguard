@@ -9,7 +9,7 @@ from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.mlls import VariationalELBO
 
-from typing import Tuple, List, Any, Callable, TypeVar, Optional
+from typing import Tuple, Dict, Any, Callable, TypeVar, Optional
 
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
@@ -216,7 +216,7 @@ class CombinationTests(unittest.TestCase):
             yield upper_decorator, lower_decorator, controller_kwargs, dataset
 
     @staticmethod
-    def _create_decorator(details: Tuple[Callable, List[Any]]) -> Tuple[Callable, ControllerT, Optional[Dataset]]:
+    def _create_decorator(details: Tuple[Callable, Dict[str: Any]]) -> Tuple[Callable, ControllerT, Optional[Dataset]]:
         """Unpack decorator details."""
         decorator_class, all_decorator_kwargs = details
         decorator = decorator_class(ignore_all=True, **all_decorator_kwargs["decorator"])

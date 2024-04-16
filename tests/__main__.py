@@ -14,7 +14,7 @@ TESTS = {
 }
 
 
-def parse_args() -> argparse.ArgumentParser:
+def parse_args() -> argparse.Namespace:
     """Parse the command line arguments."""
     parser = argparse.ArgumentParser(description="Run tests for Vanguard.")
 

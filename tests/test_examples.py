@@ -77,7 +77,7 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
             with open(notebook_path, "w") as wf:
                 nbformat.write(notebook, wf, version=4)
 
-    def _verify_cell_outputs(self, cell_no: int, cell) -> None:  # TODO: What is the expected type of cell? It must be a class that has the .outputs attribute, but is the class listed anywhere?
+    def _verify_cell_outputs(self, cell_no: int, cell: nbformat.notebooknode.NotebookNode) -> None:
         for output in cell.outputs:
             if output.output_type == "error":
                 self._verify_expected_errors(cell, cell_no, output)
