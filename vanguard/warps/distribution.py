@@ -1,8 +1,15 @@
 """
 Contains a torch distribution implementing a warped Gaussian.
 """
+from typing import Any, Type
+
+import numpy as np
+import numpy.typing
 import torch
 from torch.distributions import Normal
+from typing_extensions import Self
+
+from vanguard.warps.basefunction import WarpFunction
 
 from ..base.basecontroller import BaseGPController
 
@@ -14,26 +21,25 @@ class WarpedGaussian(Normal):
     .. math::
         X\sim \mathcal{WN}(\psi; \mu, \sigma) ~ \iff  \psi(X)\sim\mathcal{N}(\mu, \sigma).
     """
-    def __init__(self, warp, *args, **kwargs):
+    def __init__(self, warp: WarpFunction, *args: Any, **kwargs: Any):
         """
-        :param `~vanguard.warps.basefunction.WarpFunction warp`: The warp to be used to define the distribution.
+        :param warp`: The warp to be used to define the distribution.
         """
         super().__init__(*args, **kwargs)
         self.warp = warp
 
-    def log_prob(self, value):
+    def log_prob(self, value: torch.Tensor) -> torch.Tensor:
         """
         Calculate the log-probability of the values under the warped Gaussian distribution.
 
-        :param torch.Tensor value: Shape should be compatible with the distributions shape.
+        :param value: Shape should be compatible with the distributions shape.
         :returns: The log probability of the values.
-        :rtype: torch.Tensor
         """
         gaussian = super().log_prob(self.warp(value))
         jacobian = torch.log(self.warp.deriv(value).abs())
         return gaussian + jacobian
 
-    def sample(self, *args, **kwargs):
+    def sample(self, *args: Any, **kwargs: Any):
         """
         Sample from the distribution.
         """
@@ -41,21 +47,22 @@ class WarpedGaussian(Normal):
         return self.warp.inverse(gaussian_samples)
 
     @classmethod
-    def from_data(cls, warp, samples, optimiser=torch.optim.Adam, n_iterations=100, lr=0.001):
+    def from_data(cls, warp: WarpFunction, samples: numpy.typing.NDArray[np.floating], optimiser: Type[torch.optim.Optimizer] = torch.optim.Adam,
+                  n_iterations: int = 100, lr: float = 0.001) -> Self:
         """
         Fit a warped Gaussian distribution to the given data using the supplied warp.
 
         The mean and variance will be
         optimised along with the free parameters of the warp.
 
-        :param `~vanguard.warps.basefunction.WarpFunction` warp: The warp to use.
-        :param array_like[float] samples: (n_samples, ...) The data to fit.
-        :param type optimiser: A subclass of :class:`torch.optim.Optimizer` used to tune the parameters.
-        :param int n_iterations: The number of optimisation iterations.
-        :param float lr: The learning rate for optimisation.
+        :param warp: The warp to use.
+        :param samples: (n_samples, ...) The data to fit.
+        :param optimiser: A subclass of :class:`torch.optim.Optimizer` used to tune the parameters.
+        :param n_iterations: The number of optimisation iterations.
+        :param lr: The learning rate for optimisation.
         :returns: A fit distribution.
         """
-        t_samples = torch.as_tensor(samples, dtype=BaseGPController._default_tensor_type.dtype)
+        t_samples = torch.as_tensor(samples, dtype=BaseGPController._default_tensor_type.dtype)  # pyright: ignore [reportCallIssue]
         optim = optimiser(params=[{"params": warp.parameters(), "lr": lr}])
 
         for i in range(n_iterations):
@@ -63,14 +70,14 @@ class WarpedGaussian(Normal):
             loss.backward(retain_graph=i < n_iterations-1)
             optim.step()
         w_samples = warp(t_samples)
-        loc = w_samples.mean(dim=0).detach()
+        loc = w_samples.mean(dim=0).detach()  # pyright: ignore [reportCallIssue]
         scale = w_samples.std(dim=0).detach() + 1e-4
         distribution = cls(warp, loc=loc, scale=scale)
 
         return distribution
 
     @staticmethod
-    def _mle_log_prob_parametrised_with_warp_parameters(warp, data):
+    def _mle_log_prob_parametrised_with_warp_parameters(warp: WarpFunction, data: torch.Tensor) -> torch.Tensor:
         """
         Compute the log probability of the data under the warped Gaussian.
 
@@ -80,6 +87,6 @@ class WarpedGaussian(Normal):
         w_data = warp(data)
         loc = w_data.mean(dim=0).detach()
         scale = w_data.std(dim=0).detach() + 1e-4
-        gaussian_log_prob = (-(w_data - loc) ** 2 / (2 * scale ** 2) - torch.log(scale)).sum()
+        gaussian_log_prob = (-(w_data - loc) ** 2 / (2 * scale ** 2) - torch.log(scale)).sum()  # pyright: ignore [reportOperatorIssue]
         log_jacobian = torch.log(warp.deriv(data).abs()).sum()
         return gaussian_log_prob + log_jacobian
