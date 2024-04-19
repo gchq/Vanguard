@@ -15,6 +15,7 @@ from ..decoratorutils import Decorator, wraps_class
 from ..warnings import _JITTER_WARNING, NumericalWarning
 
 ControllerT = TypeVar('ControllerT', bound=GPController)
+DistributionT = TypeVar('DistributionT', bound=gpytorch.distributions.Distribution)
 PosteriorT = TypeVar('PosteriorT', bound=Posterior)
 ModuleT = TypeVar('ModuleT', bound=gpytorch.module.Module)
 
@@ -116,7 +117,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 likelihood_collection = self.posterior_collection_class(likelihoods)
                 return likelihood_collection
 
-            def _gp_forward(self, x: torch.Tensor) -> gpytorch.distributions.MultivariateNormal:
+            def _gp_forward(self, x: torch.Tensor) -> DistributionT:
                 """
                 Run the forward method of the internal GP model.
 

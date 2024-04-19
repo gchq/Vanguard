@@ -248,7 +248,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             yield sample
 
 
-def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float=1e-3) -> Tuple[float, NDArray[np.floating]]:
+def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float=1e-3) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Compute a sort-of-inverse of the Hessian and return its eigenbasis and spectrum.
 
