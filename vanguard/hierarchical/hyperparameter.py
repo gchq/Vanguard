@@ -1,9 +1,10 @@
 """
 Contains the BayesianHyperparameter class.
 """
-from gpytorch import constraints
-import torch
 from typing import Optional
+
+import torch
+from gpytorch import constraints
 
 
 class BayesianHyperparameter:

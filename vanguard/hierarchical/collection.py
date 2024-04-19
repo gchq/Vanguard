@@ -1,10 +1,11 @@
 """
 Contains the HyperparameterCollection class.
 """
-import gpytorch
-from gpytorch.distributions import MultivariateNormal
-import torch
 from typing import Any, Iterator, List, Tuple, TypeVar
+
+import gpytorch
+import torch
+from gpytorch.distributions import MultivariateNormal
 
 from ..hierarchical.base import BaseHierarchicalHyperparameters
 

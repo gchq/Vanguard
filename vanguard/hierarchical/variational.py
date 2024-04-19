@@ -1,16 +1,18 @@
 """
 Contains the VariationalHierarchicalHyperparameters decorator.
 """
-import gpytorch
-from gpytorch.lazy import lazify
-from gpytorch.variational import CholeskyVariationalDistribution
-import numpy as np
-from numpy.typing import NDArray
-import torch
 from typing import Any, Generator, List, Optional, Type, TypeVar, Union
 
+import gpytorch
+import numpy as np
+import torch
+from gpytorch.lazy import lazify
+from gpytorch.variational import CholeskyVariationalDistribution
+from numpy.typing import NDArray
+
 from ..decoratorutils import wraps_class
-from .base import BaseHierarchicalHyperparameters, extract_bayesian_hyperparameters, set_batch_shape, GPController, Posterior
+from .base import (BaseHierarchicalHyperparameters, GPController, Posterior, extract_bayesian_hyperparameters,
+                   set_batch_shape)
 from .collection import HyperparameterCollection
 
 ControllerT = TypeVar('ControllerT', bound=GPController)

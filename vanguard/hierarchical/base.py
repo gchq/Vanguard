@@ -2,15 +2,16 @@
 Contains the BaseHierarchicalHyperparameters decorator.
 """
 import warnings
-import gpytorch
-from gpytorch.kernels import ScaleKernel
-import numpy as np
-from numpy.typing import NDArray
-import torch
 from typing import Any, Generator, List, Tuple, Type, TypeVar, Union
 
+import gpytorch
+import numpy as np
+import torch
+from gpytorch.kernels import ScaleKernel
+from numpy.typing import NDArray
+
 from ..base import GPController
-from ..base.posteriors import Posterior, MonteCarloPosteriorCollection
+from ..base.posteriors import MonteCarloPosteriorCollection, Posterior
 from ..decoratorutils import Decorator, wraps_class
 from ..warnings import _JITTER_WARNING, NumericalWarning
 

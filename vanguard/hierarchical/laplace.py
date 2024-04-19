@@ -1,16 +1,16 @@
 """Implementation of tempered Laplace approximation approach to Bayesian hyperparameters."""
 import itertools
 from math import ceil
+from typing import Any, Callable, Generator, Optional, Tuple, Type, TypeVar, Union
 
 import gpytorch
 import numpy as np
-from numpy.typing import NDArray
 import torch
-from typing import Any, Callable, Generator, Optional, Tuple, Type, TypeVar, Union
+from numpy.typing import NDArray
 
 from ..decoratorutils import wraps_class
-from .base import BaseHierarchicalHyperparameters, extract_bayesian_hyperparameters, \
-    set_batch_shape, GPController, Posterior
+from .base import (BaseHierarchicalHyperparameters, GPController, Posterior, extract_bayesian_hyperparameters,
+                   set_batch_shape)
 from .collection import OnePointHyperparameterCollection
 from .distributions import SpectralRegularisedMultivariateNormal
 

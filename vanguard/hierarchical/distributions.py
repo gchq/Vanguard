@@ -1,10 +1,11 @@
 """
 Contains a spectral decomposition version of multivariate normal.
 """
+from typing import NoReturn, Type, TypeVar
+
 import torch
 from torch.distributions import MultivariateNormal, constraints
 from torch.distributions.utils import lazy_property
-from typing import NoReturn, Type, TypeVar
 
 T = TypeVar('T', bound='MultivariateNormal')
 

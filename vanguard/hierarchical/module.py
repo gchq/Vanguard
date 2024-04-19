@@ -6,10 +6,11 @@ to a module will make its parameters Bayesian, so posteriors can be inferred
 over them rather than point estimates.
 """
 from functools import partial
-import gpytorch
-from gpytorch import constraints
-import torch
 from typing import Iterable, List, Optional, Tuple, TypeVar
+
+import gpytorch
+import torch
+from gpytorch import constraints
 
 from .hyperparameter import BayesianHyperparameter
 
