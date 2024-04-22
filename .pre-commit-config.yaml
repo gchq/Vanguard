@@ -87,19 +87,22 @@ repos:
       # Ensure import statements are sorted
       - id: isort
         name: isort (python)
-#  - repo: https://github.com/nbQA-dev/nbQA
-#    rev: 1.8.4
-#    hooks:
-#      - id: nbqa-pyupgrade
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.4
+    hooks:
+      - id: nbqa-pyupgrade
 #      - id: nbqa-isort
-#        args: [--line-length=87]
+#        args: [--line-length=96]
 #      - id: nbqa-ruff
-#        args: [--line-length=87]
-#  - repo: https://github.com/kynan/nbstripout
-#    rev: 0.7.1
-#    hooks:
-#      - id: nbstripout
-#        args: [ --drop-empty-cells, "--extra-keys=metadata.kernelspec metadata.language_info.version" ]
+#        args: [--line-length=96]
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+        args:
+          - --drop-empty-cells
+          - "--extra-keys=metadata.kernelspec metadata.language_info.version"
+          - --keep-id
   - repo: local
     hooks:
       - id: require-ascii
