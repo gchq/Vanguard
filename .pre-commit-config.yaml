@@ -109,7 +109,6 @@ repos:
         language: python
         exclude:
           (?x)^(
-            .pylintrc|
             docs/source/_static/.+.png
           )$
 #      - id: docstring-spaces
