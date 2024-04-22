@@ -41,11 +41,12 @@ setup(
         "typing-extensions",
         "urllib3>=2.2.1"
     ],
-    tests_require=[
-        "pytest",
-    ],
     extras_require={
+        "test": [
+            "pytest",
+        ],
         "dev": [
+            "vanguard[test]",
             "isort",
             "jupyterlab",
             "pre-commit",
