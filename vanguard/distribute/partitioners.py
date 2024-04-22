@@ -157,6 +157,8 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
 class KMedoidsPartitioner(BasePartitioner):
     """
     Create a partition using KMedoids with similarity defined by the kernel.
+
+    :seealso: Clusters are computed using a :class:`kmedoids.KMedoids` object.
     """
     def __init__(self,
                  train_x: NDArray[np.floating],
@@ -169,10 +171,9 @@ class KMedoidsPartitioner(BasePartitioner):
         Initialise self.
 
         :param numpy.ndarray train_x: The mean of the inputs.
-        :param gpytorch.kernels.Kernel kernel: The kernel to use for constructing the
-                similarity matrix in kmedoids.
+        :param gpytorch.kernels.Kernel kernel: The kernel to use for constructing the similarity matrix.
         :param int n_experts: The number of partitions in which to split the data. Defaults to 2.
-        :param bool communication: If True, A communications expert will be included. Defaults to False.
+        :param bool communication: If :data:`True`, A communications expert will be included. Defaults to :data:`False`.
         :param int seed: The seed for the random state. Defaults to 42.
         """
         super().__init__(train_x=train_x, n_experts=n_experts, communication=communication, seed=seed)

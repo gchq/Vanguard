@@ -71,11 +71,12 @@ plot_rcparams = {
 autodoc_mock_imports = ["pandas", "sklearn_extra"]
 
 intersphinx_mapping = {
-    "gpytorch": ('https://docs.gpytorch.ai/en/stable/', None),
+    "gpytorch": ("https://docs.gpytorch.ai/en/stable/", None),
+    "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python3": ("https://docs.python.org/3", None),
     "sklearn": ("https://scikit-learn.org/stable/", None),
-    "torch": ('https://pytorch.org/docs/stable/', None),
+    "torch": ("https://pytorch.org/docs/stable/", None),
 }
 
 nitpicky = True
