@@ -2,14 +2,13 @@
 Tests for the HigherRankFeatures decorator.
 """
 import unittest
-import torch
-
-from typing import Type, Any
-from typing_extensions import Self
+from typing import Any, Type
 
 import gpytorch
+import torch
 from gpytorch.lazy import LazyEvaluatedKernelTensor
 from gpytorch.means import ConstantMean
+from typing_extensions import Self
 
 from vanguard.datasets.synthetic import HigherRankSyntheticDataset
 from vanguard.features import HigherRankFeatures

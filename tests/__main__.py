@@ -5,7 +5,7 @@ import argparse
 import importlib.util
 import unittest
 import warnings
-from typing import List, Any
+from typing import Any, List
 
 TESTS = {
     "u": {"help": "run unit tests.", "path": "units"},

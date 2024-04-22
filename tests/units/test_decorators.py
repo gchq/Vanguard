@@ -3,8 +3,7 @@ Contains tests for the decorators.
 """
 import inspect
 import unittest
-
-from typing import Any, TypeVar, Type, Union
+from typing import Any, Type, TypeVar, Union
 
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, errors, process_args, wraps_class

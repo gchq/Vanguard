@@ -3,12 +3,11 @@ Contains test cases for Vanguard testing.
 """
 import unittest
 from functools import wraps
-from typing import Callable, TypeVar
+from typing import Callable, Tuple, TypeVar, Union
 
 import numpy as np
 import numpy.typing
 from scipy import stats
-from typing import Tuple, Union
 from typing_extensions import ParamSpec
 
 

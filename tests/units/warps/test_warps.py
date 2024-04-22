@@ -2,12 +2,11 @@
 Test that the behaviour of some warp functions.
 """
 import unittest
+from typing import Union
 
 import numpy as np
 import numpy.typing
 import torch
-
-from typing import Union
 
 from vanguard.warps import MultitaskWarpFunction, WarpFunction, warpfunctions
 

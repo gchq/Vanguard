@@ -3,7 +3,7 @@ Tests for the VariationalHierarchicalHyperparameters and BayesianHyperparameters
 """
 import abc
 import unittest
-from typing import Generic, Type, TypeVar, Any
+from typing import Any, Generic, Type, TypeVar
 
 import numpy as np
 import torch

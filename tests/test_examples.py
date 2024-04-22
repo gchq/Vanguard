@@ -4,8 +4,7 @@ Code to test example notebooks.
 import os
 import re
 import unittest
-from typing import Optional, Tuple, Any
-
+from typing import Any, Optional, Tuple
 
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor

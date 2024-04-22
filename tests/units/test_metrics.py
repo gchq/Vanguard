@@ -6,11 +6,11 @@ from contextlib import redirect_stdout
 from io import StringIO
 from math import isnan
 
+from vanguard.base import GPController
 from vanguard.base.metrics import MetricsTracker, loss
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import PeriodicRBFKernel
 from vanguard.vanilla import GaussianGPController
-from vanguard.base import GPController
 
 
 def loss_squared(loss_value: float, controller: GPController) -> float:

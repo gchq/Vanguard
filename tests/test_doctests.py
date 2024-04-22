@@ -6,8 +6,8 @@ import importlib
 import io
 import os
 import unittest
-from typing import Generator, Optional, Tuple, Any
 from types import ModuleType
+from typing import Any, Generator, Optional, Tuple
 
 import vanguard
 

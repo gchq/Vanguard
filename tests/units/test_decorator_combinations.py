@@ -4,14 +4,15 @@ Tests for the pairwise combinations of decorators.
 import itertools
 import re
 import unittest
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.mlls import VariationalELBO
 
-from typing import Tuple, Dict, Any, Callable, TypeVar, Optional
-
+from vanguard.base import GPController
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
+from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_f
 from vanguard.decoratorutils.errors import MissingRequirementsError, TopmostDecoratorError
@@ -25,8 +26,6 @@ from vanguard.normalise import NormaliseY
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 from vanguard.warps import SetInputWarp, SetWarp, warpfunctions
-from vanguard.base import GPController
-from vanguard.datasets import Dataset
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

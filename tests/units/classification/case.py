@@ -2,14 +2,13 @@
 Contains the ClassificationTestCase class.
 """
 import unittest
+from typing import Union
 
 import numpy as np
+import numpy.typing
 import torch
 from gpytorch.kernels import RBFKernel, ScaleKernel
 from gpytorch.means import ZeroMean
-
-import numpy.typing
-from typing import Union
 
 
 class BatchScaledRBFKernel(ScaleKernel):
