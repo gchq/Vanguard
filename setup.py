@@ -41,6 +41,21 @@ setup(
         "typing-extensions",
         "urllib3>=2.2.1"
     ],
+    extras_require={
+        "test": [
+            "pytest",
+        ],
+        "dev": [
+            "vanguard[test]",
+            "isort",
+            "jupyterlab",
+            "pre-commit",
+            "pylint",
+            "pyright",
+            "pyroma",
+            "ruff",
+        ],
+    },
     package_data={"vanguard": [BIBTEX_FILE]}
 )
 

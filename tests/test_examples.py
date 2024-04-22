@@ -4,6 +4,7 @@ Code to test example notebooks.
 import os
 import re
 import unittest
+from typing import Any, Optional, Tuple
 
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
@@ -20,7 +21,7 @@ class NotebookMetaClass(type):
     specific test method, allowing for more verbose real-time feedback as
     opposed to subtests.
     """
-    def __new__(mcs, name, bases, namespace):
+    def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
         cls = super().__new__(mcs, name, bases, namespace)
 
         examples_dir = os.path.join(os.path.dirname(__file__), "..", "examples", "notebooks")
@@ -32,7 +33,7 @@ class NotebookMetaClass(type):
 
         for test_name in cls.tests_to_notebook_paths:
 
-            def inner_test(self):
+            def inner_test(self) -> None:
                 """
                 Should not throw any errors.
 
@@ -55,12 +56,12 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
     """
     Tests that the notebooks can run properly.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.processor = ExecutePreprocessor(timeout=TIMEOUT, allow_errors=True)
         self.save_notebook_outputs = os.environ.get("SAVE_NOTEBOOK_OUTPUT", False)
 
-    def _test_notebook(self, notebook_path):
+    def _test_notebook(self, notebook_path: str) -> None:
         """No errors should be thrown."""
         with open(notebook_path) as rf:
             notebook = nbformat.read(rf, as_version=4)
@@ -75,12 +76,13 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
             with open(notebook_path, "w") as wf:
                 nbformat.write(notebook, wf, version=4)
 
-    def _verify_cell_outputs(self, cell_no, cell):
+    def _verify_cell_outputs(self, cell_no: int, cell: nbformat.notebooknode.NotebookNode) -> None:
         for output in cell.outputs:
             if output.output_type == "error":
                 self._verify_expected_errors(cell, cell_no, output)
 
-    def _verify_expected_errors(self, cell, cell_no, output):
+    def _verify_expected_errors(self, cell: nbformat.notebooknode.NotebookNode, cell_no: int,
+                                output: nbformat.notebooknode.NotebookNode) -> None:
         """Verify if an error is expected in a cell."""
         cell_source_lines = cell.source.split("\n")
         match_if_cell_expected_to_ignore = _RE_SPHINX_EXPECT.match(cell_source_lines[0])

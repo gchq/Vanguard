@@ -1,9 +1,13 @@
 """
 Contains a spectral decomposition version of multivariate normal.
 """
+from typing import NoReturn, Type, TypeVar
+
 import torch
 from torch.distributions import MultivariateNormal, constraints
 from torch.distributions.utils import lazy_property
+
+T = TypeVar('T', bound='MultivariateNormal')
 
 
 class SpectralRegularisedMultivariateNormal(MultivariateNormal):
@@ -27,17 +31,17 @@ class SpectralRegularisedMultivariateNormal(MultivariateNormal):
                        "precision_matrix": constraints.positive_definite}
 
     @lazy_property
-    def precision_matrix(self):
+    def precision_matrix(self) -> NoReturn:
         raise NotImplementedError("Precision is not available for spectral defined multivariate normals.")
 
     @classmethod
-    def from_eigendecomposition(cls, mean, covar_eigenvalues, covar_eigenvectors):
+    def from_eigendecomposition(cls: Type[T], mean: torch.Tensor, covar_eigenvalues: torch.Tensor, covar_eigenvectors: torch.Tensor) -> Type[T]:
         """
         Construct the distribution from the eigendecomposition of its covariance matrix.
 
-        :param torch.Tensor mean: Mean of the multivariate normal.
-        :param torch.Tensor covar_eigenvalues: The eigenvalues of the covariance matrix.
-        :param torch.Tensor covar_eigenvectors: The eigenvectors of the covariance matrix,
+        :param mean: Mean of the multivariate normal.
+        :param covar_eigenvalues: The eigenvalues of the covariance matrix.
+        :param covar_eigenvectors: The eigenvectors of the covariance matrix,
                                                 (columns are the eigenvectors).
         """
         tril = torch.einsum("...ij,...jk->...ik", covar_eigenvectors, torch.diag_embed(covar_eigenvalues.sqrt()))

@@ -27,7 +27,7 @@ class BinaryTests(ClassificationTestCase):
     """
     Tests for binary classification.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=200)
         self.controller = BinaryClassifier(self.dataset.train_x, self.dataset.train_y, kernel_class=PeriodicRBFKernel,
@@ -36,7 +36,7 @@ class BinaryTests(ClassificationTestCase):
         self.controller.fit(100)
 
     @flaky
-    def test_predictions(self):
+    def test_predictions(self) -> None:
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.05)
@@ -47,7 +47,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
     Tests for fuzzy binary classification.
     """
     @flaky
-    def test_fuzzy_predictions_monte_carlo(self):
+    def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
         self.dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=50)
         test_x_std = 0.005
@@ -62,7 +62,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.1)
 
     @flaky
-    def test_fuzzy_predictions_uncertainty(self):
+    def test_fuzzy_predictions_uncertainty(self) -> None:
         """Predictions should be close to the values from the test data."""
         self.dataset = BinaryStripeClassificationDataset(100, 50)
         train_x_std = test_x_std = 0.005

@@ -23,7 +23,7 @@ class ParameterAgreementTests(unittest.TestCase):
     optimiser produces the same results, to provide assurance to the earlier tests.
     """
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Code to run before all tests."""
         cls.dataset = SyntheticDataset(functions=(very_complicated_f,), output_noise=0.9)
 
@@ -43,28 +43,28 @@ class ParameterAgreementTests(unittest.TestCase):
         cls.controller2.fit(100)
         cls.greedy_controller.fit(100)
 
-    def test_final_outputscales_are_different(self):
+    def test_final_outputscales_are_different(self) -> None:
         self.assertNotAlmostEqual(self.controller.kernel.outputscale.item(),
                                   self.greedy_controller.kernel.outputscale.item())
 
-    def test_final_lengthscales_are_different(self):
+    def test_final_lengthscales_are_different(self) -> None:
         self.assertNotAlmostEqual(self.controller.kernel.base_kernel.lengthscale.item(),
                                   self.greedy_controller.kernel.base_kernel.lengthscale.item())
 
-    def test_final_means_are_different(self):
+    def test_final_means_are_different(self) -> None:
         self.assertNotAlmostEqual(self.controller.mean.constant.item(), self.greedy_controller.mean.constant.item())
 
-    def test_final_outputscales_are_same(self):
+    def test_final_outputscales_are_same(self) -> None:
         self.assertEqual(self.controller.kernel.outputscale.item(), self.controller2.kernel.outputscale.item())
 
-    def test_final_lengthscales_are_same(self):
+    def test_final_lengthscales_are_same(self) -> None:
         self.assertEqual(self.controller.kernel.base_kernel.lengthscale.item(),
                          self.controller2.kernel.base_kernel.lengthscale.item())
 
-    def test_final_means_are_same(self):
+    def test_final_means_are_same(self) -> None:
         self.assertEqual(self.controller.mean.constant.item(), self.controller2.mean.constant.item())
 
-    def test_loss_is_best_greedy(self):
+    def test_loss_is_best_greedy(self) -> None:
         best_loss = min(np.nan_to_num(self.greedy_controller._smart_optimiser.last_n_losses, nan=np.inf))
         used_loss = -self.greedy_controller._smart_optimiser._top_n_parameters.best().priority_value
         self.assertEqual(used_loss, best_loss)
