@@ -8,12 +8,12 @@ import gpytorch.kernels
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from kmedoids import KMedoids as _KMedoids
 from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 from sklearn.cluster import KMeans as _KMeans
 from sklearn.cluster import MiniBatchKMeans as _MiniBatchKMeans
 from sklearn.manifold import TSNE
-from sklearn_extra.cluster import KMedoids as _KMedoids
 
 
 # TODO: should this be an abstract base class?
@@ -181,7 +181,7 @@ class KMedoidsPartitioner(BasePartitioner):
     def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         dist_matrix = self._construct_distance_matrix()
         clusterer = _KMedoids(n_clusters=n_clusters, metric='precomputed', random_state=self.seed)
-        labels = clusterer.fit(dist_matrix).labels_
+        labels = np.asarray(clusterer.fit(dist_matrix).labels_, dtype=int)
         partition = self._group_indices_by_label(labels)
         return partition
 

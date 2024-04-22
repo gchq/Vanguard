@@ -1,6 +1,7 @@
 """
 Tests for partitioner classes.
 """
+import sys
 import unittest
 
 import numpy as np
@@ -28,7 +29,7 @@ class PartitionTests(unittest.TestCase):
             partitioners.RandomPartitioner: [[8, 1, 5], [0, 7, 2], [9, 4, 3]],
             partitioners.KMeansPartitioner: [[2, 4, 5, 6], [1, 9], [0, 3, 7, 8]],
             partitioners.MiniBatchKMeansPartitioner: [[0, 3, 7, 8], [1, 9], [2, 4, 5, 6]],
-            partitioners.KMedoidsPartitioner: [[1, 3, 7], [2, 4, 5, 6], [0, 8, 9]],
+            partitioners.KMedoidsPartitioner: [[0, 8, 9], [1, 3, 7], [2, 4, 5, 6]],
         }
 
         self.expected_communication_partition_results = {
@@ -38,7 +39,7 @@ class PartitionTests(unittest.TestCase):
             partitioners.KMedoidsPartitioner: [[8, 1, 5], [8, 1, 5, 0, 1, 3, 7, 8, 9], [8, 1, 5, 2, 4, 5, 6]],
         }
 
-    @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO
+    @unittest.skipUnless(8 <= sys.version_info.minor <= 9, "Fails on 3.12, but succeeds on 3.8/3.9.")  # TODO: investigate
     def test_output_results(self):
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_partition_results.items():
@@ -51,7 +52,7 @@ class PartitionTests(unittest.TestCase):
                 observed_partition = partitioner.create_partition()
                 self.assertListEqual(expected_partition, observed_partition)
 
-    @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO
+    @unittest.skipUnless(8 <= sys.version_info.minor <= 9, "Fails on 3.12, but succeeds on 3.8/3.9.")  # TODO: investigate
     def test_output_results_with_communication(self):
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_communication_partition_results.items():

@@ -31,11 +31,11 @@ setup(
     install_requires=[
         "bibtexparser",
         "gpytorch>=1.5.1",
+        "kmedoids",
         "matplotlib",
         "numpy>=1.20",
         "pandas",
         "scikit-learn",
-        "scikit-learn-extra",
         "scipy",
         "torch>=1.7.0",
         "typing-extensions",

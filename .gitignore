@@ -4,7 +4,7 @@
 .idea
 .ipynb_checkpoints
 .scannerwork
-.venv
+.venv*
 .vscode
 __pycache__
 coverage.xml
