@@ -22,14 +22,14 @@ class BasicTests(unittest.TestCase):
     Basic tests for the SetWarp decorator.
     """
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Code to run before all tests."""
         cls.dataset = SyntheticDataset()
         cls.controller = WarpedGaussianGPController(cls.dataset.train_x, cls.dataset.train_y,
                                                     ScaledRBFKernel, cls.dataset.train_y_std)
         cls.controller.fit(10)
 
-    def test_prediction_error(self):
+    def test_prediction_error(self) -> None:
         """Should throw a TypeError."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
         try:
@@ -40,7 +40,7 @@ class BasicTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             posterior.prediction()
 
-    def test_fuzzy_prediction_error(self):
+    def test_fuzzy_prediction_error(self) -> None:
         """Should throw a TypeError."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
         try:
@@ -51,7 +51,7 @@ class BasicTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             posterior.prediction()
 
-    def test_confidence_interval_scaling(self):
+    def test_confidence_interval_scaling(self) -> None:
         """Internal and external predictions should be properly scaled."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
@@ -69,7 +69,7 @@ class BasicTests(unittest.TestCase):
         torch.testing.assert_allclose(warped_external_lower, internal_lower.reshape(-1, 1))
         torch.testing.assert_allclose(warped_external_upper, internal_upper.reshape(-1, 1))
 
-    def test_fuzzy_confidence_interval_scaling(self):
+    def test_fuzzy_confidence_interval_scaling(self) -> None:
         """Internal and external predictions should be properly scaled."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
 

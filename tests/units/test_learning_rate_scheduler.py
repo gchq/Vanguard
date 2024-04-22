@@ -15,7 +15,7 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the LearningRateFinder decorator.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = SyntheticDataset()
 
@@ -39,6 +39,6 @@ class BasicTests(unittest.TestCase):
 
         self.controller.fit(num_iters)
 
-    def test_learning_rate_is_stepped(self):
+    def test_learning_rate_is_stepped(self) -> None:
         current_lr = self.controller._smart_optimiser._internal_optimiser._applied_scheduler.get_lr()[0]
         self.assertAlmostEqual(current_lr, self.expected_lr)
