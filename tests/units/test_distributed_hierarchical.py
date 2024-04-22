@@ -37,7 +37,7 @@ class VariationalTests(unittest.TestCase):
     """
     Some tests.
     """
-    def test_variational_distribution_is_same_on_all_experts(self):
+    def test_variational_distribution_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
         dataset = SyntheticDataset()
 
@@ -54,7 +54,7 @@ class VariationalTests(unittest.TestCase):
         mean_dists = distance_matrix(means, means)
         self.assertTrue((mean_dists == 0).all())
 
-    def test_variational_distribution_from_subset_is_copied(self):
+    def test_variational_distribution_from_subset_is_copied(self) -> None:
         """Experts' variation distribution should match the trained subset controller."""
         dataset = SyntheticDataset()
 
@@ -78,7 +78,7 @@ class LaplaceTests(unittest.TestCase):
     """
     Some tests.
     """
-    def test_posterior_mean_is_same_on_all_experts(self):
+    def test_posterior_mean_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
         dataset = SyntheticDataset()
 
@@ -94,7 +94,7 @@ class LaplaceTests(unittest.TestCase):
         mean_dists = distance_matrix(means, means)
         self.assertTrue((mean_dists == 0).all())
 
-    def test_posterior_covar_is_same_on_all_experts(self):
+    def test_posterior_covar_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
         dataset = SyntheticDataset()
 
@@ -119,7 +119,7 @@ class LaplaceTests(unittest.TestCase):
         covar_dists = distance_matrix(covars_evecs, covars_evecs)
         self.assertTrue((covar_dists == 0).all())
 
-    def test_posterior_mean_from_subset_is_copied(self):
+    def test_posterior_mean_from_subset_is_copied(self) -> None:
         """Experts' posterior mean should match the trained subset controller."""
         dataset = SyntheticDataset()
 
@@ -135,7 +135,7 @@ class LaplaceTests(unittest.TestCase):
         mean_dists = distance_matrix(fit_mean, means)
         self.assertTrue((mean_dists == 0).all())
 
-    def test_posterior_covariance_from_subset_is_copied(self):
+    def test_posterior_covariance_from_subset_is_copied(self) -> None:
         """Experts' posterior covariance should match the trained subset controller."""
         dataset = SyntheticDataset()
 

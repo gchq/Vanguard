@@ -16,7 +16,7 @@ class PartitionTests(unittest.TestCase):
     Note that these tests are for reproducibility, and assume that the results
     of the functions were originally correct.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         rng = np.random.RandomState(seed=1)
         self.train_x = rng.random(size=10).reshape(-1, 1) * 20
@@ -39,7 +39,7 @@ class PartitionTests(unittest.TestCase):
         }
 
     @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO
-    def test_output_results(self):
+    def test_output_results(self) -> None:
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
@@ -52,7 +52,7 @@ class PartitionTests(unittest.TestCase):
                 self.assertListEqual(expected_partition, observed_partition)
 
     @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO
-    def test_output_results_with_communication(self):
+    def test_output_results_with_communication(self) -> None:
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_communication_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):

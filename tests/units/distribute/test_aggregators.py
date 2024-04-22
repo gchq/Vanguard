@@ -15,7 +15,7 @@ class AggregationTests(unittest.TestCase):
     Note that these tests are for reproducibility, and assume that the results
     of the functions were originally correct.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.means = [
             torch.tensor([1, 2, 3, 4]),
@@ -59,7 +59,7 @@ class AggregationTests(unittest.TestCase):
                                            torch.tensor([0.1020186, 0.20909176, 1.10736298, 0.64514268]))
         }
 
-    def test_output_types(self):
+    def test_output_types(self) -> None:
         """Should all be tensors."""
         for aggregator_class in self.expected_means_and_variances:
             with self.subTest(aggregator_class=aggregator_class.__name__):
@@ -68,7 +68,7 @@ class AggregationTests(unittest.TestCase):
                 self.assertIsInstance(observed_mean, torch.Tensor)
                 self.assertIsInstance(observed_variance, torch.Tensor)
 
-    def test_output_values(self):
+    def test_output_values(self) -> None:
         """Should all be correct."""
         for aggregator_class, (mean, variance) in self.expected_means_and_variances.items():
             with self.subTest(aggregator_class=aggregator_class.__name__):
