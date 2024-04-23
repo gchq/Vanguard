@@ -57,15 +57,15 @@ class SyntheticDataset(Dataset):
         """
         Initialise self.
 
-        :param Iterable[function] functions: The functions to be used to generate the synthetic data.
-        :param float output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
+        :param functions: The functions to be used to generate the synthetic data.
+        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
         :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
             for the training input. Defaults to (0.01, 0.05).
         :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
             for the testing input. Defaults to (0.01, 0.03).
-        :param int n_train_points: The total number of training points.
-        :param int n_test_points: The total number of testing points.
-        :param float significance: The significance to be used.
+        :param n_train_points: The total number of training points.
+        :param n_test_points: The total number of testing points.
+        :param significance: The significance to be used.
         """
         self.functions = list(functions)
 
@@ -91,12 +91,11 @@ class SyntheticDataset(Dataset):
         """
         Create some sample data.
 
-        :param int n_points: The number of points to create.
-        :param tuple[float] input_noise_bounds: The lower, upper bounds for the resulting input noise.
-        :param float output_noise_level: The amount of noise applied to the inputs.
-        :param float interval_length: Use to scale the exact image of the function, defaults to 1.
+        :param n_points: The number of points to create.
+        :param input_noise_bounds: The lower, upper bounds for the resulting input noise.
+        :param output_noise_level: The amount of noise applied to the inputs.
+        :param interval_length: Use to scale the exact image of the function, defaults to 1.
         :return: The output and the mean and standard deviation of the input, in the form ``(x_mean, x_std), y``.
-        :rtype: tuple[tuple[numpy.ndarray[float], numpy.ndarray[float]]
         """
         x_mean = np.linspace(0, interval_length, n_points)
         x_std = np.linspace(*input_noise_bounds, n_points)
@@ -134,7 +133,7 @@ class MultidimensionalSyntheticDataset(Dataset):
         """
         Initialise self.
 
-        :param Iterable[function] functions: The functions used on each input dimension
+        :param functions: The functions used on each input dimension
                                                 (they are combined linearly to make a single output).
         """
         one_dimensional_datasets = [SyntheticDataset(functions=(function,), **kwargs) for function in functions]
@@ -171,15 +170,15 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         """
         Initialise self.
 
-        :param Iterable[function] functions: The functions to be used to generate the synthetic data.
-        :param float output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
+        :param functions: The functions to be used to generate the synthetic data.
+        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
         :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
             for the training input. Defaults to (0.01, 0.05).
         :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
             for the testing input. Defaults to (0.01, 0.03).
-        :param int n_train_points: The total number of training points.
-        :param int n_test_points: The total number of testing points.
-        :param float significance: The significance to be used.
+        :param n_train_points: The total number of training points.
+        :param n_test_points: The total number of testing points.
+        :param significance: The significance to be used.
         """
         super().__init__(functions, output_noise, train_input_noise_bounds, test_input_noise_bounds, n_train_points,
                          n_test_points, significance)
@@ -203,15 +202,15 @@ class HigherRankSyntheticDataset(Dataset):
         """
         Initialise self.
 
-        :param Iterable[function] functions: The functions to be used to generate the synthetic data.
-        :param float output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
+        :param functions: The functions to be used to generate the synthetic data.
+        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
         :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
             for the training input. Defaults to (0.01, 0.05).
         :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
             for the testing input. Defaults to (0.01, 0.03).
-        :param int n_train_points: The total number of training points.
-        :param int n_test_points: The total number of testing points.
-        :param float significance: The significance to be used.
+        :param n_train_points: The total number of training points.
+        :param n_test_points: The total number of testing points.
+        :param significance: The significance to be used.
         """
         self.functions = list(functions)
 
@@ -239,12 +238,11 @@ class HigherRankSyntheticDataset(Dataset):
         """
         Create some sample data.
 
-        :param int n_points: The number of points to create.
-        :param tuple[float] input_noise_bounds: The lower, upper bounds for the resulting input noise.
-        :param float output_noise_level: The amount of noise applied to the inputs.
-        :param float interval_length: Use to scale the exact image of the function, defaults to 1.
+        :param n_points: The number of points to create.
+        :param input_noise_bounds: The lower, upper bounds for the resulting input noise.
+        :param output_noise_level: The amount of noise applied to the inputs.
+        :param interval_length: Use to scale the exact image of the function, defaults to 1.
         :return: The output and the mean and standard deviation of the input, in the form ``(x_mean, x_std), y``.
-        :rtype: tuple[tuple[numpy.ndarray[float], numpy.ndarray[float]]
         """
         x_mean = np.linspace(0, interval_length, n_points)
         x_mean = np.random.randn(n_points, 2, 2) + x_mean.reshape(-1, 1, 1)

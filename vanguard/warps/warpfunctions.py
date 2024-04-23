@@ -4,7 +4,6 @@ There are several pre-defined warp functions implementing some common maps.
 from typing import Tuple, Union
 
 import numpy as np
-import numpy.typing
 import torch
 import torch.nn.functional
 
@@ -95,7 +94,6 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
 
         :param y_values: A set of values for which :math:`ay + b` must ultimately hold.
         :returns: The two values needed to establish the same bounds on :math:`a` and :math:`b`.
-        :rtype: tuple[float]
         """
         try:
             negative_contribution = min(y_values)

@@ -514,7 +514,7 @@ def _catch_and_check_module_errors(
         """
         Decorate a particular module (mean/kernel).
 
-        :param torch.nn.Module module_class: The model class to which to apply error handling.
+        :param module_class: The model class to which to apply error handling.
         """
         @wraps_class(module_class)
         class InnerClass(module_class):

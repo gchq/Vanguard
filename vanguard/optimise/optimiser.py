@@ -35,11 +35,11 @@ class SmartOptimiser(Generic[OptimiserT]):
         """
         Initialise self.
 
-        :param type optimiser_class: An uninstantiated subclass of class:`torch.optim.Optimizer` to be used
+        :param optimiser_class: An uninstantiated subclass of class:`torch.optim.Optimizer` to be used
             to create the internal optimiser.
-        :param torch.nn.Module initial_modules: Initial modules whose parameters will be added to the
+        :param initial_modules: Initial modules whose parameters will be added to the
             internal optimiser.
-        :param int,None early_stop_patience: How many consecutive gradient steps of worsening loss to allow before
+        :param early_stop_patience: How many consecutive gradient steps of worsening loss to allow before
             stopping early. Defaults to ``None`` which disables early stopping.
         :param optimiser_kwargs: Additional keyword arguments to be passed to the internal optimiser.
         """

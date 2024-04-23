@@ -172,7 +172,6 @@ class WarpFunction(gpytorch.Module):
             parameters and keeping them frozen in downstream usage.
 
         :return: A copy of self with parameters frozen.
-        :rtype: WarpFunction
         """
         new_warp = self.copy()
         # Overwrite parameters method with an iterator
