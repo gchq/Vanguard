@@ -28,7 +28,7 @@ class StandardiseXModule:
                 Can be an array in the case of multiple features.
         :param scale: The scale (i.e. standard deviation) of the standard scaling.
                 Can be an array in the case of multiple features.
-        :param torch.device,None device: The device on which the mean and scale parameters should live.
+        :param device: The device on which the mean and scale parameters should live.
         :param dtype: Datatype to specify when creating torch tensors.
         """
         self.mean = torch.as_tensor(mean, device=device, dtype=dtype)

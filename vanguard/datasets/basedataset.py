@@ -33,15 +33,15 @@ class Dataset:
         """
         Initialise self.
 
-        :param numpy.ndarray[float] train_x: The training inputs.
-        :param numpy.ndarray[float],float train_x_std: The standard deviation(s) of the training inputs.
-        :param numpy.ndarray[float] train_y: The training outputs.
-        :param numpy.ndarray[float],float train_y_std: The standard deviation(s) of the training outputs.
-        :param numpy.ndarray[float] test_x: The test inputs.
-        :param numpy.ndarray[float],float test_x_std: The standard deviation(s) of the test inputs.
-        :param numpy.ndarray[float] test_y: The test outputs.
-        :param numpy.ndarray[float],float test_y_std: The standard deviation(s) of the test outputs.
-        :param float significance: The recommended significance value to be used for confidence intervals.
+        :param train_x: The training inputs.
+        :param train_x_std: The standard deviation(s) of the training inputs.
+        :param train_y: The training outputs.
+        :param train_y_std: The standard deviation(s) of the training outputs.
+        :param test_x: The test inputs.
+        :param test_x_std: The standard deviation(s) of the test inputs.
+        :param test_y: The test outputs.
+        :param test_y_std: The standard deviation(s) of the test outputs.
+        :param significance: The recommended significance value to be used for confidence intervals.
             Note that this value does not necessarily have any bearing on the data.
         """
         self.train_x = train_x

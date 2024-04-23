@@ -119,7 +119,7 @@ class MetricsTracker:
         the user when combined with :meth:`print_metrics` and a
         customised format string.
 
-        :param float loss_value: The loss.
+        :param loss_value: The loss.
         :param controller: The controller instance.
         """
         self._iteration += 1

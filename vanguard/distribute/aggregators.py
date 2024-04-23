@@ -22,11 +22,11 @@ class BaseAggregator:
         """
         Initialise self.
 
-        :param list[torch.Tensor] means: (d,) Each element is an array of a single expert's predictive mean
+        :param means: (d,) Each element is an array of a single expert's predictive mean
                 at the evaluation points.
-        :param list[torch.Tensor] covars: (d,d) The individual experts posterior predictive covariance
+        :param covars: (d,d) The individual experts posterior predictive covariance
                 at the test points.
-        :param torch.Tensor prior_var: (d,) The diagonal of the test kernel with added noise.
+        :param prior_var: (d,) The diagonal of the test kernel with added noise.
         """
         self.means = torch.stack(means).type(torch.float32)
         self.covars = torch.stack(covars).type(torch.float32)
@@ -47,7 +47,6 @@ class BaseAggregator:
         Combine the predictions of the individual experts into a single PoE prediction.
 
         :return: The mean and variance of the combined experts.
-        :rtype: tuple[torch.Tensor]
         """
         raise NotImplementedError
 
@@ -60,12 +59,11 @@ class BaseAggregator:
             prior and posterior :cite:`Deisenroth15`). ``delta_diff`` and ``delta_val`` are the same in
             class:`XBCMAggregator`.
 
-        :param torch.Tensor delta_diff: The delta used to determine if correction is applied
+        :param delta_diff: The delta used to determine if correction is applied
                 (proxy for in-vs-out of training data).
-        :param torch.Tensor delta_val: The delta value to be corrected. Must be the same shape as ``delta_diff``.
+        :param delta_val: The delta value to be corrected. Must be the same shape as ``delta_diff``.
 
         :return: The corrected expert weights, the same shape as ``delta_diff``.
-        :rtype: torch.Tensor
         """
         in_training_data = (delta_diff > 1)
         not_in_training_data = (delta_diff <= 1)

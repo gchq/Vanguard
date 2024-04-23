@@ -22,8 +22,7 @@ class LearningRateFinder:
         """
         Initialise self.
 
-        :param vanguard.base.gpcontroller.GPController controller: An instantiated vanguard GP controller
-                                                                    whose learning rate shall be optimised.
+        :param controller: An instantiated vanguard GP controller whose learning rate shall be optimised.
         """
         self._controller = controller
         self._learning_rates = []
@@ -37,10 +36,10 @@ class LearningRateFinder:
         """
         Try the range of learning rates and record the loss obtained.
 
-        :param float start_lr: The smallest learning rate to try.
-        :param float end_lr: The largest learning rate to try.
-        :param int num_divisions: The number of learning rates to try.
-        :param int max_iterations: The top number of iterations of gradient descent to run for each learning rate.
+        :param start_lr: The smallest learning rate to try.
+        :param end_lr: The largest learning rate to try.
+        :param num_divisions: The number of learning rates to try.
+        :param max_iterations: The top number of iterations of gradient descent to run for each learning rate.
         """
         ratio = np.power(end_lr/start_lr, 1./num_divisions)
         self._learning_rates = [start_lr * ratio ** index for index in range(num_divisions)]
@@ -62,10 +61,9 @@ class LearningRateFinder:
         If training fails due to NaNs before the max iterations is reached,
         the loss is taken to be infinity.
 
-        :param float lr: The learning rate.
-        :param int max_iterations: The maximum number of gradient descent iterations to run.
+        :param lr: The learning rate.
+        :param max_iterations: The maximum number of gradient descent iterations to run.
         :returns: The loss at the end of training with the given learning rate.
-        :rtype: float
         """
         self._controller.learning_rate = lr
         try:
