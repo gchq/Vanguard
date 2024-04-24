@@ -436,7 +436,7 @@ class BaseGPController:
 
         The mean and variance are computed from the training inputs of self.
 
-        :param *modules: Modules to apply mean and variance to.
+        :param modules: Modules to apply mean and variance to.
         """
         norm_module = StandardiseXModule.from_data(self.train_x, device=self.device, dtype=self.dtype)
         scaled_modules = [norm_module.apply(module) for module in modules]

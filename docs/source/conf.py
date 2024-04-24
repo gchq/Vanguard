@@ -7,8 +7,12 @@ For a full list see the documentation: https://www.sphinx-doc.org/en/master/usag
 import os
 import shutil
 import sys
+from typing import Any, Optional, TypeVar
 
+import sphinx.config
 from PIL import Image
+from sphinx_autodoc_typehints import format_annotation as default_format_annotation
+from typing_extensions import TypeAlias, Unpack
 
 # -- Path setup --------------------------------------------------------------
 
@@ -30,6 +34,9 @@ version = "v" + vanguard.__version__
 
 # -- General configuration ---------------------------------------------------
 
+show_warning_types = True
+suppress_warnings = ["config.cache"]  # TODO: Remove this if/when Sphinx fix the caching issue
+
 extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
@@ -38,6 +45,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "nbsphinx",
     "matplotlib.sphinxext.plot_directive",
+    "sphinx_autodoc_typehints",
     "sphinxcontrib.bibtex",
 ]
 
@@ -103,6 +111,43 @@ html_logo = "_static/logo_circle.png"
 html_favicon = "_static/favicon.png"
 html_static_path = ["_static"]
 html_css_files = ["extra.css", "gallery.css"]
+
+
+always_document_param_types = True
+autodoc_custom_types: dict[TypeAlias, str] = {}
+
+
+def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Optional[str]:
+    """
+    Properly replace custom type aliases.
+
+    :param annotation: The type annotation to be processed.
+    :param config: The current configuration being used.
+    :returns: A string of reStructured text (e.g. :py:class:`something`) or None to fall
+        back to the default.
+
+    This function is called on each type annotation that Sphinx processes.
+    The following steps occur:
+
+    1. Check if the annotation is a TypeVar. If so, replace it with its "bound" type
+        for clarity in the docs. If not, then replace it with typing.Any.
+    2. Check whether a specific Sphinx string has been defined in autodoc_custom_types.
+        If so, return that.
+    3. If not, then return None, which uses thee default formatter.
+
+    See https://github.com/tox-dev/sphinx-autodoc-typehints?tab=readme-ov-file#options
+    for specification.
+    """
+    if isinstance(annotation, TypeVar):
+        try:
+            if annotation.__bound__ is None:  # when a generic TypeVar has been used.
+                return str(default_format_annotation(Any, config))
+        except AttributeError:
+            if getattr(annotation, "__origin__", None) is Unpack:
+                return None
+            raise
+        return str(default_format_annotation(annotation.__bound__, config))  # get the annotation for the bound type
+    return autodoc_custom_types.get(annotation)
 
 
 def skip(app, what, name, obj, would_skip, options):
