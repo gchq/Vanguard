@@ -131,12 +131,7 @@ if os.path.exists(examples_dest):
     shutil.rmtree(examples_dest)
 os.mkdir(examples_dest)
 
-confutils.copy_filtered_files(examples_source, examples_dest, file_types={".ipynb", ".md", ".rst"})
-
-licence_file_path = os.path.join(VANGUARD_FOLDER_FILE_PATH, "LICENSE.md")
-copyright_file_path = os.path.join(SOURCE_FOLDER_FILE_PATH, "copyright.rst")
-
-confutils.create_copyright_file(licence_file_path, copyright_file_path)
+confutils.copy_filtered_files(examples_source, examples_dest, file_types={".ipynb", ".rst"})
 
 notebooks_file_paths = [os.path.join(examples_dest, notebook_path) for notebook_path in os.listdir(examples_dest)]
 confutils.process_notebooks(notebooks_file_paths)
