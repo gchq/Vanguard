@@ -46,7 +46,7 @@ from refstyle import STYLE_NAME
 bibtex_default_style = STYLE_NAME
 bibtex_bibfiles = [os.path.join(VANGUARD_FOLDER_FILE_PATH, "references.bib")]
 
-linkcheck_ignore = ["https://www.nationalarchives.gov.uk/", "https://doi.org"]
+linkcheck_ignore = ["https://doi.org"]
 linkcheck_timeout = 5
 
 coverage_show_missing_items = True
@@ -83,9 +83,6 @@ nitpick_ignore = [("py:class", "array_like"), ("py:attr", "device"), ("py:meth",
                   ("py:meth", "_tensor_confidence_interval"), ("py:mod", "torch"), ("py:class", "function"),
                   ("py:class", "Any"), ("py:class", "gpytorch.mlls._ApproximateMarginalLogLikelihood"),
                   ("py:meth", "activate"), ("py:class", "gpytorch.models.GP"), ("py:class", "torch.Size")]
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
