@@ -35,7 +35,7 @@ VANGUARD_FOLDER_FILE_PATH = os.path.abspath(os.path.join(DOCS_FOLDER_FILE_PATH, 
 sys.path.extend([DOCS_FOLDER_FILE_PATH, SOURCE_FOLDER_FILE_PATH, VANGUARD_FOLDER_FILE_PATH, ".."])
 
 import vanguard
-import vanguard.base.basecontroller
+from vanguard.base.basecontroller import ttypes, ttypes_cuda
 from vanguard.hierarchical.collection import ModuleT
 
 # -- Project information -----------------------------------------------------
@@ -103,15 +103,7 @@ intersphinx_mapping = {
 
 nitpicky = True
 nitpicky_ignore_mapping: Dict[str, List[str]] = {
-    "py_attr": [
-        "device",
-    ],
     "py:class": [
-        "gpytorch.models.GP",
-        "array_like",
-        "function",
-        "Any",
-        "gpytorch.mlls._ApproximateMarginalLogLikelihood",
         "torch.Size",
         "gpytorch.distributions.multivariate_normal.MultivariateNormal",  # TODO: Remove when bumping gpytorch
         "gpytorch.likelihoods.likelihood.Likelihood",  # TODO: Remove when bumping gpytorch
@@ -121,9 +113,6 @@ nitpicky_ignore_mapping: Dict[str, List[str]] = {
         "_tensor_prediction",
         "_tensor_confidence_interval",
     ],
-    "py_mod": [
-        "torch",
-    ]
 }
 nitpick_ignore = [(type_, target) for type_, targets in nitpicky_ignore_mapping.items() for target in targets]
 
@@ -154,7 +143,7 @@ autodoc_custom_types: dict[TypeAlias, str] = {
     ModuleT: ":class:`~gpytorch.Module`",
     Self: ":data:`~typing.Self`",
     gpytorch.mlls.MarginalLogLikelihood: f":mod:`{gpytorch.mlls.MarginalLogLikelihood.__name__} <gpytorch.mlls>`",
-    Union[vanguard.base.basecontroller.ttypes, vanguard.base.basecontroller.ttypes_cuda]: str(default_format_annotation(Type[torch.Tensor], sphinx.config.Config())),
+    Union[ttypes, ttypes_cuda]: str(default_format_annotation(Type[torch.Tensor], sphinx.config.Config())),
 }
 
 

@@ -27,8 +27,8 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
     This is best used when:
 
-        * the posterior can not be calculated as a closed-form, or
-        * there are too many points to train a model in a reasonable time (see :cite:`Cheng17`).
+    * the posterior can not be calculated as a closed-form, or
+    * there are too many points to train a model in a reasonable time (see :cite:`Cheng17`).
 
     .. note::
         This decorator does not take the standard parameters in the
@@ -38,8 +38,9 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
     .. warning::
         This decorator will force the wrapped controller class to only accept compatible
         ``gp_model_class`` and ``marginal_log_likelihood_class`` arguments. The former should
-        be a subclass of :class:`vanguard.variational.models.SVGPModel`, and the latter must take a `num_data` int
-        argument (e.g. a subclass of :class:`gpytorch.mlls._ApproximateMarginalLogLikelihood`).
+        be a subclass of :class:`vanguard.variational.models.SVGPModel`, and the latter must take a ``num_data``
+        :class:`int` argument (e.g. a subclass of :ref:`one of the following
+        </marginal_log_likelihoods.rst#approximate-gp-inference>`).
 
     :Example:
         >>> @VariationalInference(n_inducing_points=100)
