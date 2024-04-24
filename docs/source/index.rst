@@ -63,6 +63,7 @@ Vanguard was created by GCHQ.
     :maxdepth: 1
     :caption: Optimisation
 
+    optimise/smart_optimiser
     optimise/finder
     optimise/schedulers
 

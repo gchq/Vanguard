@@ -450,7 +450,8 @@ class BaseGPController:
         """
         Set the default tensor type for the class, subsequent subclasses, and external tensors.
 
-        :param tensor_type: The tensor type to apply as the default
+        :param tensor_type: The tensor type to apply as the default. See the list of
+                            :ref:`available data types <tensors:data types>`.
         """
         cls._default_tensor_type = tensor_type
         torch.set_default_tensor_type(tensor_type)

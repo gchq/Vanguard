@@ -24,7 +24,7 @@ class GaussianUncertaintyGPController(GPController):
     Allows the user to pass the standard deviation of the input values.
 
     Base class for implementing the HNIGP of [CITATION NEEDED]_. This is a generalised version of the NIGP method in
-    :cite:`Mchutchon11` and our implementation here exploits mod:`torch.autograd` to circumvent any by-hand
+    :cite:`Mchutchon11` and our implementation here exploits :mod:`torch.autograd` to circumvent any by-hand
     calculations of GP derivatives.
     """
     def __init__(self, train_x: numpy.typing.NDArray[np.floating], train_x_std: Optional[Union[numpy.typing.NDArray[np.floating], float]],
@@ -54,12 +54,12 @@ class GaussianUncertaintyGPController(GPController):
         :param kernel_class: An uninstantiated subclass of :class:`gpytorch.kernels.Kernel`.
         :param mean_class: An uninstantiated subclass of :class:`gpytorch.means.Mean` to use in the prior GP.
                 Defaults to :class:`gpytorch.means.ConstantMean`.
-        :param gp_model_class: An uninstantiated subclass of a GP model from mod:`gpytorch.models`.
+        :param gp_model_class: An uninstantiated subclass of a GP model from :mod:`gpytorch.models`.
                 The default is :class:`vanguard.models.ExactGPModel`.
         :param likelihood_class: An uninstantiated subclass of :class:`gpytorch.likelihoods.Likelihood`.
                 The default is :class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
         :param marginal_log_likelihood_class: An uninstantiated subclass of an MLL from
-                mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
+                :mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
         :param optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
                 gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
         :param smart_optimiser_class: An uninstantiated subclass of :class:`~vanguard.optimise.optimiser.SmartOptimiser`,
@@ -168,7 +168,7 @@ class GaussianUncertaintyGPController(GPController):
 
     def _get_additive_grad_noise(self, x: torch.Tensor, x_var: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
-        Use mod:`torch.autograd` to find the gradient of the posterior mean and derived additive covariance term.
+        Use :mod:`torch.autograd` to find the gradient of the posterior mean and derived additive covariance term.
 
         :param x: (n_samples, self.dim) The input samples at which to compute the gradient.
         :param x_var: Input dimension variances:

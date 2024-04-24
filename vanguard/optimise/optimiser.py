@@ -1,5 +1,5 @@
 """
-Contains the SmartOptimiser class.
+Vanguard defines its own optimiser wrapper to enable additional features.
 """
 import inspect
 from collections import deque
@@ -35,7 +35,7 @@ class SmartOptimiser(Generic[OptimiserT]):
         """
         Initialise self.
 
-        :param optimiser_class: An uninstantiated subclass of class:`torch.optim.Optimizer` to be used
+        :param optimiser_class: An uninstantiated subclass of :class:`torch.optim.Optimizer` to be used
             to create the internal optimiser.
         :param initial_modules: Initial modules whose parameters will be added to the
             internal optimiser.
@@ -83,7 +83,7 @@ class SmartOptimiser(Generic[OptimiserT]):
         self.last_n_losses = self._get_last_n_losses_structure(self._early_stop_patience)
 
     def zero_grad(self, set_to_none: bool = False) -> None:
-        """Set the gradients of all optimized class:`torch.Tensor`s to zero."""
+        """Set the gradients of all optimized :class:`torch.Tensor` s to zero."""
         self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     @overload
@@ -184,7 +184,7 @@ class SmartOptimiser(Generic[OptimiserT]):
         """
         Get the structure which will contain the last :math`n` losses.
 
-        Returns an instance of class:`collections.deque`.  This is
+        Returns an instance of :class:`collections.deque`.  This is
         always initialised with at least one ``nan`` value.  Whilst
         ``nan`` values occur in the structure, the minimum value will also
         be ``nan`` meaning that the minimum value will not be equal to the
@@ -280,9 +280,9 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
     Always choose parameters with the minimum loss value, regardless of the iteration at which they occur.
 
     .. note::
-        This is the default smart optimiser for some class:`vanguard.vanilla.GaussianGPController.
+        This is the default smart optimiser for some :class:`vanguard.vanilla.GaussianGPController`.
         To disable the greedy loss behaviour and revert to keeping the parameters at the final iteration
-        of training, using class:`vanguard.optimise.optimiser.SmartOptimiser` or a different subclass
+        of training, using :class:`vanguard.optimise.optimiser.SmartOptimiser` or a different subclass
         thereof.
 
     """

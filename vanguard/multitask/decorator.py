@@ -134,10 +134,10 @@ class Multitask(Decorator):
                 :param kernel_class: An uninstantiated :class:`gpytorch.kernels.Kernel`.
                 :param mean_kwargs: Keyword arguments to be passed to the mean_class constructor.
                 :param kernel_kwargs: Keyword arguments to be passed to the kernel_class constructor.
-                :returns: An uninstantiated class:`gpytorch.means.Mean` like mean_class but modified to have the
+                :returns: An uninstantiated :class:`gpytorch.means.Mean` like mean_class but modified to have the
                           same form/shape as kernel_class, if possible.
                 :raises TypeError: If the supplied mean_class has a batch_shape and it doesn't match the batch_shape of
-                                    the kernel_class, or is a class:`gpytorch.kernels.MultitaskKernel` and has
+                                    the kernel_class, or is a :class:`gpytorch.kernels.MultitaskKernel` and has
                                     num_tasks which doesn't match that of the kernel_class.
                 """
                 example_kernel = kernel_class(**kernel_kwargs)

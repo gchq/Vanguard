@@ -1,7 +1,7 @@
 """
 Enable variational inference in a controller.
 
-The class:`VariationalInference` decorator primes a class:`~vanguard.base.gpcontroller.GPController` class
+The :class:`VariationalInference` decorator primes a :class:`~vanguard.base.gpcontroller.GPController` class
 for variational inference.
 """
 from typing import Any, Generic, Optional, Type, TypeVar, Union
@@ -23,7 +23,7 @@ DistributionT = TypeVar("DistributionT", bound=gpytorch.variational._Variational
 
 class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
     """
-    Set-up a class:`~vanguard.base.gpcontroller.GPController` class for variational inference.
+    Set-up a :class:`~vanguard.base.gpcontroller.GPController` class for variational inference.
 
     This is best used when:
 
@@ -32,14 +32,14 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
     .. note::
         This decorator does not take the standard parameters in the
-        class:`~vanguard.decoratorutils.basedecorator.Decorator`
+        :class:`~vanguard.decoratorutils.basedecorator.Decorator`
         class, as it only affects the input.
 
     .. warning::
         This decorator will force the wrapped controller class to only accept compatible
         ``gp_model_class`` and ``marginal_log_likelihood_class`` arguments. The former should
-        be a subclass of class:`vanguard.variational.models.SVGPModel`, and the latter must take a `num_data` int
-        argument (e.g. a subclass of class:`gpytorch.mlls._ApproximateMarginalLogLikelihood`).
+        be a subclass of :class:`vanguard.variational.models.SVGPModel`, and the latter must take a `num_data` int
+        argument (e.g. a subclass of :class:`gpytorch.mlls._ApproximateMarginalLogLikelihood`).
 
     :Example:
         >>> @VariationalInference(n_inducing_points=100)
@@ -60,11 +60,11 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                                          the likelihood values for each sample. This is the number of samples to use.
         :param variational_strategy_class: The class for the variational strategy to use.
                                                      Default behaviour is defined in
-                                                     class:`gpytorch.variational.VariationalStrategy`
+                                                     :class:`gpytorch.variational.VariationalStrategy`
                                                      (:cite:`Hensman15`).
         :param variational_distribution_class: The class for the variational distribution to use.
             Default behaviour is defined in
-            class:`gpytorch.variational.CholeskyVariationalDistribution` (Cholesky).
+            :class:`gpytorch.variational.CholeskyVariationalDistribution` (Cholesky).
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.n_inducing_points = n_inducing_points
@@ -127,7 +127,7 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                 except TypeError as error:
                     if "__init__() got an unexpected keyword argument 'num_data'" in str(error):
                         raise ValueError("The class passed to ``marginal_log_likelihood_class`` must take a "
-                                         "``num_data`` class:`int` argument since we run "
+                                         "``num_data`` :class:`int` argument since we run "
                                          "variational inference with SGD.") from error
                     else:
                         raise

@@ -25,7 +25,7 @@ class BinaryClassification(Decorator):
         Passing ``y_std=0`` is suggested.
 
     .. note::
-        When used in conjunction with the class:`~gpytorch.likelihoods.BernoulliLikelihood` class,
+        When used in conjunction with the :class:`~gpytorch.likelihoods.BernoulliLikelihood` class,
         the probit likelihood is calculated in closed form by applying the following formula :cite:`Kuss05`:
 
         .. math::
@@ -36,7 +36,7 @@ class BinaryClassification(Decorator):
         This means that the predictive uncertainty is taken into account.
 
     .. note::
-        The class:`~vanguard.variational.VariationalInference` decorator is required for this
+        The :class:`~vanguard.variational.VariationalInference` decorator is required for this
         decorator to be applied.
 
     :Example:
@@ -68,7 +68,7 @@ class BinaryClassification(Decorator):
         """
         Initialise self.
 
-        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference}, **kwargs)
 
