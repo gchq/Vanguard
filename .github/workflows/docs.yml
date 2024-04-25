@@ -29,4 +29,4 @@ jobs:
           python3 -m sphinx -b html -aE docs/source docs/build
       - name: Check external links
         run: |
-          python -m sphinx -b linkcheck documentation/source documentation/build
+          python -m sphinx -b linkcheck docs/source docs/build
