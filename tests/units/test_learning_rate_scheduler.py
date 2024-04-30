@@ -15,6 +15,7 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the LearningRateFinder decorator.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = SyntheticDataset()
@@ -30,9 +31,14 @@ class BasicTests(unittest.TestCase):
         class StepLRAdam(torch.optim.Adam):
             pass
 
-        self.controller = GaussianGPController(self.dataset.train_x, self.dataset.train_y,
-                                               ScaledRBFKernel, self.dataset.train_y_std,
-                                               optimiser_class=StepLRAdam, optim_kwargs={"lr": initial_lr})
+        self.controller = GaussianGPController(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            ScaledRBFKernel,
+            self.dataset.train_y_std,
+            optimiser_class=StepLRAdam,
+            optim_kwargs={"lr": initial_lr},
+        )
 
         self.train_y_mean = self.dataset.train_y.mean()
         self.train_y_std = self.dataset.train_y.std()

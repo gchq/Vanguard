@@ -20,6 +20,7 @@ from .case import ClassificationTestCase
 @VariationalInference(ignore_methods=("__init__",))
 class BinaryClassifier(GaussianGPController):
     """A simple binary classifier."""
+
     pass
 
 
@@ -27,12 +28,18 @@ class BinaryTests(ClassificationTestCase):
     """
     Tests for binary classification.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=200)
-        self.controller = BinaryClassifier(self.dataset.train_x, self.dataset.train_y, kernel_class=PeriodicRBFKernel,
-                                           y_std=0, likelihood_class=BernoulliLikelihood,
-                                           marginal_log_likelihood_class=VariationalELBO)
+        self.controller = BinaryClassifier(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=0,
+            likelihood_class=BernoulliLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+        )
         self.controller.fit(100)
 
     @flaky
@@ -46,6 +53,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
     """
     Tests for fuzzy binary classification.
     """
+
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
@@ -53,9 +61,14 @@ class BinaryFuzzyTests(ClassificationTestCase):
         test_x_std = 0.005
         test_x = np.random.normal(self.dataset.test_x, scale=test_x_std)
 
-        self.controller = BinaryClassifier(self.dataset.train_x, self.dataset.train_y, kernel_class=PeriodicRBFKernel,
-                                           y_std=0, likelihood_class=BernoulliLikelihood,
-                                           marginal_log_likelihood_class=VariationalELBO)
+        self.controller = BinaryClassifier(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=0,
+            likelihood_class=BernoulliLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+        )
         self.controller.fit(100)
 
         predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
@@ -73,12 +86,18 @@ class BinaryFuzzyTests(ClassificationTestCase):
         @VariationalInference(ignore_all=True)
         class UncertaintyBinaryClassifier(GaussianUncertaintyGPController):
             """A simple binary classifier."""
+
             pass
 
-        self.controller = UncertaintyBinaryClassifier(train_x, train_x_std, self.dataset.train_y,
-                                                      kernel_class=PeriodicRBFKernel, y_std=0,
-                                                      likelihood_class=BernoulliLikelihood,
-                                                      marginal_log_likelihood_class=VariationalELBO)
+        self.controller = UncertaintyBinaryClassifier(
+            train_x,
+            train_x_std,
+            self.dataset.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=0,
+            likelihood_class=BernoulliLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+        )
         self.controller.fit(100)
 
         predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)

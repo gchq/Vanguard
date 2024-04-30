@@ -14,14 +14,17 @@ from gpytorch import constraints
 
 from .hyperparameter import BayesianHyperparameter
 
-HALF_INTERVAL_PRIOR = (8., 6.**2)
-DEFAULT_PRIORS = {constraints.Positive: HALF_INTERVAL_PRIOR,
-                  constraints.GreaterThan: HALF_INTERVAL_PRIOR,
-                  constraints.LessThan: HALF_INTERVAL_PRIOR,
-                  constraints.Interval: (0., 1.6**2),
-                  type(None): (0., 10.**2)}
+HALF_INTERVAL_PRIOR = (8.0, 6.0**2)
+DEFAULT_PRIORS = {
+    constraints.Positive: HALF_INTERVAL_PRIOR,
+    constraints.GreaterThan: HALF_INTERVAL_PRIOR,
+    constraints.LessThan: HALF_INTERVAL_PRIOR,
+    constraints.Interval: (0.0, 1.6**2),
+    type(None): (0.0, 10.0**2),
+}
 
-ModuleT = TypeVar('ModuleT', bound=gpytorch.module.Module)
+ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)
+
 
 class BayesianHyperparameters:
     """
@@ -41,7 +44,13 @@ class BayesianHyperparameters:
         That is, only parameters that are directly created by the init of the class will be
         affected (even if they are buried in further sub-modules).
     """
-    def __init__(self, ignored_parameters: Optional[Iterable[str]] = frozenset(), prior_means: Optional[dict] = None, prior_variances:  Optional[dict] = None):
+
+    def __init__(
+        self,
+        ignored_parameters: Optional[Iterable[str]] = frozenset(),
+        prior_means: Optional[dict] = None,
+        prior_variances: Optional[dict] = None,
+    ):
         """
         Initialise self.
 
@@ -62,9 +71,9 @@ class BayesianHyperparameters:
     def __call__(self, module_class: ModuleT) -> ModuleT:
         ignored_parameters = self.ignored_parameters
 
-        process_hyperparameter = partial(_process_hyperparameter,
-                                         prior_means=self.prior_means,
-                                         prior_variances=self.prior_variances)
+        process_hyperparameter = partial(
+            _process_hyperparameter, prior_means=self.prior_means, prior_variances=self.prior_variances
+        )
 
         class InnerClass(module_class):
             def __init__(self, *args, **kwargs):
@@ -85,7 +94,9 @@ class BayesianHyperparameters:
         return InnerClass
 
 
-def _process_hyperparameter(module: ModuleT, raw_parameter_name: str, prior_means: Optional[dict], prior_variances: Optional[dict]) -> BayesianHyperparameter:
+def _process_hyperparameter(
+    module: ModuleT, raw_parameter_name: str, prior_means: Optional[dict], prior_variances: Optional[dict]
+) -> BayesianHyperparameter:
     """
     Determine the information to construct a torch parameter.
 
@@ -112,7 +123,9 @@ def _process_hyperparameter(module: ModuleT, raw_parameter_name: str, prior_mean
     return BayesianHyperparameter(raw_parameter_name, raw_parameter_shape, constraint, prior_mean, prior_variance)
 
 
-def _discover_modules_and_parameters(top_module: torch.nn.Module, base_modules: Iterable[torch.nn.Module]) -> Tuple[List[str], List[Tuple[ModuleT, str]]]:
+def _discover_modules_and_parameters(
+    top_module: torch.nn.Module, base_modules: Iterable[torch.nn.Module]
+) -> Tuple[List[str], List[Tuple[ModuleT, str]]]:
     """
     Recursively identify all recursive modules and corresponding parameters.
 

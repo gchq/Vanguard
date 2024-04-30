@@ -26,6 +26,7 @@ class BinaryStripeClassificationDataset(Dataset):
         plt.plot(DATASET.train_x, DATASET.train_y, label="Truth")
         plt.show()
     """
+
     def __init__(self, num_train_points: int, num_test_points: int):
         """
         Initialise self.
@@ -39,8 +40,7 @@ class BinaryStripeClassificationDataset(Dataset):
         train_y = self.even_split(train_x)
         test_y = self.even_split(test_x)
 
-        super().__init__(train_x, np.array([]), train_y, np.array([]),
-                         test_x, np.array([]), test_y, np.array([]), 0)
+        super().__init__(train_x, np.array([]), train_y, np.array([]), test_x, np.array([]), test_y, np.array([]), 0)
 
     @staticmethod
     def even_split(x: NDArray[np.floating]) -> NDArray[np.floating]:
@@ -60,8 +60,15 @@ class MulticlassGaussianClassificationDataset(Dataset):
         DATASET.plot()
         plt.show()
     """
-    def __init__(self, num_train_points: int, num_test_points: int, num_classes: int,
-                 covariance_scale: float = 1.0, seed: Optional[int] = None):
+
+    def __init__(
+        self,
+        num_train_points: int,
+        num_test_points: int,
+        num_classes: int,
+        covariance_scale: float = 1.0,
+        seed: Optional[int] = None,
+    ):
         """
         Initialise self.
 
@@ -74,13 +81,14 @@ class MulticlassGaussianClassificationDataset(Dataset):
         """
         self.num_classes = num_classes
 
-        train_x, train_y = make_gaussian_quantiles(cov=covariance_scale, n_samples=num_train_points,
-                                                   n_features=2, n_classes=num_classes, random_state=seed)
-        test_x, test_y = make_gaussian_quantiles(cov=covariance_scale, n_samples=num_test_points,
-                                                 n_features=2, n_classes=num_classes, random_state=seed)
+        train_x, train_y = make_gaussian_quantiles(
+            cov=covariance_scale, n_samples=num_train_points, n_features=2, n_classes=num_classes, random_state=seed
+        )
+        test_x, test_y = make_gaussian_quantiles(
+            cov=covariance_scale, n_samples=num_test_points, n_features=2, n_classes=num_classes, random_state=seed
+        )
 
-        super().__init__(train_x, 0, train_y, 0,
-                         test_x, 0, test_y, 0, 0)
+        super().__init__(train_x, 0, train_y, 0, test_x, 0, test_y, 0, 0)
 
     @property
     def one_hot_train_y(self) -> NDArray[int]:
@@ -108,21 +116,34 @@ class MulticlassGaussianClassificationDataset(Dataset):
         :param cmap: The colour map to be used.
         :param alpha: The transparency of the points.
         """
-        correct_prediction = (prediction == self.test_y)
+        correct_prediction = prediction == self.test_y
         proportion_correct: float = correct_prediction.sum() / len(self.test_x)  # type: ignore
 
         ax = plt.gca()
-        correct_scatter = plt.scatter(self.test_x[correct_prediction, 0], self.test_x[correct_prediction, 1],
-                                      c=prediction[correct_prediction], cmap=cmap, alpha=alpha)
-        incorrect_scatter = plt.scatter(self.test_x[~correct_prediction, 0], self.test_x[~correct_prediction, 1],
-                                        c=prediction[~correct_prediction], cmap=cmap, marker="x", alpha=alpha)
+        correct_scatter = plt.scatter(
+            self.test_x[correct_prediction, 0],
+            self.test_x[correct_prediction, 1],
+            c=prediction[correct_prediction],
+            cmap=cmap,
+            alpha=alpha,
+        )
+        incorrect_scatter = plt.scatter(
+            self.test_x[~correct_prediction, 0],
+            self.test_x[~correct_prediction, 1],
+            c=prediction[~correct_prediction],
+            cmap=cmap,
+            marker="x",
+            alpha=alpha,
+        )
         legend_correct = ax.legend(*correct_scatter.legend_elements(), title="Correct", loc="upper left")
         legend_incorrect = ax.legend(*incorrect_scatter.legend_elements(), title="Incorrect", loc="lower right")
         ax.add_artist(legend_correct)
         ax.add_artist(legend_incorrect)
         plt.title(f"Proportion correct: {100 * proportion_correct:.2f}%")
 
-    def plot_confusion_matrix(self, prediction: NDArray, cmap: Union[str, Colormap] = "OrRd", text_size: str = "xx-large") -> None:
+    def plot_confusion_matrix(
+        self, prediction: NDArray, cmap: Union[str, Colormap] = "OrRd", text_size: str = "xx-large"
+    ) -> None:
         """
         Plot a confusion matrix based on a specific prediction.
 
@@ -156,12 +177,10 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         DATASET.plot()
         plt.show()
     """
-    def __init__(self,
-                 num_train_points: int,
-                 num_test_points: int,
-                 covariance_scale: float = 1.0,
-                 seed: Optional[int] = None
-                 ):
+
+    def __init__(
+        self, num_train_points: int, num_test_points: int, covariance_scale: float = 1.0, seed: Optional[int] = None
+    ):
         """
         Initialise self.
 

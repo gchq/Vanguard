@@ -25,6 +25,7 @@ class _SetModuleInputWarp:
     Since kernels and means are implemented as subclasses of `torch.nn.Module` in GPyTorch, we can apply the inverse
     warping to both using this class alone.
     """
+
     def __init__(self, warp: WarpFunction):
         self.warp = warp
 
@@ -34,6 +35,7 @@ class _SetModuleInputWarp:
         @wraps_class(module_class)
         class InnerClass(module_class):
             """Apply the inner warp."""
+
             def forward(self, *args: Any, **kwargs: Any):
                 """Map all inputs through the warp inverse."""
                 inverse_warped_inputs = [warp.inverse(x) for x in args]
@@ -54,6 +56,7 @@ class SetInputWarp(Decorator):
             ... class MyController(GPController):
             ...     pass
     """
+
     def __init__(self, warp_function: WarpFunction, **kwargs):
         """
         Initialise self.
@@ -72,6 +75,7 @@ class SetInputWarp(Decorator):
             """
             A wrapper for applying a warp to inputs for non-Gaussian input uncertainty.
             """
+
             def __init__(self, *args, **kwargs):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
@@ -80,8 +84,11 @@ class SetInputWarp(Decorator):
                 mean_class = all_parameters_as_kwargs.pop("mean_class")
                 kernel_class = all_parameters_as_kwargs.pop("kernel_class")
 
-                super().__init__(kernel_class=module_decorator(kernel_class), mean_class=module_decorator(mean_class),
-                                 **all_parameters_as_kwargs)
+                super().__init__(
+                    kernel_class=module_decorator(kernel_class),
+                    mean_class=module_decorator(mean_class),
+                    **all_parameters_as_kwargs,
+                )
                 self.input_warp = warp_function
 
             @classmethod
@@ -90,4 +97,5 @@ class SetInputWarp(Decorator):
                 new_instance = super().new(instance, **kwargs)
                 new_instance.input_warp = instance.input_warp
                 return new_instance
+
         return InnerClass

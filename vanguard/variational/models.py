@@ -10,8 +10,12 @@ from gpytorch.kernels import Kernel
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.means import Mean
 from gpytorch.models import ApproximateGP
-from gpytorch.variational import (CholeskyVariationalDistribution, VariationalStrategy, _VariationalDistribution,
-                                  _VariationalStrategy)
+from gpytorch.variational import (
+    CholeskyVariationalDistribution,
+    VariationalStrategy,
+    _VariationalDistribution,
+    _VariationalStrategy,
+)
 from torch import Tensor
 
 from vanguard.decoratorutils.wrapping import wraps_class
@@ -25,13 +29,22 @@ class SVGPModel(ApproximateGP):
     with flexible prior kernel, mean and an inducing point variational approximation
     to the posterior al la :cite:`Hensman15`.
     """
+
     if torch.cuda.is_available():
         device = torch.device("cuda:0")
     else:
         device = torch.device("cpu")
 
-    def __init__(self, train_x: Tensor, train_y: Tensor, likelihood: GaussianLikelihood, mean_module: Mean,
-                 covar_module: Kernel, n_inducing_points: int, **kwargs: Any):
+    def __init__(
+        self,
+        train_x: Tensor,
+        train_y: Tensor,
+        likelihood: GaussianLikelihood,
+        mean_module: Mean,
+        covar_module: Kernel,
+        n_inducing_points: int,
+        **kwargs: Any,
+    ):
         """
         Initialise self.
 
@@ -53,6 +66,7 @@ class SVGPModel(ApproximateGP):
         @wraps_class(variational_strategy_class)
         class SafeVariationalStrategy(variational_strategy_class):
             """A temporary class which will raise an appropriate error when the __call__ method fails."""
+
             def __call__(self, *args: Any, **kwargs: Any) -> MultivariateNormal:
                 try:
                     return super().__call__(*args, **kwargs)
@@ -109,8 +123,9 @@ class SVGPModel(ApproximateGP):
         """
         return CholeskyVariationalDistribution(n_inducing_points)
 
-    def _build_base_variational_strategy(self, inducing_points: Tensor,
-                                         variational_distribution: _VariationalDistribution) -> _VariationalStrategy:
+    def _build_base_variational_strategy(
+        self, inducing_points: Tensor, variational_distribution: _VariationalDistribution
+    ) -> _VariationalStrategy:
         """
         Build the base variational strategy.
 
@@ -118,8 +133,7 @@ class SVGPModel(ApproximateGP):
         :param variational_distribution: The variational distribution.
         :returns: The final variational strategy which will be used.
         """
-        return VariationalStrategy(self, inducing_points, variational_distribution,
-                                   learn_inducing_locations=True)
+        return VariationalStrategy(self, inducing_points, variational_distribution, learn_inducing_locations=True)
 
     def _check_batch_shape(self, mean_module: Mean, covar_module: Kernel) -> None:
         """
@@ -130,8 +144,10 @@ class SVGPModel(ApproximateGP):
         common trap to fall into, we check for mistakes explicitly.
         """
         if hasattr(self, "num_tasks") and self.num_tasks != 1:
-            raise TypeError(f"You are using a {SVGPModel.__name__} in a multi-task problem. {SVGPModel.__name__} does"
-                            f"not have the correct variational strategy for multi-task.")
+            raise TypeError(
+                f"You are using a {SVGPModel.__name__} in a multi-task problem. {SVGPModel.__name__} does"
+                f"not have the correct variational strategy for multi-task."
+            )
 
     @staticmethod
     def _get_num_tasks(y: Tensor) -> int:

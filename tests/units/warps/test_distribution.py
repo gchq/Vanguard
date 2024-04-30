@@ -15,7 +15,7 @@ class DistributionTests(unittest.TestCase):
         self.warp = MultitaskWarpFunction(
             warpfunctions.BoxCoxWarpFunction(lambda_=0) @ warpfunctions.AffineWarpFunction(b=-0.99),
             warpfunctions.AffineWarpFunction(),
-            warpfunctions.AffineWarpFunction()
+            warpfunctions.AffineWarpFunction(),
         ).freeze()
         self.mean = torch.as_tensor([0, 1, -1]).float()
         self.scale = torch.as_tensor([0.1, 0.2, 0.3]).float()
@@ -52,7 +52,7 @@ class DistributionTests(unittest.TestCase):
         candidate_warp = MultitaskWarpFunction(
             warpfunctions.BoxCoxWarpFunction(lambda_=0) @ warpfunctions.AffineWarpFunction(),
             warpfunctions.AffineWarpFunction().freeze(),
-            warpfunctions.AffineWarpFunction().freeze()
+            warpfunctions.AffineWarpFunction().freeze(),
         )
         fit_distribution = WarpedGaussian.from_data(candidate_warp, self.samples)
         fit_log_prob = fit_distribution.log_prob(self.samples).mean().item()
@@ -63,11 +63,11 @@ class DistributionTests(unittest.TestCase):
         candidate_warp = MultitaskWarpFunction(
             warpfunctions.BoxCoxWarpFunction(lambda_=0) @ warpfunctions.AffineWarpFunction(),
             warpfunctions.AffineWarpFunction().freeze(),
-            warpfunctions.AffineWarpFunction().freeze()
+            warpfunctions.AffineWarpFunction().freeze(),
         )
         fit_distribution = WarpedGaussian.from_data(candidate_warp, self.samples)
         fit_log_prob = fit_distribution.log_prob(self.samples).mean().item()
 
         gaussian_approximation = torch.distributions.Normal(loc=self.samples.mean(dim=0), scale=self.samples.std(dim=0))
         gaussian_approximation_log_prob = gaussian_approximation.log_prob(self.samples).mean().item()
-        self.assertGreater(fit_log_prob, -np.abs(gaussian_approximation_log_prob)*10)
+        self.assertGreater(fit_log_prob, -np.abs(gaussian_approximation_log_prob) * 10)
