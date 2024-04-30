@@ -25,28 +25,25 @@ If the code is not running properly, recreate the environment with `pip install 
 
 ## Tests
 
-Vanguard's tests can be run from the command line, with numerous options:
+Vanguard's tests are contained in the `tests/` directory, and can be run with `unittest` or `pytest`.
+
+Unit tests are in `tests/units`. There are two additional test files that dynamically run additional tests:
+ - `test_doctests.py` finds and runs all doctests.
+ - `test_examples.py` runs all notebooks under `examples/` as tests. These require `nbconvert` and `nbformat` to run,
+and can take a significant amount of time to complete, so consider excluding `test_examples.py` from your test
+discovery.
 
 ```shell
-$ python3 -m tests  # run all unit tests
-$ python3 -m tests module  # attempt to run all unit tests in test_module.py
-$ python3 -m tests sub1 sub2 module  # attempt to run all unit tests in sub1/sub2/test_module.py
+# Unittest:
+$ python -m unittest discover -s tests/units # run unit tests
+$ python -m unittest tests/test_doctests.py # run doctests
+$ python -m unittest tests/test_examples.py # run example tests (slow)
+
+# Pytest:
+$ pytest tests/units # run unit tests
+$ pytest tests/test_doctests.py # run doctests
+$ pytest tests/test_examples.py # run example tests (slow)
 ```
 
-Vanguard has a few different types of test:
-
-```shell
-$ python3 -m tests -u  # run all unit tests (default)
-$ python3 -m tests -d  # run all doctests
-$ python3 -m tests -e  # run all examples (additional dependencies are required, see below)
-$ python3 -m tests -a  # run all tests (u + d + e)
-```
-
-Other options are available and can be found by running the following:
-
-```shell
-$ python3 -m tests --help
-```
-
-* Some tests are non-deterministic and as such may occasionally fail due to randomness. Please try running them again before raising an issue.
-* Example tests require `nbconvert` and `nbformat` to run. The tests will only check if the notebooks run, and not how they perform. They are often very slow to complete.
+Note that some tests are non-deterministic and as such may occasionally fail due to randomness.
+Please try running them again before raising an issue.
