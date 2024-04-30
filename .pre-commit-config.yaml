@@ -55,9 +55,11 @@ repos:
     hooks:
       # No tabs, only spaces
       - id: forbid-tabs
-#  - repo: https://github.com/astral-sh/ruff-pre-commit
-#    rev: v0.2.2
-#    hooks:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.2
+    hooks:
+      # Run the formatter.
+      - id: ruff-format
 #      # Run the linter.
 #      - id: ruff
 #        args: [--fix, --line-length=120]

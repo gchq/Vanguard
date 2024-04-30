@@ -1,2 +1,6 @@
 [tool.isort]
+profile = "black" # to agree with ruff
 line_length = 120
+
+[tool.ruff]
+line-length = 120
