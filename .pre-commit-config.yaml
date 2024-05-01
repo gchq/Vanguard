@@ -118,7 +118,7 @@ repos:
         name: forbid markdown cells
         description: Forbid any Markdown cell in a Jupyter notebook
         types: [jupyter]
-        entry: python3 pre_commit_hooks/markdown_cells.py
+        entry: python pre_commit_hooks/markdown_cells.py
         language: python
         additional_dependencies: ["nbformat"]
 #      - id: docstring-spaces
