@@ -1,5 +1,5 @@
 """
-A suite of aggregators to be used with the class:`~vanguard.distribute.decorator.Distributed` decorator.
+A suite of aggregators to be used with the :class:`~vanguard.distribute.decorator.Distributed` decorator.
 
 These are responsible for combining the predictions of several independent expert controllers.
 """
@@ -57,7 +57,7 @@ class BaseAggregator:
         .. note::
             Delta is as defined in [CITATION NEEDED]_ and [CITATION NEEDED]_ (difference in differential entropy between
             prior and posterior :cite:`Deisenroth15`). ``delta_diff`` and ``delta_val`` are the same in
-            class:`XBCMAggregator`.
+            :class:`XBCMAggregator`.
 
         :param delta_diff: The delta used to determine if correction is applied
                 (proxy for in-vs-out of training data).
@@ -187,7 +187,7 @@ class XBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    We define the joint posterior as in :class:`RBCMAggregator`, but with a correction on \beta.
     (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -237,7 +237,7 @@ class XGRBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Generalised Robust Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    We define the joint posterior as in :class:`RBCMAggregator`, but with a correction on \beta.
     (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:

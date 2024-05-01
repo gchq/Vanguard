@@ -28,24 +28,24 @@ If the code is not running properly, recreate the environment with `pip install 
 Vanguard's tests can be run from the command line, with numerous options:
 
 ```shell
-$ python3 -m tests  # run all unit tests
-$ python3 -m tests module  # attempt to run all unit tests in test_module.py
-$ python3 -m tests sub1 sub2 module  # attempt to run all unit tests in sub1/sub2/test_module.py
+$ python -m tests  # run all unit tests
+$ python -m tests module  # attempt to run all unit tests in test_module.py
+$ python -m tests sub1 sub2 module  # attempt to run all unit tests in sub1/sub2/test_module.py
 ```
 
 Vanguard has a few different types of test:
 
 ```shell
-$ python3 -m tests -u  # run all unit tests (default)
-$ python3 -m tests -d  # run all doctests
-$ python3 -m tests -e  # run all examples (additional dependencies are required, see below)
-$ python3 -m tests -a  # run all tests (u + d + e)
+$ python -m tests -u  # run all unit tests (default)
+$ python -m tests -d  # run all doctests
+$ python -m tests -e  # run all examples (additional dependencies are required, see below)
+$ python -m tests -a  # run all tests (u + d + e)
 ```
 
 Other options are available and can be found by running the following:
 
 ```shell
-$ python3 -m tests --help
+$ python -m tests --help
 ```
 
 * Some tests are non-deterministic and as such may occasionally fail due to randomness. Please try running them again before raising an issue.

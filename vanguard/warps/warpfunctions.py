@@ -53,7 +53,7 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
 
     .. note::
         This warp function needs to be activated before use.
-        See mod:`vanguard.warps.intermediate`.
+        See :mod:`vanguard.warps.intermediate`.
     """
     def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0):
         """

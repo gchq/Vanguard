@@ -4,12 +4,11 @@
 .idea
 .ipynb_checkpoints
 .scannerwork
-.venv
+.venv*
 .vscode
 __pycache__
 coverage.xml
 docs/build
 docs/source/_static/logo_circle.png
-docs/source/copyright.rst
 docs/source/examples
 vanguard/datasets/data

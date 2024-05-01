@@ -21,7 +21,7 @@ class SVGPModel(ApproximateGP):
     """
     A standard model for approximate inference.
 
-    GPyTorch approximate GP model subclassing class:`gpytorch.models.ApproximateGP`
+    GPyTorch approximate GP model subclassing :class:`gpytorch.models.ApproximateGP`
     with flexible prior kernel, mean and an inducing point variational approximation
     to the posterior al la :cite:`Hensman15`.
     """

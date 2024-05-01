@@ -101,7 +101,7 @@ repos:
       - id: nbstripout
         args:
           - --drop-empty-cells
-          - "--extra-keys=metadata.kernelspec metadata.language_info.version"
+          - "--extra-keys=metadata.kernelspec cell.metadata.vscode metadata.language_info.version"
           - --keep-id
   - repo: local
     hooks:
@@ -114,6 +114,13 @@ repos:
           (?x)^(
             docs/source/_static/.+.png
           )$
+      - id: markdown-cells
+        name: forbid markdown cells
+        description: Forbid any Markdown cell in a Jupyter notebook
+        types: [jupyter]
+        entry: python pre_commit_hooks/markdown_cells.py
+        language: python
+        additional_dependencies: ["nbformat"]
 #      - id: docstring-spaces
 #        name: Forbid docstring spaces
 #        description: Ensure there are no blank lines after docstrings

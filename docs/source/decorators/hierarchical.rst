@@ -36,8 +36,8 @@ Hierarchical Bayesian Kernels and Means
 Bayesian Hyperparameters
 ------------------------
 
-Hyperparameters are held within the controller inside a class:`~vanguard.hierarchical.collection.HyperparameterCollection` instance,
-comprised of instances of the lightweight class:`~vanguard.hierarchical.hyperparameter.BayesianHyperparameter` class.
+Hyperparameters are held within the controller inside a :class:`~vanguard.hierarchical.collection.HyperparameterCollection` instance,
+comprised of instances of the lightweight :class:`~vanguard.hierarchical.hyperparameter.BayesianHyperparameter` class.
 
 .. autoclass:: vanguard.hierarchical.collection.HyperparameterCollection
     :members:

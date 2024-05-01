@@ -46,10 +46,10 @@ class GaussianGPController(GPController):
         :param likelihood_class: An uninstantiated subclass of :class:`gpytorch.likelihoods.Likelihood`.
                 The default is :class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
         :param marginal_log_likelihood_class: An uninstantiated subclass of of an MLL from
-                mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
-        :param optimiser_class: An uninstantiated class:`torch.optim.Optimizer` class used for
-                gradient-based learning of hyperparameters. The default is class:`torch.optim.Adam`.
-        :param kwargs: For a complete list, see class:`~vanguard.base.gpcontroller.GPController`.
+                :mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
+        :param optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
+                gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
+        :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(train_x=train_x, train_y=train_y, kernel_class=kernel_class, mean_class=mean_class,
                          y_std=y_std, likelihood_class=likelihood_class,
