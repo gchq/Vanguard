@@ -436,7 +436,7 @@ class BaseGPController:
 
         The mean and variance are computed from the training inputs of self.
 
-        :param *modules: Modules to apply mean and variance to.
+        :param modules: Modules to apply mean and variance to.
         """
         norm_module = StandardiseXModule.from_data(self.train_x, device=self.device, dtype=self.dtype)
         scaled_modules = [norm_module.apply(module) for module in modules]
@@ -450,7 +450,8 @@ class BaseGPController:
         """
         Set the default tensor type for the class, subsequent subclasses, and external tensors.
 
-        :param tensor_type: The tensor type to apply as the default
+        :param tensor_type: The tensor type to apply as the default. See the list of
+                            :ref:`available data types <tensors:data types>`.
         """
         cls._default_tensor_type = tensor_type
         torch.set_default_tensor_type(tensor_type)

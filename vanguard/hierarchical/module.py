@@ -37,7 +37,7 @@ class BayesianHyperparameters:
 
     .. note::
         This decorator will automatically descend into sub-modules of the class to which it
-        is applied only if those module are not passed as arguments to the __init__.
+        is applied only if those module are not passed as arguments to the ``__init__``.
         That is, only parameters that are directly created by the init of the class will be
         affected (even if they are buried in further sub-modules).
     """
