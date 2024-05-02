@@ -44,8 +44,9 @@ repos:
       # Prevent common mistakes of `assert mck.not_called()`,
       # `assert mck.called_once_with(...)` and `mck.assert_called`
       - id: python-check-mock-methods
-#      # Check for the `eval()` built-in function - necessary for security
-#      - id: python-no-eval
+      # Check for the `eval()` built-in function - necessary for security
+      - id: python-no-eval
+        exclude: "vanguard/base/basecontroller.py|tests/units/test_base.py|vanguard/classification/models.py"
       # Check for the deprecated `.warn()` method of Python loggers
       - id: python-no-log-warn
       # Enforce that type annotations are used instead of type comments
