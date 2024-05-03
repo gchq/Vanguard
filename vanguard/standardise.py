@@ -31,7 +31,6 @@ class DisableStandardScaling(Decorator):
         ...                     kernel_class=ScaledRBFKernel
         ...                     )
     """
-
     def __init__(self, **kwargs):
         """
         Initialise self.
@@ -46,7 +45,6 @@ class DisableStandardScaling(Decorator):
             """
             A wrapper for disabling standard scaling.
             """
-
             def _input_standardise_modules(self, *modules):
                 return modules
 

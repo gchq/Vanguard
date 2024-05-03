@@ -33,19 +33,18 @@ ControllerT = TypeVar("ControllerT", bound=GPController)
 @BayesianHyperparameters()
 class TestHierarchicalKernel(RBFKernel):
     """A kernel to test Bayesian hierarchical hyperparameters"""
-
     pass
 
 
 DECORATORS = {
     BinaryClassification: {
-        "decorator": {},
-        "controller": {
-            "y_std": 0,
-            "likelihood_class": BernoulliLikelihood,
-            "marginal_log_likelihood_class": VariationalELBO,
+            "decorator": {},
+            "controller": {
+                "y_std": 0,
+                "likelihood_class": BernoulliLikelihood,
+                "marginal_log_likelihood_class": VariationalELBO,
+            },
         },
-    },
     DirichletMulticlassClassification: {
         "decorator": {"num_classes": 4},
         "controller": {
@@ -54,13 +53,16 @@ DECORATORS = {
         },
         "dataset": MulticlassGaussianClassificationDataset(num_train_points=10, num_test_points=10, num_classes=4),
     },
-    Distributed: {"decorator": {"n_experts": 3}, "controller": {}},
+    Distributed: {
+        "decorator": {"n_experts": 3},
+        "controller": {}
+    },
     VariationalHierarchicalHyperparameters: {
         "decorator": {"num_mc_samples": 13},
         "controller": {
             "kernel_class": TestHierarchicalKernel,
+            }
         },
-    },
     LearnYNoise: {"decorator": {}, "controller": {}},
     NormaliseY: {"decorator": {}, "controller": {}},
     Multitask: {
@@ -79,12 +81,12 @@ DECORATORS = {
         "controller": {},
     },
     VariationalInference: {
-        "decorator": {"n_inducing_points": 20},
-        "controller": {
-            "likelihood_class": FixedNoiseGaussianLikelihood,
-            "marginal_log_likelihood_class": VariationalELBO,
+            "decorator": {"n_inducing_points": 20},
+            "controller": {
+                "likelihood_class": FixedNoiseGaussianLikelihood,
+                "marginal_log_likelihood_class": VariationalELBO,
+            },
         },
-    },
 }
 
 COMBINATION_CONTROLLER_KWARGS = {
@@ -104,10 +106,7 @@ EXCLUDED_COMBINATIONS = {
     (DirichletMulticlassClassification, VariationalInference),  # model contradiction
     (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
     (Distributed, VariationalHierarchicalHyperparameters),  # cannot combine with a BCM aggregator
-    (
-        VariationalHierarchicalHyperparameters,
-        DirichletMulticlassClassification,
-    ),  # can't aggregate multitask predictions
+    (VariationalHierarchicalHyperparameters, DirichletMulticlassClassification)  # can't aggregate multitask predictions
 }
 
 EXPECTED_COMBINATION_FIT_ERRORS = {
@@ -119,22 +118,18 @@ class CombinationTests(unittest.TestCase):
     """
     Tests for the pairwise combinations of decorators.
     """
-
     def test_combinations(self) -> None:
         """Shouldn't throw any errors."""
         for upper_decorator, lower_decorator, controller_kwargs, dataset in self._yield_initialised_decorators():
             with self.subTest(upper=type(upper_decorator).__name__, lower=type(lower_decorator).__name__):
+
                 try:
                     controller_class = upper_decorator(lower_decorator(GaussianGPController))
                 except (MissingRequirementsError, TopmostDecoratorError):
                     continue
 
-                final_kwargs = {
-                    "train_x": dataset.train_x,
-                    "train_y": dataset.train_y,
-                    "y_std": dataset.train_y_std,
-                    "kernel_class": ScaledRBFKernel,
-                }
+                final_kwargs = {"train_x": dataset.train_x, "train_y": dataset.train_y,
+                                "y_std":  dataset.train_y_std, "kernel_class": ScaledRBFKernel}
 
                 combination = (type(upper_decorator), type(lower_decorator))
                 combination_controller_kwargs = COMBINATION_CONTROLLER_KWARGS.get(combination, {})
@@ -211,10 +206,8 @@ class CombinationTests(unittest.TestCase):
                 continue
 
             if upper_dataset and lower_dataset:
-                raise RuntimeError(
-                    f"Cannot combine {type(upper_decorator).__name__} and "
-                    f"{type(lower_decorator).__name__}: two datasets have been passed."
-                )
+                raise RuntimeError(f"Cannot combine {type(upper_decorator).__name__} and "
+                                   f"{type(lower_decorator).__name__}: two datasets have been passed.")
 
             dataset = upper_dataset or lower_dataset or SyntheticDataset(n_train_points=20, n_test_points=10)
 

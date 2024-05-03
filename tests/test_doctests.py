@@ -39,7 +39,6 @@ class DoctestMetaClass(type):
     Each module within Vanguard will lead to the creation of a specific test
     method in the class, which will test the doctests.
     """
-
     def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
         cls = super().__new__(mcs, name, bases, namespace)
 
@@ -48,6 +47,7 @@ class DoctestMetaClass(type):
         for module in yield_all_modules(vanguard):
             test_suite = doctest.DocTestSuite(module)
             if test_suite.countTestCases():
+
                 test_name = f"test_doctests_in_{module.__name__}"
                 cls.names_to_suites[test_name] = test_suite
 
@@ -78,6 +78,7 @@ class DoctestMetaClass(type):
 
 
 class Doctests(unittest.TestCase, metaclass=DoctestMetaClass):
+
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""

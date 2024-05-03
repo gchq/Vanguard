@@ -13,15 +13,8 @@ from numpy.typing import NDArray
 from ..base import GPController
 from ..base.posteriors import Posterior
 from ..decoratorutils import TopMostDecorator, process_args, wraps_class
-from .aggregators import (
-    BadPriorVarShapeError,
-    BaseAggregator,
-    BCMAggregator,
-    GRBCMAggregator,
-    RBCMAggregator,
-    XBCMAggregator,
-    XGRBCMAggregator,
-)
+from .aggregators import (BadPriorVarShapeError, BaseAggregator, BCMAggregator, GRBCMAggregator, RBCMAggregator,
+                          XBCMAggregator, XGRBCMAggregator)
 from .partitioners import BasePartitioner, KMeansPartitioner, KMedoidsPartitioner
 
 _AGGREGATION_JITTER = 1e-10
@@ -47,16 +40,13 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         ... class DistributedGPController(GPController):
         ...     pass
     """
-
-    def __init__(
-        self,
-        n_experts: int = 3,
-        subset_fraction: float = 0.1,
-        seed: Optional[int] = 42,
-        aggregator_class: Type[BaseAggregator] = RBCMAggregator,
-        partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
-        **kwargs,
-    ):
+    def __init__(self,
+                 n_experts: int = 3,
+                 subset_fraction: float = 0.1,
+                 seed: Optional[int] = 42,
+                 aggregator_class: Type[BaseAggregator] = RBCMAggregator,
+                 partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
+                 **kwargs):
         """
         Initialise self.
 
@@ -92,7 +82,6 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
             """
             Uses multiple controller classes to aggregate predictions.
             """
-
             _y_batch_axis = 0
 
             def __init__(self, *args, **kwargs):
@@ -104,10 +93,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self._full_y_std: Union[int, float] = all_parameters_as_kwargs.pop("y_std")
 
                 if not isinstance(self._full_y_std, (float, int)):
-                    raise TypeError(
-                        f"The {type(self).__name__} class has been distributed, and can only accept a "
-                        f"number as the argument to 'y_std', not '{type(self._full_y_std).__name__}'."
-                    )
+                    raise TypeError(f"The {type(self).__name__} class has been distributed, and can only accept a "
+                                    f"number as the argument to 'y_std', not '{type(self._full_y_std).__name__}'.")
 
                 self.aggregator_class = decorator.aggregator_class
 
@@ -116,35 +103,27 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 if issubclass(partitioner_class, KMedoidsPartitioner):
                     partitioner_kwargs["kernel"] = all_parameters_as_kwargs["kernel"]
                 communications_expert = issubclass(self.aggregator_class, (GRBCMAggregator, XGRBCMAggregator))
-                self.partitioner = partitioner_class(
-                    train_x=self._full_train_x,
-                    n_experts=decorator.n_experts,
-                    communication=communications_expert,
-                    **partitioner_kwargs,
-                )
+                self.partitioner = partitioner_class(train_x=self._full_train_x, n_experts=decorator.n_experts,
+                                                     communication=communications_expert, **partitioner_kwargs)
 
                 self._expert_controllers: List[ControllerT] = []
 
-                train_x_subset, train_y_subset, y_std_subset = _create_subset(
-                    self._full_train_x,
-                    self._full_train_y,
-                    self._full_y_std,
-                    subset_fraction=decorator.subset_fraction,
-                    seed=decorator.seed,
-                )
+                train_x_subset, train_y_subset, y_std_subset = _create_subset(self._full_train_x,
+                                                                              self._full_train_y,
+                                                                              self._full_y_std,
+                                                                              subset_fraction=decorator.subset_fraction,
+                                                                              seed=decorator.seed)
 
                 self._expert_init_kwargs = all_parameters_as_kwargs
-                super().__init__(
-                    train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset, **self._expert_init_kwargs
-                )
+                super().__init__(train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset,
+                                 **self._expert_init_kwargs)
 
             def fit(self, n_sgd_iters: int = 10, gradient_every: int = 10) -> torch.Tensor:
                 """Also create the expert controllers."""
                 loss = super().fit(n_sgd_iters, gradient_every=gradient_every)
                 partition = self.partitioner.create_partition()
-                self._expert_controllers = [
-                    self._create_expert_controller(subset_indices) for subset_indices in partition
-                ]
+                self._expert_controllers = [self._create_expert_controller(subset_indices)
+                                            for subset_indices in partition]
                 return loss
 
             def expert_losses(self) -> List[float]:
@@ -173,15 +152,16 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
             def posterior_over_fuzzy_point(
-                self, x: Union[NDArray[np.floating], torch.Tensor], x_std: float
+                    self, x: Union[NDArray[np.floating], torch.Tensor], x_std: float
             ) -> Posterior:
                 """Aggregate expert fuzzy posteriors."""
                 expert_posteriors = (expert.posterior_over_fuzzy_point(x, x_std) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
-            def _aggregate_expert_posteriors(
-                self, x: Union[NDArray[np.floating], torch.Tensor], expert_posteriors: Iterable[Posterior]
-            ) -> Posterior:
+            def _aggregate_expert_posteriors(self,
+                                             x: Union[NDArray[np.floating], torch.Tensor],
+                                             expert_posteriors: Iterable[Posterior]
+                                             ) -> Posterior:
                 """
                 Aggregate an iterable of posteriors.
 
@@ -190,9 +170,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 :return: The aggregated posterior.
                 """
                 expert_distributions = (posterior.condensed_distribution for posterior in expert_posteriors)
-                expert_means_and_covars = [
-                    (distribution.mean, distribution.covariance_matrix) for distribution in expert_distributions
-                ]
+                expert_means_and_covars = [(distribution.mean, distribution.covariance_matrix)
+                                           for distribution in expert_distributions]
                 aggregated_mean, aggregated_covar = self._aggregate_expert_predictions(x, expert_means_and_covars)
                 aggregated_distribution = gpytorch.distributions.MultivariateNormal(aggregated_mean, aggregated_covar)
                 aggregated_posterior = self.posterior_class(aggregated_distribution)
@@ -214,11 +193,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
                 return expect_controller
 
-            def _aggregate_expert_predictions(
-                self,
-                x: Union[NDArray[np.floating], torch.Tensor],
-                means_and_covars: List[Tuple[torch.Tensor, torch.Tensor]],
-            ) -> Tuple[torch.Tensor, torch.Tensor]:
+            def _aggregate_expert_predictions(self,
+                                              x: Union[NDArray[np.floating], torch.Tensor],
+                                              means_and_covars: List[Tuple[torch.Tensor, torch.Tensor]]
+                                              ) -> Tuple[torch.Tensor, torch.Tensor]:
                 """
                 Aggregate the means and variances from the expert predictions.
 
@@ -252,9 +230,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         return InnerClass
 
 
-def _create_subset(
-    *arrays: Union[NDArray[np.floating], float], subset_fraction: float = 0.1, seed: Optional[int] = None
-) -> List[Union[NDArray[np.floating], float]]:
+def _create_subset(*arrays: Union[NDArray[np.floating], float],
+                   subset_fraction: float = 0.1,
+                   seed: Optional[int] = None
+                   ) -> List[Union[NDArray[np.floating], float]]:
     """
     Return subsets of the arrays along the same random indices.
 

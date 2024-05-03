@@ -23,10 +23,12 @@ class MonteCarloPosteriorCollection(Posterior):
         In order to ensure reproducible output for predictions and confidence
         intervals, a cached sample is used.
     """
-
     INITIAL_NUMBER_OF_SAMPLES: int = 100
 
-    def __init__(self, posterior_generator: Generator[Posterior, None, None]):
+    def __init__(
+            self,
+            posterior_generator: Generator[Posterior, None, None]
+    ):
         """Initialise self."""
         self._posterior_generator = posterior_generator
         self._posteriors_skipped = 0
@@ -46,7 +48,10 @@ class MonteCarloPosteriorCollection(Posterior):
         mean, covar = self._tensor_prediction()
         return self._add_jitter(self._make_multivariate_normal(mean, covar))
 
-    def sample(self, n_samples: int = 1) -> numpy.typing.NDArray:
+    def sample(
+            self,
+            n_samples: int = 1
+    ) -> numpy.typing.NDArray:
         """
         Draw independent samples from the posterior.
 
@@ -56,7 +61,11 @@ class MonteCarloPosteriorCollection(Posterior):
         return new_distribution.sample().detach().cpu().numpy()[-n_samples:]
 
     @classmethod
-    def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> NoReturn:
+    def from_mean_and_covariance(
+            cls,
+            mean: torch.Tensor,
+            covariance: torch.Tensor
+    ) -> NoReturn:
         """
         Construct from the mean and covariance of a Gaussian.
 
@@ -65,10 +74,8 @@ class MonteCarloPosteriorCollection(Posterior):
         :returns: The multivariate Gaussian distribution for either a single task or multiple tasks, depending on the
                   shape of the args.
         """
-        raise NotImplementedError(
-            "Constructed a MonteCarloPosteriorCollection from a single mean and covariance of a"
-            "Gaussian is not supported."
-        )
+        raise NotImplementedError("Constructed a MonteCarloPosteriorCollection from a single mean and covariance of a"
+                                  "Gaussian is not supported.")
 
     def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
@@ -88,8 +95,8 @@ class MonteCarloPosteriorCollection(Posterior):
         return preds, covar
 
     def _tensor_confidence_interval(
-        self,
-        alpha: float,
+            self,
+            alpha: float,
     ) -> Tuple[torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
@@ -108,7 +115,10 @@ class MonteCarloPosteriorCollection(Posterior):
         lower, median, upper = torch.quantile(self._cached_samples, quantile_probs, dim=0)
         return median, lower, upper
 
-    def _update_existing_distribution(self, n_new_samples: int) -> None:
+    def _update_existing_distribution(
+            self,
+            n_new_samples: int
+    ) -> None:
         """
         Add new samples and update the distribution, also caching new samples.
 
@@ -118,7 +128,10 @@ class MonteCarloPosteriorCollection(Posterior):
         self.distribution = new_distribution
         self._cached_samples = self._tensor_sample()
 
-    def _create_updated_distribution(self, n_new_samples: int) -> torch.distributions.MultivariateNormal:
+    def _create_updated_distribution(
+            self,
+            n_new_samples: int
+    ) -> torch.distributions.MultivariateNormal:
         """
         Create a new distribution building upon the old one.
 
@@ -148,7 +161,7 @@ class MonteCarloPosteriorCollection(Posterior):
             covars.append(new_distribution.covariance_matrix)
 
         try:
-            (new_distribution_class,) = new_distribution_classes
+            new_distribution_class, = new_distribution_classes
         except ValueError:
             raise TypeError(f"Posteriors have multiple distribution types: {repr(new_distribution_classes)}.")
 
@@ -161,8 +174,8 @@ class MonteCarloPosteriorCollection(Posterior):
         return new_distribution_class(new_collective_mean, new_collective_covar)
 
     def _yield_posteriors(
-        self,
-        num_posteriors: int,
+            self,
+            num_posteriors: int,
     ) -> Generator[Posterior, None, None]:
         """
         Yield a number of posteriors from the infinite generator.
@@ -181,8 +194,8 @@ class MonteCarloPosteriorCollection(Posterior):
                 num_yielded += 1
 
     def _tensor_log_probability(
-        self,
-        y: torch.Tensor,
+            self,
+            y: torch.Tensor,
     ) -> torch.Tensor:
         r"""
         Compute the MC approximated log-probability under the posterior.
@@ -203,7 +216,7 @@ class MonteCarloPosteriorCollection(Posterior):
 
     @staticmethod
     def _decide_mc_num_samples(
-        alpha: float,
+            alpha: float,
     ) -> int:
         r"""
         Determine an appropriately large number of Monte Carlo samples.

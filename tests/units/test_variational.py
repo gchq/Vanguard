@@ -20,17 +20,11 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the decorator.
     """
-
     def test_bad_marginal_log_likelihood(self) -> None:
         """
         Ensure that the underlying TypeError is converted to a ValueError.
         """
         dataset = SyntheticDataset()
         with self.assertRaises(ValueError):
-            VariationalGPController(
-                dataset.train_x,
-                dataset.train_y,
-                ScaledRBFKernel,
-                dataset.train_y_std,
-                marginal_log_likelihood_class=InappropriateMarginalLogLikelihood,
-            )
+            VariationalGPController(dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std,
+                                    marginal_log_likelihood_class=InappropriateMarginalLogLikelihood)

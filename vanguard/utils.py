@@ -28,7 +28,8 @@ def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.ty
     """
     time_steps = data.shape[-2]
     if normalise:
-        time_normalisation = np.sqrt(time_steps * (time_steps - 1) * (2 * time_steps - 1) / 6)
+        time_normalisation = np.sqrt(
+            time_steps * (time_steps - 1) * (2*time_steps - 1)/6)
         final_value = (time_steps - 1) / time_normalisation
     else:
         final_value = 1
@@ -95,9 +96,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
         return cls()
 
 
-def infinite_tensor_generator(
-    batch_size: int, device: torch.DeviceObjType, *tensor_axis_pairs: Tuple[torch.Tensor, int]
-) -> Generator[torch.Tensor, None, None]:
+def infinite_tensor_generator(batch_size: int, device: torch.DeviceObjType, *tensor_axis_pairs: Tuple[torch.Tensor, int]) -> Generator[torch.Tensor, None, None]:
     """
     Return a never-ending generator that return random mini-batches of tensors with a shared first dimension.
 
@@ -125,7 +124,7 @@ def infinite_tensor_generator(
     indices = np.arange(first_tensor_length)
     shuffle(indices)
     while True:
-        batch_indices = indices[index : index + batch_size]
+        batch_indices = indices[index: index + batch_size]
         batch_tensors = []
         for tensor, axis in tensor_axis_pairs:
             multi_axis_slice = [slice(None, None, None) for _ in tensor.shape]
@@ -136,8 +135,8 @@ def infinite_tensor_generator(
         batch_tensors = tuple(batch_tensors)
         index += batch_size
         if index >= len(indices):
-            rollovers = indices[index - batch_size :]
-            indices = indices[: index - batch_size]
+            rollovers = indices[index - batch_size:]
+            indices = indices[:index - batch_size]
             shuffle(indices)
             indices = np.concatenate([rollovers, indices])
             index = 0

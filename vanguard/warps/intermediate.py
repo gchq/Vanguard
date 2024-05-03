@@ -64,16 +64,13 @@ def require_controller_input(cache_name: str) -> Callable[[Type[WarpFunctionT]],
         messages, and so checking for failed activation should be a priority when debugging any sort of error
         surrounding usage.
     """
-
     def decorator(cls: Type[WarpFunctionT]) -> Type[WarpFunctionT]:
         """Return the intermediate warp function class."""
-
         @wraps_class(cls)
         class IntermediateClass(cls):
             """
             Lazily holds controller class input until activation.
             """
-
             CACHED_PARAMS_AS_KWARGS = {}
             setattr(cls, cache_name, {})
             __init__ = _only_cache_init_values(cls.__init__)
@@ -95,11 +92,9 @@ def require_controller_input(cache_name: str) -> Callable[[Type[WarpFunctionT]],
 
 def _only_cache_init_values(init_method: Callable) -> Callable:
     """Wrap an __init__ method to only cache the input parameters."""
-
     def inner_func(self: WarpFunction, *args: Any, **kwargs: Any) -> None:
         """Cache the input parameters."""
         all_parameters_as_kwargs = process_args(init_method, self, *args, **kwargs)
         all_parameters_as_kwargs.pop("self")
         self.CACHED_PARAMS_AS_KWARGS.update(all_parameters_as_kwargs)
-
     return inner_func

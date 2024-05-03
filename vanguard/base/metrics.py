@@ -49,10 +49,9 @@ class MetricsTracker:
         loss: 1
         loss: 3
     """
-
     def __init__(
-        self,
-        *metrics: Callable,
+            self,
+            *metrics: Callable,
     ):
         """
         Initialise self.
@@ -94,8 +93,8 @@ class MetricsTracker:
         self._iteration = 0
 
     def add_metrics(
-        self,
-        *metrics: Callable,
+            self,
+            *metrics: Callable,
     ) -> None:
         """
         Add metrics to the tracker.
@@ -106,10 +105,10 @@ class MetricsTracker:
             self._metric_outputs[metric] = [float("nan")] * self._iteration
 
     def run_metrics(
-        self,
-        loss_value: float,
-        controller: Optional[BaseGPController],
-        **additional_info,
+            self,
+            loss_value: float,
+            controller: Optional[BaseGPController],
+            **additional_info,
     ) -> None:
         """
         Register the components of an iteration.
@@ -141,9 +140,9 @@ class MetricsTracker:
 
     @contextmanager
     def print_metrics(
-        self,
-        every: int = 1,
-        format_string: Optional[str] = None,
+            self,
+            every: int = 1,
+            format_string: Optional[str] = None,
     ) -> None:
         """
         Temporarily enabling printing the metrics within a context manager.

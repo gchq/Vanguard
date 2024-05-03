@@ -5,7 +5,7 @@ import re
 import sys
 from typing import Iterable, NoReturn
 
-RE_MODULE_DOCSTRING = re.compile('^"""(.*?)"""', flags=re.DOTALL)
+RE_MODULE_DOCSTRING = re.compile("^\"\"\"(.*?)\"\"\"", flags=re.DOTALL)
 
 
 def process_files(file_paths: Iterable[str]) -> bool:
@@ -35,8 +35,8 @@ def process_file(file_path: str) -> bool:
     number_of_lines_in_docstring = len(docstring.split("\n"))
     starting_line_number = number_of_lines_in_docstring + 1
     for line, (next_line_no, next_line) in zip(source_lines, enumerate(source_lines[1:], start=starting_line_number)):
-        if line.endswith('"""'):
-            if line == '"""':  # docstring is actually a multiline comment in the module (no indent)
+        if line.endswith("\"\"\""):
+            if line == "\"\"\"":  # docstring is actually a multiline comment in the module (no indent)
                 continue
             if next_line == "":
                 failure |= True

@@ -60,7 +60,6 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
         For more options see the :class:`~vanguard.base.metrics.MetricsTracker` class.
     """
-
     _init_params = {}
     __decorators__: List[Decorator] = []
 
@@ -71,8 +70,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     @likelihood_noise.setter
     def likelihood_noise(
-        self,
-        value: Tensor,
+            self,
+            value: Tensor,
     ) -> None:
         """Set the noise of the likelihood."""
         self._likelihood.noise = value
@@ -84,8 +83,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     @learning_rate.setter
     def learning_rate(
-        self,
-        value: float,
+            self,
+            value: float,
     ) -> None:
         """Set the learning rate of the parameter optimiser."""
         self._smart_optimiser.learning_rate = value
@@ -96,9 +95,9 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         return self._metrics_tracker
 
     def fit(
-        self,
-        n_sgd_iters: int = 10,
-        gradient_every: Optional[int] = None,
+            self,
+            n_sgd_iters: int = 10,
+            gradient_every: Optional[int] = None,
     ) -> torch.Tensor:
         """
         Run rounds of hyperparameter tuning.
@@ -120,11 +119,9 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         """
         if self.batch_size is not None:
             if gradient_every is not None:
-                warnings.warn(
-                    f"You are trying to set gradient_every (in this case to {gradient_every}) in batch mode."
-                    "This does not make mathematical sense and your value of gradient every will be ignored "
-                    " and replaced by 1."
-                )
+                warnings.warn(f"You are trying to set gradient_every (in this case to {gradient_every}) in batch mode."
+                              "This does not make mathematical sense and your value of gradient every will be ignored "
+                              " and replaced by 1.")
             gradient_every = 1
 
         gradient_every = n_sgd_iters if gradient_every is None else gradient_every
@@ -133,8 +130,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         return loss
 
     def posterior_over_point(
-        self,
-        x: Union[numpy.typing.NDArray[float], float],
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.
@@ -145,9 +142,9 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         return self._get_posterior_over_point_in_eval_mode(x)
 
     def posterior_over_fuzzy_point(
-        self,
-        x: Union[numpy.typing.NDArray[float], float],
-        x_std: Union[numpy.typing.NDArray[float], float],
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a fuzzy point.
@@ -166,8 +163,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         return self._get_posterior_over_fuzzy_point_in_eval_mode(x, x_std)
 
     def predictive_likelihood(
-        self,
-        x: Union[numpy.typing.NDArray[float], float],
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -178,9 +175,9 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         return self._predictive_likelihood(x)
 
     def fuzzy_predictive_likelihood(
-        self,
-        x: Union[numpy.typing.NDArray[float], float],
-        x_std: Union[numpy.typing.NDArray[float], float],
+            self,
+            x: Union[numpy.typing.NDArray[float], float],
+            x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.

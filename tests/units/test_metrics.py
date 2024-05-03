@@ -22,7 +22,6 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the loss tracker.
     """
-
     def setUp(self) -> None:
         """Code to run before each test."""
         self.tracker = MetricsTracker(loss)
@@ -56,7 +55,6 @@ class NanTests(unittest.TestCase):
     """
     Tests for late addition of a metric.
     """
-
     def setUp(self) -> None:
         """Code to run before each test."""
         self.tracker = MetricsTracker()
@@ -86,7 +84,6 @@ class MultipleMetricTests(unittest.TestCase):
     """
     Tests for multiple metrics in the tracker.
     """
-
     def setUp(self) -> None:
         """Code to run before each test."""
         self.tracker = MetricsTracker(loss, loss_squared)
@@ -111,14 +108,12 @@ class PrintingTests(unittest.TestCase):
     """
     Tests for printing the progress of the tracker.
     """
-
     def setUp(self) -> None:
         """Code to run before each test."""
         dataset = SyntheticDataset()
 
-        self.controller = GaussianGPController(
-            train_x=dataset.train_x, train_y=dataset.train_y, kernel_class=PeriodicRBFKernel, y_std=dataset.train_y_std
-        )
+        self.controller = GaussianGPController(train_x=dataset.train_x, train_y=dataset.train_y,
+                                               kernel_class=PeriodicRBFKernel, y_std=dataset.train_y_std)
 
         self.new_stdout = StringIO()
 

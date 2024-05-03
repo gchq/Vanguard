@@ -26,10 +26,9 @@ class Posterior:
 
     :param distribution: The distribution.
     """
-
     def __init__(
-        self,
-        distribution: gpytorch.distributions.Distribution,
+            self,
+            distribution: gpytorch.distributions.Distribution,
     ):
         """Initialise self."""
         self.distribution = self._add_jitter(distribution)
@@ -58,8 +57,8 @@ class Posterior:
         return mean.detach().cpu().numpy(), covar.detach().cpu().numpy()
 
     def confidence_interval(
-        self,
-        alpha: float = 0.05,
+            self,
+            alpha: float = 0.05,
     ) -> Tuple[numpy.typing.NDArray[float], numpy.typing.NDArray[float], numpy.typing.NDArray[float]]:
         """
         Construct confidence intervals around mean of predictive posterior.
@@ -72,8 +71,8 @@ class Posterior:
         return median.detach().cpu().numpy(), lower.detach().cpu().numpy(), upper.detach().cpu().numpy()
 
     def mse(
-        self,
-        y: Union[numpy.typing.NDArray[float], float],
+            self,
+            y: Union[numpy.typing.NDArray[float], float],
     ) -> float:
         r"""
         Compute the mean-squared of some values under the posterior.
@@ -83,13 +82,13 @@ class Posterior:
         :returns: The MSE of the given y values, i.e. :math:`\frac{1}{n}\sum_{i} (y_i - \hat{y}_i)`.
         """
         mean, _ = self.prediction()
-        return ((mean - y) ** 2).mean()
+        return ((mean - y)**2).mean()
 
     def nll(
-        self,
-        y: Union[numpy.typing.NDArray[float], float],
-        noise_variance: Union[numpy.typing.NDArray[float], float] = 0,
-        alpha: float = stats.norm.cdf(-1) * 2,
+            self,
+            y: Union[numpy.typing.NDArray[float], float],
+            noise_variance: Union[numpy.typing.NDArray[float], float] = 0,
+            alpha: float = stats.norm.cdf(-1)*2,
     ) -> float:
         """
         Compute the negative log-likelihood of some values under the posterior.
@@ -109,8 +108,8 @@ class Posterior:
         return p_nll.mean()
 
     def log_probability(
-        self,
-        y: Union[numpy.typing.NDArray[float], float],
+            self,
+            y: Union[numpy.typing.NDArray[float], float],
     ) -> float:
         r"""
         Compute the log-likelihood of some values under the posterior.
@@ -122,7 +121,10 @@ class Posterior:
         """
         return self._tensor_log_probability(torch.as_tensor(y).float()).item()
 
-    def sample(self, n_samples: int = 1) -> numpy.typing.NDArray[float]:
+    def sample(
+            self,
+            n_samples: int = 1
+    ) -> numpy.typing.NDArray[float]:
         """
         Draw independent samples from the posterior.
 
@@ -132,9 +134,9 @@ class Posterior:
 
     @classmethod
     def from_mean_and_covariance(
-        cls,
-        mean: torch.Tensor,
-        covariance: torch.Tensor,
+            cls,
+            mean: torch.Tensor,
+            covariance: torch.Tensor,
     ) -> Self:
         """
         Construct from the mean and covariance of a Gaussian.
@@ -166,8 +168,8 @@ class Posterior:
         return self.distribution.mean, covar
 
     def _tensor_confidence_interval(
-        self,
-        alpha: float,
+            self,
+            alpha: float,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
@@ -183,7 +185,10 @@ class Posterior:
         mean, covar = self._tensor_prediction()
         return self._gaussian_confidence_interval(mean, covar, alpha=alpha)
 
-    def _tensor_sample(self, sample_shape: torch.Size = torch.Size()) -> torch.Tensor:
+    def _tensor_sample(
+            self,
+            sample_shape: torch.Size = torch.Size()
+    ) -> torch.Tensor:
         """
         Return samples as a tensor.
 
@@ -191,7 +196,10 @@ class Posterior:
         """
         return self.distribution.rsample(sample_shape=sample_shape)
 
-    def _tensor_sample_condensed(self, sample_shape=torch.Size()) -> torch.Tensor:
+    def _tensor_sample_condensed(
+            self,
+            sample_shape=torch.Size()
+    ) -> torch.Tensor:
         """
         Return samples from the condensed distribution as a tensor.
 
@@ -199,7 +207,10 @@ class Posterior:
         """
         return self.condensed_distribution.rsample(sample_shape=sample_shape)
 
-    def _tensor_log_probability(self, y: torch.Tensor) -> torch.Tensor:
+    def _tensor_log_probability(
+            self,
+            y: torch.Tensor
+    ) -> torch.Tensor:
         r"""
         Compute the log-likelihood of some values under the posterior.
 
@@ -216,8 +227,8 @@ class Posterior:
 
     @staticmethod
     def _make_multivariate_normal(
-        mean: torch.Tensor,
-        covariance: torch.Tensor,
+            mean: torch.Tensor,
+            covariance: torch.Tensor,
     ) -> torch.distributions.MultivariateNormal:
         r"""
         Construct MultivariateNormal or MultitaskMultivariateNormal from mean and covariance.
@@ -234,9 +245,9 @@ class Posterior:
 
     @staticmethod
     def _gaussian_confidence_interval(
-        mean: torch.Tensor,
-        covariance: torch.Tensor,
-        alpha: float = 0.05,
+            mean: torch.Tensor,
+            covariance: torch.Tensor,
+            alpha: float = 0.05,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Get pointwise (diagonal) confidence intervals for a multivariate Gaussian's coordinates.
@@ -255,7 +266,7 @@ class Posterior:
             num_tasks = 1
             mean = mean.unsqueeze(dim=-1)
         num_points = mean.shape[0]
-        stds = torch.stack([stds[num_points * i : num_points * (i + 1)] for i in range(num_tasks)], -1)
+        stds = torch.stack([stds[num_points*i: num_points*(i+1)] for i in range(num_tasks)], -1)
         conf_factor = stats.norm.ppf(1 - alpha / 2)
         median = mean
         lower = mean - stds * conf_factor
@@ -265,7 +276,7 @@ class Posterior:
 
     @staticmethod
     def _add_jitter(
-        distribution: gpytorch.distributions.MultivariateNormal,
+            distribution: gpytorch.distributions.MultivariateNormal
     ) -> gpytorch.distributions.MultivariateNormal:
         """
         Add diagonal jitter to covariance matrices to avoid indefinite covariance matrices.

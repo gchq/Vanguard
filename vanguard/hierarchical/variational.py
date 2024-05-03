@@ -11,20 +11,15 @@ from gpytorch.variational import CholeskyVariationalDistribution
 from numpy.typing import NDArray
 
 from ..decoratorutils import wraps_class
-from .base import (
-    BaseHierarchicalHyperparameters,
-    GPController,
-    Posterior,
-    extract_bayesian_hyperparameters,
-    set_batch_shape,
-)
+from .base import (BaseHierarchicalHyperparameters, GPController, Posterior, extract_bayesian_hyperparameters,
+                   set_batch_shape)
 from .collection import HyperparameterCollection
 
-ControllerT = TypeVar("ControllerT", bound=GPController)
-KernelT = TypeVar("KernelT", bound=gpytorch.kernels.Kernel)
-LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
-PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
+ControllerT = TypeVar('ControllerT', bound=GPController)
+KernelT = TypeVar('KernelT', bound=gpytorch.kernels.Kernel)
+LikelihoodT = TypeVar('LikelihoodT', bound=gpytorch.likelihoods.GaussianLikelihood)
+PosteriorT = TypeVar('PosteriorT', bound=Posterior)
+VariationalDistributionT = TypeVar('VariationalDistributionT', bound=gpytorch.variational._VariationalDistribution)
 
 
 class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
@@ -61,13 +56,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         >>> (upper > 1/(1 + test_x)).all(), (lower < 1/(1 + test_x)).all()
         (True, True)
     """
-
-    def __init__(
-        self,
-        num_mc_samples: int = 100,
-        variational_distribution_class: Optional[VariationalDistributionT] = CholeskyVariationalDistribution,
-        **kwargs: Any,
-    ):
+    def __init__(self, num_mc_samples: int = 100, variational_distribution_class: Optional[VariationalDistributionT] = CholeskyVariationalDistribution, **kwargs: Any):
         """
         Initialise self.
 
@@ -97,9 +86,8 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 module_hyperparameter_pairs, point_estimate_kernels = extract_bayesian_hyperparameters(self)
                 _correct_point_estimate_shapes(point_estimate_kernels)
 
-                self.hyperparameter_collection = HyperparameterCollection(
-                    module_hyperparameter_pairs, sample_shape, variational_distribution_class
-                )
+                self.hyperparameter_collection = HyperparameterCollection(module_hyperparameter_pairs, sample_shape,
+                                                                          variational_distribution_class)
 
                 self._smart_optimiser.update_registered_module(self._gp)
                 self._smart_optimiser.register_module(self.hyperparameter_collection.variational_distribution)
@@ -113,9 +101,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         return InnerClass
 
     @staticmethod
-    def _infinite_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating]
-    ) -> Generator[torch.Tensor, None, None]:
+    def _infinite_posterior_samples(controller: ControllerT, x: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
         """
         Yield posterior samples forever.
 
@@ -129,9 +115,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             yield from output
 
     @staticmethod
-    def _infinite_fuzzy_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
-    ) -> Generator[torch.Tensor, None, None]:
+    def _infinite_fuzzy_posterior_samples(controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[torch.Tensor, None, None]:
         """
         Yield fuzzy posterior samples forever.
 
@@ -150,14 +134,12 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             # The results is that each sample from output comes from independent x samples
             # and from independent variational posterior samples.
             sample_shape = controller.hyperparameter_collection.sample_shape + tx.shape
-            x_sample = torch.randn(size=sample_shape, device=controller.device) * tx_std + tx
+            x_sample = torch.randn(size=sample_shape, device=controller.device)*tx_std + tx
             output = _safe_index_batched_multivariate_normal(controller._gp_forward(x=x_sample).add_jitter(1e-3))
             yield from output
 
     @staticmethod
-    def _infinite_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating]
-    ) -> Generator[torch.Tensor, None, None]:
+    def _infinite_likelihood_samples(controller: ControllerT, x: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
         """
         Yield likelihood samples forever.
 
@@ -175,9 +157,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 yield likelihood_output
 
     @staticmethod
-    def _infinite_fuzzy_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
-    ) -> Generator[torch.Tensor, None, None]:
+    def _infinite_fuzzy_likelihood_samples(controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[torch.Tensor, None, None]:
         """
         Yield fuzzy likelihood samples forever.
 
@@ -197,7 +177,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             # The results is that each sample from output comes from independent x samples
             # and from independent variational posterior samples.
             sample_shape = controller.hyperparameter_collection.sample_shape + tx.shape
-            x_sample = torch.randn(size=sample_shape, device=controller.device) * tx_std + tx
+            x_sample = torch.randn(size=sample_shape, device=controller.device)*tx_std + tx
             output = _safe_index_batched_multivariate_normal(controller._gp_forward(x=x_sample).add_jitter(1e-3))
             for sample in output:
                 shape = controller._decide_noise_shape(controller.posterior_class(sample), x=tx)
@@ -214,21 +194,11 @@ def _correct_point_estimate_shapes(point_estimate_kernels: List[KernelT]) -> Non
     """
     for point_estimate_scale_kernel in point_estimate_kernels:
         delattr(point_estimate_scale_kernel, "raw_outputscale")
-        point_estimate_scale_kernel.register_parameter(
-            name="raw_outputscale",
-            parameter=torch.nn.Parameter(
-                torch.zeros(
-                    [
-                        1,
-                    ]
-                )
-            ),
-        )
+        point_estimate_scale_kernel.register_parameter(name="raw_outputscale",
+                                                       parameter=torch.nn.Parameter(torch.zeros([1, ])))
 
 
-def _safe_index_batched_multivariate_normal(
-    distribution: VariationalDistributionT,
-) -> Generator[VariationalDistributionT, None, None]:
+def _safe_index_batched_multivariate_normal(distribution: VariationalDistributionT) -> Generator[VariationalDistributionT, None, None]:
     """
     Delazifies the batched covariance matrix and yields recreated non-batch normals.
 

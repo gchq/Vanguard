@@ -14,8 +14,6 @@ from torch.nn import Module
 from torch.optim import Optimizer
 
 OptimiserT = TypeVar("OptimiserT", bound=Optimizer)
-
-
 class SmartOptimiser(Generic[OptimiserT]):
     """
     A smart wrapper around the standard optimisers found in PyTorch which can enable early stopping.
@@ -24,18 +22,16 @@ class SmartOptimiser(Generic[OptimiserT]):
         When setting the learning rate, using the :meth:`learning_rate` property,
         the parameters for each registered module are re-initialised.
     """
-
     _stored_initial_state_dicts: Dict[Module, Dict[str, Tensor]]
     last_n_losses: Deque[float]
     _internal_optimiser: OptimiserT
 
-    def __init__(
-        self,
-        optimiser_class: Type[OptimiserT],
-        *initial_modules: Module,
-        early_stop_patience: Optional[int] = None,
-        **optimiser_kwargs,
-    ):
+    def __init__(self,
+                 optimiser_class: Type[OptimiserT],
+                 *initial_modules: Module,
+                 early_stop_patience: Optional[int] = None,
+                 **optimiser_kwargs
+                 ):
         """
         Initialise self.
 
@@ -59,9 +55,8 @@ class SmartOptimiser(Generic[OptimiserT]):
         for module in initial_modules:
             self._cache_module_parameters(module)
             initial_parameters.append({"params": module.parameters()})
-        self._internal_optimiser = self._internal_optimiser_class(
-            initial_parameters, lr=self._learning_rate, **self._internal_optimiser_kwargs
-        )
+        self._internal_optimiser = self._internal_optimiser_class(initial_parameters, lr=self._learning_rate,
+                                                                  **self._internal_optimiser_kwargs)
 
         self._set_step_method()
 
@@ -107,10 +102,8 @@ class SmartOptimiser(Generic[OptimiserT]):
         no_improvement = self.last_n_losses[0] <= min(self.last_n_losses)
         if no_improvement:
             print_friendly_losses = ", ".join(f"{loss:.3f}" for loss in self.last_n_losses)
-            raise NoImprovementError(
-                f"Stopping early due to no improvement on {len(self.last_n_losses) - 1} "
-                f"consecutive steps: [{print_friendly_losses}]"
-            )
+            raise NoImprovementError(f"Stopping early due to no improvement on {len(self.last_n_losses) - 1} "
+                                     f"consecutive steps: [{print_friendly_losses}]")
         return step_result
 
     def register_module(self, module: Module) -> None:
@@ -150,9 +143,8 @@ class SmartOptimiser(Generic[OptimiserT]):
             thus far. To reset these, call :meth:`_reset_module_parameters` additionally.
         """
         parameters = [{"params": module.parameters()} for module in self._stored_initial_state_dicts]
-        self._internal_optimiser = self._internal_optimiser_class(
-            parameters, lr=self._learning_rate, **self._internal_optimiser_kwargs
-        )
+        self._internal_optimiser = self._internal_optimiser_class(parameters, lr=self._learning_rate,
+                                                                  **self._internal_optimiser_kwargs)
 
     @overload
     def _step(self, loss: float, closure: None = ...) -> None:
@@ -177,12 +169,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         """Create and set the :meth:`_step` method according to the internal optimiser."""
         internal_step_signature = inspect.signature(self._internal_optimiser.step)
         if "loss" in internal_step_signature.parameters:
-
             def new_step(loss, closure=None):
                 """Pass the loss to the step function."""
                 return self._internal_optimiser.step(loss, closure=closure)
         else:
-
             def new_step(_, closure=None):
                 """Don't pass the loss to the step function."""
                 return self._internal_optimiser.step(closure=closure)
@@ -241,12 +231,10 @@ class Parameters:
     """
     Wrapped for module state_dicts and an objective value of their quality.
     """
-
     def __init__(self, module_state_dicts: Dict[Module, Dict[str, Tensor]], value: float = np.inf):
         """Initialise self."""
-        self.parameters = {
-            module: self._clone_state_dict(state_dict) for module, state_dict in module_state_dicts.items()
-        }
+        self.parameters = {module: self._clone_state_dict(state_dict)
+                           for module, state_dict in module_state_dicts.items()}
         self.priority_value = value
 
     def __lt__(self, other: "Parameters") -> bool:
@@ -264,11 +252,8 @@ class Parameters:
 
 
 T = TypeVar("T")
-
-
 class MaxLengthHeapQ(Generic[T]):
     """A heapq of fixed maximum length."""
-
     def __init__(self, max_length: int):
         """Initialise self."""
         self.max_length = max_length
@@ -301,17 +286,20 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
         thereof.
 
     """
-
     N_RETAINED_PARAMETERS = 1
 
-    def __init__(
-        self,
-        optimiser_class: Type[OptimiserT],
-        *initial_modules: Module,
-        early_stop_patience: Optional[int] = None,
-        **optimiser_kwargs,
-    ):
-        super().__init__(optimiser_class, *initial_modules, early_stop_patience=early_stop_patience, **optimiser_kwargs)
+    def __init__(self,
+                 optimiser_class: Type[OptimiserT],
+                 *initial_modules: Module,
+                 early_stop_patience: Optional[int] = None,
+                 **optimiser_kwargs
+                 ):
+        super().__init__(
+            optimiser_class,
+            *initial_modules,
+            early_stop_patience=early_stop_patience,
+            **optimiser_kwargs
+        )
         self._top_n_parameters = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
 
     def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> None:
@@ -336,5 +324,4 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
 
 class NoImprovementError(RuntimeError):
     """Raised when the loss of the model is consistently increasing."""
-
     pass

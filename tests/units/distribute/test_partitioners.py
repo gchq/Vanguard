@@ -16,7 +16,6 @@ class PartitionTests(unittest.TestCase):
     Note that these tests are for reproducibility, and assume that the results
     of the functions were originally correct.
     """
-
     def setUp(self) -> None:
         """Code to run before each test."""
         rng = np.random.RandomState(seed=1)
@@ -45,9 +44,8 @@ class PartitionTests(unittest.TestCase):
         for partitioner_class, expected_partition in self.expected_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
                 if issubclass(partitioner_class, partitioners.KMedoidsPartitioner):
-                    partitioner = partitioner_class(
-                        train_x=self.train_x, kernel=self.kernel, n_experts=self.n_experts, seed=self.seed
-                    )
+                    partitioner = partitioner_class(train_x=self.train_x, kernel=self.kernel, n_experts=self.n_experts,
+                                                    seed=self.seed)
                 else:
                     partitioner = partitioner_class(train_x=self.train_x, n_experts=self.n_experts, seed=self.seed)
                 observed_partition = partitioner.create_partition()
@@ -59,16 +57,10 @@ class PartitionTests(unittest.TestCase):
         for partitioner_class, expected_partition in self.expected_communication_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
                 if issubclass(partitioner_class, partitioners.KMedoidsPartitioner):
-                    partitioner = partitioner_class(
-                        train_x=self.train_x,
-                        kernel=self.kernel,
-                        communication=True,
-                        n_experts=self.n_experts,
-                        seed=self.seed,
-                    )
+                    partitioner = partitioner_class(train_x=self.train_x, kernel=self.kernel, communication=True,
+                                                    n_experts=self.n_experts, seed=self.seed)
                 else:
-                    partitioner = partitioner_class(
-                        train_x=self.train_x, communication=True, n_experts=self.n_experts, seed=self.seed
-                    )
+                    partitioner = partitioner_class(train_x=self.train_x, communication=True, n_experts=self.n_experts,
+                                                    seed=self.seed)
                 observed_partition = partitioner.create_partition()
                 self.assertListEqual(expected_partition, observed_partition)

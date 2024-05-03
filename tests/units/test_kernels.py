@@ -11,10 +11,11 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the TimeSeriesExogenousRegressorKernel decorator.
     """
-
     def test_trains_time_feature_only(self) -> None:
         dataset = SyntheticDataset()
-        controller = GaussianGPController(dataset.train_x, dataset.train_y, TimeSeriesKernel, y_std=dataset.train_y_std)
+        controller = GaussianGPController(dataset.train_x, dataset.train_y,
+                                          TimeSeriesKernel,
+                                          y_std=dataset.train_y_std)
         controller.fit(10)
         mean, _, upper = controller.posterior_over_point(dataset.test_x).confidence_interval()
-        assert_array_less(upper - mean, 0.5)
+        assert_array_less(upper - mean, .5)

@@ -13,7 +13,6 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the Posterior class.
     """
-
     def setUp(self) -> None:
         """Code to run before each test."""
         self.mean = torch.as_tensor([1, 2, 3, 4, 5])
@@ -24,10 +23,10 @@ class BasicTests(unittest.TestCase):
         posterior = Posterior.from_mean_and_covariance(self.mean, covar)
         _, ci_lower, _ = posterior.confidence_interval(0.05)
         mean, std = self.mean.detach().cpu().numpy(), self.std.detach().cpu().numpy()
-        np.testing.assert_array_almost_equal(ci_lower, mean - CONF_FAC * std, decimal=4)
+        np.testing.assert_array_almost_equal(ci_lower, mean - CONF_FAC*std, decimal=4)
 
     def test_2_dim_mean_confidence_interval(self) -> None:
-        covar = torch.diag(self.std**2)
+        covar = torch.diag(self.std ** 2)
         posterior = Posterior.from_mean_and_covariance(self.mean.unsqueeze(dim=-1), covar)
         _, ci_lower, _ = posterior.confidence_interval(0.05)
         mean, std = self.mean.detach().cpu().numpy(), self.std.detach().cpu().numpy()
@@ -41,8 +40,8 @@ class BasicTests(unittest.TestCase):
         _, ci_lower, _ = posterior.confidence_interval(0.05)
         mean_1, std_1 = mean1.detach().cpu().numpy(), std1.detach().cpu().numpy()
         mean_2, std_2 = mean2.detach().cpu().numpy(), std2.detach().cpu().numpy()
-        np.testing.assert_array_almost_equal(ci_lower[:, 0], mean_1.squeeze() - CONF_FAC * std_1, decimal=3)
-        np.testing.assert_array_almost_equal(ci_lower[:, 1], mean_2.squeeze() - CONF_FAC * std_2, decimal=3)
+        np.testing.assert_array_almost_equal(ci_lower[:, 0], mean_1.squeeze() - CONF_FAC*std_1, decimal=3)
+        np.testing.assert_array_almost_equal(ci_lower[:, 1], mean_2.squeeze() - CONF_FAC*std_2, decimal=3)
 
     def test_1_dim_mean_log_probability_size(self) -> None:
         covar = torch.diag(self.std**2)

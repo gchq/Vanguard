@@ -18,7 +18,6 @@ class DummyKernelDistribution:
     """
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
-
     def __init__(self, labels: torch.Tensor, kernel: torch.Tensor):
         """
         Initialise self.
@@ -42,15 +41,10 @@ class InertKernelModel(ExactGPModel):
     Uses a given kernel for prior and posterior and returns a dummy distribution holding the
     kernel matrix.
     """
-
     def __init__(
-        self,
-        train_inputs: torch.Tensor,
-        train_targets: torch.Tensor,
-        covar_module: gpytorch.kernels.Kernel,
-        mean_module: gpytorch.means.Mean,
-        likelihood: gpytorch.likelihoods.Likelihood,
-        num_classes: int,
+            self, train_inputs: torch.Tensor, train_targets: torch.Tensor,
+            covar_module: gpytorch.kernels.Kernel, mean_module: gpytorch.means.Mean,
+            likelihood: gpytorch.likelihoods.Likelihood, num_classes: int
     ):
         """
         Initialise self.
@@ -98,9 +92,8 @@ class InertKernelModel(ExactGPModel):
         train_inputs = list(self.train_inputs) if self.train_inputs is not None else []
         inputs = [arg.unsqueeze(-1) if arg.ndimension() == 1 else arg for arg in args]
 
-        input_equals_training_inputs = all(
-            torch.equal(train_input, input) for train_input, input in zip(train_inputs, inputs)
-        )
+        input_equals_training_inputs = all(torch.equal(train_input, input)
+                                           for train_input, input in zip(train_inputs, inputs))
 
         if self.training:
             if settings.debug.on() and not input_equals_training_inputs:

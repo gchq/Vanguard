@@ -23,20 +23,13 @@ class GaussianGPController(GPController):
     This is the best starting point for users, containing many sensible default values.
     The standard reference is :cite:`Rasmussen06`.
     """
-
-    def __init__(
-        self,
-        train_x: numpy.typing.NDArray[np.floating],
-        train_y: numpy.typing.NDArray[np.floating],
-        kernel_class: Type[gpytorch.kernels.Kernel],
-        y_std: Union[numpy.typing.NDArray[np.floating], float],
-        mean_class: Type[gpytorch.means.Mean] = ConstantMean,
-        likelihood_class: Type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
-        marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
-        optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
-        smart_optimiser_class: Type[SmartOptimiser] = GreedySmartOptimiser,
-        **kwargs,
-    ):
+    def __init__(self, train_x: numpy.typing.NDArray[np.floating], train_y: numpy.typing.NDArray[np.floating],
+                 kernel_class: Type[gpytorch.kernels.Kernel], y_std: Union[numpy.typing.NDArray[np.floating], float],
+                 mean_class: Type[gpytorch.means.Mean] = ConstantMean,
+                 likelihood_class: Type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
+                 marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
+                 optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam, smart_optimiser_class: Type[SmartOptimiser] = GreedySmartOptimiser,
+                 **kwargs):
         """
         Initialise self.
 
@@ -58,15 +51,7 @@ class GaussianGPController(GPController):
                 gradient-based learning of hyperparameters. The default is class:`torch.optim.Adam`.
         :param kwargs: For a complete list, see class:`~vanguard.base.gpcontroller.GPController`.
         """
-        super().__init__(
-            train_x=train_x,
-            train_y=train_y,
-            kernel_class=kernel_class,
-            mean_class=mean_class,
-            y_std=y_std,
-            likelihood_class=likelihood_class,
-            marginal_log_likelihood_class=marginal_log_likelihood_class,
-            optimiser_class=optimiser_class,
-            smart_optimiser_class=smart_optimiser_class,
-            **kwargs,
-        )
+        super().__init__(train_x=train_x, train_y=train_y, kernel_class=kernel_class, mean_class=mean_class,
+                         y_std=y_std, likelihood_class=likelihood_class,
+                         marginal_log_likelihood_class=marginal_log_likelihood_class, optimiser_class=optimiser_class,
+                         smart_optimiser_class=smart_optimiser_class, **kwargs)

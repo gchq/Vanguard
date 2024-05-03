@@ -28,7 +28,6 @@ class HigherRankFeatures(Decorator):
         ... class NewController(GPController):
         ...     pass
     """
-
     def __init__(self, rank: int, **kwargs):
         """
         :param rank: The rank of the input features. Should be a positive integer.
@@ -50,7 +49,6 @@ class HigherRankFeatures(Decorator):
                 new_kernel_class = _HigherRankFeaturesKernel(train_x.shape[-rank:])(kernel_class)
 
                 super().__init__(kernel_class=new_kernel_class, **all_parameters_as_kwargs)
-
         return InnerClass
 
 
@@ -66,7 +64,6 @@ class _HigherRankFeaturesModel:
     correctly. The data are then returned to their native shape before any actual
     computation (e.g. inside kernels) is performed.
     """
-
     def __init__(self, shape: Union[Tuple[int], torch.Size]):
         """
         :param shape: The native shape of a single data point.
@@ -77,7 +74,8 @@ class _HigherRankFeaturesModel:
     def __call__(self, model_cls: Type[ControllerT]) -> ControllerT:
         shape = self.shape
         flat_shape = self.flat_shape
-        _flatten = partial(self._flatten, item_shape=shape, item_flat_shape=flat_shape)
+        _flatten = partial(self._flatten, item_shape=shape,
+                           item_flat_shape=flat_shape)
         _unflatten = partial(self._unflatten, item_shape=shape)
 
         @wraps_class(model_cls)
@@ -105,7 +103,7 @@ class _HigherRankFeaturesModel:
 
         :returns: Reshape tensor.
         """
-        new_shape = tuple(tensor.shape[: -len(item_shape)])
+        new_shape = tuple(tensor.shape[:-len(item_shape)])
         new_shape = new_shape + (item_flat_shape,)
         return tensor.reshape(new_shape)
 
@@ -137,7 +135,6 @@ class _HigherRankFeaturesKernel(_HigherRankFeaturesModel):
     to the model forward method, this method is exposed directly to the flattened
     data.
     """
-
     def __init__(self, shape: Union[Tuple[int], torch.Size]):
         """
         :param shape: The native shape of a single data point.
@@ -158,7 +155,6 @@ class _HigherRankFeaturesKernel(_HigherRankFeaturesModel):
                 class InnerBasisType(basis_type):
                     def forward(self, x, *args, **kwargs):
                         return super().forward(_unflatten(x), *args, **kwargs)
-
                 return InnerBasisType(*args, **kwargs)
 
         return InnerClass

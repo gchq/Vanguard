@@ -22,16 +22,14 @@ def parse_args() -> argparse.Namespace:
 
     for test_key, test_metadata in TESTS.items():
         argument_key = "-" + test_key
-        parser.add_argument(
-            argument_key, dest="tests", action="append_const", const=test_key, help=test_metadata["help"]
-        )
+        parser.add_argument(argument_key, dest="tests", action="append_const", const=test_key,
+                            help=test_metadata["help"])
 
     parser.add_argument("-a", "--all", action="store_true", help="Run all tests.")
     parser.add_argument("--show-warnings", action="store_true", help="Display RuntimeWarnings to the user.")
     parser.add_argument("--verbose", action="store_true", help="Increase the verbosity of the test runner.")
-    parser.add_argument(
-        "--print-output", action="store_true", help="Print 'True' to stdout if all tests pass, or 'False' otherwise."
-    )
+    parser.add_argument("--print-output", action="store_true",
+                        help="Print 'True' to stdout if all tests pass, or 'False' otherwise.")
 
     args = parser.parse_args()
     tests_to_be_run = {"u"} if args.tests is None else set(args.tests)

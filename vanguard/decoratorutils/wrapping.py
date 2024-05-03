@@ -11,7 +11,7 @@ import types
 from functools import WRAPPER_ASSIGNMENTS, wraps
 from typing import Any, Callable, Type, TypeVar
 
-T = TypeVar("T")
+T = TypeVar('T')
 
 
 def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
@@ -105,7 +105,6 @@ def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
         >>> Second.__wrapped__
         <class 'vanguard.decoratorutils.wrapping.First'>
     """
-
     def inner_function(inner_class: Type[T]) -> Type[T]:
         """Update the values in the inner class."""
         for attribute in WRAPPER_ASSIGNMENTS:
@@ -127,5 +126,4 @@ def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
 
         inner_class.__wrapped__ = base_class
         return inner_class
-
     return inner_function

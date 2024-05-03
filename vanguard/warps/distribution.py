@@ -21,7 +21,6 @@ class WarpedGaussian(Normal):
     .. math::
         X\sim \mathcal{WN}(\psi; \mu, \sigma) ~ \iff  \psi(X)\sim\mathcal{N}(\mu, \sigma).
     """
-
     def __init__(self, warp: WarpFunction, *args: Any, **kwargs: Any):
         """
         :param warp`: The warp to be used to define the distribution.
@@ -48,14 +47,8 @@ class WarpedGaussian(Normal):
         return self.warp.inverse(gaussian_samples)
 
     @classmethod
-    def from_data(
-        cls,
-        warp: WarpFunction,
-        samples: numpy.typing.NDArray[np.floating],
-        optimiser: Type[torch.optim.Optimizer] = torch.optim.Adam,
-        n_iterations: int = 100,
-        lr: float = 0.001,
-    ) -> Self:
+    def from_data(cls, warp: WarpFunction, samples: numpy.typing.NDArray[np.floating], optimiser: Type[torch.optim.Optimizer] = torch.optim.Adam,
+                  n_iterations: int = 100, lr: float = 0.001) -> Self:
         """
         Fit a warped Gaussian distribution to the given data using the supplied warp.
 
@@ -74,7 +67,7 @@ class WarpedGaussian(Normal):
 
         for i in range(n_iterations):
             loss = -cls._mle_log_prob_parametrised_with_warp_parameters(warp, t_samples)
-            loss.backward(retain_graph=i < n_iterations - 1)
+            loss.backward(retain_graph=i < n_iterations-1)
             optim.step()
         w_samples = warp(t_samples)
         loc = w_samples.mean(dim=0).detach()  # pyright: ignore [reportCallIssue]
@@ -94,6 +87,6 @@ class WarpedGaussian(Normal):
         w_data = warp(data)
         loc = w_data.mean(dim=0).detach()
         scale = w_data.std(dim=0).detach() + 1e-4
-        gaussian_log_prob = (-((w_data - loc) ** 2) / (2 * scale**2) - torch.log(scale)).sum()  # pyright: ignore [reportOperatorIssue]
+        gaussian_log_prob = (-(w_data - loc) ** 2 / (2 * scale ** 2) - torch.log(scale)).sum()  # pyright: ignore [reportOperatorIssue]
         log_jacobian = torch.log(warp.deriv(data).abs()).sum()
         return gaussian_log_prob + log_jacobian

@@ -7,7 +7,7 @@ import torch
 from torch.distributions import MultivariateNormal, constraints
 from torch.distributions.utils import lazy_property
 
-T = TypeVar("T", bound="MultivariateNormal")
+T = TypeVar('T', bound='MultivariateNormal')
 
 
 class SpectralRegularisedMultivariateNormal(MultivariateNormal):
@@ -26,21 +26,16 @@ class SpectralRegularisedMultivariateNormal(MultivariateNormal):
         to compute the precision matrix here, but it is not needed and will generally be numerically
         unstable, so it is just disabled.
     """
-
-    arg_constraints = {
-        "loc": constraints.real_vector,
-        "covariance_matrix": constraints.positive_definite,
-        "precision_matrix": constraints.positive_definite,
-    }
+    arg_constraints = {"loc": constraints.real_vector,
+                       "covariance_matrix": constraints.positive_definite,
+                       "precision_matrix": constraints.positive_definite}
 
     @lazy_property
     def precision_matrix(self) -> NoReturn:
         raise NotImplementedError("Precision is not available for spectral defined multivariate normals.")
 
     @classmethod
-    def from_eigendecomposition(
-        cls: Type[T], mean: torch.Tensor, covar_eigenvalues: torch.Tensor, covar_eigenvectors: torch.Tensor
-    ) -> Type[T]:
+    def from_eigendecomposition(cls: Type[T], mean: torch.Tensor, covar_eigenvalues: torch.Tensor, covar_eigenvectors: torch.Tensor) -> Type[T]:
         """
         Construct the distribution from the eigendecomposition of its covariance matrix.
 
