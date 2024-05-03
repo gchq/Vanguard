@@ -32,10 +32,10 @@ class BasePartitioner:
         """
         Initialise self.
 
-        :param numpy.ndarray train_x: The mean of the inputs.
-        :param int n_experts: The number of partitions in which to split the data. Defaults to 3.
-        :param bool communication: If True, A communications expert will be included. Defaults to False.
-        :param int seed: The seed for the random state. Defaults to 42.
+        :param train_x: The mean of the inputs.
+        :param n_experts: The number of partitions in which to split the data. Defaults to 3.
+        :param communication: If True, A communications expert will be included. Defaults to False.
+        :param seed: The seed for the random state. Defaults to 42.
         """
         self.train_x = train_x
         self.n_experts = n_experts
@@ -49,7 +49,6 @@ class BasePartitioner:
         Create a partition of ``self.train_x`` across ``self.n_experts``.
 
         :return partition: A partition of length ``self.n_experts``.
-        :rtype: list[list[int]]
         """
         np.random.seed(self.seed)
 
@@ -75,9 +74,8 @@ class BasePartitioner:
         """
         Create the partition.
 
-        :param int n_clusters: The number of clusters.
+        :param n_clusters: The number of clusters.
         :return partition: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
-        :rtype: list[list[int]]
         """
         # TODO: should this be an abstract method?
         raise NotImplementedError
@@ -87,7 +85,6 @@ class BasePartitioner:
         Create a partition with a communications expert.
 
         :return partition: A partition of length ``self.n_experts``.
-        :rtype: list[list[int]]
         """
         size = self.n_examples // self.n_experts
         random_partition = np.random.choice(self.n_examples, size=size, replace=False).tolist()
@@ -105,9 +102,8 @@ class BasePartitioner:
         """
         Group the indices of the labels by their value.
 
-        :param Iterable labels: An array of labels.
+        :param labels: An array of labels.
         :returns groups: A list of values such that labels[groups[i][j]] == i for all j in groups[i].
-        :rtype: list[list[int]]
 
         :Example:
             >>> labels = [1, 2, 3, 2, 1, 3, 0, 9]
@@ -170,11 +166,11 @@ class KMedoidsPartitioner(BasePartitioner):
         """
         Initialise self.
 
-        :param numpy.ndarray train_x: The mean of the inputs.
-        :param gpytorch.kernels.Kernel kernel: The kernel to use for constructing the similarity matrix.
-        :param int n_experts: The number of partitions in which to split the data. Defaults to 2.
-        :param bool communication: If :data:`True`, A communications expert will be included. Defaults to :data:`False`.
-        :param int seed: The seed for the random state. Defaults to 42.
+        :param train_x: The mean of the inputs.
+        :param kernel: The kernel to use for constructing the similarity matrix in kmedoids.
+        :param n_experts: The number of partitions in which to split the data. Defaults to 2.
+        :param communication: If True, A communications expert will be included. Defaults to False.
+        :param seed: The seed for the random state. Defaults to 42.
         """
         super().__init__(train_x=train_x, n_experts=n_experts, communication=communication, seed=seed)
         self.kernel = kernel
@@ -191,7 +187,6 @@ class KMedoidsPartitioner(BasePartitioner):
         Construct the distance matrix.
 
         :return dist_matrix: The distance matrix.
-        :rtype: numpy.ndarray
 
         .. warning::
             The affinity matrix takes up O(N^2) memory so can't be used for large ``train_x``.

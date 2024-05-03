@@ -17,7 +17,7 @@ class MonteCarloPosteriorCollection(Posterior):
     uncertainty.
     Samples are lazily loaded if more are needed for a better prediction.
 
-    :param posterior_generator: A :class:`~vanguard.posteriors.posterior.Posterior` object defining an infinite generator of posteriors.
+    :param posterior_generator: A :class:`~vanguard.base.posteriors.Posterior` object defining an infinite generator of posteriors.
 
     .. warning::
         In order to ensure reproducible output for predictions and confidence

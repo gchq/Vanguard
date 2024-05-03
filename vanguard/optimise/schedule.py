@@ -17,7 +17,7 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
     """
     def __init__(self, scheduler_class: Type[LRSchedulerT], *args, **kwargs):
         """
-        :param type scheduler_class: The (uninstantiated) torch learning rate scheduler to be used.
+        :param scheduler_class: The (uninstantiated) torch learning rate scheduler to be used.
         """
         self.scheduler_class = scheduler_class
         self.scheduler_kwargs = kwargs

@@ -17,7 +17,7 @@ class PartitionTests(unittest.TestCase):
     Note that these tests are for reproducibility, and assume that the results
     of the functions were originally correct.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         rng = np.random.RandomState(seed=1)
         self.train_x = rng.random(size=10).reshape(-1, 1) * 20

@@ -22,8 +22,8 @@ class DummyKernelDistribution:
         """
         Initialise self.
 
-        :param torch.Tensor labels: The one-hot labels.
-        :param torch.Tensor kernel: The kernel matrix.
+        :param labels: The one-hot labels.
+        :param kernel: The kernel matrix.
         """
         self.labels = labels
         self.kernel = kernel

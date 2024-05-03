@@ -6,7 +6,6 @@ import os
 import shutil
 
 import nbformat
-import pypandoc
 
 
 def copy_filtered_files(source_folder, destination_folder, file_types=()):
@@ -48,12 +47,3 @@ def process_notebooks(notebook_file_paths):
 
         with open(notebook_path, "w") as wf:
             nbformat.write(notebook, wf, version=4)
-
-
-def create_copyright_file(licence_file_path, copyright_file_path):
-    """Convert the markdown licence into an RST file for the docs."""
-    rst_output = pypandoc.convert_file(source_file=licence_file_path, to="rst")
-
-    with open(copyright_file_path, "w") as wf:
-        wf.write(":orphan:\n\n")
-        wf.write(rst_output)

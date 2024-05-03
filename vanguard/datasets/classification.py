@@ -30,7 +30,7 @@ class BinaryStripeClassificationDataset(Dataset):
         """
         Initialise self.
 
-        :param int num_train_points: The number of training points.
+        :param num_train_points: The number of training points.
         :param num_test_points: The number of testing points.
         """
         train_x = np.linspace(0, 1, num_train_points)
@@ -65,12 +65,12 @@ class MulticlassGaussianClassificationDataset(Dataset):
         """
         Initialise self.
 
-        :param int num_train_points: The number of training points.
-        :param int num_test_points: The number of testing points.
-        :param int num_classes: The number of classes.
-        :param float,int covariance_scale: The covariance matrix will be this value times the unit matrix.
+        :param num_train_points: The number of training points.
+        :param num_test_points: The number of testing points.
+        :param num_classes: The number of classes.
+        :param covariance_scale: The covariance matrix will be this value times the unit matrix.
             Defaults to 1.0.
-        :param int,None seed: Used to seed the quantile creation, defaults to None (not reproducible).
+        :param seed: Used to seed the quantile creation, defaults to None (not reproducible).
         """
         self.num_classes = num_classes
 
@@ -91,8 +91,8 @@ class MulticlassGaussianClassificationDataset(Dataset):
         """
         Plot the data.
 
-        :param str cmap: The colour map to be used.
-        :param float alpha: The transparency of the points.
+        :param cmap: The colour map to be used.
+        :param alpha: The transparency of the points.
         """
         ax = plt.gca()
         scatter = plt.scatter(self.train_x[:, 0], self.train_x[:, 1], c=self.train_y, cmap=cmap, alpha=alpha)
@@ -104,9 +104,9 @@ class MulticlassGaussianClassificationDataset(Dataset):
         """
         Plot a prediction.
 
-        :param numpy.ndarray prediction: The predicted classes.
-        :param str cmap: The colour map to be used.
-        :param float alpha: The transparency of the points.
+        :param prediction: The predicted classes.
+        :param cmap: The colour map to be used.
+        :param alpha: The transparency of the points.
         """
         correct_prediction = (prediction == self.test_y)
         proportion_correct: float = correct_prediction.sum() / len(self.test_x)  # type: ignore
@@ -126,9 +126,9 @@ class MulticlassGaussianClassificationDataset(Dataset):
         """
         Plot a confusion matrix based on a specific prediction.
 
-        :param numpy.ndarray prediction: The predicted classes.
-        :param str cmap: The colour map to be used.
-        :param str text_size: The text size to be used for the labels.
+        :param prediction: The predicted classes.
+        :param cmap: The colour map to be used.
+        :param text_size: The text size to be used for the labels.
         """
         matrix = np.zeros((self.num_classes, self.num_classes))
         for true_label, predicted_label in zip(self.test_y, prediction):
@@ -165,10 +165,10 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         """
         Initialise self.
 
-        :param int num_train_points: The number of training points.
+        :param num_train_points: The number of training points.
         :param num_test_points: The number of testing points.
-        :param float,int covariance_scale: The covariance matrix will be this value times the unit matrix.
+        :param covariance_scale: The covariance matrix will be this value times the unit matrix.
             Defaults to 1.0.
-        :param int,None seed: Used to seed the quantile creation, defaults to None (not reproducible).
+        :param seed: Used to seed the quantile creation, defaults to None (not reproducible).
         """
         super().__init__(num_train_points, num_test_points, num_classes=2, covariance_scale=covariance_scale, seed=seed)

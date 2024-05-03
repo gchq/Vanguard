@@ -3,9 +3,10 @@ Contains test cases for Vanguard testing.
 """
 import unittest
 from functools import wraps
-from typing import Callable, TypeVar
+from typing import Callable, Tuple, TypeVar, Union
 
 import numpy as np
+import numpy.typing
 from scipy import stats
 from typing_extensions import ParamSpec
 
@@ -15,13 +16,15 @@ class VanguardTestCase(unittest.TestCase):
     A subclass of TestCase designed to check confidence intervals.
     """
     @staticmethod
-    def assertInConfidenceInterval(data, interval, delta=0):
+    def assertInConfidenceInterval(data: numpy.typing.NDArray[np.floating],
+                                   interval: Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]],
+                                   delta: Union[int, float] = 0) -> None:
         """
         Assert that data is in a confidence interval.
 
-        :param numpy.ndarray data: The data to be tested.
-        :param tuple[numpy.ndarray],list[numpy.ndarray] interval: The two interval bounds in the form (lower, upper).
-        :param float,int delta: The proportion of elements which can be outside of the interval.
+        :param data: The data to be tested.
+        :param interval: The two interval bounds in the form (lower, upper).
+        :param delta: The proportion of elements which can be outside of the interval.
         """
         lower, upper = interval
         elements_outside_interval = (data < lower) | (upper < data)
@@ -33,7 +36,9 @@ class VanguardTestCase(unittest.TestCase):
             raise AssertionError(error_message) from None
 
     @staticmethod
-    def confidence_interval(mu, sigma, alpha):
+    def confidence_interval(mu: Union[float, numpy.typing.NDArray[np.floating]],
+                            sigma: Union[float, numpy.typing.NDArray[np.floating]], alpha: float
+                            ) -> Union[Tuple[float, float], Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]]:
         """Create a confidence interval."""
         sig_fac = stats.norm.ppf(1 - alpha / 2)
         std_dev = np.sqrt(np.diag(sigma))

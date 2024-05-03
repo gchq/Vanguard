@@ -172,7 +172,6 @@ class WarpFunction(gpytorch.Module):
             parameters and keeping them frozen in downstream usage.
 
         :return: A copy of self with parameters frozen.
-        :rtype: WarpFunction
         """
         new_warp = self.copy()
         # Overwrite parameters method with an iterator
@@ -321,7 +320,7 @@ class MultitaskWarpFunction(WarpFunction):
             The warp functions are not copied before composition, meaning that
             each component of the returned warp function will be the same object.
             When applied to a controller class with the
-            class:`~vanguard.warps.SetWarp` decorator, the warp function
+            :class:`~vanguard.warps.SetWarp` decorator, the warp function
             (and its components) will be copied and this will no longer be an issue.
         """
         if n > 0:

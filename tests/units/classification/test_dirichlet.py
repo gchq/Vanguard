@@ -23,7 +23,7 @@ class MulticlassTests(ClassificationTestCase):
     """
     Tests for multiclass classification.
     """
-    def setUp(self):
+    def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100,
                                                                num_classes=4)
@@ -37,7 +37,7 @@ class MulticlassTests(ClassificationTestCase):
         self.controller.fit(100)
 
     @flaky
-    def test_predictions(self):
+    def test_predictions(self) -> None:
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
@@ -48,7 +48,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     Tests for fuzzy dirichlet multiclass classification.
     """
     @flaky
-    def test_fuzzy_predictions_monte_carlo(self):
+    def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20,
                                                                num_classes=4)
@@ -68,7 +68,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.5)
 
     @flaky
-    def test_fuzzy_predictions_uncertainty(self):
+    def test_fuzzy_predictions_uncertainty(self) -> None:
         """Predictions should be close to the values from the test data."""
         self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100,
                                                                num_classes=4)

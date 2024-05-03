@@ -35,6 +35,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         Every call to :meth:`~vanguard.base.gpcontroller.GPController.fit` creates a new partition,
         and regenerates the experts.
 
+    .. warning::
+        This is a :class:`~vanguard.decoratorutils.basedecorator.TopMostDecorator`.
+
     :Example:
         >>> @Distributed(n_experts=10, aggregator_class=GRBCMAggregator)
         ... class DistributedGPController(GPController):
@@ -50,21 +53,21 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         """
         Initialise self.
 
-        :param int n_experts: The number of partitions in which to split the data. Defaults to 3.
-        :param float subset_fraction: The proportion of the training data to be used to train the hyperparameters.
+        :param n_experts: The number of partitions in which to split the data. Defaults to 3.
+        :param subset_fraction: The proportion of the training data to be used to train the hyperparameters.
             Defaults to 0.1.
         :param seed: The seed used for creating the subset of the training data used to train the hyperparameters.
             Defaults to 42.
-        :param type aggregator_class: The class to be used for aggregation. Defaults to
-            class:`~vanguard.distribute.aggregators.RBCMAggregator`.
-        :param type partitioner_class: The class to be used for partitioning. Defaults to
-            class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
+        :param aggregator_class: The class to be used for aggregation. Defaults to
+            :class:`~vanguard.distribute.aggregators.RBCMAggregator`.
+        :param partitioner_class: The class to be used for partitioning. Defaults to
+            :class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
 
         :Keyword Arguments:
 
             * **partitioner_args** *dict*: Additional parameters passed to the partitioner initialisation.
             * For other possible keyword arguments, see the
-              class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
+              :class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
         """
         self.n_experts = n_experts
         self.subset_fraction = subset_fraction
@@ -134,7 +137,6 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                     This may not behave as expected on CUDA.
 
                 :returns: The losses for each expert.
-                :rtype: list[float]
                 """
                 if self.device.type == "cuda":
                     warnings.warn("Collecting expert losses may not behave as expected on CUDA.", RuntimeWarning)
@@ -166,10 +168,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 """
                 Aggregate an iterable of posteriors.
 
-                :param torch.Tensor x: The point at which the posteriors have been evaluated.
-                :param Iterable[vanguard.base.posteriors.Posterior] expert_posteriors: The expert posteriors.
+                :param x: The point at which the posteriors have been evaluated.
+                :param expert_posteriors: The expert posteriors.
                 :return: The aggregated posterior.
-                :rtype: vanguard.base.posteriors.Posterior
                 """
                 expert_distributions = (posterior.condensed_distribution for posterior in expert_posteriors)
                 expert_means_and_covars = [(distribution.mean, distribution.covariance_matrix)
@@ -202,15 +203,14 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 """
                 Aggregate the means and variances from the expert predictions.
 
-                :param array_like[float] x: (n_preds, n_features) The predictive inputs.
-                :param list[tuple[Tensor[float]]] means_and_covars: A list of (``mean``, ``variance``) pairs
+                :param x: (n_preds, n_features) The predictive inputs.
+                :param means_and_covars: A list of (``mean``, ``variance``) pairs
                         representing the posterior predicted and mean for each expert controller.
                 :returns: (``means``, ``covar``) where:
 
                     * ``means``: (n_preds,) The posterior predictive mean,
                     * ``covar``: (n_preds, n_preds) The posterior predictive covariance.
 
-                :rtype: tuple[torch.Tensor]
                 """
                 prior_var = None
                 if issubclass(self.aggregator_class, (BCMAggregator, RBCMAggregator, XBCMAggregator, XGRBCMAggregator)):
@@ -240,9 +240,8 @@ def _create_subset(*arrays: Union[NDArray[np.floating], float],
     """
     Return subsets of the arrays along the same random indices.
 
-    :param numpy.ndarray arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is.
+    :param arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is.
     :returns: The subsetted arrays.
-    :rtype: list[array_like,Any]
 
     :Example:
         >>> x = np.array([1, 2, 3, 4, 5])

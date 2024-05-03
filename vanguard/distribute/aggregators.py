@@ -1,5 +1,5 @@
 """
-A suite of aggregators to be used with the class:`~vanguard.distribute.decorator.Distributed` decorator.
+A suite of aggregators to be used with the :class:`~vanguard.distribute.decorator.Distributed` decorator.
 
 These are responsible for combining the predictions of several independent expert controllers.
 """
@@ -22,11 +22,11 @@ class BaseAggregator:
         """
         Initialise self.
 
-        :param list[torch.Tensor] means: (d,) Each element is an array of a single expert's predictive mean
+        :param means: (d,) Each element is an array of a single expert's predictive mean
                 at the evaluation points.
-        :param list[torch.Tensor] covars: (d,d) The individual experts posterior predictive covariance
+        :param covars: (d,d) The individual experts posterior predictive covariance
                 at the test points.
-        :param torch.Tensor prior_var: (d,) The diagonal of the test kernel with added noise.
+        :param prior_var: (d,) The diagonal of the test kernel with added noise.
         """
         self.means = torch.stack(means).type(torch.float32)
         self.covars = torch.stack(covars).type(torch.float32)
@@ -47,7 +47,6 @@ class BaseAggregator:
         Combine the predictions of the individual experts into a single PoE prediction.
 
         :return: The mean and variance of the combined experts.
-        :rtype: tuple[torch.Tensor]
         """
         raise NotImplementedError
 
@@ -58,14 +57,13 @@ class BaseAggregator:
         .. note::
             Delta is as defined in [CITATION NEEDED]_ and [CITATION NEEDED]_ (difference in differential entropy between
             prior and posterior :cite:`Deisenroth15`). ``delta_diff`` and ``delta_val`` are the same in
-            class:`XBCMAggregator`.
+            :class:`XBCMAggregator`.
 
-        :param torch.Tensor delta_diff: The delta used to determine if correction is applied
+        :param delta_diff: The delta used to determine if correction is applied
                 (proxy for in-vs-out of training data).
-        :param torch.Tensor delta_val: The delta value to be corrected. Must be the same shape as ``delta_diff``.
+        :param delta_val: The delta value to be corrected. Must be the same shape as ``delta_diff``.
 
         :return: The corrected expert weights, the same shape as ``delta_diff``.
-        :rtype: torch.Tensor
         """
         in_training_data = (delta_diff > 1)
         not_in_training_data = (delta_diff <= 1)
@@ -189,7 +187,7 @@ class XBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    We define the joint posterior as in :class:`RBCMAggregator`, but with a correction on \beta.
     (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -239,7 +237,7 @@ class XGRBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Generalised Robust Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    We define the joint posterior as in :class:`RBCMAggregator`, but with a correction on \beta.
     (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:

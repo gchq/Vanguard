@@ -5,7 +5,7 @@ The return classes of all classification decorators have a distinct structure
 in which the standard prediction methods are unavailable. Instead, controllers
 will have :meth:`~ClassificationMixin.classify_points` and
 :meth:`~ClassificationMixin.classify_fuzzy_points` which should be used.
-When creating new decorators, include the class:`ClassificationMixin` as a
+When creating new decorators, include the :class:`ClassificationMixin` as a
 mixin for the inner class which will be returned to enable this.
 """
 from typing import NoReturn, Tuple, Union

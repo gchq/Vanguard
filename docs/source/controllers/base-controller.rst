@@ -1,7 +1,7 @@
 Base Controller Class
 =====================
 
-A controller class is designed to emulate the boiler plate code which often needs to be written in order to use mod:`gpytorch`.
+A controller class is designed to emulate the boiler plate code which often needs to be written in order to use :mod:`gpytorch`.
 
 GP Controller
 -------------

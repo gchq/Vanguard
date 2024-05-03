@@ -5,5 +5,4 @@ Variational Inference
 .. automodule:: vanguard.variational
 
 .. autoclass:: vanguard.variational.VariationalInference
-    :show-inheritance:
     :members:

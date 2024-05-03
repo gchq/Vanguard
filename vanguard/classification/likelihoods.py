@@ -84,8 +84,8 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
         """
         Initialise self.
 
-        :param torch.Tensor label_matrix: (``n_data_points``,``n_classes``) A binary indicator matrix encoding the class
-                                                                            to which each data point belongs.
+        :param label_matrix: (``n_data_points``,``n_classes``) A binary indicator matrix encoding the class to which
+                                                               each data point belongs.
         :param kernel_matrix: (``n_data_points``,``n_data_points``) The evaluated kernel matrix.
         :param alpha: (``n_classes``,) The Dirichlet prior concentration parameters.
         """

@@ -7,13 +7,13 @@ We use [Sphinx](https://www.sphinx-doc.org/en/master/index.html) to generate HTM
 To build the docs, first install the documentation requirements:
 
 ```shell
-$ python3 -m pip install -r docs/requirements-docs.txt --no-deps
+$ python -m pip install -r requirements-docs.txt --no-deps
 ```
 
 Then run the following command:
 
 ```shell
-$ python3 -m sphinx -b html -aE docs/source docs/build
+$ python -m sphinx -b html -aE docs/source docs/build
 ```
 
 The built documentation files can then be found in `docs/build`.
@@ -24,5 +24,5 @@ The built documentation files can then be found in `docs/build`.
 To check external links are correctly resolved, run the following:
 
 ```shell
-python3 -m sphinx -b linkcheck docs/source docs/build
+$ python -m sphinx -b linkcheck docs/source docs/build
 ```
