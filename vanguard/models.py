@@ -13,8 +13,16 @@ class ExactGPModel(ExactGP):
     """
     Standard GPyTorch exact GP model subclassing :class:`gpytorch.models.ExactGP` with flexible prior kernel, mean.
     """
-    def __init__(self, train_x: torch.Tensor, train_y: torch.Tensor, likelihood: gpytorch.likelihoods.GaussianLikelihood,
-                 mean_module: gpytorch.means.Mean, covar_module: gpytorch.kernels.Kernel, **kwargs):
+
+    def __init__(
+        self,
+        train_x: torch.Tensor,
+        train_y: torch.Tensor,
+        likelihood: gpytorch.likelihoods.GaussianLikelihood,
+        mean_module: gpytorch.means.Mean,
+        covar_module: gpytorch.kernels.Kernel,
+        **kwargs,
+    ):
         """
         Initialise self.
 
@@ -28,7 +36,7 @@ class ExactGPModel(ExactGP):
         self.mean_module = mean_module
         self.covar_module = covar_module
 
-    def forward(self, x:  torch.Tensor) -> gpytorch.distributions.MultivariateNormal:
+    def forward(self, x: torch.Tensor) -> gpytorch.distributions.MultivariateNormal:
         """
         Compute the prior latent distribution on a given input.
 
@@ -47,8 +55,16 @@ class InducingPointKernelGPModel(ExactGPModel):
     GPyTorch exact GP model subclassing :class:`gpytorch.models.ExactGP` with flexible prior kernel, mean and an
     inducing point sparse approximation to the kernel a la :cite:`Titsias09`.
     """
-    def __init__(self, train_x: torch.Tensor, train_y: torch.Tensor, likelihood: gpytorch.likelihoods.GaussianLikelihood,
-                 mean_module: gpytorch.means.Mean, covar_module: gpytorch.kernels.Kernel, n_inducing_points: int):
+
+    def __init__(
+        self,
+        train_x: torch.Tensor,
+        train_y: torch.Tensor,
+        likelihood: gpytorch.likelihoods.GaussianLikelihood,
+        mean_module: gpytorch.means.Mean,
+        covar_module: gpytorch.kernels.Kernel,
+        n_inducing_points: int,
+    ):
         """
         Initialise self.
 
@@ -61,6 +77,7 @@ class InducingPointKernelGPModel(ExactGPModel):
         """
         inducing_point_indices = np.random.choice(train_x.shape[0], size=n_inducing_points, replace=True)
         inducing_points = train_x[inducing_point_indices, :].clone()
-        covar_module = gpytorch.kernels.InducingPointKernel(covar_module, inducing_points=inducing_points,
-                                                            likelihood=likelihood)
+        covar_module = gpytorch.kernels.InducingPointKernel(
+            covar_module, inducing_points=inducing_points, likelihood=likelihood
+        )
         super().__init__(train_x, train_y, likelihood, mean_module, covar_module)

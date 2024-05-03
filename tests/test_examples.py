@@ -21,6 +21,7 @@ class NotebookMetaClass(type):
     specific test method, allowing for more verbose real-time feedback as
     opposed to subtests.
     """
+
     def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
         cls = super().__new__(mcs, name, bases, namespace)
 
@@ -56,6 +57,7 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
     """
     Tests that the notebooks can run properly.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
         self.processor = ExecutePreprocessor(timeout=TIMEOUT, allow_errors=True)
@@ -81,16 +83,18 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
             if output.output_type == "error":
                 self._verify_expected_errors(cell, cell_no, output)
 
-    def _verify_expected_errors(self, cell: nbformat.notebooknode.NotebookNode, cell_no: int,
-                                output: nbformat.notebooknode.NotebookNode) -> None:
+    def _verify_expected_errors(
+        self, cell: nbformat.notebooknode.NotebookNode, cell_no: int, output: nbformat.notebooknode.NotebookNode
+    ) -> None:
         """Verify if an error is expected in a cell."""
         cell_source_lines = cell.source.split("\n")
         match_if_cell_expected_to_ignore = _RE_SPHINX_EXPECT.match(cell_source_lines[0])
         if not match_if_cell_expected_to_ignore:
-            self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: "
-                      f"{output.evalue}")
+            self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: " f"{output.evalue}")
         else:
             expected_error = match_if_cell_expected_to_ignore.group(1)
             if output.ename != expected_error:
-                self.fail(f"Expected {expected_error} in cell number {cell_no}, but {output.ename} was raised instead: "
-                          f"{output.evalue}")
+                self.fail(
+                    f"Expected {expected_error} in cell number {cell_no}, but {output.ename} was raised instead: "
+                    f"{output.evalue}"
+                )
