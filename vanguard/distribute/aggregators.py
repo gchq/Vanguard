@@ -1,5 +1,5 @@
 """
-A suite of aggregators to be used with the class:`~vanguard.distribute.decorator.Distributed` decorator.
+A suite of aggregators to be used with the :class:`~vanguard.distribute.decorator.Distributed` decorator.
 
 These are responsible for combining the predictions of several independent expert controllers.
 """
@@ -18,6 +18,7 @@ class BaseAggregator:
 
     All aggregators should inherit from this class.
     """
+
     def __init__(self, means: List[torch.Tensor], covars: List[torch.Tensor], prior_var: Optional[torch.Tensor] = None):
         """
         Initialise self.
@@ -39,8 +40,9 @@ class BaseAggregator:
         else:
             self.prior_var = torch.as_tensor(prior_var).type(torch.float32)
             if self.prior_var.dim() >= self.variances.dim() and self.prior_var.shape != self.variances.shape:
-                raise BadPriorVarShapeError(f"Prior var shape {self.prior_var.shape} "
-                                            f"doesn't match variances shape {self.variances.shape}")
+                raise BadPriorVarShapeError(
+                    f"Prior var shape {self.prior_var.shape} " f"doesn't match variances shape {self.variances.shape}"
+                )
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
@@ -57,7 +59,7 @@ class BaseAggregator:
         .. note::
             Delta is as defined in [CITATION NEEDED]_ and [CITATION NEEDED]_ (difference in differential entropy between
             prior and posterior :cite:`Deisenroth15`). ``delta_diff`` and ``delta_val`` are the same in
-            class:`XBCMAggregator`.
+            :class:`XBCMAggregator`.
 
         :param delta_diff: The delta used to determine if correction is applied
                 (proxy for in-vs-out of training data).
@@ -65,8 +67,8 @@ class BaseAggregator:
 
         :return: The corrected expert weights, the same shape as ``delta_diff``.
         """
-        in_training_data = (delta_diff > 1)
-        not_in_training_data = (delta_diff <= 1)
+        in_training_data = delta_diff > 1
+        not_in_training_data = delta_diff <= 1
         corrected_weights = in_training_data * delta_val
         corrected_weights += not_in_training_data * (delta_val + ((1 - delta_val) / self.n_experts))
         return corrected_weights
@@ -91,14 +93,22 @@ class POEAggregator(BaseAggregator):
         \mu &= \sigma^{2} \sum_{i} \sigma_{i}^{-2}(x) \mu_{i}(x) \\
         \sigma^{-2} &= \sum_{i} \sigma_{i}^{-2}(x)
     """
+
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         covar_inverses = torch.stack([torch.inverse(covar) for covar in self.covars])
         covar = torch.inverse(torch.sum(covar_inverses, dim=0))
         mean = torch.tensordot(
-            torch.sum(torch.stack([torch.tensordot(mean.reshape(1, -1), covar_inverse, dims=1)
-                                   for mean, covar_inverse in zip(self.means, covar_inverses)]), dim=0),
+            torch.sum(
+                torch.stack(
+                    [
+                        torch.tensordot(mean.reshape(1, -1), covar_inverse, dims=1)
+                        for mean, covar_inverse in zip(self.means, covar_inverses)
+                    ]
+                ),
+                dim=0,
+            ),
             covar,
-            dims=1
+            dims=1,
         ).reshape(-1)
         return mean, covar
 
@@ -114,6 +124,7 @@ class EKPOEAggregator(POEAggregator):
         \mu &= M \sigma^{2} \sum_{i} \sigma_{i}^{-2}(x) \mu_{i}(x) \\
         \sigma^{-2} &= \frac{1}{M} \sum_{i} \sigma_{i}^{-2}(x)
     """
+
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         mean, variance = super().aggregate()
         return mean, variance * self.n_experts
@@ -132,6 +143,7 @@ class GPOEAggregator(BaseAggregator):
 
     where :math:`\beta_{i}=\frac{1}{M}`.
     """
+
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         beta = torch.ones_like(self.means) / self.n_experts
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
@@ -153,6 +165,7 @@ class BCMAggregator(BaseAggregator):
     where :math:`\sigma_{**}^{-2}` is the diagonal of the covariance matrix formed by applying the kernel
     on all pairs of points in :math:`x`.
     """
+
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         beta = torch.ones_like(self.means)
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
@@ -176,6 +189,7 @@ class RBCMAggregator(BaseAggregator):
     between the prior and the posterior, and :math:`\sigma_{**}^{-2}` is the diagonal of the
     covariance matrix formed by applying the kernel on all pairs of points in :math:`x`.
     """
+
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         beta = 0.5 * (torch.log(self.prior_var) - torch.log(self.variances)).reshape(self.n_experts, -1)
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
@@ -187,9 +201,10 @@ class XBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    We define the joint posterior as in :class:`RBCMAggregator`, but with a correction on \beta.
     (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
+
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         delta = 0.5 * (torch.log(self.prior_var) - torch.log(self.variances)).reshape(self.n_experts, -1)
         beta = self._beta_correction(delta, delta)
@@ -219,6 +234,7 @@ class GRBCMAggregator(BaseAggregator):
             0.5(\log \sigma_{1}^{2}(x) - \log \sigma_{i}^{2}(x)), & 3 \leq i \leq M
         \end{cases}
     """
+
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         comm_mean = self.means[0]
         comm_var = self.variances[0]
@@ -237,9 +253,10 @@ class XGRBCMAggregator(BaseAggregator):
     r"""
     Implements the Corrected Generalised Robust Bayesian Committee Machine method of [CITATION NEEDED]_.
 
-    We define the joint posterior as in class:`RBCMAggregator`, but with a correction on \beta.
+    We define the joint posterior as in :class:`RBCMAggregator`, but with a correction on \beta.
     (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
+
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         comm_mean = self.means[0]
         comm_var = self.variances[0]

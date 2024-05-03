@@ -25,7 +25,7 @@ class BinaryClassification(Decorator):
         Passing ``y_std=0`` is suggested.
 
     .. note::
-        When used in conjunction with the class:`~gpytorch.likelihoods.BernoulliLikelihood` class,
+        When used in conjunction with the :class:`~gpytorch.likelihoods.BernoulliLikelihood` class,
         the probit likelihood is calculated in closed form by applying the following formula :cite:`Kuss05`:
 
         .. math::
@@ -36,7 +36,7 @@ class BinaryClassification(Decorator):
         This means that the predictive uncertainty is taken into account.
 
     .. note::
-        The class:`~vanguard.variational.VariationalInference` decorator is required for this
+        The :class:`~vanguard.variational.VariationalInference` decorator is required for this
         decorator to be applied.
 
     :Example:
@@ -64,11 +64,12 @@ class BinaryClassification(Decorator):
         >>> preds
         array([0, 1])
     """
+
     def __init__(self, **kwargs):
         """
         Initialise self.
 
-        :param kwargs: Keyword arguments passed to class:`~vanguard.decoratorutils.basedecorator.Decorator`.
+        :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference}, **kwargs)
 
@@ -78,25 +79,31 @@ class BinaryClassification(Decorator):
             """
             A wrapper for implementing binary classification.
             """
-            def __init__(self, *args, **kwargs):
 
+            def __init__(self, *args, **kwargs):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 if not issubclass(likelihood_class, BernoulliLikelihood):
-                    raise ValueError("The class passed to `likelihood_class` must be a subclass "
-                                     f"of {BernoulliLikelihood.__name__} for binary classification.")
+                    raise ValueError(
+                        "The class passed to `likelihood_class` must be a subclass "
+                        f"of {BernoulliLikelihood.__name__} for binary classification."
+                    )
 
                 super().__init__(likelihood_class=likelihood_class, **all_parameters_as_kwargs)
 
-            def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            def classify_points(
+                self, x: Union[float, numpy.typing.NDArray[np.floating]]
+            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             def classify_fuzzy_points(
-                    self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
+                self,
+                x: Union[float, numpy.typing.NDArray[np.floating]],
+                x_std: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
@@ -104,7 +111,7 @@ class BinaryClassification(Decorator):
 
             @staticmethod
             def _get_predictions_from_prediction_means(
-                    means: Union[float, numpy.typing.NDArray[np.floating]]
+                means: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.

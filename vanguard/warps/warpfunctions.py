@@ -15,6 +15,7 @@ class AffineWarpFunction(WarpFunction):
     r"""
     A warp of form :math:`y \mapsto ay + b`.
     """
+
     def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0):
         """
         Initialise self.
@@ -37,7 +38,7 @@ class AffineWarpFunction(WarpFunction):
         return self.bias
 
     def forward(self, y: torch.Tensor) -> torch.Tensor:
-        return y * self. a + self.b
+        return y * self.a + self.b
 
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         return torch.div(x - self.b, self.a)
@@ -53,8 +54,9 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
 
     .. note::
         This warp function needs to be activated before use.
-        See mod:`vanguard.warps.intermediate`.
+        See :mod:`vanguard.warps.intermediate`.
     """
+
     def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0):
         """
         Initialise self.
@@ -66,8 +68,10 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
         lambda_1, lambda_2 = self._get_constraint_slopes(train_y)
         beta_squared = (a * lambda_1 + b) / (lambda_2 - lambda_1)
         if beta_squared < 0:
-            raise ValueError("The supplied a and b values violate the constraints defined by the specified values of"
-                             f"lambda_1 and lambda_2, since a*lambda_1 + b < 0, i.e. {a}*{lambda_1} + {b} < 0.")
+            raise ValueError(
+                "The supplied a and b values violate the constraints defined by the specified values of"
+                f"lambda_1 and lambda_2, since a*lambda_1 + b < 0, i.e. {a}*{lambda_1} + {b} < 0."
+            )
 
         beta = np.sqrt(beta_squared)
         alpha = np.sqrt(a + beta**2)
@@ -116,6 +120,7 @@ class BoxCoxWarpFunction(WarpFunction):
     .. math::
         y\mapsto\frac{sgn(y)|y|^\lambda - 1}{\lambda}, \lambda\in\mathbb{R}_0^+.
     """
+
     def __init__(self, lambda_: float = 0):
         """
         Initialise self.
@@ -148,6 +153,7 @@ class SinhWarpFunction(WarpFunction):
     r"""
     A map of the form :math:`y\mapsto\sinh(y)`.
     """
+
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return torch.sinh(y)
 
@@ -162,6 +168,7 @@ class ArcSinhWarpFunction(WarpFunction):
     r"""
     A map of the form :math:`y\mapsto\sinh^{-1}(y)`.
     """
+
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return torch.asinh(y)
 
@@ -169,13 +176,14 @@ class ArcSinhWarpFunction(WarpFunction):
         return torch.sinh(x)
 
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
-        return 1 / torch.sqrt(y ** 2 + 1)
+        return 1 / torch.sqrt(y**2 + 1)
 
 
 class LogitWarpFunction(WarpFunction):
     r"""
     A map of the form :math:`y\mapsto\log\frac{y}{1-y}`.
     """
+
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return torch.logit(y)
 
@@ -183,13 +191,14 @@ class LogitWarpFunction(WarpFunction):
         return torch.sigmoid(x)
 
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
-        return (1 - 2*y) / (y * (1-y))
+        return (1 - 2 * y) / (y * (1 - y))
 
 
 class SoftPlusWarpFunction(WarpFunction):
     r"""
     A map of the form :math:`y\mapsto\log(e^y - 1)`.
     """
+
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return torch.log(torch.exp(y) - 1)
 
@@ -201,4 +210,6 @@ class SoftPlusWarpFunction(WarpFunction):
 
 
 AFFINE_LOG_WARP_FUNCTION: WarpFunction = BoxCoxWarpFunction(lambda_=0) @ AffineWarpFunction()
-SAL_WARP_FUNCTION: WarpFunction = AffineWarpFunction() @ SinhWarpFunction() @ AffineWarpFunction() @ ArcSinhWarpFunction()
+SAL_WARP_FUNCTION: WarpFunction = (
+    AffineWarpFunction() @ SinhWarpFunction() @ AffineWarpFunction() @ ArcSinhWarpFunction()
+)

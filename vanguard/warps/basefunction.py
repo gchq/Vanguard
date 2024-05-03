@@ -192,6 +192,7 @@ class _IdentityWarpFunction(WarpFunction):
     """
     The identity map as a warp.
     """
+
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return y
 
@@ -236,6 +237,7 @@ class MultitaskWarpFunction(WarpFunction):
         tensor([[2., 5.],
                 [0., 1.]])
     """
+
     def __init__(self, *warps: WarpFunction):
         """
         Initialise self.
@@ -298,8 +300,10 @@ class MultitaskWarpFunction(WarpFunction):
             if not isinstance(other, MultitaskWarpFunction):
                 raise TypeError("Must be passed a valid MultitaskWarpFunction instance.")
             elif not all(isinstance(warp, WarpFunction) for warp in other.warps):
-                raise TypeError("All of the per-task warps for the passed MultitaskWarpFunction must be valid instances"
-                                "of WarpFunction.")
+                raise TypeError(
+                    "All of the per-task warps for the passed MultitaskWarpFunction must be valid instances"
+                    "of WarpFunction."
+                )
             else:
                 raise
         new_warp = MultitaskWarpFunction(*new_task_warps)
@@ -320,7 +324,7 @@ class MultitaskWarpFunction(WarpFunction):
             The warp functions are not copied before composition, meaning that
             each component of the returned warp function will be the same object.
             When applied to a controller class with the
-            class:`~vanguard.warps.SetWarp` decorator, the warp function
+            :class:`~vanguard.warps.SetWarp` decorator, the warp function
             (and its components) will be copied and this will no longer be an issue.
         """
         if n > 0:
@@ -340,19 +344,23 @@ ComposableT = TypeVar("ComposableT", WarpFunction, Callable)
 
 def _composition_factory(f1: ComposableT, f2: ComposableT) -> ComposableT:
     """Return the function for f1(f2(x))."""
+
     @wraps(f1)
     def composition(*args):
         """Inner function."""
         return f1(f2(*args))
+
     return composition
 
 
 def _multiply_factory(f1: ComposableT, f2: ComposableT) -> ComposableT:
     """Return the function for f1(x) * f2(x)."""
+
     @wraps(f1)
     def composition(*args):
         """Inner function."""
         return f1(*args) * f2(*args)  # pyright: ignore [reportOperatorIssue]
+
     return composition
 
 

@@ -1,5 +1,5 @@
 """
-Contains the SmartOptimiser class.
+Vanguard defines its own optimiser wrapper to enable additional features.
 """
 import inspect
 from collections import deque
@@ -14,6 +14,8 @@ from torch.nn import Module
 from torch.optim import Optimizer
 
 OptimiserT = TypeVar("OptimiserT", bound=Optimizer)
+
+
 class SmartOptimiser(Generic[OptimiserT]):
     """
     A smart wrapper around the standard optimisers found in PyTorch which can enable early stopping.
@@ -22,20 +24,22 @@ class SmartOptimiser(Generic[OptimiserT]):
         When setting the learning rate, using the :meth:`learning_rate` property,
         the parameters for each registered module are re-initialised.
     """
+
     _stored_initial_state_dicts: Dict[Module, Dict[str, Tensor]]
     last_n_losses: Deque[float]
     _internal_optimiser: OptimiserT
 
-    def __init__(self,
-                 optimiser_class: Type[OptimiserT],
-                 *initial_modules: Module,
-                 early_stop_patience: Optional[int] = None,
-                 **optimiser_kwargs
-                 ):
+    def __init__(
+        self,
+        optimiser_class: Type[OptimiserT],
+        *initial_modules: Module,
+        early_stop_patience: Optional[int] = None,
+        **optimiser_kwargs,
+    ):
         """
         Initialise self.
 
-        :param optimiser_class: An uninstantiated subclass of class:`torch.optim.Optimizer` to be used
+        :param optimiser_class: An uninstantiated subclass of :class:`torch.optim.Optimizer` to be used
             to create the internal optimiser.
         :param initial_modules: Initial modules whose parameters will be added to the
             internal optimiser.
@@ -55,8 +59,9 @@ class SmartOptimiser(Generic[OptimiserT]):
         for module in initial_modules:
             self._cache_module_parameters(module)
             initial_parameters.append({"params": module.parameters()})
-        self._internal_optimiser = self._internal_optimiser_class(initial_parameters, lr=self._learning_rate,
-                                                                  **self._internal_optimiser_kwargs)
+        self._internal_optimiser = self._internal_optimiser_class(
+            initial_parameters, lr=self._learning_rate, **self._internal_optimiser_kwargs
+        )
 
         self._set_step_method()
 
@@ -83,7 +88,7 @@ class SmartOptimiser(Generic[OptimiserT]):
         self.last_n_losses = self._get_last_n_losses_structure(self._early_stop_patience)
 
     def zero_grad(self, set_to_none: bool = False) -> None:
-        """Set the gradients of all optimized class:`torch.Tensor`s to zero."""
+        """Set the gradients of all optimized :class:`torch.Tensor` s to zero."""
         self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     @overload
@@ -102,8 +107,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         no_improvement = self.last_n_losses[0] <= min(self.last_n_losses)
         if no_improvement:
             print_friendly_losses = ", ".join(f"{loss:.3f}" for loss in self.last_n_losses)
-            raise NoImprovementError(f"Stopping early due to no improvement on {len(self.last_n_losses) - 1} "
-                                     f"consecutive steps: [{print_friendly_losses}]")
+            raise NoImprovementError(
+                f"Stopping early due to no improvement on {len(self.last_n_losses) - 1} "
+                f"consecutive steps: [{print_friendly_losses}]"
+            )
         return step_result
 
     def register_module(self, module: Module) -> None:
@@ -143,8 +150,9 @@ class SmartOptimiser(Generic[OptimiserT]):
             thus far. To reset these, call :meth:`_reset_module_parameters` additionally.
         """
         parameters = [{"params": module.parameters()} for module in self._stored_initial_state_dicts]
-        self._internal_optimiser = self._internal_optimiser_class(parameters, lr=self._learning_rate,
-                                                                  **self._internal_optimiser_kwargs)
+        self._internal_optimiser = self._internal_optimiser_class(
+            parameters, lr=self._learning_rate, **self._internal_optimiser_kwargs
+        )
 
     @overload
     def _step(self, loss: float, closure: None = ...) -> None:
@@ -169,10 +177,12 @@ class SmartOptimiser(Generic[OptimiserT]):
         """Create and set the :meth:`_step` method according to the internal optimiser."""
         internal_step_signature = inspect.signature(self._internal_optimiser.step)
         if "loss" in internal_step_signature.parameters:
+
             def new_step(loss, closure=None):
                 """Pass the loss to the step function."""
                 return self._internal_optimiser.step(loss, closure=closure)
         else:
+
             def new_step(_, closure=None):
                 """Don't pass the loss to the step function."""
                 return self._internal_optimiser.step(closure=closure)
@@ -184,7 +194,7 @@ class SmartOptimiser(Generic[OptimiserT]):
         """
         Get the structure which will contain the last :math`n` losses.
 
-        Returns an instance of class:`collections.deque`.  This is
+        Returns an instance of :class:`collections.deque`.  This is
         always initialised with at least one ``nan`` value.  Whilst
         ``nan`` values occur in the structure, the minimum value will also
         be ``nan`` meaning that the minimum value will not be equal to the
@@ -231,10 +241,12 @@ class Parameters:
     """
     Wrapped for module state_dicts and an objective value of their quality.
     """
+
     def __init__(self, module_state_dicts: Dict[Module, Dict[str, Tensor]], value: float = np.inf):
         """Initialise self."""
-        self.parameters = {module: self._clone_state_dict(state_dict)
-                           for module, state_dict in module_state_dicts.items()}
+        self.parameters = {
+            module: self._clone_state_dict(state_dict) for module, state_dict in module_state_dicts.items()
+        }
         self.priority_value = value
 
     def __lt__(self, other: "Parameters") -> bool:
@@ -252,8 +264,11 @@ class Parameters:
 
 
 T = TypeVar("T")
+
+
 class MaxLengthHeapQ(Generic[T]):
     """A heapq of fixed maximum length."""
+
     def __init__(self, max_length: int):
         """Initialise self."""
         self.max_length = max_length
@@ -280,26 +295,23 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
     Always choose parameters with the minimum loss value, regardless of the iteration at which they occur.
 
     .. note::
-        This is the default smart optimiser for some class:`vanguard.vanilla.GaussianGPController.
+        This is the default smart optimiser for some :class:`vanguard.vanilla.GaussianGPController`.
         To disable the greedy loss behaviour and revert to keeping the parameters at the final iteration
-        of training, using class:`vanguard.optimise.optimiser.SmartOptimiser` or a different subclass
+        of training, using :class:`vanguard.optimise.optimiser.SmartOptimiser` or a different subclass
         thereof.
 
     """
+
     N_RETAINED_PARAMETERS = 1
 
-    def __init__(self,
-                 optimiser_class: Type[OptimiserT],
-                 *initial_modules: Module,
-                 early_stop_patience: Optional[int] = None,
-                 **optimiser_kwargs
-                 ):
-        super().__init__(
-            optimiser_class,
-            *initial_modules,
-            early_stop_patience=early_stop_patience,
-            **optimiser_kwargs
-        )
+    def __init__(
+        self,
+        optimiser_class: Type[OptimiserT],
+        *initial_modules: Module,
+        early_stop_patience: Optional[int] = None,
+        **optimiser_kwargs,
+    ):
+        super().__init__(optimiser_class, *initial_modules, early_stop_patience=early_stop_patience, **optimiser_kwargs)
         self._top_n_parameters = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
 
     def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> None:
@@ -324,4 +336,5 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
 
 class NoImprovementError(RuntimeError):
     """Raised when the loss of the model is consistently increasing."""
+
     pass

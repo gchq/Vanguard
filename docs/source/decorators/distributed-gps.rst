@@ -8,7 +8,6 @@ Main Decorator
 --------------
 .. autoclass:: vanguard.distribute.decorator.Distributed
     :members:
-    :show-inheritance:
 
 Aggregators
 -----------
