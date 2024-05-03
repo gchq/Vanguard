@@ -215,14 +215,7 @@ def _correct_point_estimate_shapes(point_estimate_kernels: List[KernelT]) -> Non
     for point_estimate_scale_kernel in point_estimate_kernels:
         delattr(point_estimate_scale_kernel, "raw_outputscale")
         point_estimate_scale_kernel.register_parameter(
-            name="raw_outputscale",
-            parameter=torch.nn.Parameter(
-                torch.zeros(
-                    [
-                        1,
-                    ]
-                )
-            ),
+            name="raw_outputscale", parameter=torch.nn.Parameter(torch.zeros([1]))
         )
 
 

@@ -30,7 +30,9 @@ def process_notebooks(notebook_file_paths):
             notebook = nbformat.read(rf, as_version=4)
 
         notebook.cells = [
-            cell for cell in notebook.cells if cell.source and not cell["source"].startswith("# sphinx ignore")
+            cell  #
+            for cell in notebook.cells
+            if cell.source and not cell["source"].startswith("# sphinx ignore")
         ]
 
         correct_cell_numbers = itertools.count(1)

@@ -84,13 +84,16 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
                 self._verify_expected_errors(cell, cell_no, output)
 
     def _verify_expected_errors(
-        self, cell: nbformat.notebooknode.NotebookNode, cell_no: int, output: nbformat.notebooknode.NotebookNode
+        self,
+        cell: nbformat.notebooknode.NotebookNode,
+        cell_no: int,
+        output: nbformat.notebooknode.NotebookNode,
     ) -> None:
         """Verify if an error is expected in a cell."""
         cell_source_lines = cell.source.split("\n")
         match_if_cell_expected_to_ignore = _RE_SPHINX_EXPECT.match(cell_source_lines[0])
         if not match_if_cell_expected_to_ignore:
-            self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: " f"{output.evalue}")
+            self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: {output.evalue}")
         else:
             expected_error = match_if_cell_expected_to_ignore.group(1)
             if output.ename != expected_error:

@@ -83,8 +83,8 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
 
         return function_dist.__class__(mean, covar)
 
-    def _shaped_noise_covar(
-        self,  # pyright: ignore [reportIncompatibleMethodOverride]
+    def _shaped_noise_covar(  # pyright: ignore [reportIncompatibleMethodOverride]
+        self,
         base_shape: Size,
         add_noise: bool = True,
         noise: Optional[Tensor] = None,

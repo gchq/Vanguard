@@ -7,7 +7,7 @@ import shutil
 from setuptools import find_packages, setup
 
 short_description = (
-    "Various easy-to-use extensions for Gaussian process models and a framework for" " composition of extensions."
+    "Various easy-to-use extensions for Gaussian process models and a framework for composition of extensions."
 )
 
 with open("README.md", encoding="utf-8") as rf:
