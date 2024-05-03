@@ -13,8 +13,8 @@ repos:
           - --maxkb=5000
       # Check valid Python syntax
       - id: check-ast
-#      # Require literal syntax when initializing empty or zero python builtin types
-#      - id: check-builtin-literals
+      # Require literal syntax when initializing empty or zero python builtin types
+      - id: check-builtin-literals
       # Check for files that would conflict in case-insensitive filesystems
       - id: check-case-conflict
       # Check for a common error of defining a docstring after code

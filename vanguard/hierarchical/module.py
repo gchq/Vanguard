@@ -54,8 +54,8 @@ class BayesianHyperparameters:
         self.ignored_parameters = set(ignored_parameters)
         for param in self.ignored_parameters:
             self.ignored_parameters.add(f"raw_{param}")
-        self.prior_means = prior_means if prior_means is not None else dict()
-        self.prior_variances = prior_variances if prior_variances is not None else dict()
+        self.prior_means = prior_means if prior_means is not None else {}
+        self.prior_variances = prior_variances if prior_variances is not None else {}
         self.prior_means.update({f"raw_{param}": value for param, value in self.prior_means.items()})
         self.prior_variances.update({f"raw_{param}": value for param, value in self.prior_variances.items()})
 
