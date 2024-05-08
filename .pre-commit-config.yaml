@@ -64,11 +64,11 @@ repos:
 #        # Abort if ruff linter fails as there is some duplication of functionality with
 #        # the slow pylint hook
 #        fail_fast: true
-#  - repo: https://github.com/regebro/pyroma
-#    rev: "4.2"
-#    hooks:
-#      # Ensure that necessary package information is provided
-#      - id: pyroma
+  - repo: https://github.com/regebro/pyroma
+    rev: "4.2"
+    hooks:
+      # Ensure that necessary package information is provided
+      - id: pyroma
 #  - repo: https://github.com/streetsidesoftware/cspell-cli
 #    rev: v8.3.0
 #    hooks:
