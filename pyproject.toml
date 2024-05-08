@@ -1,2 +1,3 @@
 [tool.isort]
 line_length = 120
+known_local_folder = ["confutils","refstyle"]
