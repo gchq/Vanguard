@@ -207,9 +207,9 @@ def _safe_index_batched_multivariate_normal(distribution: VariationalDistributio
     matrix is larger than an obscure threshold). Hopefully this will change, but for now, we will work
     around it. This function delazifies the batched covariance matrix and yields recreated non-batch
     normals using then relazified individual covariance matrices.
-    Delazifiying the batch covariance matrix doesn't cause any inefficiencies because the individual
+    Delazifying the batch covariance matrix doesn't cause any inefficiencies because the individual
     covariance matrices would be delazified later anyway. Relazifying the individual matrices just
-    delays any Choleksy issues, which is good because we have handling for them downstream.
+    delays any Cholesky issues, which is good because we have handling for them downstream.
     """
     distribution_type = type(distribution)
     non_lazy_covariance_matrix = distribution.covariance_matrix

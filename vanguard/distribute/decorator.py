@@ -241,7 +241,7 @@ def _create_subset(*arrays: Union[NDArray[np.floating], float],
     Return subsets of the arrays along the same random indices.
 
     :param arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is.
-    :returns: The subsetted arrays.
+    :returns: The array subsets.
 
     :Example:
         >>> x = np.array([1, 2, 3, 4, 5])

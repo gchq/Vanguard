@@ -166,7 +166,7 @@ class KMedoidsPartitioner(BasePartitioner):
 
         :param train_x: The mean of the inputs.
         :param kernel: The kernel to use for constructing the
-                similarity matrix in kmedoids.
+                similarity matrix in KMedoids.
         :param n_experts: The number of partitions in which to split the data. Defaults to 2.
         :param communication: If True, A communications expert will be included. Defaults to False.
         :param seed: The seed for the random state. Defaults to 42.

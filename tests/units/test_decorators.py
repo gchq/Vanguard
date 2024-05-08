@@ -480,12 +480,12 @@ class SignatureTests(unittest.TestCase):
         """Signature should contain number."""
         self.assertEqual("(self, number: Union[int, float])", str(inspect.signature(self.SimilarNumberAfter.__init__)))
 
-    def test_argspec_before(self) -> None:
+    def test_arg_spec_before(self) -> None:
         """Signature should contain number."""
         processed_args = process_args(self.SimilarNumberBefore.__init__, None, 1)
         self.assertDictEqual({"self": None, "number": 1}, processed_args)
 
-    def test_argspec_after(self) -> None:
+    def test_arg_spec_after(self) -> None:
         """Signature should contain number."""
         processed_args = process_args(self.SimilarNumberAfter.__init__, None, 1)
         self.assertDictEqual({"self": None, "number": 1}, processed_args)
