@@ -55,7 +55,7 @@ class CategoricalClassification(Decorator):
         >>> test_x = np.array([0.05, 0.95])
         >>> preds, probs = gp.classify_points(test_x)
         >>> preds
-        array([0, 2])
+        array([0, 2], dtype=int64)
     """
     def __init__(self, num_classes: int, **kwargs):
         """

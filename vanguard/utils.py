@@ -59,7 +59,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
         >>> MyClass(a=1, b=2, c=3)  # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
-        TypeError: __init__() got an unexpected keyword argument 'c'
+        TypeError: MyClass.__init__() got an unexpected keyword argument 'c'
         >>> x = instantiate_with_subset_of_kwargs(MyClass, a=1, b=2, c=3)
         >>> x.a, x.b
         (1, 2)
@@ -76,7 +76,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
         >>> instantiate_with_subset_of_kwargs(MyClass, a=1, c=3)
         Traceback (most recent call last):
         ...
-        TypeError: __init__() missing 1 required positional argument: 'b'
+        TypeError: MyClass.__init__() missing 1 required positional argument: 'b'
     """
     remaining_kwargs = kwargs.copy()
     while remaining_kwargs:
@@ -87,7 +87,10 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
             try:
                 incorrect_parameter = incorrect_likelihood_parameter_passed.group(1)
             except AttributeError:
-                raise type_error
+                assert incorrect_likelihood_parameter_passed is None
+                # the TypeError is telling us we're missing a parameter - suppress the AttributeError as it's noise
+                # to the user.
+                raise type_error from None
             else:
                 remaining_kwargs.pop(incorrect_parameter)
         else:
