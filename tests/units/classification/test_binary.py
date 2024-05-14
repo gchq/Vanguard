@@ -1,6 +1,8 @@
 """
 Tests for the BinaryClassification decorator.
 """
+from unittest import expectedFailure
+
 import numpy as np
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO
@@ -56,6 +58,25 @@ class BinaryTests(ClassificationTestCase):
             f"of {BernoulliLikelihood.__name__} for binary classification.",
             ctx.exception.args[0]
         )
+
+    @expectedFailure  # TODO: These tests currently fail. Find out why ClassificationMixin isn't working properly.
+    def test_closed_methods(self):
+        """Test that the ClassificationMixin has correctly closed the prediction methods of the underlying controller"""
+        cases = [
+            ((lambda: self.controller.posterior_over_point(1.0)), "classify_points"),
+            ((lambda: self.controller.posterior_over_fuzzy_point(1.0, 1.0)), "classify_fuzzy_points"),
+            ((lambda: self.controller.predictive_likelihood(1.0)), "classify_points"),
+            ((lambda: self.controller.fuzzy_predictive_likelihood(1.0, 1.0)), "classify_fuzzy_points"),
+        ]
+
+        for call_method, alternative_method in cases:
+            with self.subTest():
+                with self.assertRaises(TypeError) as ctx:
+                    call_method()
+                self.assertEqual(
+                    f"The '{alternative_method}' method should be used instead.",
+                    ctx.exception.args[0]
+                )
 
 
 class BinaryFuzzyTests(ClassificationTestCase):
