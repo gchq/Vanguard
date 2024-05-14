@@ -37,3 +37,21 @@ class MulticlassTests(ClassificationTestCase):
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
+
+
+    def test_illegal_likelihood_class(self) -> None:
+        """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
+        class IllegalLikelihoodClass:
+            pass
+
+        with self.assertRaises(ValueError) as ctx:
+            __ = MulticlassGaussianClassifier(self.dataset.train_x, self.dataset.train_y,
+                                              mean_class=means.ZeroMean, kernel_class=kernels.RBFKernel,
+                                              y_std=0, likelihood_class=IllegalLikelihoodClass)
+
+        self.assertEqual(
+            "The class passed to `likelihood_class` must be a subclass of "
+            f"{DirichletKernelClassifierLikelihood.__name__}.",
+            # TODO should this say "multiclass classification" instead?
+            ctx.exception.args[0]
+        )

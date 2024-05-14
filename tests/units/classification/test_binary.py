@@ -41,6 +41,22 @@ class BinaryTests(ClassificationTestCase):
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.05)
 
+    def test_illegal_likelihood_class(self) -> None:
+        """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
+        class IllegalLikelihoodClass:
+            pass
+
+        with self.assertRaises(ValueError) as ctx:
+            __ = BinaryClassifier(self.dataset.train_x, self.dataset.train_y, kernel_class=PeriodicRBFKernel,
+                                  y_std=0, likelihood_class=IllegalLikelihoodClass,
+                                  marginal_log_likelihood_class=VariationalELBO)
+
+        self.assertEqual(
+            "The class passed to `likelihood_class` must be a subclass "
+            f"of {BernoulliLikelihood.__name__} for binary classification.",
+            ctx.exception.args[0]
+        )
+
 
 class BinaryFuzzyTests(ClassificationTestCase):
     """
