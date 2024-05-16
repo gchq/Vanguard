@@ -56,7 +56,6 @@ framealpha
 genindex
 gpcontroller
 gpytorch
-imagespec
 inproceedings
 intersphinx
 ipynb
@@ -69,6 +68,7 @@ kernelspec
 lazify
 lengthscale
 lengthscales
+lexer
 linalg
 linkcheck
 linspace

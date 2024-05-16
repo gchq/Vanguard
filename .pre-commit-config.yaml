@@ -80,7 +80,8 @@ repos:
               .*.properties|
               requirements.txt|
               requirements-docs.txt|
-              .pylintrc
+              .pylintrc|
+              LICENSE.md
             )$
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2

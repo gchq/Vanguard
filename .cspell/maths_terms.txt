@@ -7,7 +7,6 @@ homoskedastic
 hyperparameters
 jittered
 latents
-lexer
 logit
 medoids
 nonlinear
