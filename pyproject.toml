@@ -5,3 +5,8 @@ known_local_folder = ["confutils","refstyle"]
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "S307"
+]
