@@ -190,20 +190,20 @@ class GaussianUncertaintyGPController(GPController):
             warnings.filterwarnings("ignore", category=GPInputWarning, message=_INPUT_WARNING)
             posterior = self._get_posterior_over_point_in_eval_mode(x_with_grad)
 
-        preds, covar = posterior._tensor_prediction()
+        predictions, covar = posterior._tensor_prediction()
 
-        # Each entry of preds depends only on the matching input vector, so summing them is a simple way of getting the
+        # Each entry of predictions depends only on the matching input vector, so summing them is a simple way of getting the
         # result we need from autograd (which can only compute gradients of scalars)
-        preds_grad = []
-        if len(preds.shape) == 1:
-            preds = preds.unsqueeze(-1)
-        sum_over_inputs_preds = preds.sum(dim=0)
-        for sum_preds in sum_over_inputs_preds:
+        predictions_grad = []
+        if len(predictions.shape) == 1:
+            predictions = predictions.unsqueeze(-1)
+        sum_over_inputs_predictions = predictions.sum(dim=0)
+        for sum_predictions in sum_over_inputs_predictions:
             x_with_grad.retain_grad()
-            sum_preds.backward(retain_graph=True)
-            preds_grad.append(x_with_grad.grad)
-        root_var = torch.stack([torch.mul(pg, torch.sqrt(x_var)) for pg in preds_grad])
-        return preds.detach(), covar.detach(), root_var
+            sum_predictions.backward(retain_graph=True)
+            predictions_grad.append(x_with_grad.grad)
+        root_var = torch.stack([torch.mul(pg, torch.sqrt(x_var)) for pg in predictions_grad])
+        return predictions.detach(), covar.detach(), root_var
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
             self, x: numpy.typing.NDArray[np.floating], x_std: Union[numpy.typing.NDArray[np.floating], float]
@@ -214,7 +214,7 @@ class GaussianUncertaintyGPController(GPController):
         .. warning:
             The ``n_features`` must match with :attr:`self.dim`.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -224,13 +224,13 @@ class GaussianUncertaintyGPController(GPController):
         """
         tx = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         tx_std = self._process_x_std(x_std).to(self.device)
-        preds, covar, additive_grad_noise = self._get_additive_grad_noise(tx, tx_std ** 2)
+        predictions, covar, additive_grad_noise = self._get_additive_grad_noise(tx, tx_std ** 2)
         additional_covar = torch.diag(self._noise_transform(additive_grad_noise).T.reshape(-1))
         covar += additional_covar
 
         jitter = torch.eye(covar.shape[0]) * gpytorch.settings.cholesky_jitter.value(covar.dtype)
 
-        return self.posterior_class.from_mean_and_covariance(preds.squeeze(), covar + jitter)
+        return self.posterior_class.from_mean_and_covariance(predictions.squeeze(), covar + jitter)
 
     def _process_x_std(self, std: Optional[Union[numpy.typing.NDArray[float], float]]) -> torch.Tensor:
         """

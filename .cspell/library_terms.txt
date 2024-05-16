@@ -102,7 +102,6 @@ optim
 outputscale
 outputscales
 pred
-preds
 primaryclass
 prob
 probs

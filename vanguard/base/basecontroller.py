@@ -204,7 +204,7 @@ class BaseGPController:
         .. warning:
             We assume either a homoskedastic noise model, or a pre-specified noise level via the y_std arg.
 
-        :param x: (n_preds, n_features) The points at which to obtain the likelihood.
+        :param x: (n_predictions, n_features) The points at which to obtain the likelihood.
         :returns: The marginal distribution.
         """
         posterior = self._get_posterior_over_point_in_eval_mode(x)
@@ -225,8 +225,8 @@ class BaseGPController:
         """
         Calculate the predictive likelihood at an x-value, given variance.
 
-        :param x: (n_preds, n_features) The points at which to obtain the likelihood.
-        :param x_std: (n_preds, n_features) The std-dev of input points.
+        :param x: (n_predictions, n_features) The points at which to obtain the likelihood.
+        :param x_std: (n_predictions, n_features) The std-dev of input points.
         :returns: The marginal distribution.
         """
         prediction_output = self._get_posterior_over_fuzzy_point_in_eval_mode(x, x_std)
@@ -246,7 +246,7 @@ class BaseGPController:
         .. warning:
             The ``n_features`` must match with :attr:`self.dim`.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -373,7 +373,7 @@ class BaseGPController:
         """
         Predict the y-value of a single point in evaluation mode.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :returns: The prior distribution.
         """
         self.set_to_evaluation_mode()
@@ -400,7 +400,7 @@ class BaseGPController:
         """
         Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :returns: The prior distribution.
         """
         tx = torch.as_tensor(x, dtype=self.dtype, device=self.device)

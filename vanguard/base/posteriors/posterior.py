@@ -50,8 +50,8 @@ class Posterior:
 
         :returns: (``means``, ``covar``) where:
 
-            * ``means``: (n_preds,) The posterior predictive mean,
-            * ``covar``: (n_preds, n_preds) The posterior predictive covariance matrix.
+            * ``means``: (n_predictions,) The posterior predictive mean,
+            * ``covar``: (n_predictions, n_predictions) The posterior predictive covariance matrix.
         """
         mean, covar = self._tensor_prediction()
         return mean.detach().cpu().numpy(), covar.detach().cpu().numpy()
@@ -65,7 +65,7 @@ class Posterior:
 
         :param alpha: The significance level of the CIs.
         :returns: The (``median``, ``lower``, ``upper``) bounds of the confidence interval for the
-                    predictive posterior, each of shape (n_preds,).
+                    predictive posterior, each of shape (n_predictions,).
         """
         median, lower, upper = self._tensor_confidence_interval(alpha)
         return median.detach().cpu().numpy(), lower.detach().cpu().numpy(), upper.detach().cpu().numpy()
@@ -158,8 +158,8 @@ class Posterior:
 
         :returns: (``means``, ``covar``) where:
 
-            * ``means``: (n_preds,) The posterior predictive mean,
-            * ``covar``: (n_preds, n_preds) The posterior predictive covariance matrix.
+            * ``means``: (n_predictions,) The posterior predictive mean,
+            * ``covar``: (n_predictions, n_predictions) The posterior predictive covariance matrix.
         """
         try:
             covar = self.distribution.covariance_matrix
@@ -180,7 +180,7 @@ class Posterior:
 
         :param alpha: The significance level of the CIs.
         :returns: The (``median``, ``lower``, ``upper``) bounds of the confidence interval for the
-                    predictive posterior, each of shape (n_preds,).
+                    predictive posterior, each of shape (n_predictions,).
         """
         mean, covar = self._tensor_prediction()
         return self._gaussian_confidence_interval(mean, covar, alpha=alpha)

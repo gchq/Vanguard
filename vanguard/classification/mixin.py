@@ -26,11 +26,11 @@ class ClassificationMixin:
         """
         Classify points.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :returns: (``predictions``, ``certainties``) where:
 
-            * ``predictions``: (n_preds,) The posterior predicted classes.
-            * ``certainties``: (n_preds,) The posterior predicted class probabilities.
+            * ``predictions``: (n_predictions,) The posterior predicted classes.
+            * ``certainties``: (n_predictions,) The posterior predicted class probabilities.
         """
         raise NotImplementedError
 
@@ -40,7 +40,7 @@ class ClassificationMixin:
         """
         Classify fuzzy points.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -48,8 +48,8 @@ class ClassificationMixin:
 
         :returns: (``predictions``, ``certainties``) where:
 
-            * ``predictions``: (n_preds,) The posterior predicted classes.
-            * ``certainties``: (n_preds,) The posterior predicted class probabilities.
+            * ``predictions``: (n_predictions,) The posterior predicted classes.
+            * ``certainties``: (n_predictions,) The posterior predicted class probabilities.
         """
         raise NotImplementedError
 
