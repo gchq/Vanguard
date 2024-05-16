@@ -60,8 +60,10 @@ repos:
     hooks:
       # Run the formatter.
       - id: ruff-format
+        types_or: [ python, jupyter ]
       # Run the linter.
       - id: ruff
+        types_or: [ python, jupyter ]
         args: [--fix, --line-length=120]
         # Abort if ruff linter fails as there is some duplication of functionality with
         # the slow pylint hook

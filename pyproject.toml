@@ -5,3 +5,4 @@ known_local_folder = ["confutils","refstyle"]
 
 [tool.ruff]
 line-length = 120
+extend-include = ["*.ipynb"]  # Handle Jupyter Notebook files as well.
