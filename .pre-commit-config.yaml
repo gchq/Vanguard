@@ -123,15 +123,6 @@ repos:
         entry: python pre_commit_hooks/markdown_cells.py
         language: python
         additional_dependencies: ["nbformat"]
-#      - id: docstring-spaces
-#        name: Forbid docstring spaces
-#        description: Ensure there are no blank lines after docstrings
-#        entry: python pre_commit_hooks/docstring_spaces.py
-#        language: python
-#        types:
-#          - python
-#        exclude:
-#          .pylintrc
 #      - id: pylint
 #        name: pylint
 #        description: Run Pylint static analysis
