@@ -106,14 +106,10 @@ primaryclass
 prob
 probs
 pybtex
-pycodestyle
-pydocstyle
-pyflakes
 pylint
 pylintrc
 pyobjects
 pyproject
-pyqt
 pyroma
 pytest
 pyupgrade
