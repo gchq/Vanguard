@@ -2,6 +2,7 @@
 Contains model classes to enable classification in Vanguard.
 """
 import warnings
+from typing import Optional
 
 import gpytorch
 import torch
@@ -42,8 +43,8 @@ class InertKernelModel(ExactGPModel):
     kernel matrix.
     """
     def __init__(
-            self, train_inputs: torch.Tensor, train_targets: torch.Tensor,
-            covar_module: gpytorch.kernels.Kernel, mean_module: gpytorch.means.Mean,
+            self, train_inputs: Optional[torch.Tensor], train_targets: Optional[torch.Tensor],
+            covar_module: gpytorch.kernels.Kernel, mean_module: Optional[gpytorch.means.Mean],
             likelihood: gpytorch.likelihoods.Likelihood, num_classes: int
     ):
         """
@@ -66,8 +67,8 @@ class InertKernelModel(ExactGPModel):
                 train_inputs = (train_inputs,)
             try:
                 self.train_inputs = tuple(tri.unsqueeze(-1) if tri.ndimension() == 1 else tri for tri in train_inputs)
-            except AttributeError:
-                raise TypeError("Train inputs must be a tensor, or a list/tuple of tensors")
+            except AttributeError as exc:
+                raise TypeError("Train inputs must be a tensor, or a list/tuple of tensors") from exc
             self.train_targets = train_targets
 
         self.prediction_strategy = None

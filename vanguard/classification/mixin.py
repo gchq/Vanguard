@@ -14,6 +14,7 @@ import numpy as np
 import numpy.typing
 
 
+# TODO: Turns this mixin into a decorator - it currently doesn't do the thing it's meant to!
 class ClassificationMixin:
     """
     Converts a decorator class to expect a classification task.
