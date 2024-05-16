@@ -8,7 +8,6 @@ from heapq import heappush, heappushpop, nlargest
 from typing import Any, Callable, Deque, Dict, Generator, Generic, List, Optional, Type, TypeVar, overload
 
 import numpy as np
-import torch.nn
 from torch import Tensor
 from torch.nn import Module
 from torch.optim import Optimizer

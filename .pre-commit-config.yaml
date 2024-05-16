@@ -55,15 +55,15 @@ repos:
     hooks:
       # No tabs, only spaces
       - id: forbid-tabs
-#  - repo: https://github.com/astral-sh/ruff-pre-commit
-#    rev: v0.2.2
-#    hooks:
-#      # Run the linter.
-#      - id: ruff
-#        args: [--fix, --line-length=120]
-#        # Abort if ruff linter fails as there is some duplication of functionality with
-#        # the slow pylint hook
-#        fail_fast: true
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.2
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [--fix, --line-length=120]
+        # Abort if ruff linter fails as there is some duplication of functionality with
+        # the slow pylint hook
+        fail_fast: true
 #  - repo: https://github.com/regebro/pyroma
 #    rev: "4.2"
 #    hooks:
