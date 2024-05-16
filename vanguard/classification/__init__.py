@@ -5,3 +5,10 @@ from .binary import BinaryClassification
 from .categorical import CategoricalClassification
 from .dirichlet import DirichletMulticlassClassification
 from .mixin import ClassificationMixin
+
+__all__ = [
+    "BinaryClassification",
+    "CategoricalClassification",
+    "DirichletMulticlassClassification",
+    "ClassificationMixin",
+]

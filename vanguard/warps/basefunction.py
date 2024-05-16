@@ -4,7 +4,7 @@ All warp functions should subclass this :class:`WarpFunction` class.
 import copy
 from functools import wraps
 from itertools import chain
-from typing import Any, Callable, Iterator, List, TypeVar, Union, overload
+from typing import Callable, Iterator, List, TypeVar, Union
 
 import gpytorch
 import torch

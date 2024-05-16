@@ -34,9 +34,15 @@ VANGUARD_FOLDER_FILE_PATH = os.path.abspath(os.path.join(DOCS_FOLDER_FILE_PATH, 
 
 sys.path.extend([DOCS_FOLDER_FILE_PATH, SOURCE_FOLDER_FILE_PATH, VANGUARD_FOLDER_FILE_PATH, ".."])
 
-import vanguard
-from vanguard.base.basecontroller import ttypes, ttypes_cuda
-from vanguard.hierarchical.collection import ModuleT
+# ignore Ruff's E402 "Module level import not at top of file" here - this must come after the sys.path manipulation
+# first party module imports
+import vanguard  # noqa: E402
+from vanguard.base.basecontroller import ttypes, ttypes_cuda  # noqa: E402
+from vanguard.hierarchical.collection import ModuleT  # noqa: E402
+
+# local folder imports
+import confutils  # noqa: E402
+from refstyle import STYLE_NAME  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
@@ -62,7 +68,6 @@ extensions = [
     "sphinxcontrib.bibtex",
 ]
 
-from refstyle import STYLE_NAME
 
 bibtex_default_style = STYLE_NAME
 bibtex_bibfiles = [os.path.join(VANGUARD_FOLDER_FILE_PATH, "references.bib")]
@@ -224,8 +229,6 @@ def setup(app):
 
 
 # -- FILE PRE-PROCESSING -----------------------------------------------------
-
-import confutils
 
 examples_source = os.path.join(VANGUARD_FOLDER_FILE_PATH, "examples", "notebooks")
 examples_dest = os.path.join(SOURCE_FOLDER_FILE_PATH, "examples")

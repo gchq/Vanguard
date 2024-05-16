@@ -9,3 +9,9 @@ treatment as seen in [CITATION NEEDED]_.
 from .laplace import LaplaceHierarchicalHyperparameters
 from .module import BayesianHyperparameters
 from .variational import VariationalHierarchicalHyperparameters
+
+__all__ = [
+    "LaplaceHierarchicalHyperparameters",
+    "BayesianHyperparameters",
+    "VariationalHierarchicalHyperparameters",
+]

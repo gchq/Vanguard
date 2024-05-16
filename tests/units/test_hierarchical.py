@@ -77,59 +77,6 @@ class KernelConversionTests(unittest.TestCase):
         self.assertEqual(gp.hyperparameter_collection.sample_tensor.shape, torch.Size([N_MC_SAMPLES, 1]))
 
 
-class TrainingTests:
-    """
-    Basic tests for an hierarchical controller and BayesianHyperparameters decorators.
-    """
-
-    def test_non_bayesian_hyperparameters_are_point_estimates(self):
-        dataset = SyntheticDataset()
-        gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std)
-        gp.fit(10)
-        self.assertNotEqual(gp.kernel.raw_outputscale.item(), 0.0)
-
-    def test_posterior_does_not_fail(self):
-        dataset = SyntheticDataset()
-        gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std)
-        gp.fit(10)
-        posterior = gp.posterior_over_point(dataset.test_x)
-        mean, upper, lower = posterior.confidence_interval()
-        self.assertNoNans(mean)
-        self.assertNoNans(upper)
-        self.assertNoNans(lower)
-
-    def test_2d_non_bayesian_hyperparameters_are_point_estimates(self):
-        dataset = MultidimensionalSyntheticDataset()
-        gp = self.controller_class(
-            dataset.train_x,
-            dataset.train_y,
-            ScaledBayesianRBFKernel,
-            dataset.train_y_std,
-            kernel_kwargs={"ard_num_dims": 2},
-        )
-        gp.fit(10)
-        self.assertNotEqual(gp.kernel.raw_outputscale.item(), 0.0)
-
-    def test_2d_posterior_does_not_fail(self):
-        dataset = MultidimensionalSyntheticDataset()
-        gp = self.controller_class(
-            dataset.train_x,
-            dataset.train_y,
-            ScaledBayesianRBFKernel,
-            dataset.train_y_std,
-            kernel_kwargs={"ard_num_dims": 2},
-        )
-        gp.fit(10)
-        posterior = gp.posterior_over_point(dataset.test_x)
-        mean, upper, lower = posterior.confidence_interval()
-        self.assertNoNans(mean)
-        self.assertNoNans(upper)
-        self.assertNoNans(lower)
-
-    def assertNoNans(self, array):
-        self.assertFalse(np.isnan(array).any())
-
-
 T_GPController = TypeVar("T_GPController", bound=GPController)
 
 

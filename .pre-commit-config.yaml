@@ -60,12 +60,12 @@ repos:
     hooks:
       # Run the formatter.
       - id: ruff-format
-#      # Run the linter.
-#      - id: ruff
-#        args: [--fix, --line-length=120]
-#        # Abort if ruff linter fails as there is some duplication of functionality with
-#        # the slow pylint hook
-#        fail_fast: true
+      # Run the linter.
+      - id: ruff
+        args: [--fix, --line-length=120]
+        # Abort if ruff linter fails as there is some duplication of functionality with
+        # the slow pylint hook
+        fail_fast: true
 #  - repo: https://github.com/regebro/pyroma
 #    rev: "4.2"
 #    hooks:

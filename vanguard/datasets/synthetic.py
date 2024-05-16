@@ -1,7 +1,7 @@
 """
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
-from typing import Callable, Iterable, List, Tuple, TypedDict
+from typing import Callable, Iterable, Tuple, TypedDict
 
 import numpy as np
 from numpy.typing import NDArray
