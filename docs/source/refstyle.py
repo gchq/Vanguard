@@ -19,6 +19,7 @@ class MyLabelStyle(BaseLabelStyle):
     """
     A style which formats labels to use the original key in the .bib file.
     """
+
     def format_labels(self, sorted_entries: Iterable[Entry]) -> Generator[str, None, None]:
         for entry in sorted_entries:
             yield entry.key

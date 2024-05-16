@@ -6,8 +6,9 @@ import shutil
 
 from setuptools import find_packages, setup
 
-short_description = "Various easy-to-use extensions for Gaussian process models and a framework for" \
-                    " composition of extensions."
+short_description = (
+    "Various easy-to-use extensions for Gaussian process models and a framework for composition of extensions."
+)
 
 with open("README.md", encoding="utf-8") as rf:
     long_description = "\n" + rf.read()
@@ -39,7 +40,7 @@ setup(
         "scipy",
         "torch>=1.7.0",
         "typing-extensions",
-        "urllib3>=2.2.1"
+        "urllib3>=2.2.1",
     ],
     extras_require={
         "test": [
@@ -56,7 +57,7 @@ setup(
             "ruff",
         ],
     },
-    package_data={"vanguard": [BIBTEX_FILE]}
+    package_data={"vanguard": [BIBTEX_FILE]},
 )
 
 os.remove(bibtex_destination_file)

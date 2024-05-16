@@ -14,12 +14,13 @@ class StandardiseXModule:
     """
     A simple decorator to standard scale the inputs to a mean or kernel module before applying the mean or kernel.
     """
+
     def __init__(
-            self,
-            mean: Union[numpy.typing.NDArray[float], float],
-            scale: Union[numpy.typing.NDArray[float], float],
-            device: Optional[torch.device],
-            dtype: Optional[numpy.typing.DTypeLike],
+        self,
+        mean: Union[numpy.typing.NDArray[float], float],
+        scale: Union[numpy.typing.NDArray[float], float],
+        device: Optional[torch.device],
+        dtype: Optional[numpy.typing.DTypeLike],
     ) -> None:
         """
         Initialise self.
@@ -35,8 +36,8 @@ class StandardiseXModule:
         self.scale = torch.as_tensor(scale, device=device, dtype=dtype)
 
     def apply(
-            self,
-            module_class: torch.nn.Module,
+        self,
+        module_class: torch.nn.Module,
     ) -> torch.nn.Module:
         """
         Modify the module's forward method to include standard scaling.
@@ -49,6 +50,7 @@ class StandardiseXModule:
         @wraps_class(module_class)
         class ScaledModule(module_class):
             """An inner class which scales the forward method."""
+
             def forward(self, *args, **kwargs):
                 """Scale the inputs before being passed."""
                 scaled_args = ((arg - mean) / scale for arg in args)
@@ -58,10 +60,10 @@ class StandardiseXModule:
 
     @classmethod
     def from_data(
-            cls,
-            x: torch.Tensor,
-            device: Optional[torch.device],
-            dtype: Optional[numpy.typing.DTypeLike],
+        cls,
+        x: torch.Tensor,
+        device: Optional[torch.device],
+        dtype: Optional[numpy.typing.DTypeLike],
     ) -> Self:
         """
         Create an instance of self with the mean and scale of the standard scaling obtained from the given data.
