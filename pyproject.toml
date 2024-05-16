@@ -7,6 +7,6 @@ known_local_folder = ["confutils","refstyle"]
 line-length = 120
 
 [tool.ruff.lint]
-select = [
+extend-select = [
     "S307"
 ]
