@@ -199,7 +199,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         Yield posterior samples forever.
 
         :param controller: The controller from which to yield samples.
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         """
         tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         while True:
@@ -214,7 +214,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         Yield fuzzy posterior samples forever.
 
         :param controller: The controller from which to yield samples.
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
