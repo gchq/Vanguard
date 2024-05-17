@@ -75,11 +75,6 @@ version = {attr = "vanguard.__version__"}
 [tool.setuptools.package-data]
 vanguard = ["references.bib"]
 
-[tool.isort]
-profile = "black" # to agree with ruff
-line_length = 120
-known_local_folder = ["confutils","refstyle"]
-
 [tool.ruff]
 line-length = 120
 
