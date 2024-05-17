@@ -51,6 +51,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         >>> predictions
         array([0, 1, 2])
     """
+
     def __init__(self, num_classes: int, **kwargs):
         """
         Initialise self.
@@ -69,14 +70,15 @@ class DirichletKernelMulticlassClassification(Decorator):
             gp_model_class = InertKernelModel
 
             def __init__(self, *args, **kwargs):
-
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 if not issubclass(likelihood_class, DirichletKernelClassifierLikelihood):
-                    raise ValueError("The class passed to `likelihood_class` must be a subclass of "
-                                     f"{DirichletKernelClassifierLikelihood.__name__}.")
+                    raise ValueError(
+                        "The class passed to `likelihood_class` must be a subclass of "
+                        f"{DirichletKernelClassifierLikelihood.__name__}."
+                    )
 
                 train_y = all_parameters_as_kwargs.pop("train_y")
 
@@ -88,19 +90,25 @@ class DirichletKernelMulticlassClassification(Decorator):
                 likelihood_kwargs["num_classes"] = num_classes
                 model_kwargs["num_classes"] = num_classes
 
-                super().__init__(train_y=train_y,
-                                 likelihood_class=likelihood_class,
-                                 likelihood_kwargs=likelihood_kwargs,
-                                 gp_kwargs=model_kwargs,
-                                 **all_parameters_as_kwargs)
+                super().__init__(
+                    train_y=train_y,
+                    likelihood_class=likelihood_class,
+                    likelihood_kwargs=likelihood_kwargs,
+                    gp_kwargs=model_kwargs,
+                    **all_parameters_as_kwargs,
+                )
 
-            def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            def classify_points(
+                self, x: Union[float, numpy.typing.NDArray[np.floating]]
+            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             def classify_fuzzy_points(
-                    self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
+                self,
+                x: Union[float, numpy.typing.NDArray[np.floating]],
+                x_std: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
@@ -108,7 +116,7 @@ class DirichletKernelMulticlassClassification(Decorator):
 
             @staticmethod
             def _get_predictions_from_prediction_means(
-                    means: Union[float, numpy.typing.NDArray[np.floating]]
+                means: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.

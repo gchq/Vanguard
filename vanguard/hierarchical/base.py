@@ -15,10 +15,10 @@ from ..base.posteriors import MonteCarloPosteriorCollection, Posterior
 from ..decoratorutils import Decorator, wraps_class
 from ..warnings import _JITTER_WARNING, NumericalWarning
 
-ControllerT = TypeVar('ControllerT', bound=GPController)
-DistributionT = TypeVar('DistributionT', bound=gpytorch.distributions.Distribution)
-PosteriorT = TypeVar('PosteriorT', bound=Posterior)
-ModuleT = TypeVar('ModuleT', bound=gpytorch.module.Module)
+ControllerT = TypeVar("ControllerT", bound=GPController)
+DistributionT = TypeVar("DistributionT", bound=gpytorch.distributions.Distribution)
+PosteriorT = TypeVar("PosteriorT", bound=Posterior)
+ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)
 
 
 class BaseHierarchicalHyperparameters(Decorator):
@@ -29,6 +29,7 @@ class BaseHierarchicalHyperparameters(Decorator):
     :class:`~vanguard.hierarchical.module.BayesianHyperparameters` decorator will be included
     for Bayesian inference. The remaining hyperparameters will be inferred as point estimates.
     """
+
     def __init__(self, num_mc_samples: int = 100, **kwargs: Any):
         """
         Initialise self.
@@ -59,8 +60,10 @@ class BaseHierarchicalHyperparameters(Decorator):
                 :param x: (n_predictions, n_features) The predictive inputs.
                 :returns: The prior distribution.
                 """
-                posteriors = (self.posterior_class(posterior_sample)
-                              for posterior_sample in decorator._infinite_posterior_samples(self, x))
+                posteriors = (
+                    self.posterior_class(posterior_sample)
+                    for posterior_sample in decorator._infinite_posterior_samples(self, x)
+                )
                 posterior_collection = self.posterior_collection_class(posteriors)
                 return posterior_collection
 
@@ -71,12 +74,16 @@ class BaseHierarchicalHyperparameters(Decorator):
                 :param x: (n_predictions, n_features) The predictive inputs.
                 :returns: The prior distribution.
                 """
-                likelihoods = (self.posterior_class(posterior_sample)
-                               for posterior_sample in decorator._infinite_likelihood_samples(self, x))
+                likelihoods = (
+                    self.posterior_class(posterior_sample)
+                    for posterior_sample in decorator._infinite_likelihood_samples(self, x)
+                )
                 likelihood_collection = self.posterior_collection_class(likelihoods)
                 return likelihood_collection
 
-            def _get_posterior_over_fuzzy_point_in_eval_mode(self, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Type[MonteCarloPosteriorCollection]:
+            def _get_posterior_over_fuzzy_point_in_eval_mode(
+                self, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+            ) -> Type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
 
@@ -92,12 +99,16 @@ class BaseHierarchicalHyperparameters(Decorator):
                 :returns: The prior distribution.
                 """
                 self.set_to_evaluation_mode()
-                posteriors = (self.posterior_class(x_sample)
-                              for x_sample in decorator._infinite_fuzzy_posterior_samples(self, x, x_std))
+                posteriors = (
+                    self.posterior_class(x_sample)
+                    for x_sample in decorator._infinite_fuzzy_posterior_samples(self, x, x_std)
+                )
                 posterior_collection = self.posterior_collection_class(posteriors)
                 return posterior_collection
 
-            def _fuzzy_predictive_likelihood(self, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Type[MonteCarloPosteriorCollection]:
+            def _fuzzy_predictive_likelihood(
+                self, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+            ) -> Type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive likelihood with Gaussian input noise.
 
@@ -113,8 +124,10 @@ class BaseHierarchicalHyperparameters(Decorator):
                 :returns: The prior distribution.
                 """
                 self.set_to_evaluation_mode()
-                likelihoods = (self.posterior_class(posterior_sample)
-                               for posterior_sample in decorator._infinite_fuzzy_likelihood_samples(self, x, x_std))
+                likelihoods = (
+                    self.posterior_class(posterior_sample)
+                    for posterior_sample in decorator._infinite_fuzzy_likelihood_samples(self, x, x_std)
+                )
                 likelihood_collection = self.posterior_collection_class(likelihoods)
                 return likelihood_collection
 
@@ -126,8 +139,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 See here: https://github.com/cornellius-gp/gpytorch/issues/864
                 """
                 with warnings.catch_warnings():
-                    warnings.filterwarnings(
-                        "ignore", category=NumericalWarning, message=_JITTER_WARNING)
+                    warnings.filterwarnings("ignore", category=NumericalWarning, message=_JITTER_WARNING)
 
                     output = self._gp(x)
                 return output
@@ -135,19 +147,27 @@ class BaseHierarchicalHyperparameters(Decorator):
         return InnerClass
 
     @staticmethod
-    def _infinite_posterior_samples(controller: ControllerT, x: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
+    def _infinite_posterior_samples(
+        controller: ControllerT, x: NDArray[np.floating]
+    ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_fuzzy_posterior_samples(controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
+    def _infinite_fuzzy_posterior_samples(
+        controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]
+    ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_likelihood_samples(controller: ControllerT, x: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
+    def _infinite_likelihood_samples(
+        controller: ControllerT, x: NDArray[np.floating]
+    ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
-    def _infinite_fuzzy_likelihood_samples(controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
+    def _infinite_fuzzy_likelihood_samples(
+        controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]
+    ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
 
@@ -177,8 +197,7 @@ def _get_bayesian_hyperparameters(module: ModuleT) -> Tuple[list, ...]:
     module_hyperparameter_pairs = [(module, hyperparameter) for hyperparameter in bayesian_hyperparameters]
 
     for sub_module in module.children():
-        sub_hyperparameters, sub_point_estimates_scale_kernels = \
-            _get_bayesian_hyperparameters(sub_module)
+        sub_hyperparameters, sub_point_estimates_scale_kernels = _get_bayesian_hyperparameters(sub_module)
         module_hyperparameter_pairs.extend(sub_hyperparameters)
         point_estimates_scale_kernels.extend(sub_point_estimates_scale_kernels)
 

@@ -14,6 +14,7 @@ from vanguard.warps import SetWarp, warpfunctions
 @SetWarp(warpfunctions.AffineWarpFunction(a=3, b=-1) @ warpfunctions.BoxCoxWarpFunction(0.2), ignore_all=True)
 class WarpedGaussianGPController(GaussianGPController):
     """Test class."""
+
     pass
 
 
@@ -21,12 +22,14 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the SetWarp decorator.
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
         cls.dataset = SyntheticDataset()
-        cls.controller = WarpedGaussianGPController(cls.dataset.train_x, cls.dataset.train_y,
-                                                    ScaledRBFKernel, cls.dataset.train_y_std)
+        cls.controller = WarpedGaussianGPController(
+            cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std
+        )
         cls.controller.fit(10)
 
     def test_prediction_error(self) -> None:
@@ -59,11 +62,14 @@ class BasicTests(unittest.TestCase):
         external_median, external_upper, external_lower = posterior.confidence_interval(0.05)
 
         warped_external_median = self.controller.warp(
-            torch.as_tensor(external_median, dtype=torch.float32).reshape(-1, 1))
+            torch.as_tensor(external_median, dtype=torch.float32).reshape(-1, 1)
+        )
         warped_external_upper = self.controller.warp(
-            torch.as_tensor(external_upper, dtype=torch.float32).reshape(-1, 1))
+            torch.as_tensor(external_upper, dtype=torch.float32).reshape(-1, 1)
+        )
         warped_external_lower = self.controller.warp(
-            torch.as_tensor(external_lower, dtype=torch.float32).reshape(-1, 1))
+            torch.as_tensor(external_lower, dtype=torch.float32).reshape(-1, 1)
+        )
 
         torch.testing.assert_allclose(warped_external_median, internal_median.reshape(-1, 1))
         torch.testing.assert_allclose(warped_external_lower, internal_lower.reshape(-1, 1))
@@ -77,11 +83,14 @@ class BasicTests(unittest.TestCase):
         external_median, external_upper, external_lower = posterior.confidence_interval(0.05)
 
         warped_external_median = self.controller.warp(
-            torch.as_tensor(external_median, dtype=torch.float32).reshape(-1, 1))
+            torch.as_tensor(external_median, dtype=torch.float32).reshape(-1, 1)
+        )
         warped_external_upper = self.controller.warp(
-            torch.as_tensor(external_upper, dtype=torch.float32).reshape(-1, 1))
+            torch.as_tensor(external_upper, dtype=torch.float32).reshape(-1, 1)
+        )
         warped_external_lower = self.controller.warp(
-            torch.as_tensor(external_lower, dtype=torch.float32).reshape(-1, 1))
+            torch.as_tensor(external_lower, dtype=torch.float32).reshape(-1, 1)
+        )
 
         torch.testing.assert_allclose(warped_external_median, internal_median.reshape(-1, 1))
         torch.testing.assert_allclose(warped_external_upper, internal_upper.reshape(-1, 1))

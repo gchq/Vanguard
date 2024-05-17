@@ -15,6 +15,7 @@ class DummyDecorator1(Decorator):
     """
     A dummy decorator used for testing.
     """
+
     def __init__(self, **kwargs: Any):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
@@ -22,6 +23,7 @@ class DummyDecorator1(Decorator):
         @wraps_class(cls)
         class InnerClass(cls):
             """A subclass which adds no functionality."""
+
             pass
 
         return super()._decorate_class(InnerClass)
@@ -31,6 +33,7 @@ class DummyDecorator2(Decorator):
     """
     A dummy decorator used for testing.
     """
+
     def __init__(self, **kwargs: Any):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
@@ -38,6 +41,7 @@ class DummyDecorator2(Decorator):
         @wraps_class(cls)
         class InnerClass(cls):
             """A subclass which adds no functionality."""
+
             pass
 
         return super()._decorate_class(InnerClass)
@@ -47,12 +51,14 @@ class DummySubclass(DummyDecorator1):
     """
     A subclass of a decorator.
     """
+
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         super_decorated = super()._decorate_class(cls)
 
         @wraps_class(super_decorated)
         class InnerClass(super_decorated):
             """A subclass which adds no functionality."""
+
             pass
 
         return super()._decorate_class(InnerClass)
@@ -62,22 +68,27 @@ class TrackingTests(unittest.TestCase):
     """
     Testing the __decorators__ attribute.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
+
         @DummyDecorator1()
         class DecoratedOnceGPController(GPController):
             """A dummy decorated class."""
+
             pass
 
         @DummyDecorator2()
         @DummyDecorator1()
         class DecoratedTwiceGPController(GPController):
             """A dummy decorated class."""
+
             pass
 
         @DummySubclass()
         class DecoratedWithSubclassController(GPController):
             """A dummy class decorated with a controller."""
+
             pass
 
         self.decorated_once_controller_class = DecoratedOnceGPController
@@ -105,12 +116,15 @@ class AttributeTests(unittest.TestCase):
     """
     Tests that the attributes have been properly updated.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
+
         class SimpleNumber:
             """
             An example class for a real number.
             """
+
             __decorators__ = []
 
             def __init__(self, number: Union[float, int]):
@@ -124,6 +138,7 @@ class AttributeTests(unittest.TestCase):
             """
             Square the result of a SimpleNumber class.
             """
+
             def __init__(self, **kwargs: Any):
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
@@ -133,6 +148,7 @@ class AttributeTests(unittest.TestCase):
                     """
                     A wrapper for normalising y inputs and variance.
                     """
+
                     def __init__(self, *args: Any, **kwargs: Any):
                         """Inner initialisation."""
                         super().__init__(*args, **kwargs)
@@ -140,7 +156,7 @@ class AttributeTests(unittest.TestCase):
                     def add_5(self) -> Union[float, int]:
                         """Square the result of this method."""
                         result = super().add_5()
-                        return result ** 2
+                        return result**2
 
                 return InnerClass
 
@@ -148,6 +164,7 @@ class AttributeTests(unittest.TestCase):
             """
             A superfluous subclass.
             """
+
             pass
 
         self.SimilarNumberBefore = SimilarNumber
@@ -156,7 +173,7 @@ class AttributeTests(unittest.TestCase):
 
     def test_answer(self) -> None:
         """Test that the subclass has actually been applied."""
-        self.assertEqual(15 ** 2, self.number.add_5())
+        self.assertEqual(15**2, self.number.add_5())
 
     def test_docstrings_of_class(self) -> None:
         """Test that the class docstrings are all correct."""
@@ -199,12 +216,15 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
     """
     Testing breaking the decorator by overwriting or extending.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
+
         class SimpleNumber:
             """
             An example class for a real number.
             """
+
             __decorators__ = []
 
             def __init__(self, number: Union[int, float]):
@@ -218,6 +238,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
             """
             Square the result of a SimpleNumber class.
             """
+
             def __init__(self, **kwargs: Any):
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
@@ -227,6 +248,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
                     """
                     A wrapper for normalising y inputs and variance.
                     """
+
                     def __init__(self, *args: Any, **kwargs: Any):
                         """Inner initialisation."""
                         super().__init__(*args, **kwargs)
@@ -234,7 +256,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
                     def add_5(self) -> Union[int, float]:
                         """Square the result of this method."""
                         result = super().add_5()
-                        return result ** 2
+                        return result**2
 
                 return InnerClass
 
@@ -245,11 +267,13 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         """Test that overwriting a method throws an error instead."""
         expected_error_message = "The class 'NewNumber' has overwritten the following methods: {'add_5'}."
         with self.assertRaisesRegex(errors.OverwrittenMethodError, expected_error_message):
+
             @self.SquareResult(raise_instead=True)
             class NewNumber(self.SimpleNumber):
                 """
                 Declaring this class should throw an error.
                 """
+
                 def add_5(self) -> Union[int, float]:
                     return super().add_5()
 
@@ -257,11 +281,13 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         """Test that overwriting a method throws a warning."""
         expected_error_message = "The class 'NewNumber' has overwritten the following methods: {'add_5'}."
         with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
+
             @self.SquareResult()
             class NewNumber(self.SimpleNumber):
                 """
                 Declaring this class should throw an error.
                 """
+
                 def add_5(self) -> Union[int, float]:
                     return super().add_5()
 
@@ -269,11 +295,13 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         """Test that such an error can be avoided."""
         try:
             with self.assertWarns(errors.OverwrittenMethodWarning):
+
                 @self.SquareResult(ignore_methods=("add_5",))
                 class NewNumber(self.SimpleNumber):
                     """
                     Declaring this class should throw an error.
                     """
+
                     def add_5(self) -> Union[int, float]:
                         return super().add_5()
         except AssertionError:
@@ -287,11 +315,13 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         """Test that creating a new method throws an error instead."""
         expected_error_message = "The class 'NewNumber' has added the following unexpected methods: {'something_new'}."
         with self.assertRaisesRegex(errors.UnexpectedMethodError, expected_error_message):
+
             @self.SquareResult(raise_instead=True)
             class NewNumber(self.SimpleNumber):
                 """
                 Declaring this class should throw an error.
                 """
+
                 def something_new(self) -> None:
                     pass
 
@@ -299,11 +329,13 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         """Test that creating a new method throws a warning."""
         expected_error_message = "The class 'NewNumber' has added the following unexpected methods: {'something_new'}."
         with self.assertWarnsRegex(errors.UnexpectedMethodWarning, expected_error_message):
+
             @self.SquareResult()
             class NewNumber(self.SimpleNumber):
                 """
                 Declaring this class should throw an error.
                 """
+
                 def something_new(self) -> None:
                     pass
 
@@ -311,11 +343,13 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         """Test that such an error can be avoided."""
         try:
             with self.assertWarns(errors.UnexpectedMethodWarning):
+
                 @self.SquareResult(ignore_methods=["something_new"])
                 class NewNumber(self.SimpleNumber):
                     """
                     Declaring this class should throw an error.
                     """
+
                     def something_new(self) -> None:
                         pass
         except AssertionError:
@@ -331,14 +365,17 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
         class MiddleNumber(self.SimpleNumber):
             """An intermediate number."""
+
             pass
 
         with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
+
             @self.SquareResult()
             class NewNumber(MiddleNumber):
                 """
                 Declaring this class should throw an error.
                 """
+
                 def add_5(self) -> Union[int, float]:
                     return super().add_5()
 
@@ -348,15 +385,18 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
         class MiddleNumber(self.SimpleNumber):
             """An intermediate number."""
+
             def add_5(self) -> Union[int, float]:
                 return super().add_5()
 
         with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
+
             @self.SquareResult()
             class NewNumber(MiddleNumber):
                 """
                 Declaring this class should throw an error.
                 """
+
                 pass
 
     def test_overwrite_method_with_superclass_both_wrong(self) -> None:
@@ -365,15 +405,18 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
         class MiddleNumber(self.SimpleNumber):
             """An intermediate number."""
+
             def add_5(self) -> Union[int, float]:
                 return super().add_5()
 
         with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
+
             @self.SquareResult()
             class NewNumber(MiddleNumber):
                 """
                 Declaring this class should throw an error.
                 """
+
                 def add_5(self) -> Union[int, float]:
                     return super().add_5()
 
@@ -384,9 +427,11 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
         class RequirementDecorator(Decorator):
             """A decorator with a requirement."""
+
             def __init__(self, **kwargs: Any):
-                super().__init__(framework_class=simple_number_class,
-                                 required_decorators={square_result_class}, **kwargs)
+                super().__init__(
+                    framework_class=simple_number_class, required_decorators={square_result_class}, **kwargs
+                )
 
         with self.assertRaises(errors.MissingRequirementsError):
 
@@ -395,6 +440,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
                 """
                 Declaring this class should throw an error.
                 """
+
                 pass
 
     def test_passed_requirements(self) -> None:
@@ -404,17 +450,21 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
         class RequirementDecorator(Decorator):
             """A decorator with a requirement."""
+
             def __init__(self, **kwargs: Any):
-                super().__init__(framework_class=simple_number_class,
-                                 required_decorators={square_result_class}, **kwargs)
+                super().__init__(
+                    framework_class=simple_number_class, required_decorators={square_result_class}, **kwargs
+                )
 
         try:
+
             @RequirementDecorator(ignore_methods=("__init__", "add_5"))
             @self.SquareResult()
             class NewNumber(self.SimpleNumber):
                 """
                 Declaring this class should throw an error.
                 """
+
                 pass
         except errors.MissingRequirementsError as error:
             self.fail(f"Should not have thrown {str(error)}")
@@ -424,12 +474,15 @@ class SignatureTests(unittest.TestCase):
     """
     Test that the signatures have been properly updated.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
+
         class SimpleNumber:
             """
             An example class for a real number.
             """
+
             __decorators__ = []
 
             def __init__(self, number: Union[int, float]):
@@ -443,6 +496,7 @@ class SignatureTests(unittest.TestCase):
             """
             Square the result of a SimpleNumber class.
             """
+
             def __init__(self, **kwargs: Any):
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
@@ -452,6 +506,7 @@ class SignatureTests(unittest.TestCase):
                     """
                     A wrapper for normalising y inputs and variance.
                     """
+
                     def __init__(self, *args: Any, **kwargs: Any):
                         """Inner initialisation."""
                         super().__init__(*args, **kwargs)
@@ -459,7 +514,7 @@ class SignatureTests(unittest.TestCase):
                     def add_5(self) -> Union[int, float]:
                         """Square the result of this method."""
                         result = super().add_5()
-                        return result ** 2
+                        return result**2
 
                 return InnerClass
 
@@ -467,6 +522,7 @@ class SignatureTests(unittest.TestCase):
             """
             A superfluous subclass.
             """
+
             pass
 
         self.SimilarNumberBefore = SimilarNumber

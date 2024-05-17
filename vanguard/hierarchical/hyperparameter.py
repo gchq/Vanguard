@@ -11,7 +11,15 @@ class BayesianHyperparameter:
     """
     Represents a single Bayesian hyperparameter.
     """
-    def __init__(self, raw_name: str, raw_shape: torch.Size, constraint: Optional[constraints.Interval], prior_mean: float, prior_variance: float):
+
+    def __init__(
+        self,
+        raw_name: str,
+        raw_shape: torch.Size,
+        constraint: Optional[constraints.Interval],
+        prior_mean: float,
+        prior_variance: float,
+    ):
         """
         Initialise self.
 

@@ -34,9 +34,15 @@ VANGUARD_FOLDER_FILE_PATH = os.path.abspath(os.path.join(DOCS_FOLDER_FILE_PATH, 
 
 sys.path.extend([DOCS_FOLDER_FILE_PATH, SOURCE_FOLDER_FILE_PATH, VANGUARD_FOLDER_FILE_PATH, ".."])
 
-import vanguard
-from vanguard.base.basecontroller import ttypes, ttypes_cuda
-from vanguard.hierarchical.collection import ModuleT
+# ignore Ruff's E402 "Module level import not at top of file" here - this must come after the sys.path manipulation
+# first party module imports
+import vanguard  # noqa: E402
+from vanguard.base.basecontroller import ttypes, ttypes_cuda  # noqa: E402
+from vanguard.hierarchical.collection import ModuleT  # noqa: E402
+
+# local folder imports
+import confutils  # noqa: E402
+from refstyle import STYLE_NAME  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
@@ -62,7 +68,6 @@ extensions = [
     "sphinxcontrib.bibtex",
 ]
 
-from refstyle import STYLE_NAME
 
 bibtex_default_style = STYLE_NAME
 bibtex_bibfiles = [os.path.join(VANGUARD_FOLDER_FILE_PATH, "references.bib")]
@@ -92,13 +97,12 @@ plot_rcparams = {
 autodoc_mock_imports = ["pandas", "sklearn_extra"]
 
 intersphinx_mapping = {
-    "gpytorch": ('https://docs.gpytorch.ai/en/v1.8.1/', None),  # TODO: Bump this when updating gpytorch
+    "gpytorch": ("https://docs.gpytorch.ai/en/v1.8.1/", None),  # TODO: Bump this when updating gpytorch
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python3": ("https://docs.python.org/3", None),
     "sklearn": ("https://scikit-learn.org/stable/", None),
-    "torch": ('https://pytorch.org/docs/stable/', None),
-
+    "torch": ("https://pytorch.org/docs/stable/", None),
 }
 
 nitpicky = True
@@ -119,8 +123,15 @@ nitpick_ignore = [(type_, target) for type_, targets in nitpicky_ignore_mapping.
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints", "examples/**/README.rst",
-                    "examples/README.rst", "examples/index.rst"]
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "**.ipynb_checkpoints",
+    "examples/**/README.rst",
+    "examples/README.rst",
+    "examples/index.rst",
+]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -148,20 +159,22 @@ autodoc_custom_types: dict[TypeAlias, str] = {
 
 
 # TODO: Remove these when gpytorch is sufficiently bumped:
-autodoc_custom_types.update({
-    gpytorch.means.Mean: ":class:`~gpytorch.means.Mean`",
-    gpytorch.kernels.Kernel: ":class:`~gpytorch.kernels.Kernel`",
-    gpytorch.likelihoods.Likelihood: ":class:`~gpytorch.likelihoods.Likelihood`",
-    gpytorch.likelihoods.GaussianLikelihood: ":class:`~gpytorch.likelihoods.GaussianLikelihood`",
-    gpytorch.distributions.Distribution: ":class:`~gpytorch.distributions.Distribution`",
-    gpytorch.distributions.MultivariateNormal: ":class:`~gpytorch.distributions.MultivariateNormal`",
-    gpytorch.distributions.MultitaskMultivariateNormal: ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`",
-    gpytorch.models.ExactGP: ":class:`~gpytorch.models.ExactGP`",
-    gpytorch.module.Module: ":class:`~gpytorch.Module",
-    gpytorch.constraints.Interval: ":class:`~gpytorch.constraints.Interval`",
-    gpytorch.variational._VariationalStrategy: ":class:`~gpytorch.variational._VariationalStrategy`",
-    gpytorch.variational._VariationalDistribution: ":class:`~gpytorch.variational._VariationalDistribution`",
-})
+autodoc_custom_types.update(
+    {
+        gpytorch.means.Mean: ":class:`~gpytorch.means.Mean`",
+        gpytorch.kernels.Kernel: ":class:`~gpytorch.kernels.Kernel`",
+        gpytorch.likelihoods.Likelihood: ":class:`~gpytorch.likelihoods.Likelihood`",
+        gpytorch.likelihoods.GaussianLikelihood: ":class:`~gpytorch.likelihoods.GaussianLikelihood`",
+        gpytorch.distributions.Distribution: ":class:`~gpytorch.distributions.Distribution`",
+        gpytorch.distributions.MultivariateNormal: ":class:`~gpytorch.distributions.MultivariateNormal`",
+        gpytorch.distributions.MultitaskMultivariateNormal: ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`",
+        gpytorch.models.ExactGP: ":class:`~gpytorch.models.ExactGP`",
+        gpytorch.module.Module: ":class:`~gpytorch.Module",
+        gpytorch.constraints.Interval: ":class:`~gpytorch.constraints.Interval`",
+        gpytorch.variational._VariationalStrategy: ":class:`~gpytorch.variational._VariationalStrategy`",
+        gpytorch.variational._VariationalDistribution: ":class:`~gpytorch.variational._VariationalDistribution`",
+    }
+)
 
 
 def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Optional[str]:
@@ -216,8 +229,6 @@ def setup(app):
 
 
 # -- FILE PRE-PROCESSING -----------------------------------------------------
-
-import confutils
 
 examples_source = os.path.join(VANGUARD_FOLDER_FILE_PATH, "examples", "notebooks")
 examples_dest = os.path.join(SOURCE_FOLDER_FILE_PATH, "examples")

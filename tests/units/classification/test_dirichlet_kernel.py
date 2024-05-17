@@ -21,15 +21,20 @@ class MulticlassTests(ClassificationTestCase):
     """
     Tests for multiclass classification.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100,
-                                                               num_classes=4)
-        self.controller = MulticlassGaussianClassifier(self.dataset.train_x, self.dataset.train_y, y_std=0,
-                                                       mean_class=means.ZeroMean, kernel_class=kernels.RBFKernel,
-                                                       likelihood_class=DirichletKernelClassifierLikelihood,
-                                                       optim_kwargs={"lr": 0.05},
-                                                       marginal_log_likelihood_class=GenericExactMarginalLogLikelihood)
+        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100, num_classes=4)
+        self.controller = MulticlassGaussianClassifier(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            y_std=0,
+            mean_class=means.ZeroMean,
+            kernel_class=kernels.RBFKernel,
+            likelihood_class=DirichletKernelClassifierLikelihood,
+            optim_kwargs={"lr": 0.05},
+            marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+        )
         self.controller.fit(100)
 
     @flaky
