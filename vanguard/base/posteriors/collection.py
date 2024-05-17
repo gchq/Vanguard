@@ -78,14 +78,14 @@ class MonteCarloPosteriorCollection(Posterior):
 
         :returns: (``means``, ``covar``) where:
 
-            * ``means``: (n_preds,) The posterior predictive mean,
-            * ``covar``: (n_preds, n_preds) The posterior predictive covariance matrix.
+            * ``means``: (n_predictions,) The posterior predictive mean,
+            * ``covar``: (n_predictions, n_predictions) The posterior predictive covariance matrix.
 
         """
-        preds = sum(self._cached_samples) / len(self._cached_samples)
-        diffs = [(sample - preds).reshape(-1, 1) for sample in self._cached_samples]
+        predictions = sum(self._cached_samples) / len(self._cached_samples)
+        diffs = [(sample - predictions).reshape(-1, 1) for sample in self._cached_samples]
         covar = sum([diff @ diff.T for diff in diffs]) / (len(self._cached_samples) - 1)
-        return preds, covar
+        return predictions, covar
 
     def _tensor_confidence_interval(
         self,
@@ -96,7 +96,7 @@ class MonteCarloPosteriorCollection(Posterior):
 
         :param alpha: The significance level of the CIs.
         :returns: The (``median``, ``lower``, ``upper``) bounds of the confidence interval for the
-                    predictive posterior, each of shape (n_preds,).
+                    predictive posterior, each of shape (n_predictions,).
         """
         minimum_number_of_samples_needed = self._decide_mc_num_samples(alpha)
         current_number_of_samples = self.distribution.mean.shape[0]

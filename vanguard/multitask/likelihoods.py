@@ -78,8 +78,8 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
             :math:`D_{t} \otimes I_{n}`, :math:`\sigma^{2}I_{nt}` and :math:`diag(\sigma^*)` added.
         """
         mean, covar = function_dist.mean, function_dist.lazy_covariance_matrix
-        covar_kron_lt = self._shaped_noise_covar(mean.shape, add_noise=self.has_global_noise, noise=noise)
-        covar = covar + covar_kron_lt
+        covar_kronecker_lt = self._shaped_noise_covar(mean.shape, add_noise=self.has_global_noise, noise=noise)
+        covar = covar + covar_kronecker_lt
 
         return function_dist.__class__(mean, covar)
 

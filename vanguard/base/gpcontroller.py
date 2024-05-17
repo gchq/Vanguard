@@ -139,7 +139,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         """
         Return predictive posterior of the y-value over a point.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :returns: The posterior.
         """
         return self._get_posterior_over_point_in_eval_mode(x)
@@ -155,7 +155,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         .. warning:
             The ``n_features`` must match with :attr:`self.dim`.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -172,7 +172,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         """
         Calculate the predictive likelihood at an x-value.
 
-        :param x: (n_preds, n_features) The points at which to obtain the likelihood.
+        :param x: (n_predictions, n_features) The points at which to obtain the likelihood.
         :returns: The marginal distribution.
         """
         return self._predictive_likelihood(x)
@@ -185,8 +185,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         """
         Calculate the predictive likelihood at an x-value, given variance.
 
-        :param x: (n_preds, n_features) The points at which to obtain the likelihood.
-        :param x_std: (n_preds, n_features) The std-dev of input points.
+        :param x: (n_predictions, n_features) The points at which to obtain the likelihood.
+        :param x_std: (n_predictions, n_features) The std-dev of input points.
         :returns: The marginal distribution.
         """
         return self._fuzzy_predictive_likelihood(x, x_std)

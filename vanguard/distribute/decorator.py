@@ -225,13 +225,13 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 """
                 Aggregate the means and variances from the expert predictions.
 
-                :param x: (n_preds, n_features) The predictive inputs.
+                :param x: (n_predictions, n_features) The predictive inputs.
                 :param means_and_covars: A list of (``mean``, ``variance``) pairs
                         representing the posterior predicted and mean for each expert controller.
                 :returns: (``means``, ``covar``) where:
 
-                    * ``means``: (n_preds,) The posterior predictive mean,
-                    * ``covar``: (n_preds, n_preds) The posterior predictive covariance.
+                    * ``means``: (n_predictions,) The posterior predictive mean,
+                    * ``covar``: (n_predictions, n_predictions) The posterior predictive covariance.
 
                 """
                 prior_var = None
@@ -262,7 +262,7 @@ def _create_subset(
     Return subsets of the arrays along the same random indices.
 
     :param arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is.
-    :returns: The subsetted arrays.
+    :returns: The array subsets.
 
     :Example:
         >>> x = np.array([1, 2, 3, 4, 5])
