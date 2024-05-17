@@ -1,3 +1,80 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Vanguard"
+dynamic = ["version"]
+description = "Various easy-to-use extensions for Gaussian process models and a framework for composition of extensions."
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = [
+    "gaussian-process",
+    "pytorch",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Typing :: Typed",
+]
+license = {file = "LICENSE.md"}
+authors = [
+    {name = "GCHQ", email = "oss@gchq.gov.uk"},
+]
+dependencies = [
+    "bibtexparser",
+    "gpytorch>=1.5.1",
+    "matplotlib",
+    "numpy>=1.20",
+    "pandas",
+    "scikit-learn",
+    "scikit-learn-extra",
+    "scipy",
+    "torch>=1.7.0",
+    "typing_extensions",
+    "urllib3>=2.2.1"
+]
+
+[project.optional-dependencies]
+# These match the suffixes on the various requirements-*.txt files
+# Run unit tests
+test = [
+    "pytest",
+]
+# Compile documentation
+doc = [
+    # TODO - get from requirements-docs
+]
+# All tools for a developer including those for running pylint
+dev = [
+    "vanguard[test]", # TODO include doc?
+    "isort",
+    "jupyterlab",
+    "pre-commit",
+    "pylint",
+    "pyright",
+    "pyroma",
+    "ruff",
+]
+
+[project.urls]
+#Documentation = "https://example.org/" # TODO
+Repository = "https://github.com/gchq/Vanguard"
+Issues = "https://github.com/gchq/Vanguard/issues"
+#Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md" # TODO
+
+[tool.setuptools]
+packages = ["vanguard"]
+
+[tool.setuptools.dynamic]
+version = {attr = "vanguard.__version__"}
+
+[tool.setuptools.package-data]
+vanguard = ["references.bib"]
+
 [tool.isort]
 profile = "black" # to agree with ruff
 line_length = 120
