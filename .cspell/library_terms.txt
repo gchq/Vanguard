@@ -112,6 +112,7 @@ pyobjects
 pyproject
 pyroma
 pytest
+pytorch
 pyupgrade
 qualnames
 quickstart
