@@ -1,6 +1,8 @@
 """
 Tests for the DirichletKernelMulticlassClassification decorator.
 """
+from unittest import skip
+
 from gpytorch import kernels, means
 
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
@@ -36,6 +38,14 @@ class MulticlassTests(ClassificationTestCase):
     def test_predictions(self) -> None:
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
+
+    @skip("Currently hangs - gets stuck in an infinite loop in MonteCarloPosteriorCollection._yield_posteriors")
+    @flaky
+    def test_fuzzy_predictions(self) -> None:
+        """Predictions should be close to the values from the test data."""
+        test_x_std = 0.005
+        predictions, _ = self.controller.classify_fuzzy_points(self.dataset.test_x, test_x_std)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
 
 
