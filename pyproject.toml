@@ -75,11 +75,6 @@ version = {attr = "vanguard.__version__"}
 [tool.setuptools.package-data]
 vanguard = ["references.bib"]
 
-[tool.isort]
-profile = "black" # to agree with ruff
-line_length = 120
-known_local_folder = ["confutils","refstyle"]
-
 [tool.ruff]
 line-length = 120
 extend-include = ["*.ipynb"]  # Handle Jupyter Notebook files as well.
@@ -92,4 +87,8 @@ extend-select = [
     # TODO: We should enable more of the pydocstyle lints!
     "S102",  # use of `exec` builtin
     "S307",  # Suspicious `eval` usage
+    "I",     # isort rules
 ]
+
+[tool.ruff.lint.isort]
+known-local-folder = ["confutils","refstyle"]
