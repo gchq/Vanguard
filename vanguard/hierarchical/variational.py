@@ -120,7 +120,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         Yield posterior samples forever.
 
         :param controller: The controller from which to yield samples.
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         """
         tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         while True:
@@ -136,7 +136,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         Yield fuzzy posterior samples forever.
 
         :param controller: The controller from which to yield samples.
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -162,7 +162,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         Yield likelihood samples forever.
 
         :param controller: The controller from which to yield samples.
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         """
         tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         while True:
@@ -182,7 +182,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         Yield fuzzy likelihood samples forever.
 
         :param controller: The controller from which to yield samples.
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -230,9 +230,9 @@ def _safe_index_batched_multivariate_normal(
     matrix is larger than an obscure threshold). Hopefully this will change, but for now, we will work
     around it. This function delazifies the batched covariance matrix and yields recreated non-batch
     normals using then relazified individual covariance matrices.
-    Delazifiying the batch covariance matrix doesn't cause any inefficiencies because the individual
+    Delazifying the batch covariance matrix doesn't cause any inefficiencies because the individual
     covariance matrices would be delazified later anyway. Relazifying the individual matrices just
-    delays any Choleksy issues, which is good because we have handling for them downstream.
+    delays any Cholesky issues, which is good because we have handling for them downstream.
     """
     distribution_type = type(distribution)
     non_lazy_covariance_matrix = distribution.covariance_matrix

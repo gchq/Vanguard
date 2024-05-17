@@ -57,7 +57,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 """
                 Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
 
-                :param x: (n_preds, n_features) The predictive inputs.
+                :param x: (n_predictions, n_features) The predictive inputs.
                 :returns: The prior distribution.
                 """
                 posteriors = (
@@ -71,7 +71,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 """
                 Predict the likelihood value of a single point. The mode (eval vs train) of the model is not changed.
 
-                :param x: (n_preds, n_features) The predictive inputs.
+                :param x: (n_predictions, n_features) The predictive inputs.
                 :returns: The prior distribution.
                 """
                 likelihoods = (
@@ -90,7 +90,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 .. warning:
                     The ``n_features`` must match with :attr:`self.dim`.
 
-                :param x: (n_preds, n_features) The predictive inputs.
+                :param x: (n_predictions, n_features) The predictive inputs.
                 :param x_std: The input noise standard deviations:
 
                     * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -115,7 +115,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 .. warning:
                     The ``n_features`` must match with :attr:`self.dim`.
 
-                :param x: (n_preds, n_features) The predictive inputs.
+                :param x: (n_predictions, n_features) The predictive inputs.
                 :param x_std: The input noise standard deviations:
 
                     * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
