@@ -82,3 +82,11 @@ known_local_folder = ["confutils","refstyle"]
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+extend-select = [
+    "D201",  # No blank lines allowed before function docstring
+    "D202",  # No blank lines allowed after function docstring
+    "D211",  # No blank lines allowed before class docstring
+    # TODO: We should enable more of the pydocstyle lints!
+]
