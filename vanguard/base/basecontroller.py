@@ -26,13 +26,34 @@ from .posteriors import MonteCarloPosteriorCollection, Posterior
 from .standardise import StandardiseXModule
 
 NOISE_LOWER_BOUND = 1e-3
-ttypes = Type[Union[torch.FloatTensor, torch.DoubleTensor, torch.IntTensor, torch.BoolTensor,
-              torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor,
-              torch.ShortTensor, torch.LongTensor]]
-ttypes_cuda = Type[Union[torch.cuda.FloatTensor, torch.cuda.DoubleTensor, torch.cuda.IntTensor,
-                   torch.cuda.BoolTensor, torch.cuda.HalfTensor, torch.cuda.BFloat16Tensor,
-                   torch.cuda.ByteTensor, torch.cuda.CharTensor, torch.cuda.ShortTensor,
-                   torch.cuda.LongTensor]]
+ttypes = Type[
+    Union[
+        torch.FloatTensor,
+        torch.DoubleTensor,
+        torch.IntTensor,
+        torch.BoolTensor,
+        torch.HalfTensor,
+        torch.BFloat16Tensor,
+        torch.ByteTensor,
+        torch.CharTensor,
+        torch.ShortTensor,
+        torch.LongTensor,
+    ]
+]
+ttypes_cuda = Type[
+    Union[
+        torch.cuda.FloatTensor,
+        torch.cuda.DoubleTensor,
+        torch.cuda.IntTensor,
+        torch.cuda.BoolTensor,
+        torch.cuda.HalfTensor,
+        torch.cuda.BFloat16Tensor,
+        torch.cuda.ByteTensor,
+        torch.cuda.CharTensor,
+        torch.cuda.ShortTensor,
+        torch.cuda.LongTensor,
+    ]
+]
 
 
 class BaseGPController:
@@ -70,6 +91,7 @@ class BaseGPController:
 
 
     """
+
     if torch.cuda.is_available():
         _default_tensor_type: ttypes_cuda = torch.cuda.FloatTensor
     else:
@@ -84,17 +106,17 @@ class BaseGPController:
     _y_batch_axis: int = 0
 
     def __init__(
-            self,
-            train_x: Union[numpy.typing.NDArray[float], float],
-            train_y: Union[numpy.typing.NDArray[float], float],
-            kernel_class: Type[gpytorch.kernels.Kernel],
-            mean_class: Type[gpytorch.means.Mean],
-            y_std: Union[numpy.typing.NDArray[float], float],
-            likelihood_class: Type[gpytorch.likelihoods.Likelihood],
-            marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
-            optimiser_class: Type[torch.optim.Optimizer],
-            smart_optimiser_class: Type[SmartOptimiser],
-            **kwargs
+        self,
+        train_x: Union[numpy.typing.NDArray[float], float],
+        train_y: Union[numpy.typing.NDArray[float], float],
+        kernel_class: Type[gpytorch.kernels.Kernel],
+        mean_class: Type[gpytorch.means.Mean],
+        y_std: Union[numpy.typing.NDArray[float], float],
+        likelihood_class: Type[gpytorch.likelihoods.Likelihood],
+        marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
+        optimiser_class: Type[torch.optim.Optimizer],
+        smart_optimiser_class: Type[SmartOptimiser],
+        **kwargs,
     ):
         """Initialise self."""
         if train_x.ndim == 1:
@@ -109,12 +131,11 @@ class BaseGPController:
 
         self.N, self.dim, *_ = self.train_x.shape
 
-        self._original_y_variance_as_tensor = torch.as_tensor(y_std ** 2, dtype=self.dtype)
+        self._original_y_variance_as_tensor = torch.as_tensor(y_std**2, dtype=self.dtype)
         if isinstance(y_std, (float, int)):
-            self._y_variance = torch.ones_like(self.train_y, dtype=self.dtype).squeeze(dim=-1)\
-                               * (y_std ** 2)
+            self._y_variance = torch.ones_like(self.train_y, dtype=self.dtype).squeeze(dim=-1) * (y_std**2)
         else:
-            self._y_variance = torch.as_tensor(y_std ** 2, dtype=self.dtype)
+            self._y_variance = torch.as_tensor(y_std**2, dtype=self.dtype)
 
         self.batch_size = kwargs.get("batch_size", None)
         if self.batch_size is None:
@@ -122,8 +143,10 @@ class BaseGPController:
             self.train_y = self.train_y.to(self.device)
             self._y_variance = self._y_variance.to(self.device)
 
-        all_likelihood_params_as_kwargs = {"noise": self._y_variance,
-                                           "noise_constraint": constraints.GreaterThan(NOISE_LOWER_BOUND)}
+        all_likelihood_params_as_kwargs = {
+            "noise": self._y_variance,
+            "noise_constraint": constraints.GreaterThan(NOISE_LOWER_BOUND),
+        }
         all_likelihood_params_as_kwargs.update(kwargs.get("likelihood_kwargs", {}))
         self.likelihood = instantiate_with_subset_of_kwargs(likelihood_class, **all_likelihood_params_as_kwargs)
 
@@ -145,8 +168,14 @@ class BaseGPController:
         class SafeMarginalLogLikelihoodClass(marginal_log_likelihood_class):
             pass
 
-        self._gp = SafeGPModelClass(self.train_x, self.train_y.squeeze(dim=-1), covar_module=self.kernel,
-                                    likelihood=self.likelihood, mean_module=self.mean, **gp_kwargs)
+        self._gp = SafeGPModelClass(
+            self.train_x,
+            self.train_y.squeeze(dim=-1),
+            covar_module=self.kernel,
+            likelihood=self.likelihood,
+            mean_module=self.mean,
+            **gp_kwargs,
+        )
 
         mll_kwargs = kwargs.get("mll_kwargs", {})
         self._mll = SafeMarginalLogLikelihoodClass(self.likelihood, self._gp, **mll_kwargs)
@@ -154,10 +183,13 @@ class BaseGPController:
         optimiser_kwargs = kwargs.get("optim_kwargs", {})
         self._smart_optimiser = smart_optimiser_class(optimiser_class, self._gp, **optimiser_kwargs)
 
-        self.train_data_generator = infinite_tensor_generator(self.batch_size, self.device,
-                                                              (self.train_x, 0),
-                                                              (self.train_y, self._y_batch_axis),
-                                                              (self._y_variance, self._y_batch_axis))
+        self.train_data_generator = infinite_tensor_generator(
+            self.batch_size,
+            self.device,
+            (self.train_x, 0),
+            (self.train_y, self._y_batch_axis),
+            (self._y_variance, self._y_batch_axis),
+        )
 
         additional_metrics = kwargs.get("additional_metrics", [])
         self._metrics_tracker = metrics.MetricsTracker(metrics.loss, *additional_metrics)
@@ -195,8 +227,8 @@ class BaseGPController:
         self._set_requires_grad(False)
 
     def _predictive_likelihood(
-            self,
-            x: Union[numpy.typing.NDArray[float], float],
+        self,
+        x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -218,9 +250,9 @@ class BaseGPController:
         return self.posterior_class(output)
 
     def _fuzzy_predictive_likelihood(
-            self,
-            x: Union[numpy.typing.NDArray[float], float],
-            x_std: Union[numpy.typing.NDArray[float], float],
+        self,
+        x: Union[numpy.typing.NDArray[float], float],
+        x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.
@@ -236,9 +268,9 @@ class BaseGPController:
         return self.posterior_class(output)
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
-            self,
-            x: Union[numpy.typing.NDArray[float], float],
-            x_std: Union[numpy.typing.NDArray[float], float],
+        self,
+        x: Union[numpy.typing.NDArray[float], float],
+        x_std: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
@@ -258,7 +290,7 @@ class BaseGPController:
         tx_std = self._process_x_std(x_std).to(self.device)
 
         def infinite_x_samples(
-                group_size: int = 100,
+            group_size: int = 100,
         ) -> Generator[torch.Tensor, None, None]:
             """
             Yield infinitely many samples.
@@ -275,8 +307,8 @@ class BaseGPController:
         return posterior_collection
 
     def _set_requires_grad(
-            self,
-            value: bool,
+        self,
+        value: bool,
     ) -> None:
         """
         Set the required grad flag of all trainable params.
@@ -287,9 +319,9 @@ class BaseGPController:
             param.requires_grad = value
 
     def _sgd_round(
-            self,
-            n_iters: int = 10,
-            gradient_every: int = 10,
+        self,
+        n_iters: int = 10,
+        gradient_every: int = 10,
     ) -> torch.Tensor:
         """
         Use gradient based optimiser to tune the hyperparameters.
@@ -314,11 +346,13 @@ class BaseGPController:
                 if self.auto_restart is True:
                     warnings.warn(f"Re-running training from scratch for {iter_num-1} iterations.")
                     self._smart_optimiser.reset()
-                    self._sgd_round(iter_num-1, gradient_every)
+                    self._sgd_round(iter_num - 1, gradient_every)
                 else:
                     if self.auto_restart is None:
-                        warnings.warn("Pass auto_restart=True to the controller to automatically restart"
-                                      " training up to the last stable iterations.")
+                        warnings.warn(
+                            "Pass auto_restart=True to the controller to automatically restart"
+                            " training up to the last stable iterations."
+                        )
                     raise err
             finally:
                 try:
@@ -330,10 +364,10 @@ class BaseGPController:
         return detached_loss
 
     def _single_optimisation_step(
-            self,
-            x: torch.Tensor,
-            y: torch.Tensor,
-            retain_graph: bool = False,
+        self,
+        x: torch.Tensor,
+        y: torch.Tensor,
+        retain_graph: bool = False,
     ) -> torch.Tensor:
         """
         Take do a single forward pass and optimisation backward pass.
@@ -349,9 +383,9 @@ class BaseGPController:
         return loss
 
     def _loss(
-            self,
-            train_x: torch.Tensor,
-            train_y: torch.Tensor,
+        self,
+        train_x: torch.Tensor,
+        train_y: torch.Tensor,
     ) -> torch.Tensor:
         """
         Compute the training loss (negative marginal log likelihood).
@@ -367,8 +401,8 @@ class BaseGPController:
             return -self._mll(output, train_y.squeeze(dim=-1))
 
     def _get_posterior_over_point_in_eval_mode(
-            self,
-            x: Union[numpy.typing.NDArray[float], float],
+        self,
+        x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Predict the y-value of a single point in evaluation mode.
@@ -380,8 +414,8 @@ class BaseGPController:
         return self._get_posterior_over_point(x)
 
     def _gp_forward(
-            self,
-            x: Union[numpy.typing.NDArray[float], float],
+        self,
+        x: Union[numpy.typing.NDArray[float], float],
     ) -> ExactGPModel:
         """Pass inputs through the base GPyTorch GP model."""
         with warnings.catch_warnings():
@@ -394,8 +428,8 @@ class BaseGPController:
         return output
 
     def _get_posterior_over_point(
-            self,
-            x: Union[numpy.typing.NDArray[float], float],
+        self,
+        x: Union[numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
@@ -408,8 +442,8 @@ class BaseGPController:
         return self.posterior_class(output)
 
     def _process_x_std(
-            self,
-            std: Union[numpy.typing.NDArray[float], float],
+        self,
+        std: Union[numpy.typing.NDArray[float], float],
     ) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
@@ -428,8 +462,8 @@ class BaseGPController:
         return std_tensor
 
     def _input_standardise_modules(
-            self,
-            *modules: torch.nn.Module,
+        self,
+        *modules: torch.nn.Module,
     ) -> List[torch.nn.Module]:
         """
         Apply standard input scaling (mean zero, variance 1) to the supplied PyTorch nn.Modules.
@@ -444,8 +478,8 @@ class BaseGPController:
 
     @classmethod
     def set_default_tensor_type(
-            cls,
-            tensor_type: Union[ttypes, ttypes_cuda],
+        cls,
+        tensor_type: Union[ttypes, ttypes_cuda],
     ) -> None:
         """
         Set the default tensor type for the class, subsequent subclasses, and external tensors.
@@ -458,8 +492,8 @@ class BaseGPController:
 
     @staticmethod
     def _decide_noise_shape(
-            posterior: Posterior,
-            x: torch.Tensor,
+        posterior: Posterior,
+        x: torch.Tensor,
     ) -> Tuple[int]:
         """
         Determine the correct shape of the likelihood noise.
@@ -485,8 +519,10 @@ class BaseGPController:
         try:
             shape = shape_mapping[(mean.ndim, covar.ndim)]
         except KeyError:
-            raise ValueError(f"A posterior distribution with mean and covariance matrix of dimensions {mean.ndim} and "
-                             f"{covar.ndim} are not currently supported.")
+            raise ValueError(
+                f"A posterior distribution with mean and covariance matrix of dimensions {mean.ndim} and "
+                f"{covar.ndim} are not currently supported."
+            )
         return shape
 
     @staticmethod
@@ -496,27 +532,31 @@ class BaseGPController:
 
         Can be overridden and disabled by subclasses when not relevant.
         """
-        warnings.warn("A regression problem with no warping may suffer from numerical "
-                      "instability in optimisation if the y values are not standard "
-                      "scaled. Using the NormaliseY decorator will likely help.")
+        warnings.warn(
+            "A regression problem with no warping may suffer from numerical "
+            "instability in optimisation if the y values are not standard "
+            "scaled. Using the NormaliseY decorator will likely help."
+        )
 
 
 def _catch_and_check_module_errors(
-        controller: BaseGPController,
+    controller: BaseGPController,
 ) -> Callable:
     """
     Handle some hard to detect errors that may occur within GP model classes.
 
     :param controller: The controller that owns the module class.
     """
+
     def decorator(
-            module_class: torch.nn.Module,
+        module_class: torch.nn.Module,
     ) -> torch.nn.Module:
         """
         Decorate a particular module (mean/kernel).
 
         :param module_class: The model class to which to apply error handling.
         """
+
         @wraps_class(module_class)
         class InnerClass(module_class):
             """
@@ -525,6 +565,7 @@ def _catch_and_check_module_errors(
             This class overloads the __call__ method to give a more reasonable
             error message when the input data is not rank-1.
             """
+
             def __call__(self, *args, **kwargs):
                 try:
                     result = super().__call__(*args, **kwargs)
@@ -533,15 +574,19 @@ def _catch_and_check_module_errors(
                 except RuntimeError:
                     decorator_names = {decorator.__name__ for decorator in controller.__decorators__}
                     if controller.train_x.ndim > 2 and "HigherRankFeatures" not in decorator_names:
-                        raise ValueError("Input data looks like it might not be rank-1, "
-                                         f"shape={str(tuple(controller.train_x.shape))}. If your "
-                                         "features are higher rank (e.g. rank-2 for time series) "
-                                         "consider using the HigherRankFeatures decorator on your controller "
-                                         "and make sure that your kernel and mean functions are defined "
-                                         "for the rank of your input features.")
+                        raise ValueError(
+                            "Input data looks like it might not be rank-1, "
+                            f"shape={str(tuple(controller.train_x.shape))}. If your "
+                            "features are higher rank (e.g. rank-2 for time series) "
+                            "consider using the HigherRankFeatures decorator on your controller "
+                            "and make sure that your kernel and mean functions are defined "
+                            "for the rank of your input features."
+                        )
                     else:
                         raise
                 else:
                     return result
+
         return InnerClass
+
     return decorator

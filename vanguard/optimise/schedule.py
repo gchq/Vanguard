@@ -9,12 +9,15 @@ from torch.optim.lr_scheduler import LRScheduler
 
 OptimiserT = TypeVar("OptimiserT", bound=Optimizer)
 LRSchedulerT = TypeVar("LRSchedulerT", bound=LRScheduler)
+
+
 class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
     """
     Apply a torch learning rate scheduler to a torch optimiser.
 
     The scheduler is stepped at each step of optimiser.
     """
+
     def __init__(self, scheduler_class: Type[LRSchedulerT], *args, **kwargs):
         """
         :param scheduler_class: The (uninstantiated) torch learning rate scheduler to be used.
@@ -38,10 +41,12 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
                 self._applied_scheduler = scheduler_class(self, *scheduler_args, **scheduler_kwargs)
 
             @overload
-            def step(self, loss: float, closure: None) -> None: ...
+            def step(self, loss: float, closure: None) -> None:
+                ...
 
             @overload
-            def step(self, loss: float, closure: Callable[[], float]) -> float: ...
+            def step(self, loss: float, closure: Callable[[], float]) -> float:
+                ...
 
             def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
                 ret = super().step(closure=closure)

@@ -31,6 +31,7 @@ class LearnYNoise(Decorator):
         ... class NewController(GPController):
         ...     pass
     """
+
     def __init__(self, **kwargs):
         """
         Initialise self.
@@ -47,8 +48,8 @@ class LearnYNoise(Decorator):
             """
             A wrapper for unknown, and hence learned, likelihood noise.
             """
-            def __init__(self, *args, **kwargs):
 
+            def __init__(self, *args, **kwargs):
                 try:
                     all_parameters_as_kwargs = process_args(super().__init__, *args, y_std=0, **kwargs)
                 except TypeError:
@@ -67,25 +68,34 @@ class LearnYNoise(Decorator):
                 likelihood_kwargs["learn_additional_noise"] = True
 
                 try:
-                    super().__init__(train_x=train_x, likelihood_kwargs=likelihood_kwargs,
-                                     y_std=y_std, **all_parameters_as_kwargs)
+                    super().__init__(
+                        train_x=train_x, likelihood_kwargs=likelihood_kwargs, y_std=y_std, **all_parameters_as_kwargs
+                    )
                 except TypeError as error:
                     cannot_learn_y_noise = bool(_RE_NOT_LEARN_ERROR.match(str(error)))
                     if cannot_learn_y_noise:
                         likelihood_class = all_parameters_as_kwargs["likelihood_class"]
-                        warnings.warn(f"Cannot learn additional noise for '{likelihood_class.__name__}'. "
-                                      f"Consider removing the '{type(decorator).__name__}' decorator.")
+                        warnings.warn(
+                            f"Cannot learn additional noise for '{likelihood_class.__name__}'. "
+                            f"Consider removing the '{type(decorator).__name__}' decorator."
+                        )
 
                         likelihood_kwargs.pop("learn_additional_noise")
-                        super().__init__(train_x=train_x, likelihood_kwargs=likelihood_kwargs,
-                                         y_std=y_std, **all_parameters_as_kwargs)
+                        super().__init__(
+                            train_x=train_x,
+                            likelihood_kwargs=likelihood_kwargs,
+                            y_std=y_std,
+                            **all_parameters_as_kwargs,
+                        )
                     else:
                         raise
 
         return InnerClass
 
 
-def _process_y_std(y_std: Union[float, numpy.typing.NDArray[np.floating]], shape: Tuple[int], dtype: type, device: torch.DeviceObjType) -> torch.Tensor:
+def _process_y_std(
+    y_std: Union[float, numpy.typing.NDArray[np.floating]], shape: Tuple[int], dtype: type, device: torch.DeviceObjType
+) -> torch.Tensor:
     """
     Create default y_std value or make sure given value is a tensor of the right type and shape.
 

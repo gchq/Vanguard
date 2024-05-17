@@ -57,6 +57,7 @@ class CategoricalClassification(Decorator):
         >>> preds
         array([0, 2])
     """
+
     def __init__(self, num_classes: int, **kwargs):
         """
         Initialise self.
@@ -75,33 +76,38 @@ class CategoricalClassification(Decorator):
             """
             A wrapper for implementing categorical classification.
             """
-            def __init__(self, *args, **kwargs):
 
+            def __init__(self, *args, **kwargs):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 likelihood_kwargs = all_parameters_as_kwargs.pop("likelihood_kwargs", dict())
                 likelihood_kwargs["num_classes"] = decorator.num_classes
-                super().__init__(likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs,
-                                 **all_parameters_as_kwargs)
+                super().__init__(
+                    likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs
+                )
 
             def classify_points(
-                    self, x: Union[float, numpy.typing.NDArray[np.floating]]
+                self, x: Union[float, numpy.typing.NDArray[np.floating]]
             ) -> Tuple[numpy.typing.NDArray[np.integer], Union[float, numpy.typing.NDArray[np.floating]]]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             def classify_fuzzy_points(
-                    self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
+                self,
+                x: Union[float, numpy.typing.NDArray[np.floating]],
+                x_std: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             @staticmethod
-            def _get_predictions_from_posterior(posterior: Posterior) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            def _get_predictions_from_posterior(
+                posterior: Posterior,
+            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get predictions from a posterior distribution.
 

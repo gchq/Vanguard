@@ -5,3 +5,5 @@ A controller class decorated with the  :class:`~vanguard.distribute.decorator.Di
 will make predictions by aggregating the predictions of several independent expert controllers.
 """
 from .decorator import Distributed
+
+__all__ = ["Distributed"]
