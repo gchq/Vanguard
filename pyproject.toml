@@ -91,4 +91,8 @@ extend-select = [
     # TODO: We should enable more of the pydocstyle lints!
     "S102",  # use of `exec` builtin
     "S307",  # Suspicious `eval` usage
+    "I",     # isort rules
 ]
+
+[tool.ruff.lint.isort]
+known-local-folder = ["confutils","refstyle"]
