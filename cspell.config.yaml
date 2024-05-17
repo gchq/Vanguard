@@ -7,6 +7,8 @@ dictionaries:
   - custom-misc
   - library-terms
   - people
+  - maths-terms
+  - acronyms
   - python
 dictionaryDefinitions:
   - name: custom-misc
@@ -18,3 +20,11 @@ dictionaryDefinitions:
   - name: people
     path: ./.cspell/people.txt
     addWords: true
+  - name: maths-terms
+    path: ./.cspell/maths_terms.txt
+    addWords: true
+  - name: acronyms
+    path: ./.cspell/acronyms.txt
+    addWords: true
+ignoreRegExpList:
+  - /doi\s*=\s*\{[\w./-]+}/ # ignore DOIs in .bib files
