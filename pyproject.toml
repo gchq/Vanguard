@@ -8,5 +8,6 @@ line-length = 120
 
 [tool.ruff.lint]
 extend-select = [
-    "S307"
+    "S102",  # use of `exec` builtin
+    "S307",  # Suspicious `eval` usage
 ]
