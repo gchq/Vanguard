@@ -235,8 +235,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     ) -> Generator[torch.Tensor, None, None]:
         """Yield likelihood samples forever."""
         func = _posterior_to_likelihood_samples(LaplaceHierarchicalHyperparameters._infinite_posterior_samples)
-        for sample in func(controller, x):
-            yield sample
+        yield from func(controller, x)
 
     @staticmethod
     def _infinite_fuzzy_likelihood_samples(
@@ -244,8 +243,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     ) -> Generator[torch.Tensor, None, None]:
         """Yield fuzzy likelihood samples forever."""
         func = _posterior_to_likelihood_samples(LaplaceHierarchicalHyperparameters._infinite_fuzzy_posterior_samples)
-        for sample in func(controller, x):
-            yield sample
+        yield from func(controller, x)
 
 
 def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -> Tuple[torch.Tensor, torch.Tensor]:
