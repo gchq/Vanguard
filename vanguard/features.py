@@ -138,13 +138,6 @@ class _HigherRankFeaturesKernel(_HigherRankFeaturesModel):
     data.
     """
 
-    def __init__(self, shape: Union[Tuple[int], torch.Size]):
-        """
-        :param shape: The native shape of a single data point.
-        """
-        self.shape = tuple(shape)
-        self.flat_shape = np.prod(self.shape)
-
     def __call__(self, kernel_cls: Type[kernels.Kernel]) -> Type[kernels.Kernel]:
         shape = self.shape
         _unflatten = partial(self._unflatten, item_shape=shape)

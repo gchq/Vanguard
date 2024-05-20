@@ -7,9 +7,9 @@ import sys
 import bibtexparser
 
 
-def _import_bibliography(bibtex_file_path):
+def _import_bibliography(bibtex_file_path, encoding="utf8"):
     """Import a .bib file as a dictionary."""
-    with open(bibtex_file_path) as bibtex_file:
+    with open(bibtex_file_path, encoding=encoding) as bibtex_file:
         bib_database = bibtexparser.load(bibtex_file)
 
     references = {}
@@ -20,8 +20,8 @@ def _import_bibliography(bibtex_file_path):
             if entry.get("archiveprefix") == "arXiv":
                 try:
                     entry["url"] = "https://arxiv.org/abs/" + entry["eprint"]
-                except KeyError:
-                    raise ValueError(f"Cannot calculate arXiv URL for {reference_id}: missing 'eprint'.")
+                except KeyError as exc:
+                    raise ValueError(f"Cannot calculate arXiv URL for {reference_id}: missing 'eprint'.") from exc
         else:
             entry["url"] = entry["url"].replace("\n", "")
 

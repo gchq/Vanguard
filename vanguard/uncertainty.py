@@ -70,8 +70,9 @@ class GaussianUncertaintyGPController(GPController):
                 :mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
         :param optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
                 gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
-        :param smart_optimiser_class: An uninstantiated subclass of :class:`~vanguard.optimise.optimiser.SmartOptimiser`,
-            that wraps around the given ``optimiser_class`` to enable advanced features, for example early stopping.
+        :param smart_optimiser_class: An uninstantiated subclass of
+            :class:`~vanguard.optimise.optimiser.SmartOptimiser`, that wraps around the given ``optimiser_class``
+            to enable advanced features, for example early stopping.
         :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(
@@ -157,7 +158,7 @@ class GaussianUncertaintyGPController(GPController):
                 self.gradient_variance = grad_var_term
                 self.set_to_training_mode()
             try:
-                loss = self._single_optimisation_step(train_x, train_y, retain_graph=(iter_num < n_iters - 1))
+                loss = self._single_optimisation_step(train_x, train_y, retain_graph=iter_num < n_iters - 1)
             except NoImprovementError:
                 loss = self._smart_optimiser.last_n_losses[-1]
                 break
@@ -215,10 +216,10 @@ class GaussianUncertaintyGPController(GPController):
             warnings.filterwarnings("ignore", category=GPInputWarning, message=_INPUT_WARNING)
             posterior = self._get_posterior_over_point_in_eval_mode(x_with_grad)
 
-        predictions, covar = posterior._tensor_prediction()
+        predictions, covar = posterior._tensor_prediction()  # pylint: disable=protected-access
 
-        # Each entry of predictions depends only on the matching input vector, so summing them is a simple way of getting the
-        # result we need from autograd (which can only compute gradients of scalars)
+        # Each entry of predictions depends only on the matching input vector, so summing them is a simple way of
+        # getting the result we need from autograd (which can only compute gradients of scalars)
         predictions_grad = []
         if len(predictions.shape) == 1:
             predictions = predictions.unsqueeze(-1)
