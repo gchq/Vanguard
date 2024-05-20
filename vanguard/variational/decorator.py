@@ -17,7 +17,9 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from .models import SVGPModel
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
+# pylint: disable=protected-access
 StrategyT = TypeVar("StrategyT", bound=gpytorch.variational._VariationalStrategy)
+# pylint: disable=protected-access
 DistributionT = TypeVar("DistributionT", bound=gpytorch.variational._VariationalDistribution)
 
 
