@@ -24,7 +24,13 @@ HESSIAN_JITTER = 1e-5
 ControllerT = TypeVar("ControllerT", bound=GPController)
 LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
+VariationalDistributionT = TypeVar(
+    "VariationalDistributionT",
+    bound=gpytorch.variational._VariationalDistribution,  # pylint: disable=protected-access
+)
+
+# TODO: TEMPORARY MEASURE as I'm not really sure what to do with these protected accesses at the moment
+# pylint: disable=protected-access
 
 
 class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
@@ -111,14 +117,19 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 self.hyperparameter_posterior_mean = mean
                 self.hyperparameter_posterior_covariance = cov_evals, cov_evecs
                 self._temperature = posterior_temperature
+                self.likelihood_noise = None
 
             @classmethod
             def new(cls: Type[ControllerT], instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
                 """Copy hyperparameter posteriors."""
                 new_instance = super().new(instance, **kwargs)
-                new_instance.hyperparameter_posterior_mean = instance.hyperparameter_posterior_mean  # type: ignore[reportAttributeAccessIssue]
-                new_instance.hyperparameter_posterior_covariance = instance.hyperparameter_posterior_covariance  # type: ignore[reportAttributeAccessIssue]
-                new_instance.temperature = instance.temperature  # type: ignore[reportAttributeAccessIssue]
+                new_instance.hyperparameter_posterior_mean = (
+                    instance.hyperparameter_posterior_mean  # pyright: ignore[reportAttributeAccessIssue]
+                )
+                new_instance.hyperparameter_posterior_covariance = (
+                    instance.hyperparameter_posterior_covariance  # pyright: ignore[reportAttributeAccessIssue]
+                )
+                new_instance.temperature = instance.temperature  # pyright: ignore[reportAttributeAccessIssue]
                 return new_instance
 
             @property
@@ -147,7 +158,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 hessian = self._compute_loss_hessian().detach().clone()
                 eigenvalues, eigenvectors = _subspace_hessian_inverse_eig(hessian, cutoff=uv_cutoff)
                 mean = self.hyperparameter_collection.hyperparameter_tensor
-                return mean, (eigenvalues.detach().clone(), eigenvectors.detach().clone())  # type: ignore[reportAttributeAccessIssue]
+                return mean, (eigenvalues.detach().clone(), eigenvectors.detach().clone())
 
             def _compute_loss_hessian(self) -> torch.Tensor:
                 batch_size = self.batch_size if self.batch_size else len(self.train_x)
@@ -258,7 +269,7 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -
     Along bad directions, we set the Hessian inverse eigenvalues to a fixed
     small jitter value.
     """
-    eigenvalues, eigenvectors = torch.linalg.eigh(hessian)
+    eigenvalues, eigenvectors = torch.linalg.eigh(hessian)  # pylint: disable=not-callable
     keep_indices = eigenvalues > cutoff
     inverse_eigenvalues = 1 / eigenvalues
     inverse_eigenvalues[~keep_indices] = HESSIAN_JITTER

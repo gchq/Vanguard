@@ -24,7 +24,13 @@ ControllerT = TypeVar("ControllerT", bound=GPController)
 KernelT = TypeVar("KernelT", bound=gpytorch.kernels.Kernel)
 LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
+VariationalDistributionT = TypeVar(
+    "VariationalDistributionT",
+    bound=gpytorch.variational._VariationalDistribution,  # pylint: disable=protected-access
+)
+
+# TODO: TEMPORARY MEASURE as I'm not really sure what to do with these protected accesses at the moment
+# pylint: disable=protected-access
 
 
 class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
