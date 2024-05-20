@@ -1,6 +1,7 @@
 """
 Tests for the NormaliseY decorator.
 """
+
 import unittest
 
 import torch

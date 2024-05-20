@@ -1,6 +1,7 @@
 """
 Tests for the greedy optimisation behaviour in GreedySmartOptimiser.
 """
+
 import unittest
 
 import numpy as np

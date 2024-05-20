@@ -1,6 +1,7 @@
 """
 Contains a spectral decomposition version of multivariate normal.
 """
+
 from typing import NoReturn, Type, TypeVar
 
 import torch

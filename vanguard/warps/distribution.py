@@ -1,6 +1,7 @@
 """
 Contains a torch distribution implementing a warped Gaussian.
 """
+
 from typing import Any, Type
 
 import numpy as np

@@ -1,6 +1,7 @@
 """
 The :class:`NormaliseY` decorator will scale the y-inputs to a unit normal distribution.
 """
+
 from typing import Tuple, Type, TypeVar
 
 import numpy as np

@@ -1,4 +1,5 @@
 """Implementation of tempered Laplace approximation approach to Bayesian hyperparameters."""
+
 import itertools
 from math import ceil
 from typing import Any, Callable, Generator, Optional, Tuple, Type, TypeVar, Union

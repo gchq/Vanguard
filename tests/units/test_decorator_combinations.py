@@ -1,6 +1,7 @@
 """
 Tests for the pairwise combinations of decorators.
 """
+
 import itertools
 import re
 import unittest

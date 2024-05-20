@@ -1,6 +1,7 @@
 """
 The following datasets allow for straightforward experiments with synthetic classification data.
 """
+
 import itertools
 from typing import Optional, Union
 

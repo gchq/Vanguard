@@ -1,6 +1,7 @@
 """
 Utility functions for the configuration file.
 """
+
 import itertools
 import os
 import shutil

@@ -1,6 +1,7 @@
 """
 All warp functions should subclass this :class:`WarpFunction` class.
 """
+
 import copy
 from functools import wraps
 from itertools import chain

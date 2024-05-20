@@ -1,6 +1,7 @@
 """
 Contains the CategoricalClassification decorator.
 """
+
 from typing import Tuple, Type, TypeVar, Union
 
 import numpy as np

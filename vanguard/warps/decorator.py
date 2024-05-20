@@ -1,6 +1,7 @@
 """
 Contains the SetWarp decorator.
 """
+
 from typing import Any, Tuple, Type, TypeVar
 
 import numpy as np

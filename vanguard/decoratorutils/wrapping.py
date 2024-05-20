@@ -6,6 +6,7 @@ update all method names and docstrings with those of the super class. The
 :func:`process_args` function is a helper function for organising arguments
 to a function into a dictionary for straightforward access.
 """
+
 import inspect
 import types
 from functools import WRAPPER_ASSIGNMENTS, wraps

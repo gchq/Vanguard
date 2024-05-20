@@ -1,6 +1,7 @@
 """
 Contains tests for the decorators.
 """
+
 import inspect
 import unittest
 from typing import Any, Type, TypeVar, Union

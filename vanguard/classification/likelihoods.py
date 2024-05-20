@@ -1,6 +1,7 @@
 """
 Contains some multitask classification likelihoods.
 """
+
 from typing import Optional, Union
 
 import gpytorch.distributions

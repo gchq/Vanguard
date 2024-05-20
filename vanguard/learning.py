@@ -1,6 +1,7 @@
 """
 Contains the LearnYNoise decorator.
 """
+
 import re
 import warnings
 from typing import Tuple, Type, TypeVar, Union
