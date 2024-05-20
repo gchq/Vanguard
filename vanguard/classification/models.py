@@ -31,6 +31,7 @@ class DummyKernelDistribution:
         self.mean = self.kernel @ self.labels.evaluate()
         self.covariance_matrix = torch.zeros_like(self.mean)
 
+    # pylint: disable=unused-argument
     def add_jitter(self, *args, **kwargs):
         return self
 
@@ -73,7 +74,7 @@ class InertKernelModel(ExactGPModel):
             try:
                 self.train_inputs = tuple(tri.unsqueeze(-1) if tri.ndimension() == 1 else tri for tri in train_inputs)
             except AttributeError:
-                raise TypeError("Train inputs must be a tensor, or a list/tuple of tensors")
+                raise TypeError("Train inputs must be a tensor, or a list/tuple of tensors") from None
             self.train_targets = train_targets
 
         self.prediction_strategy = None

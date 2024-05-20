@@ -124,6 +124,5 @@ class CategoricalClassification(Decorator):
             @staticmethod
             def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
-                pass
 
         return InnerClass
