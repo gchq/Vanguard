@@ -5,8 +5,6 @@ Vanguard supports a number of metrics pre-attached and tracked to all
 controller classes. These are calculated per iteration by the
 :class:`MetricsTracker` class.
 """
-from __future__ import annotations
-
 import itertools
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Callable, Optional
@@ -83,7 +81,7 @@ class MetricsTracker:
         """Get the default format string used for printing."""
         format_string_components = ["iteration: {iteration}"]
         for metric in self._metric_outputs:
-            component = "{metric}: {{{metric}}}".format(metric=metric.__name__)
+            component = f"{metric.__name__}: {{{metric.__name__}}}"
             format_string_components.append(component)
         format_string = ", ".join(format_string_components)
         return format_string
@@ -108,7 +106,7 @@ class MetricsTracker:
     def run_metrics(
         self,
         loss_value: float,
-        controller: Optional[BaseGPController],
+        controller: Optional["BaseGPController"],
         **additional_info,
     ) -> None:
         """
@@ -167,6 +165,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float, controller: BaseGPController) -> float:
+def loss(loss_value: float, controller: "BaseGPController") -> float:
     """Return the loss value."""
     return loss_value

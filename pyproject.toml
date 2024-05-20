@@ -88,6 +88,7 @@ extend-select = [
     "S102",  # use of `exec` builtin
     "S307",  # Suspicious `eval` usage
     "I",     # isort rules
+    "UP",    # pyupgrade rules
 ]
 
 [tool.ruff.lint.isort]
