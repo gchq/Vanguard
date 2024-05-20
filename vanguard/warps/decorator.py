@@ -145,6 +145,7 @@ class SetWarp(Decorator):
                 """Also apply warping to the new instance."""
                 new_instance = super().new(instance, **kwargs)
                 new_instance.warp = instance.warp
+                # pylint: disable=protected-access
                 new_instance._gp.train_targets = new_instance.warp(new_instance._gp.train_targets).squeeze(dim=-1)
                 return new_instance
 
@@ -176,6 +177,5 @@ class SetWarp(Decorator):
             @staticmethod
             def warn_normalise_y() -> None:
                 """Override base warning because warping renders y normalisation unimportant."""
-                pass
 
         return InnerClass

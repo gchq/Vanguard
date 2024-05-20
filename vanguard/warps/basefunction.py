@@ -61,6 +61,7 @@ class WarpFunction(gpytorch.Module):
             components = [self]
         return components
 
+    # pylint: disable=arguments-differ
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         """
         Pass an input tensor through the warp function.
@@ -138,18 +139,19 @@ class WarpFunction(gpytorch.Module):
             >>> composed_warp = warp_1 @ warp_2
         """
         new_warp = WarpFunction()
-        new_warp.old_warp_left = self
-        new_warp.old_warp_right = other
+        new_warp.old_warp_left = self  # pylint: disable=attribute-defined-outside-init
+        new_warp.old_warp_right = other  # pylint: disable=attribute-defined-outside-init
 
         try:
             new_warp.forward = _composition_factory(self, other)
             new_warp.inverse = _composition_factory(other.inverse, self.inverse)
             new_warp.deriv = _multiply_factory(_composition_factory(self.deriv, other), other.deriv)
             # Overwrite parameters method with an iterator
+            # pylint: disable=protected-access
             new_warp.parameters = new_warp._combined_parameters  # pyright: ignore [reportAttributeAccessIssue]
         except AttributeError:
             if not isinstance(other, WarpFunction):
-                raise TypeError("Must be passed a valid WarpFunction instance.")
+                raise TypeError("Must be passed a valid WarpFunction instance.") from None
             else:
                 raise
 
@@ -251,14 +253,14 @@ class MultitaskWarpFunction(WarpFunction):
     def num_tasks(self) -> int:
         return len(self.warps)
 
-    def forward(self, stack_of_y: torch.Tensor) -> torch.Tensor:
+    def forward(self, y: torch.Tensor) -> torch.Tensor:
         """
         Pass an input tensor through the warp function.
 
-        :param stack_of_y: A stack of input tensors.
+        :param y: A stack of input tensors.
         :returns: A stack of tensors in the same shape as stack_of_y.
         """
-        return torch.stack([warp.forward(task_y).squeeze() for warp, task_y in zip(self.warps, stack_of_y.T)], -1)
+        return torch.stack([warp.forward(task_y).squeeze() for warp, task_y in zip(self.warps, y.T)], -1)
 
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         """
@@ -298,12 +300,12 @@ class MultitaskWarpFunction(WarpFunction):
             new_task_warps = [warp.compose(other_warp) for warp, other_warp in zip(self.warps, other.warps)]
         except AttributeError:
             if not isinstance(other, MultitaskWarpFunction):
-                raise TypeError("Must be passed a valid MultitaskWarpFunction instance.")
+                raise TypeError("Must be passed a valid MultitaskWarpFunction instance.") from None
             elif not all(isinstance(warp, WarpFunction) for warp in other.warps):
                 raise TypeError(
                     "All of the per-task warps for the passed MultitaskWarpFunction must be valid instances"
                     "of WarpFunction."
-                )
+                ) from None
             else:
                 raise
         new_warp = MultitaskWarpFunction(*new_task_warps)

@@ -15,6 +15,7 @@ from gpytorch import constraints
 from gpytorch.models import ApproximateGP, ExactGP
 from gpytorch.utils.errors import NanError
 from numpy import dtype
+from torch import Tensor
 
 from ..decoratorutils import wraps_class
 from ..models import ExactGPModel
@@ -26,6 +27,7 @@ from .posteriors import MonteCarloPosteriorCollection, Posterior
 from .standardise import StandardiseXModule
 
 NOISE_LOWER_BOUND = 1e-3
+# pylint: disable=invalid-name
 ttypes = Type[
     Union[
         torch.FloatTensor,
@@ -40,6 +42,7 @@ ttypes = Type[
         torch.LongTensor,
     ]
 ]
+# pylint: disable=invalid-name, no-member
 ttypes_cuda = Type[
     Union[
         torch.cuda.FloatTensor,
@@ -102,6 +105,7 @@ class BaseGPController:
     gp_model_class: Type[Union[ExactGP, ApproximateGP]] = ExactGPModel
     posterior_class = Posterior
     posterior_collection_class = MonteCarloPosteriorCollection
+    likelihood_noise = None
 
     _y_batch_axis: int = 0
 
@@ -226,6 +230,10 @@ class BaseGPController:
         self._gp.eval()
         self._set_requires_grad(False)
 
+    @classmethod
+    def get_default_tensor_type(cls) -> Type[Tensor]:
+        return cls._default_tensor_type
+
     def _predictive_likelihood(
         self,
         x: Union[numpy.typing.NDArray[float], float],
@@ -336,7 +344,7 @@ class BaseGPController:
         for iter_num, (train_x, train_y, train_y_noise) in enumerate(islice(self.train_data_generator, n_iters)):
             self.likelihood_noise = train_y_noise
             try:
-                loss = self._single_optimisation_step(train_x, train_y, retain_graph=(iter_num < n_iters - 1))
+                loss = self._single_optimisation_step(train_x, train_y, retain_graph=iter_num < n_iters - 1)
 
             except NoImprovementError:
                 loss = self._smart_optimiser.last_n_losses[-1]
@@ -518,11 +526,11 @@ class BaseGPController:
 
         try:
             shape = shape_mapping[(mean.ndim, covar.ndim)]
-        except KeyError:
+        except KeyError as exc:
             raise ValueError(
                 f"A posterior distribution with mean and covariance matrix of dimensions {mean.ndim} and "
                 f"{covar.ndim} are not currently supported."
-            )
+            ) from exc
         return shape
 
     @staticmethod
@@ -571,7 +579,7 @@ def _catch_and_check_module_errors(
                     result = super().__call__(*args, **kwargs)
                 except NanError:  # otherwise we catch this as a RuntimeError
                     raise
-                except RuntimeError:
+                except RuntimeError as exc:
                     decorator_names = {decorator.__name__ for decorator in controller.__decorators__}
                     if controller.train_x.ndim > 2 and "HigherRankFeatures" not in decorator_names:
                         raise ValueError(
@@ -581,7 +589,7 @@ def _catch_and_check_module_errors(
                             "consider using the HigherRankFeatures decorator on your controller "
                             "and make sure that your kernel and mean functions are defined "
                             "for the rank of your input features."
-                        )
+                        ) from exc
                     else:
                         raise
                 else:

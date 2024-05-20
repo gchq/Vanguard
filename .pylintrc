@@ -418,6 +418,12 @@ confidence=HIGH,
 # --disable=W".
 disable=too-many-lines,
         import-error,
+        # These are all temporary disables.
+        method-hidden,
+        missing-module-docstring,
+        missing-class-docstring,
+        missing-function-docstring,
+        R,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
