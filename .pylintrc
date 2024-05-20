@@ -423,6 +423,7 @@ disable=too-many-lines,
         missing-module-docstring,
         missing-class-docstring,
         missing-function-docstring,
+        fixme,
         R,
 
 # Enable the message, report, category or checker with the given id(s). You can
