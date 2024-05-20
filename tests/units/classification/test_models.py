@@ -4,7 +4,6 @@ import torch
 from gpytorch import settings
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood
-from gpytorch.means import Mean
 from gpytorch.utils.warnings import GPInputWarning
 
 from vanguard.classification.models import InertKernelModel
@@ -18,7 +17,7 @@ class TestInertKernelModelFailures(TestCase):
             covar_module=RBFKernel(),
             mean_module=None,
             likelihood=BernoulliLikelihood(),
-            num_classes=3
+            num_classes=3,
         )
 
         with self.assertRaises(RuntimeError) as ctx:
@@ -27,24 +26,22 @@ class TestInertKernelModelFailures(TestCase):
         self.assertEqual(
             "train_inputs, train_targets cannot be None in training mode. "
             "Call .eval() for prior predictions, or call .set_train_data() to add training data.",
-            ctx.exception.args[0]
+            ctx.exception.args[0],
         )
 
     def test_illegal_train_inputs(self):
         with self.assertRaises(TypeError) as ctx:
-            model = InertKernelModel(
+            _ = InertKernelModel(
                 train_inputs=[1, 2, 3],  # type: ignore
                 train_targets=None,
                 covar_module=RBFKernel(),
                 mean_module=None,
                 likelihood=BernoulliLikelihood(),
-                num_classes=3
+                num_classes=3,
             )
 
-        self.assertEqual(
-            "Train inputs must be a tensor, or a list/tuple of tensors",
-            ctx.exception.args[0]
-        )
+        self.assertEqual("Train inputs must be a tensor, or a list/tuple of tensors", ctx.exception.args[0])
+
 
 class TestInertKernelModel(TestCase):
     def setUp(self):
@@ -58,7 +55,7 @@ class TestInertKernelModel(TestCase):
             covar_module=RBFKernel(),
             mean_module=None,
             likelihood=BernoulliLikelihood(),
-            num_classes=3
+            num_classes=3,
         )
 
     def test_train_fails_in_debug_if_input_is_not_train_input(self):
@@ -69,10 +66,7 @@ class TestInertKernelModel(TestCase):
                 self.model.train()
                 self.model(other_input)
 
-        self.assertEqual(
-            "You must train on the training inputs!",
-            ctx.exception.args[0]
-        )
+        self.assertEqual("You must train on the training inputs!", ctx.exception.args[0])
 
     def test_train_warns_in_debug_if_forget_to_call_train(self):
         with self.assertWarns(

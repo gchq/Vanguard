@@ -21,5 +21,5 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
                 self.assertEqual(
                     "Likelihoods expects a DummyKernelDistribution input to make marginal predictions, or a "
                     f"torch.Tensor for conditional predictions. Got a {type(illegal_input).__name__}",
-                    ctx.exception.args[0]
+                    ctx.exception.args[0],
                 )
