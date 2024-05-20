@@ -137,6 +137,7 @@ tril
 ttypes
 typehints
 unsrt
+vararg
 viewcode
 warpfunctions
 xlabel

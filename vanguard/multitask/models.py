@@ -43,7 +43,7 @@ def multitask_model(cls: Type[GPT]) -> Type[GPT]:
             A wrapper for applying converting a GP model class to multitask.
             """
 
-            def forward(self, x: Tensor) -> MultitaskMultivariateNormal:  # pyright: ignore [reportIncompatibleMethodOverride]
+            def forward(self, x: Tensor) -> MultitaskMultivariateNormal:
                 """
                 Compute the prior latent distribution on a given input.
 
@@ -107,7 +107,15 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             self.num_tasks = num_tasks
             self.num_latents = self._get_num_latents(mean_module)
             # No suitable base class for ``cls`` to specify this protocol
-            super().__init__(train_x, train_y, likelihood, mean_module, covar_module, n_inducing_points)  # pyright: ignore [reportCallIssue]
+
+            super().__init__(
+                train_x,  # pyright: ignore [reportCallIssue]
+                train_y,
+                likelihood,
+                mean_module,
+                covar_module,
+                n_inducing_points,
+            )
 
         def _init_inducing_points(self, train_x: Tensor, n_inducing_points: int) -> Tensor:
             """
@@ -166,11 +174,11 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             """Get the number of latent implied by ``mean_module``."""
             try:
                 num_latents = mean_module.batch_shape[-1]
-            except IndexError:
+            except IndexError as exc:
                 raise TypeError(
                     f"You are using a multitask variational model but have passed a mean with batch shape"
                     f"{mean_module.batch_shape}, but a one-dimensional batch shape is required."
-                )
+                ) from exc
             return num_latents
 
     # Pyright does not detect that wraps_class renames InnerClass

@@ -70,6 +70,8 @@ class Multitask(Decorator):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
+                # it's OK to access self.gp_model_class as it's set in super().__init__ above
+                # pylint: disable=access-member-before-definition
                 if is_variational:
                     if decorator.lmc_dimension is not None:
                         gp_model_class = lmc_variational_multitask_model(self.gp_model_class)
@@ -82,8 +84,6 @@ class Multitask(Decorator):
                 @multitask_model
                 class MultitaskGPModelClass(gp_model_class):  # pyright: ignore[reportGeneralTypeIssues]
                     """Multitask version of gp_model_class."""
-
-                    pass
 
                 self.gp_model_class = MultitaskGPModelClass
 

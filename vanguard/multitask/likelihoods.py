@@ -45,6 +45,7 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         """Set the fixed noise."""
         self._fixed_noise = value
 
+    # pylint: disable=unused-argument
     def marginal(
         self, function_dist: MultitaskMultivariateNormal, *params: Any, noise: Optional[Tensor] = None, **kwargs: Any
     ) -> MultitaskMultivariateNormal:
@@ -83,6 +84,7 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
 
         return function_dist.__class__(mean, covar)
 
+    # pylint: disable=arguments-differ, arguments-renamed, keyword-arg-before-vararg
     def _shaped_noise_covar(  # pyright: ignore [reportIncompatibleMethodOverride]
         self,
         base_shape: Size,
