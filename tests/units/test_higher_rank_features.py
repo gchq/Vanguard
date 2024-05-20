@@ -1,6 +1,7 @@
 """
 Tests for the HigherRankFeatures decorator.
 """
+
 import unittest
 from typing import Any, Type
 

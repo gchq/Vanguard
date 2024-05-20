@@ -1,6 +1,7 @@
 """
 Contains the DirichletKernelMulticlassClassification decorator.
 """
+
 from typing import Tuple, Type, TypeVar, Union
 
 import numpy as np

@@ -1,6 +1,7 @@
 """
 Tests for the DirichletKernelMulticlassClassification decorator.
 """
+
 from gpytorch import kernels, means
 
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification

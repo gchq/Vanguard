@@ -1,6 +1,7 @@
 """
 Contains test cases for Vanguard testing.
 """
+
 import unittest
 from functools import wraps
 from typing import Callable, Tuple, TypeVar, Union

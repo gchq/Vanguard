@@ -1,6 +1,7 @@
 """
 Contains a slight adjustment to the standard multitask kernel.
 """
+
 from typing import Any
 
 from gpytorch.kernels import MultitaskKernel

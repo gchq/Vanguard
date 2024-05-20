@@ -1,6 +1,7 @@
 """
 Contains a class decorator to apply input standard scaling to means and kernels.
 """
+
 from typing import Optional, Union
 
 import numpy.typing

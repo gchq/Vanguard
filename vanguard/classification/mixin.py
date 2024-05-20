@@ -8,6 +8,7 @@ will have :meth:`~ClassificationMixin.classify_points` and
 When creating new decorators, include the :class:`ClassificationMixin` as a
 mixin for the inner class which will be returned to enable this.
 """
+
 from typing import NoReturn, Tuple, Union
 
 import numpy as np

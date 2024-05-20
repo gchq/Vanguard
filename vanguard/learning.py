@@ -1,6 +1,7 @@
 """
 Contains the LearnYNoise decorator.
 """
+
 from __future__ import annotations
 
 import re

@@ -1,6 +1,7 @@
 """
 Vanguard defines its own optimiser wrapper to enable additional features.
 """
+
 import inspect
 from collections import deque
 from functools import total_ordering
@@ -91,12 +92,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     @overload
-    def step(self, loss: float, closure: None = ...) -> None:
-        ...
+    def step(self, loss: float, closure: None = ...) -> None: ...
 
     @overload
-    def step(self, loss: float, closure: Callable[[], float]) -> float:
-        ...
+    def step(self, loss: float, closure: Callable[[], float]) -> float: ...
 
     def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
@@ -154,12 +153,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         )
 
     @overload
-    def _step(self, loss: float, closure: None = ...) -> None:
-        ...
+    def _step(self, loss: float, closure: None = ...) -> None: ...
 
     @overload
-    def _step(self, loss: float, closure: Callable[[], float]) -> float:
-        ...
+    def _step(self, loss: float, closure: Callable[[], float]) -> float: ...
 
     def _step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
