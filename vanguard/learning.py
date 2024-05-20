@@ -2,8 +2,6 @@
 Contains the LearnYNoise decorator.
 """
 
-from __future__ import annotations
-
 import re
 import warnings
 from typing import Tuple, Type, TypeVar, Union
