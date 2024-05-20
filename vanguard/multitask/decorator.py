@@ -32,8 +32,8 @@ class Multitask(Decorator):
             ... class MyController(GPController):
             ...     pass
     """
-    def __init__(self, num_tasks: int, lmc_dimension: Optional[int] = None,
-                 rank: int = 1, **kwargs: Any) -> None:
+
+    def __init__(self, num_tasks: int, lmc_dimension: Optional[int] = None, rank: int = 1, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -65,6 +65,7 @@ class Multitask(Decorator):
             to multitask means and slightly modifying a few methods to deal
             with multitask Gaussian's etc.
             """
+
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
@@ -81,6 +82,7 @@ class Multitask(Decorator):
                 @multitask_model
                 class MultitaskGPModelClass(gp_model_class):  # pyright: ignore[reportGeneralTypeIssues]
                     """Multitask version of gp_model_class."""
+
                     pass
 
                 self.gp_model_class = MultitaskGPModelClass
@@ -93,10 +95,8 @@ class Multitask(Decorator):
                 mean_kwargs = all_parameters_as_kwargs.get("mean_kwargs", {})
 
                 if is_variational:
-                    kernel_class = _batchify(kernel_class, kernel_kwargs, decorator.num_tasks,
-                                             decorator.lmc_dimension)
-                    mean_class = _batchify(mean_class, mean_kwargs, decorator.num_tasks,
-                                           decorator.lmc_dimension)
+                    kernel_class = _batchify(kernel_class, kernel_kwargs, decorator.num_tasks, decorator.lmc_dimension)
+                    mean_class = _batchify(mean_class, mean_kwargs, decorator.num_tasks, decorator.lmc_dimension)
                 else:
                     kernel_class = _multitaskify_kernel(kernel_class, decorator.num_tasks, decorator.rank)
 
@@ -107,9 +107,13 @@ class Multitask(Decorator):
                 gp_kwargs = all_parameters_as_kwargs.pop("gp_kwargs", {})
                 gp_kwargs["num_tasks"] = decorator.num_tasks
 
-                super().__init__(kernel_class=kernel_class, mean_class=mean_class,
-                                 likelihood_kwargs=likelihood_kwargs, gp_kwargs=gp_kwargs,
-                                 **all_parameters_as_kwargs)
+                super().__init__(
+                    kernel_class=kernel_class,
+                    mean_class=mean_class,
+                    likelihood_kwargs=likelihood_kwargs,
+                    gp_kwargs=gp_kwargs,
+                    **all_parameters_as_kwargs,
+                )
 
             @property
             def likelihood_noise(self) -> Tensor:
@@ -122,11 +126,12 @@ class Multitask(Decorator):
                 self._likelihood.fixed_noise = value
 
             @staticmethod
-            def _match_mean_shape_to_kernel(mean_class: Type[Mean],
-                                            kernel_class: Type[Kernel],
-                                            mean_kwargs: Dict[str, Any],
-                                            kernel_kwargs: Dict[str, Any],
-                                            ) -> Type[Mean]:
+            def _match_mean_shape_to_kernel(
+                mean_class: Type[Mean],
+                kernel_class: Type[Kernel],
+                mean_kwargs: Dict[str, Any],
+                kernel_kwargs: Dict[str, Any],
+            ) -> Type[Mean]:
                 """
                 Construct a mean class suitable for multitask GPs that matches the form of the kernel, if possible.
 
@@ -146,17 +151,18 @@ class Multitask(Decorator):
                 if isinstance(example_kernel, MultitaskKernel):
                     return _multitaskify_mean(mean_class, decorator.num_tasks)
                 if len(example_kernel.batch_shape) > 0 and example_mean.batch_shape != example_kernel.batch_shape:
-                    raise TypeError(f"The provided mean has batch_shape {example_mean.batch_shape} but the "
-                                    f"provided kernel has batch_shape {example_kernel.batch_shape}. "
-                                    f"They must match.")
+                    raise TypeError(
+                        f"The provided mean has batch_shape {example_mean.batch_shape} but the "
+                        f"provided kernel has batch_shape {example_kernel.batch_shape}. "
+                        f"They must match."
+                    )
                 return mean_class
 
         # Pyright does not detect that wraps_class renames InnerClass
         return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _batchify(module_class: Type[T], _kwargs: Dict[str, Any], num_tasks: int,
-              lmc_dimension: Optional[int]) -> Type[T]:
+def _batchify(module_class: Type[T], _kwargs: Dict[str, Any], num_tasks: int, lmc_dimension: Optional[int]) -> Type[T]:
     """
     Add a batch shape to a class so it can be used for multitask variational GPs.
 
@@ -180,8 +186,7 @@ def _batchify(module_class: Type[T], _kwargs: Dict[str, Any], num_tasks: int,
     return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _multitaskify_kernel(kernel_class: Type[Kernel], num_tasks: int, rank: int = 1
-                         ) -> Type[MultitaskKernel]:
+def _multitaskify_kernel(kernel_class: Type[Kernel], num_tasks: int, rank: int = 1) -> Type[MultitaskKernel]:
     """
     If necessary, make a kernel multitask using the GPyTorch Multitask kernel.
 
@@ -199,6 +204,7 @@ def _multitaskify_kernel(kernel_class: Type[Kernel], num_tasks: int, rank: int =
         class InnerKernelClass(BatchCompatibleMultitaskKernel):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 super().__init__(kernel_class(*args, **kwargs), num_tasks=num_tasks, rank=rank, **kwargs)
+
         return InnerKernelClass
 
 
@@ -218,4 +224,5 @@ def _multitaskify_mean(mean_class: Type[Mean], num_tasks: int) -> Type[Multitask
         class InnerMeanClass(MultitaskMean):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 super().__init__(mean_class(*args, **kwargs), num_tasks=num_tasks)
+
         return InnerMeanClass

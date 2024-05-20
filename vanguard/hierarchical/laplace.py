@@ -9,18 +9,22 @@ import torch
 from numpy.typing import NDArray
 
 from ..decoratorutils import wraps_class
-from .base import (BaseHierarchicalHyperparameters, GPController, Posterior, extract_bayesian_hyperparameters,
-                   set_batch_shape)
+from .base import (
+    BaseHierarchicalHyperparameters,
+    GPController,
+    Posterior,
+    extract_bayesian_hyperparameters,
+    set_batch_shape,
+)
 from .collection import OnePointHyperparameterCollection
 from .distributions import SpectralRegularisedMultivariateNormal
 
 HESSIAN_JITTER = 1e-5
 
-ControllerT = TypeVar('ControllerT', bound=GPController)
-LikelihoodT = TypeVar('LikelihoodT', bound=gpytorch.likelihoods.GaussianLikelihood)
-PosteriorT = TypeVar('PosteriorT', bound=Posterior)
-VariationalDistributionT = TypeVar('VariationalDistributionT',
-                                   bound=gpytorch.variational._VariationalDistribution)
+ControllerT = TypeVar("ControllerT", bound=GPController)
+LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
+PosteriorT = TypeVar("PosteriorT", bound=Posterior)
+VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
 
 
 class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
@@ -59,9 +63,9 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         (True, True)
     """
 
-    def __init__(self, num_mc_samples: int = 100,
-                 temperature: Optional[float] = None, uv_cutoff: float = 1e-3,
-                 **kwargs: Any):
+    def __init__(
+        self, num_mc_samples: int = 100, temperature: Optional[float] = None, uv_cutoff: float = 1e-3, **kwargs: Any
+    ):
         """
         Initialise self.
 
@@ -95,19 +99,15 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
                 module_hyperparameter_pairs, _ = extract_bayesian_hyperparameters(self)
 
-                self.hyperparameter_collection = OnePointHyperparameterCollection(
-                    module_hyperparameter_pairs)
+                self.hyperparameter_collection = OnePointHyperparameterCollection(module_hyperparameter_pairs)
 
                 self._smart_optimiser.update_registered_module(self._gp)
-                mean = torch.zeros(
-                    self.hyperparameter_collection.hyperparameter_dimension)
-                cov_evals = torch.ones(
-                    self.hyperparameter_collection.hyperparameter_dimension)
-                cov_evecs = torch.eye(
-                    self.hyperparameter_collection.hyperparameter_dimension)
+                mean = torch.zeros(self.hyperparameter_collection.hyperparameter_dimension)
+                cov_evals = torch.ones(self.hyperparameter_collection.hyperparameter_dimension)
+                cov_evecs = torch.eye(self.hyperparameter_collection.hyperparameter_dimension)
                 self.hyperparameter_posterior = torch.distributions.MultivariateNormal(
-                    loc=mean,
-                    covariance_matrix=cov_evecs)
+                    loc=mean, covariance_matrix=cov_evecs
+                )
                 self.hyperparameter_posterior_mean = mean
                 self.hyperparameter_posterior_covariance = cov_evals, cov_evecs
                 self._temperature = posterior_temperature
@@ -116,9 +116,9 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             def new(cls: Type[ControllerT], instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
                 """Copy hyperparameter posteriors."""
                 new_instance = super().new(instance, **kwargs)
-                new_instance.hyperparameter_posterior_mean = instance.hyperparameter_posterior_mean # type: ignore[reportAttributeAccessIssue]
-                new_instance.hyperparameter_posterior_covariance = instance.hyperparameter_posterior_covariance # type: ignore[reportAttributeAccessIssue]
-                new_instance.temperature = instance.temperature # type: ignore[reportAttributeAccessIssue]
+                new_instance.hyperparameter_posterior_mean = instance.hyperparameter_posterior_mean  # type: ignore[reportAttributeAccessIssue]
+                new_instance.hyperparameter_posterior_covariance = instance.hyperparameter_posterior_covariance  # type: ignore[reportAttributeAccessIssue]
+                new_instance.temperature = instance.temperature  # type: ignore[reportAttributeAccessIssue]
                 return new_instance
 
             @property
@@ -141,37 +141,33 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                     self._update_hyperparameter_posterior()
                 return loss
 
-            def _compute_hyperparameter_laplace_approximation(self) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+            def _compute_hyperparameter_laplace_approximation(
+                self,
+            ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
                 hessian = self._compute_loss_hessian().detach().clone()
-                eigenvalues, eigenvectors = _subspace_hessian_inverse_eig(hessian,
-                                                                          cutoff=uv_cutoff)
+                eigenvalues, eigenvectors = _subspace_hessian_inverse_eig(hessian, cutoff=uv_cutoff)
                 mean = self.hyperparameter_collection.hyperparameter_tensor
-                return mean, (
-                eigenvalues.detach().clone(), eigenvectors.detach().clone()) # type: ignore[reportAttributeAccessIssue]
+                return mean, (eigenvalues.detach().clone(), eigenvectors.detach().clone())  # type: ignore[reportAttributeAccessIssue]
 
             def _compute_loss_hessian(self) -> torch.Tensor:
                 batch_size = self.batch_size if self.batch_size else len(self.train_x)
                 single_epoch_iters = ceil(len(self.train_x) / batch_size)
 
                 total_loss = 0
-                for train_x, train_y, train_y_noise in itertools.islice(
-                        self.train_data_generator, single_epoch_iters):
+                for train_x, train_y, train_y_noise in itertools.islice(self.train_data_generator, single_epoch_iters):
                     self.likelihood_noise = train_y_noise
                     total_loss += self._loss(train_x, train_y)
 
-                gradient_list = torch.autograd.grad(total_loss, iter(
-                    self.hyperparameter_collection), create_graph=True)
+                gradient_list = torch.autograd.grad(total_loss, iter(self.hyperparameter_collection), create_graph=True)
                 gradients = torch.cat([grad.reshape(-1) for grad in gradient_list])
-                hessian_dimension = \
-                self.hyperparameter_collection.hyperparameter_tensor.shape[0]
+                hessian_dimension = self.hyperparameter_collection.hyperparameter_tensor.shape[0]
                 hessian = torch.zeros(hessian_dimension, hessian_dimension)
 
                 for index, gradient in enumerate(gradients):
-                    sub_gradient_list = torch.autograd.grad(gradient, iter(
-                        self.hyperparameter_collection),
-                                                            create_graph=True)
-                    sub_gradients = torch.cat(
-                        [grad.reshape(-1) for grad in sub_gradient_list])
+                    sub_gradient_list = torch.autograd.grad(
+                        gradient, iter(self.hyperparameter_collection), create_graph=True
+                    )
+                    sub_gradients = torch.cat([grad.reshape(-1) for grad in sub_gradient_list])
                     hessian[index] = sub_gradients
                 return hessian
 
@@ -185,9 +181,8 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 eigenvalues, eigenvectors = self.hyperparameter_posterior_covariance
                 new_eigenvalues = eigenvalues * self.temperature
                 laplace_distribution = SpectralRegularisedMultivariateNormal.from_eigendecomposition(
-                    mean,
-                    new_eigenvalues,
-                    eigenvectors)
+                    mean, new_eigenvalues, eigenvectors
+                )
                 self.hyperparameter_posterior = laplace_distribution
 
             def auto_temperature(self) -> float:
@@ -197,12 +192,14 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         return InnerClass
 
     @staticmethod
-    def _infinite_posterior_samples(controller: ControllerT, x: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
+    def _infinite_posterior_samples(
+        controller: ControllerT, x: NDArray[np.floating]
+    ) -> Generator[torch.Tensor, None, None]:
         """
         Yield posterior samples forever.
 
         :param controller: The controller from which to yield samples.
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         """
         tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         while True:
@@ -210,12 +207,14 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             yield controller._gp_forward(tx).add_jitter(1e-3)
 
     @staticmethod
-    def _infinite_fuzzy_posterior_samples(controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[torch.Tensor, None, None]:
+    def _infinite_fuzzy_posterior_samples(
+        controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+    ) -> Generator[torch.Tensor, None, None]:
         """
         Yield fuzzy posterior samples forever.
 
         :param controller: The controller from which to yield samples.
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -224,31 +223,30 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         tx = torch.tensor(x, dtype=torch.float32, device=controller.device)
         tx_std = controller._process_x_std(x_std).to(controller.device)
         while True:
-            controller._sample_and_set_hyperparameters() # type: ignore[reportAttributeAccessIssue]
+            controller._sample_and_set_hyperparameters()  # type: ignore[reportAttributeAccessIssue]
             sample_shape = x.shape
-            x_sample = torch.randn(size=sample_shape,
-                                   device=controller.device) * tx_std + tx
+            x_sample = torch.randn(size=sample_shape, device=controller.device) * tx_std + tx
             output = controller._gp_forward(x_sample).add_jitter(1e-3)
             yield output
 
     @staticmethod
-    def _infinite_likelihood_samples(controller: ControllerT, x: NDArray[np.floating]) -> Generator[torch.Tensor, None, None]:
+    def _infinite_likelihood_samples(
+        controller: ControllerT, x: NDArray[np.floating]
+    ) -> Generator[torch.Tensor, None, None]:
         """Yield likelihood samples forever."""
-        func = _posterior_to_likelihood_samples(
-            LaplaceHierarchicalHyperparameters._infinite_posterior_samples)
-        for sample in func(controller, x):
-            yield sample
+        func = _posterior_to_likelihood_samples(LaplaceHierarchicalHyperparameters._infinite_posterior_samples)
+        yield from func(controller, x)
 
     @staticmethod
-    def _infinite_fuzzy_likelihood_samples(controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]) -> Generator[torch.Tensor, None, None]:
+    def _infinite_fuzzy_likelihood_samples(
+        controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+    ) -> Generator[torch.Tensor, None, None]:
         """Yield fuzzy likelihood samples forever."""
-        func = _posterior_to_likelihood_samples(
-            LaplaceHierarchicalHyperparameters._infinite_fuzzy_posterior_samples)
-        for sample in func(controller, x):
-            yield sample
+        func = _posterior_to_likelihood_samples(LaplaceHierarchicalHyperparameters._infinite_fuzzy_posterior_samples)
+        yield from func(controller, x)
 
 
-def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float=1e-3) -> Tuple[torch.Tensor, torch.Tensor]:
+def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Compute a sort-of-inverse of the Hessian and return its eigenbasis and spectrum.
 
@@ -267,14 +265,15 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float=1e-3) -> 
     return inverse_eigenvalues, eigenvectors
 
 
-def _posterior_to_likelihood_samples(posterior_generator: Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]]) -> Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]]:
+def _posterior_to_likelihood_samples(
+    posterior_generator: Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]],
+) -> Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]]:
     """Convert an infinite posterior sample generator to generate likelihood samples."""
 
     def generator(controller: ControllerT, x: NDArray[np.floating], *args) -> Generator[torch.Tensor, None, None]:
         """Yield likelihood samples forever."""
         for sample in posterior_generator(controller, x, *args):
-            shape = controller._decide_noise_shape(controller.posterior_class(sample),
-                                                   x)
+            shape = controller._decide_noise_shape(controller.posterior_class(sample), x)
             noise = torch.zeros(shape, dtype=torch.float32, device=controller.device)
             likelihood_output = controller._likelihood(sample, noise=noise)
             yield likelihood_output

@@ -22,6 +22,7 @@ from .case import ClassificationTestCase
 @VariationalInference(ignore_methods=("__init__",))
 class BinaryClassifier(GaussianGPController):
     """A simple binary classifier."""
+
     pass
 
 
@@ -29,12 +30,18 @@ class BinaryTests(ClassificationTestCase):
     """
     Tests for binary classification.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=200)
-        self.controller = BinaryClassifier(self.dataset.train_x, self.dataset.train_y, kernel_class=PeriodicRBFKernel,
-                                           y_std=0, likelihood_class=BernoulliLikelihood,
-                                           marginal_log_likelihood_class=VariationalELBO)
+        self.controller = BinaryClassifier(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=0,
+            likelihood_class=BernoulliLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+        )
         self.controller.fit(100)
 
     @flaky
@@ -45,18 +52,24 @@ class BinaryTests(ClassificationTestCase):
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
+
         class IllegalLikelihoodClass:
             pass
 
         with self.assertRaises(ValueError) as ctx:
-            __ = BinaryClassifier(self.dataset.train_x, self.dataset.train_y, kernel_class=PeriodicRBFKernel,
-                                  y_std=0, likelihood_class=IllegalLikelihoodClass,
-                                  marginal_log_likelihood_class=VariationalELBO)
+            __ = BinaryClassifier(
+                self.dataset.train_x,
+                self.dataset.train_y,
+                kernel_class=PeriodicRBFKernel,
+                y_std=0,
+                likelihood_class=IllegalLikelihoodClass,
+                marginal_log_likelihood_class=VariationalELBO,
+            )
 
         self.assertEqual(
             "The class passed to `likelihood_class` must be a subclass "
             f"of {BernoulliLikelihood.__name__} for binary classification.",
-            ctx.exception.args[0]
+            ctx.exception.args[0],
         )
 
     @expectedFailure  # TODO: These tests currently fail. Find out why ClassificationMixin isn't working properly.
@@ -73,16 +86,14 @@ class BinaryTests(ClassificationTestCase):
             with self.subTest():
                 with self.assertRaises(TypeError) as ctx:
                     call_method()
-                self.assertEqual(
-                    f"The '{alternative_method}' method should be used instead.",
-                    ctx.exception.args[0]
-                )
+                self.assertEqual(f"The '{alternative_method}' method should be used instead.", ctx.exception.args[0])
 
 
 class BinaryFuzzyTests(ClassificationTestCase):
     """
     Tests for fuzzy binary classification.
     """
+
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
@@ -90,9 +101,14 @@ class BinaryFuzzyTests(ClassificationTestCase):
         test_x_std = 0.005
         test_x = np.random.normal(self.dataset.test_x, scale=test_x_std)
 
-        self.controller = BinaryClassifier(self.dataset.train_x, self.dataset.train_y, kernel_class=PeriodicRBFKernel,
-                                           y_std=0, likelihood_class=BernoulliLikelihood,
-                                           marginal_log_likelihood_class=VariationalELBO)
+        self.controller = BinaryClassifier(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=0,
+            likelihood_class=BernoulliLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+        )
         self.controller.fit(100)
 
         predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
@@ -110,12 +126,18 @@ class BinaryFuzzyTests(ClassificationTestCase):
         @VariationalInference(ignore_all=True)
         class UncertaintyBinaryClassifier(GaussianUncertaintyGPController):
             """A simple binary classifier."""
+
             pass
 
-        self.controller = UncertaintyBinaryClassifier(train_x, train_x_std, self.dataset.train_y,
-                                                      kernel_class=PeriodicRBFKernel, y_std=0,
-                                                      likelihood_class=BernoulliLikelihood,
-                                                      marginal_log_likelihood_class=VariationalELBO)
+        self.controller = UncertaintyBinaryClassifier(
+            train_x,
+            train_x_std,
+            self.dataset.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=0,
+            likelihood_class=BernoulliLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+        )
         self.controller.fit(100)
 
         predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)

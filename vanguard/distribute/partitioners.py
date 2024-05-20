@@ -22,12 +22,9 @@ class BasePartitioner:
     """
     Generate a partition over index space using various methods. All partitioners should inherit from this class.
     """
+
     def __init__(
-            self,
-            train_x: NDArray[np.floating],
-            n_experts: int = 3,
-            communication: bool = False,
-            seed: Optional[int] = 42
+        self, train_x: NDArray[np.floating], n_experts: int = 3, communication: bool = False, seed: Optional[int] = 42
     ):
         """
         Initialise self.
@@ -59,7 +56,9 @@ class BasePartitioner:
 
         return partition
 
-    def plot_partition(self, partition: List[List[int]], cmap: Optional[Union[str, Colormap]] = "Set3", **plot_kwargs) -> None:
+    def plot_partition(
+        self, partition: List[List[int]], cmap: Optional[Union[str, Colormap]] = "Set3", **plot_kwargs
+    ) -> None:
         """Plot a partition on a T-SNE graph."""
         embedding = TSNE().fit_transform(self.train_x)
 
@@ -88,9 +87,9 @@ class BasePartitioner:
         """
         size = self.n_examples // self.n_experts
         random_partition = np.random.choice(self.n_examples, size=size, replace=False).tolist()
-        cluster_partition = self._create_cluster_partition(self.n_experts-1)
+        cluster_partition = self._create_cluster_partition(self.n_experts - 1)
 
-        for i in range(self.n_experts-1):
+        for i in range(self.n_experts - 1):
             cluster_partition[i] = random_partition + cluster_partition[i]
 
         partition = [random_partition, *cluster_partition]
@@ -122,6 +121,7 @@ class RandomPartitioner(BasePartitioner):
     """
     Generates a random partition.
     """
+
     def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         size = (n_clusters, self.n_examples // n_clusters)
         partition = np.random.choice(self.n_examples, size=size, replace=False).tolist()
@@ -132,6 +132,7 @@ class KMeansPartitioner(BasePartitioner):
     """
     Create a partition using K-Means.
     """
+
     def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         clusterer = _KMeans(n_clusters=n_clusters, random_state=self.seed)
         labels = clusterer.fit(self.train_x).labels_
@@ -143,6 +144,7 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
     """
     Create a partition using Mini-batch K-Means.
     """
+
     def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         clusterer = _MiniBatchKMeans(n_clusters=n_clusters, random_state=self.seed)
         labels = clusterer.fit(self.train_x).labels_
@@ -154,19 +156,21 @@ class KMedoidsPartitioner(BasePartitioner):
     """
     Create a partition using KMedoids with similarity defined by the kernel.
     """
-    def __init__(self,
-                 train_x: NDArray[np.floating],
-                 kernel: gpytorch.kernels.Kernel,
-                 n_experts: int = 2,
-                 communication: bool = False,
-                 seed: Optional[int] = 42
-                 ):
+
+    def __init__(
+        self,
+        train_x: NDArray[np.floating],
+        kernel: gpytorch.kernels.Kernel,
+        n_experts: int = 2,
+        communication: bool = False,
+        seed: Optional[int] = 42,
+    ):
         """
         Initialise self.
 
         :param train_x: The mean of the inputs.
         :param kernel: The kernel to use for constructing the
-                similarity matrix in kmedoids.
+                similarity matrix in KMedoids.
         :param n_experts: The number of partitions in which to split the data. Defaults to 2.
         :param communication: If True, A communications expert will be included. Defaults to False.
         :param seed: The seed for the random state. Defaults to 42.
@@ -176,7 +180,7 @@ class KMedoidsPartitioner(BasePartitioner):
 
     def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
         dist_matrix = self._construct_distance_matrix()
-        clusterer = _KMedoids(n_clusters=n_clusters, metric='precomputed', random_state=self.seed)
+        clusterer = _KMedoids(n_clusters=n_clusters, metric="precomputed", random_state=self.seed)
         labels = clusterer.fit(dist_matrix).labels_
         partition = self._group_indices_by_label(labels)
         return partition

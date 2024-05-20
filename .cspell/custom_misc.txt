@@ -1,2 +1,4 @@
+colors
+defenses
 docstrings
 GCHQ

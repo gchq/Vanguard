@@ -18,8 +18,10 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
     where a fixed heteroskedastic observation noise can be specified for each training point and task,
     but there is covariance between the points or the tasks.
     """
-    def __init__(self, noise: Tensor, learn_additional_noise: bool = False,
-                 batch_shape: Size = Size(), **kwargs: Any) -> None:
+
+    def __init__(
+        self, noise: Tensor, learn_additional_noise: bool = False, batch_shape: Size = Size(), **kwargs: Any
+    ) -> None:
         """
         Initialise self.
 
@@ -43,9 +45,9 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         """Set the fixed noise."""
         self._fixed_noise = value
 
-    def marginal(self, function_dist: MultitaskMultivariateNormal, *params: Any,
-                 noise: Optional[Tensor] = None,
-                 **kwargs: Any) -> MultitaskMultivariateNormal:
+    def marginal(
+        self, function_dist: MultitaskMultivariateNormal, *params: Any, noise: Optional[Tensor] = None, **kwargs: Any
+    ) -> MultitaskMultivariateNormal:
         r"""
         Return the marginal distribution.
 
@@ -76,15 +78,18 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
             :math:`D_{t} \otimes I_{n}`, :math:`\sigma^{2}I_{nt}` and :math:`diag(\sigma^*)` added.
         """
         mean, covar = function_dist.mean, function_dist.lazy_covariance_matrix
-        covar_kron_lt = self._shaped_noise_covar(mean.shape, add_noise=self.has_global_noise, noise=noise)
-        covar = covar + covar_kron_lt
+        covar_kronecker_lt = self._shaped_noise_covar(mean.shape, add_noise=self.has_global_noise, noise=noise)
+        covar = covar + covar_kronecker_lt
 
         return function_dist.__class__(mean, covar)
 
-    def _shaped_noise_covar(self,  # pyright: ignore [reportIncompatibleMethodOverride]
-                            base_shape: Size, add_noise: bool = True,
-                            noise: Optional[Tensor] = None,
-                            *params: Any) -> DiagLazyTensor:
+    def _shaped_noise_covar(  # pyright: ignore [reportIncompatibleMethodOverride]
+        self,
+        base_shape: Size,
+        add_noise: bool = True,
+        noise: Optional[Tensor] = None,
+        *params: Any,
+    ) -> DiagLazyTensor:
         """
         Format likelihood noise (i.e. pointwise standard-deviations) as a covariance matrix.
 

@@ -47,10 +47,11 @@ class DirichletMulticlassClassification(Decorator):
         >>> loss = gp.fit(100)
         >>>
         >>> test_x = np.array([0.05, 0.5, 0.95])
-        >>> preds, probs = gp.classify_points(test_x)
-        >>> preds
+        >>> predictions, probs = gp.classify_points(test_x)
+        >>> predictions
         array([0, 1, 2])
     """
+
     def __init__(self, num_classes: int, **kwargs):
         """
         Initialise self.
@@ -66,17 +67,19 @@ class DirichletMulticlassClassification(Decorator):
             """
             A wrapper for implementing variational inference.
             """
+
             _y_batch_axis = 1
 
             def __init__(self, *args, **kwargs):
-
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 if not issubclass(likelihood_class, DirichletClassificationLikelihood):
-                    raise ValueError("The class passed to `likelihood_class` must be a subclass of "
-                                     f"{DirichletClassificationLikelihood.__name__} for binary classification.")
+                    raise ValueError(
+                        "The class passed to `likelihood_class` must be a subclass of "
+                        f"{DirichletClassificationLikelihood.__name__} for binary classification."
+                    )
 
                 train_y = all_parameters_as_kwargs.pop("train_y")
 
@@ -95,6 +98,7 @@ class DirichletMulticlassClassification(Decorator):
                     Dirichlet works with batch multivariate normal, so we need to reshape predictions and samples for
                     compatibility downstream.
                     """
+
                     def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
                         """Return a transposed version of the mean of the prediction."""
                         mean, covar = super()._tensor_prediction()
@@ -113,6 +117,7 @@ class DirichletMulticlassClassification(Decorator):
                     Dirichlet works with batch multivariate normal, so we need to reshape predictions and samples for
                     compatibility downstream.
                     """
+
                     @classmethod
                     def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> Self:
                         """Transpose the mean before returning."""
@@ -133,10 +138,16 @@ class DirichletMulticlassClassification(Decorator):
                 self.posterior_class = TransposedPosterior
                 self.posterior_collection_class = TransposedMonteCarloPosteriorCollection
 
-                super().__init__(train_y=transformed_targets.detach().cpu().numpy(), likelihood_class=likelihood_class,
-                                 likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs)
+                super().__init__(
+                    train_y=transformed_targets.detach().cpu().numpy(),
+                    likelihood_class=likelihood_class,
+                    likelihood_kwargs=likelihood_kwargs,
+                    **all_parameters_as_kwargs,
+                )
 
-            def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            def classify_points(
+                self, x: Union[float, numpy.typing.NDArray[np.floating]]
+            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify points.
 
@@ -154,7 +165,9 @@ class DirichletMulticlassClassification(Decorator):
                 return predictions, detached_probs.max(axis=1)
 
             def classify_fuzzy_points(
-                    self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
+                self,
+                x: Union[float, numpy.typing.NDArray[np.floating]],
+                x_std: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify fuzzy points.
