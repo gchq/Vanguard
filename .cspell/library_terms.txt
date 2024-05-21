@@ -65,6 +65,7 @@ jumanjihouse
 jupyterlab
 keepdim
 kernelspec
+kmedoids
 lazify
 lengthscale
 lengthscales
