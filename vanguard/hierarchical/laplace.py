@@ -117,7 +117,6 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 self.hyperparameter_posterior_mean = mean
                 self.hyperparameter_posterior_covariance = cov_evals, cov_evecs
                 self._temperature = posterior_temperature
-                self.likelihood_noise = None
 
             @classmethod
             def new(cls: Type[ControllerT], instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
@@ -166,7 +165,8 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
                 total_loss = 0
                 for train_x, train_y, train_y_noise in itertools.islice(self.train_data_generator, single_epoch_iters):
-                    self.likelihood_noise = train_y_noise
+                    # Pylint false positive here - this should be defined in the parent class
+                    self.likelihood_noise = train_y_noise  # pylint: disable=attribute-defined-outside-init
                     total_loss += self._loss(train_x, train_y)
 
                 gradient_list = torch.autograd.grad(total_loss, iter(self.hyperparameter_collection), create_graph=True)
