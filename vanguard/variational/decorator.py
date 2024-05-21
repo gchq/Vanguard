@@ -4,6 +4,7 @@ Enable variational inference in a controller.
 The :class:`VariationalInference` decorator primes a :class:`~vanguard.base.gpcontroller.GPController` class
 for variational inference.
 """
+
 from typing import Any, Generic, Optional, Type, TypeVar, Union
 
 import gpytorch.settings
@@ -47,9 +48,15 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
         ... class NewController(GPController):
         ...     pass
     """
-    def __init__(self, n_inducing_points: Optional[int] = None, n_likelihood_samples: int = 10,
-                 variational_strategy_class: Optional[Type[StrategyT]] = None,
-                 variational_distribution_class: Optional[Type[DistributionT]] = None, **kwargs):
+
+    def __init__(
+        self,
+        n_inducing_points: Optional[int] = None,
+        n_likelihood_samples: int = 10,
+        variational_strategy_class: Optional[Type[StrategyT]] = None,
+        variational_distribution_class: Optional[Type[DistributionT]] = None,
+        **kwargs,
+    ):
         """
         Initialise self.
 
@@ -73,28 +80,38 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
         self.variational_strategy_class = variational_strategy_class
         self.gp_model_class = self._build_gp_model_class(variational_distribution_class, variational_strategy_class)
 
-    def _build_gp_model_class(self, variational_distribution_class: Optional[Type[DistributionT]],
-                              variational_strategy_class: Optional[Type[StrategyT]]) -> Type[SVGPModel]:
+    def _build_gp_model_class(
+        self,
+        variational_distribution_class: Optional[Type[DistributionT]],
+        variational_strategy_class: Optional[Type[StrategyT]],
+    ) -> Type[SVGPModel]:
         if variational_distribution_class is not None:
+
             @wraps_class(SVGPModel)
             class VDistGPModel(SVGPModel):
                 def _build_variational_distribution(self, n_inducing_points: int) -> DistributionT:
                     return variational_distribution_class(n_inducing_points)
         else:
+
             @wraps_class(SVGPModel)
             class VDistGPModel(SVGPModel):
                 pass
+
         if variational_strategy_class is not None:
             variational_strategy_class.approximation_size = self.n_inducing_points
+
             @wraps_class(VDistGPModel)
             class NewGPModel(VDistGPModel):
-                def _build_base_variational_strategy(self, inducing_points: Tensor,
-                                                     variational_distribution: DistributionT) -> StrategyT:
+                def _build_base_variational_strategy(
+                    self, inducing_points: Tensor, variational_distribution: DistributionT
+                ) -> StrategyT:
                     return variational_strategy_class(self, inducing_points, variational_distribution)
         else:
+
             @wraps_class(VDistGPModel)
             class NewGPModel(VDistGPModel):
                 pass
+
         return NewGPModel
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -107,6 +124,7 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
             """
             A wrapper for implementing variational inference.
             """
+
             gp_model_class = _gp_model_class
 
             def __init__(self, *args: Any, **kwargs: Any):
@@ -123,13 +141,20 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                 mll_kwargs["num_data"] = train_y.size
 
                 try:
-                    super().__init__(train_x=train_x, train_y=train_y, gp_kwargs=gp_kwargs, mll_kwargs=mll_kwargs,
-                                     **all_parameters_as_kwargs)
+                    super().__init__(
+                        train_x=train_x,
+                        train_y=train_y,
+                        gp_kwargs=gp_kwargs,
+                        mll_kwargs=mll_kwargs,
+                        **all_parameters_as_kwargs,
+                    )
                 except TypeError as error:
                     if "__init__() got an unexpected keyword argument 'num_data'" in str(error):
-                        raise ValueError("The class passed to ``marginal_log_likelihood_class`` must take a "
-                                         "``num_data`` :class:`int` argument since we run "
-                                         "variational inference with SGD.") from error
+                        raise ValueError(
+                            "The class passed to ``marginal_log_likelihood_class`` must take a "
+                            "``num_data`` :class:`int` argument since we run "
+                            "variational inference with SGD."
+                        ) from error
                     else:
                         raise
 
@@ -137,8 +162,11 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                 with gpytorch.settings.num_likelihood_samples(decorator.n_likelihood_samples):
                     return super()._predictive_likelihood(x)
 
-            def _fuzzy_predictive_likelihood(self, x: Union[numpy.typing.NDArray[np.floating], float],
-                                             x_std: Union[numpy.typing.NDArray[np.floating], float]) -> Posterior:
+            def _fuzzy_predictive_likelihood(
+                self,
+                x: Union[numpy.typing.NDArray[np.floating], float],
+                x_std: Union[numpy.typing.NDArray[np.floating], float],
+            ) -> Posterior:
                 with gpytorch.settings.num_likelihood_samples(decorator.n_likelihood_samples):
                     return super()._fuzzy_predictive_likelihood(x, x_std)
 

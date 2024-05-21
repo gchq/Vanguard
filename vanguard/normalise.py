@@ -1,6 +1,7 @@
 """
 The :class:`NormaliseY` decorator will scale the y-inputs to a unit normal distribution.
 """
+
 from typing import Tuple, Type, TypeVar
 
 import numpy as np
@@ -46,6 +47,7 @@ class NormaliseY(Decorator):
         >>> controller.train_y.T
         tensor([[-1.0000, -0.7143,  0.1429,  1.5714]])
     """
+
     def __init__(self, **kwargs):
         """
         Initialise self.
@@ -60,8 +62,8 @@ class NormaliseY(Decorator):
             """
             A wrapper for normalising y inputs and variance.
             """
-            def __init__(self, *args, **kwargs):
 
+            def __init__(self, *args, **kwargs):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
@@ -79,11 +81,13 @@ class NormaliseY(Decorator):
 
                 def normalise_posterior_class(posterior_class: Type[Posterior]) -> Type[Posterior]:
                     """Wrap a posterior class to enable normalisation."""
+
                     @wraps_class(posterior_class)
                     class NormalisedPosterior(posterior_class):
                         """
                         Un-scale the distribution at initialisation.
                         """
+
                         def prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
                             """
                             Un-normalise values.
@@ -92,10 +96,12 @@ class NormaliseY(Decorator):
                             """
                             mean, covar = super().prediction()
                             unscaled_mean = mean * _normalising_std + _normalising_mean
-                            unscaled_covar = covar * _normalising_std ** 2
+                            unscaled_covar = covar * _normalising_std**2
                             return unscaled_mean, unscaled_covar
 
-                        def confidence_interval(self, alpha: float = 0.05) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+                        def confidence_interval(
+                            self, alpha: float = 0.05
+                        ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
                             """
                             Un-normalise values.
 
@@ -109,7 +115,7 @@ class NormaliseY(Decorator):
                             unscaled_upper = (upper * _normalising_std) + _normalising_mean
                             return unscaled_mean, unscaled_lower, unscaled_upper
 
-                        def log_probability(self, y : torch.Tensor) -> torch.Tensor:
+                        def log_probability(self, y: torch.Tensor) -> torch.Tensor:
                             """
                             Apply the change of variables to the density using the normalise map.
 

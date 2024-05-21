@@ -1,6 +1,7 @@
 """
 Gaussian processes can be trained on inputs with uncertainty.
 """
+
 import warnings
 from itertools import islice
 from typing import Iterable, NoReturn, Optional, Tuple, Type, Union
@@ -27,13 +28,21 @@ class GaussianUncertaintyGPController(GPController):
     :cite:`Mchutchon11` and our implementation here exploits :mod:`torch.autograd` to circumvent any by-hand
     calculations of GP derivatives.
     """
-    def __init__(self, train_x: numpy.typing.NDArray[np.floating], train_x_std: Optional[Union[numpy.typing.NDArray[np.floating], float]],
-                 train_y: numpy.typing.NDArray[np.floating], y_std: Union[numpy.typing.NDArray[np.floating], float],
-                 kernel_class: Type[gpytorch.kernels.Kernel], mean_class: Type[gpytorch.means.Mean] = gpytorch.means.ConstantMean,
-                 likelihood_class: Type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
-                 marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
-                 optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam, smart_optimiser_class: Type[SmartOptimiser] = SmartOptimiser,
-                 **kwargs):
+
+    def __init__(
+        self,
+        train_x: numpy.typing.NDArray[np.floating],
+        train_x_std: Optional[Union[numpy.typing.NDArray[np.floating], float]],
+        train_y: numpy.typing.NDArray[np.floating],
+        y_std: Union[numpy.typing.NDArray[np.floating], float],
+        kernel_class: Type[gpytorch.kernels.Kernel],
+        mean_class: Type[gpytorch.means.Mean] = gpytorch.means.ConstantMean,
+        likelihood_class: Type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
+        marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
+        optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
+        smart_optimiser_class: Type[SmartOptimiser] = SmartOptimiser,
+        **kwargs,
+    ):
         """
         Initialise self.
 
@@ -66,27 +75,39 @@ class GaussianUncertaintyGPController(GPController):
             that wraps around the given ``optimiser_class`` to enable advanced features, for example early stopping.
         :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
-        super().__init__(train_x=train_x, train_y=train_y, kernel_class=kernel_class, mean_class=mean_class,
-                         y_std=y_std, likelihood_class=likelihood_class,
-                         marginal_log_likelihood_class=marginal_log_likelihood_class, optimiser_class=optimiser_class,
-                         smart_optimiser_class=smart_optimiser_class, **kwargs)
+        super().__init__(
+            train_x=train_x,
+            train_y=train_y,
+            kernel_class=kernel_class,
+            mean_class=mean_class,
+            y_std=y_std,
+            likelihood_class=likelihood_class,
+            marginal_log_likelihood_class=marginal_log_likelihood_class,
+            optimiser_class=optimiser_class,
+            smart_optimiser_class=smart_optimiser_class,
+            **kwargs,
+        )
 
         self._gradient_variance = None
 
-        self._learn_input_noise = (train_x_std is None)
+        self._learn_input_noise = train_x_std is None
         self.train_x_std = self._process_x_std(train_x_std)
         if self.batch_size is None or self._learn_input_noise:
             self.train_x_std = self.train_x_std.to(self.device)
 
         if self.train_x_std.shape == self.train_x.shape:
-            self.train_data_generator = infinite_tensor_generator(self.batch_size, self.device,
-                                                                  (self.train_x, 0),
-                                                                  (self.train_y, self._y_batch_axis),
-                                                                  (self._y_variance, self._y_batch_axis),
-                                                                  (self.train_x_std, 0))
+            self.train_data_generator = infinite_tensor_generator(
+                self.batch_size,
+                self.device,
+                (self.train_x, 0),
+                (self.train_y, self._y_batch_axis),
+                (self._y_variance, self._y_batch_axis),
+                (self.train_x_std, 0),
+            )
         else:
-            self.train_data_generator = generator_append_constant(self.train_data_generator,
-                                                                  self.train_x_std.to(self.device))
+            self.train_data_generator = generator_append_constant(
+                self.train_data_generator, self.train_x_std.to(self.device)
+            )
 
     @property
     def gradient_variance(self) -> torch.Tensor:
@@ -128,10 +149,11 @@ class GaussianUncertaintyGPController(GPController):
         loss, detached_loss = torch.tensor(float("nan"), dtype=self.dtype, device=self.device), float("nan")
         self.set_to_training_mode()
 
-        for iter_num, (train_x, train_y, train_y_noise, train_x_std) in enumerate(islice(self.train_data_generator,
-                                                                                         n_iters)):
+        for iter_num, (train_x, train_y, train_y_noise, train_x_std) in enumerate(
+            islice(self.train_data_generator, n_iters)
+        ):
             if (iter_num + 1) % gradient_every == 0:
-                _, _, grad_var_term = self._get_additive_grad_noise(train_x, train_x_std ** 2)
+                _, _, grad_var_term = self._get_additive_grad_noise(train_x, train_x_std**2)
                 self._original_y_variance_as_tensor = train_y_noise
                 self.gradient_variance = grad_var_term
                 self.set_to_training_mode()
@@ -146,11 +168,13 @@ class GaussianUncertaintyGPController(GPController):
                     warnings.warn(f"Re-running training from scratch for {iter_num-1} iterations.")
                     self._smart_optimiser.reset()
                     self.metrics_tracker.reset()
-                    self._sgd_round(iter_num-1, gradient_every)
+                    self._sgd_round(iter_num - 1, gradient_every)
                     break
                 else:
-                    raise RuntimeError("Pass auto_restart=True to the controller to automatically restart training up "
-                                       "to the last stable iterations.") from err
+                    raise RuntimeError(
+                        "Pass auto_restart=True to the controller to automatically restart training up "
+                        "to the last stable iterations."
+                    ) from err
             finally:
                 try:
                     detached_loss = loss.detach().cpu().item()
@@ -166,7 +190,9 @@ class GaussianUncertaintyGPController(GPController):
         if self._learn_input_noise:
             self.train_x_std.requires_grad = value
 
-    def _get_additive_grad_noise(self, x: torch.Tensor, x_var: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def _get_additive_grad_noise(
+        self, x: torch.Tensor, x_var: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Use :mod:`torch.autograd` to find the gradient of the posterior mean and derived additive covariance term.
 
@@ -190,23 +216,23 @@ class GaussianUncertaintyGPController(GPController):
             warnings.filterwarnings("ignore", category=GPInputWarning, message=_INPUT_WARNING)
             posterior = self._get_posterior_over_point_in_eval_mode(x_with_grad)
 
-        preds, covar = posterior._tensor_prediction()
+        predictions, covar = posterior._tensor_prediction()
 
-        # Each entry of preds depends only on the matching input vector, so summing them is a simple way of getting the
+        # Each entry of predictions depends only on the matching input vector, so summing them is a simple way of getting the
         # result we need from autograd (which can only compute gradients of scalars)
-        preds_grad = []
-        if len(preds.shape) == 1:
-            preds = preds.unsqueeze(-1)
-        sum_over_inputs_preds = preds.sum(dim=0)
-        for sum_preds in sum_over_inputs_preds:
+        predictions_grad = []
+        if len(predictions.shape) == 1:
+            predictions = predictions.unsqueeze(-1)
+        sum_over_inputs_predictions = predictions.sum(dim=0)
+        for sum_predictions in sum_over_inputs_predictions:
             x_with_grad.retain_grad()
-            sum_preds.backward(retain_graph=True)
-            preds_grad.append(x_with_grad.grad)
-        root_var = torch.stack([torch.mul(pg, torch.sqrt(x_var)) for pg in preds_grad])
-        return preds.detach(), covar.detach(), root_var
+            sum_predictions.backward(retain_graph=True)
+            predictions_grad.append(x_with_grad.grad)
+        root_var = torch.stack([torch.mul(pg, torch.sqrt(x_var)) for pg in predictions_grad])
+        return predictions.detach(), covar.detach(), root_var
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
-            self, x: numpy.typing.NDArray[np.floating], x_std: Union[numpy.typing.NDArray[np.floating], float]
+        self, x: numpy.typing.NDArray[np.floating], x_std: Union[numpy.typing.NDArray[np.floating], float]
     ) -> Posterior:
         """
         Obtain posterior predictive mean and covariance at a point with variance.
@@ -214,7 +240,7 @@ class GaussianUncertaintyGPController(GPController):
         .. warning:
             The ``n_features`` must match with :attr:`self.dim`.
 
-        :param x: (n_preds, n_features) The predictive inputs.
+        :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
@@ -224,13 +250,13 @@ class GaussianUncertaintyGPController(GPController):
         """
         tx = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         tx_std = self._process_x_std(x_std).to(self.device)
-        preds, covar, additive_grad_noise = self._get_additive_grad_noise(tx, tx_std ** 2)
+        predictions, covar, additive_grad_noise = self._get_additive_grad_noise(tx, tx_std**2)
         additional_covar = torch.diag(self._noise_transform(additive_grad_noise).T.reshape(-1))
         covar += additional_covar
 
         jitter = torch.eye(covar.shape[0]) * gpytorch.settings.cholesky_jitter.value(covar.dtype)
 
-        return self.posterior_class.from_mean_and_covariance(preds.squeeze(), covar + jitter)
+        return self.posterior_class.from_mean_and_covariance(predictions.squeeze(), covar + jitter)
 
     def _process_x_std(self, std: Optional[Union[numpy.typing.NDArray[float], float]]) -> torch.Tensor:
         """

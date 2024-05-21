@@ -1,6 +1,7 @@
 """
 Contains the LearningRateFinder class to aid with choosing the largest possible learning rate.
 """
+
 import typing
 
 import matplotlib.pyplot as plt
@@ -18,6 +19,7 @@ class LearningRateFinder:
     Try an increasing geometric sequence of learning rates for a small number of iterations to find
     the best learning rate (i.e. the largest learning rate giving stable training).
     """
+
     def __init__(self, controller: "GPController"):
         """
         Initialise self.
@@ -32,7 +34,9 @@ class LearningRateFinder:
     def best_learning_rate(self) -> float:
         return self._learning_rates[np.argmin(self._losses)]
 
-    def find(self, start_lr: float = 1e-5, end_lr: float = 10, num_divisions: int = 100, max_iterations: int = 20) -> None:
+    def find(
+        self, start_lr: float = 1e-5, end_lr: float = 10, num_divisions: int = 100, max_iterations: int = 20
+    ) -> None:
         """
         Try the range of learning rates and record the loss obtained.
 
@@ -41,8 +45,8 @@ class LearningRateFinder:
         :param num_divisions: The number of learning rates to try.
         :param max_iterations: The top number of iterations of gradient descent to run for each learning rate.
         """
-        ratio = np.power(end_lr/start_lr, 1./num_divisions)
-        self._learning_rates = [start_lr * ratio ** index for index in range(num_divisions)]
+        ratio = np.power(end_lr / start_lr, 1.0 / num_divisions)
+        self._learning_rates = [start_lr * ratio**index for index in range(num_divisions)]
         self._losses = [self._run_learning_rate(lr, max_iterations) for lr in self._learning_rates]
 
     def plot(self, **kwargs) -> None:

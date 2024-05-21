@@ -1,6 +1,7 @@
 """
 Test that the posterior predictions of CWGP models are sensible in various ways.
 """
+
 import numpy as np
 import torch
 from gpytorch.utils.errors import NanError
@@ -18,6 +19,7 @@ class CompositionTests(VanguardTestCase):
     """
     Tests for the composition of warp functions.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
         self.affine = warpfunctions.AffineWarpFunction(1, 2)
@@ -70,6 +72,7 @@ class AssociativityTests(VanguardTestCase):
     """
     Tests for the associativity of warp functions.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
         affine = warpfunctions.AffineWarpFunction(1, 2)
@@ -85,28 +88,33 @@ class AssociativityTests(VanguardTestCase):
 
     def test_forward(self) -> None:
         """Results should be the same."""
-        np.testing.assert_array_equal(self.warp_1(self.x).detach().cpu().numpy(),
-                                      self.warp_2(self.x).detach().cpu().numpy())
-        np.testing.assert_array_equal(self.warp_1(self.x).detach().cpu().numpy(),
-                                      self.warp_3(self.x).detach().cpu().numpy())
+        np.testing.assert_array_equal(
+            self.warp_1(self.x).detach().cpu().numpy(), self.warp_2(self.x).detach().cpu().numpy()
+        )
+        np.testing.assert_array_equal(
+            self.warp_1(self.x).detach().cpu().numpy(), self.warp_3(self.x).detach().cpu().numpy()
+        )
 
     def test_inverse(self) -> None:
         """Results should be the same."""
-        np.testing.assert_array_equal(self.warp_1.inverse(self.y).detach().cpu().numpy(),
-                                      self.warp_2.inverse(self.y).detach().cpu().numpy())
-        np.testing.assert_array_equal(self.warp_1.inverse(self.y).detach().cpu().numpy(),
-                                      self.warp_3.inverse(self.y).detach().cpu().numpy())
+        np.testing.assert_array_equal(
+            self.warp_1.inverse(self.y).detach().cpu().numpy(), self.warp_2.inverse(self.y).detach().cpu().numpy()
+        )
+        np.testing.assert_array_equal(
+            self.warp_1.inverse(self.y).detach().cpu().numpy(), self.warp_3.inverse(self.y).detach().cpu().numpy()
+        )
 
     def test_deriv(self) -> None:
         """Results should be the same."""
-        np.testing.assert_array_equal(self.warp_1.deriv(self.x).detach().cpu().numpy(),
-                                      self.warp_2.deriv(self.x).detach().cpu().numpy())
-        np.testing.assert_array_equal(self.warp_1.deriv(self.x).detach().cpu().numpy(),
-                                      self.warp_3.deriv(self.x).detach().cpu().numpy())
+        np.testing.assert_array_equal(
+            self.warp_1.deriv(self.x).detach().cpu().numpy(), self.warp_2.deriv(self.x).detach().cpu().numpy()
+        )
+        np.testing.assert_array_equal(
+            self.warp_1.deriv(self.x).detach().cpu().numpy(), self.warp_3.deriv(self.x).detach().cpu().numpy()
+        )
 
 
 class ParameterTests(VanguardTestCase):
-
     DATASET = SyntheticDataset()
 
     def test_simple_warp_functions_are_different(self) -> None:
@@ -116,14 +124,23 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp_1 = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                              y_std=self.DATASET.train_y_std)
+        gp_1 = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
-        gp_2 = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                              y_std=self.DATASET.train_y_std)
+        gp_2 = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         self.assertIsNot(gp_1.warp, gp_2.warp)
         self.assertIsNot(gp_1.warp.a, gp_2.warp.a)
@@ -139,14 +156,23 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine_1 @ sinh @ box_cox @ affine_2, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp_1 = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                              y_std=self.DATASET.train_y_std)
+        gp_1 = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
-        gp_2 = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                              y_std=self.DATASET.train_y_std)
+        gp_2 = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         for component_1, component_2 in zip(gp_1.warp.components, gp_2.warp.components):
             self.assertIsNot(component_1, component_2)
@@ -160,11 +186,16 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine @ 2, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                            y_std=self.DATASET.train_y_std)
+        gp = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         affine_1, affine_2 = gp.warp.components
         self.assertIsNot(affine_1, affine_2)
@@ -179,11 +210,16 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine @ box_cox, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                            y_std=self.DATASET.train_y_std)
+        gp = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         gp.fit(100)
         fitted_affine, _ = gp.warp.components
@@ -197,11 +233,16 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                            y_std=self.DATASET.train_y_std)
+        gp = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         gp.fit(100)
         self.assertNotEqual(1, gp.warp.a.item())
@@ -217,11 +258,16 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine_2 @ sinh @ affine_1 @ arcsinh, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                            y_std=self.DATASET.train_y_std)
+        gp = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         gp.fit(100)
         fitted_affine_2, _, fitted_affine_1, _ = gp.warp.components
@@ -237,11 +283,16 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine @ 2, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                            y_std=self.DATASET.train_y_std)
+        gp = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         gp.fit(100)
         fitted_affine_1, fitted_affine_2 = gp.warp.components
@@ -259,6 +310,7 @@ class ConstraintTests(VanguardTestCase):
     """
     Test that warp functions can be constrained.
     """
+
     DATASET = SyntheticDataset()
 
     def test_fitting_with_unconstrained_warp(self) -> None:
@@ -269,11 +321,16 @@ class ConstraintTests(VanguardTestCase):
         @SetWarp(box_cox @ affine, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                            y_std=self.DATASET.train_y_std)
+        gp = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         expected_regex = r"cholesky_cpu: \d*? of \d*? elements of the torch\.Size\(\[\d*?, \d*?\]\) tensor are NaN\."
         with self.assertRaisesRegex(NanError, expected_regex):
@@ -288,11 +345,16 @@ class ConstraintTests(VanguardTestCase):
         @SetWarp(box_cox @ affine, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
+
             pass
 
         scaler = StandardScaler()
-        gp = TestController(scaler.fit_transform(self.DATASET.train_x), self.DATASET.train_y, ScaledRBFKernel,
-                            y_std=self.DATASET.train_y_std)
+        gp = TestController(
+            scaler.fit_transform(self.DATASET.train_x),
+            self.DATASET.train_y,
+            ScaledRBFKernel,
+            y_std=self.DATASET.train_y_std,
+        )
 
         try:
             gp.fit(100)

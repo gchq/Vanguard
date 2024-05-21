@@ -5,7 +5,6 @@ Vanguard supports a number of metrics pre-attached and tracked to all
 controller classes. These are calculated per iteration by the
 :class:`MetricsTracker` class.
 """
-from __future__ import annotations
 
 import itertools
 from contextlib import contextmanager
@@ -49,9 +48,10 @@ class MetricsTracker:
         loss: 1
         loss: 3
     """
+
     def __init__(
-            self,
-            *metrics: Callable,
+        self,
+        *metrics: Callable,
     ):
         """
         Initialise self.
@@ -82,7 +82,7 @@ class MetricsTracker:
         """Get the default format string used for printing."""
         format_string_components = ["iteration: {iteration}"]
         for metric in self._metric_outputs:
-            component = "{metric}: {{{metric}}}".format(metric=metric.__name__)
+            component = f"{metric.__name__}: {{{metric.__name__}}}"
             format_string_components.append(component)
         format_string = ", ".join(format_string_components)
         return format_string
@@ -93,8 +93,8 @@ class MetricsTracker:
         self._iteration = 0
 
     def add_metrics(
-            self,
-            *metrics: Callable,
+        self,
+        *metrics: Callable,
     ) -> None:
         """
         Add metrics to the tracker.
@@ -105,10 +105,10 @@ class MetricsTracker:
             self._metric_outputs[metric] = [float("nan")] * self._iteration
 
     def run_metrics(
-            self,
-            loss_value: float,
-            controller: Optional[BaseGPController],
-            **additional_info,
+        self,
+        loss_value: float,
+        controller: Optional["BaseGPController"],
+        **additional_info,
     ) -> None:
         """
         Register the components of an iteration.
@@ -140,9 +140,9 @@ class MetricsTracker:
 
     @contextmanager
     def print_metrics(
-            self,
-            every: int = 1,
-            format_string: Optional[str] = None,
+        self,
+        every: int = 1,
+        format_string: Optional[str] = None,
     ) -> None:
         """
         Temporarily enabling printing the metrics within a context manager.
@@ -166,6 +166,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float, controller: BaseGPController) -> float:
+def loss(loss_value: float, controller: "BaseGPController") -> float:
     """Return the loss value."""
     return loss_value

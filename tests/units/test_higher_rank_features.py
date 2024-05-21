@@ -1,6 +1,7 @@
 """
 Tests for the HigherRankFeatures decorator.
 """
+
 import unittest
 from typing import Any, Type
 
@@ -18,7 +19,6 @@ from vanguard.vanilla import GaussianGPController
 
 
 class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
-
     @classmethod
     def from_lazy_evaluated_kernel_tensor(cls: Type[Self], lazy_tensor: gpytorch.lazy.LazyTensor) -> Self:
         kernel = lazy_tensor.kernel
@@ -40,15 +40,21 @@ class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
 
 
 class HigherRankKernel(ScaledRBFKernel):
-    def forward(self, x1: torch.Tensor, x2: torch.Tensor, diag: bool = False, last_dim_is_batch: bool = False, **params: Any) -> torch.Tensor:
-        return super().forward(x1.reshape(x1.shape[0], 4), x2.reshape(x2.shape[0], 4), diag=diag,
-                               last_dim_is_batch=last_dim_is_batch, **params)
+    def forward(
+        self, x1: torch.Tensor, x2: torch.Tensor, diag: bool = False, last_dim_is_batch: bool = False, **params: Any
+    ) -> torch.Tensor:
+        return super().forward(
+            x1.reshape(x1.shape[0], 4),
+            x2.reshape(x2.shape[0], 4),
+            diag=diag,
+            last_dim_is_batch=last_dim_is_batch,
+            **params,
+        )
 
     def __call__(self, *args: Any, **kwargs: Any) -> torch.Tensor:
         return_tensor = super().__call__(*args, **kwargs)
         if isinstance(return_tensor, LazyEvaluatedKernelTensor):
-            return_tensor = TwoDimensionalLazyEvaluatedKernelTensor.from_lazy_evaluated_kernel_tensor(
-                return_tensor)
+            return_tensor = TwoDimensionalLazyEvaluatedKernelTensor.from_lazy_evaluated_kernel_tensor(return_tensor)
         return return_tensor
 
 
@@ -67,14 +73,19 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the HigherRankFeatures decorator.
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
         cls.dataset = HigherRankSyntheticDataset()
 
-        cls.controller = Rank2Controller(cls.dataset.train_x, cls.dataset.train_y,
-                                         HigherRankKernel, cls.dataset.train_y_std,
-                                         mean_class=HigherRankMean)
+        cls.controller = Rank2Controller(
+            cls.dataset.train_x,
+            cls.dataset.train_y,
+            HigherRankKernel,
+            cls.dataset.train_y_std,
+            mean_class=HigherRankMean,
+        )
 
         cls.train_y_mean = cls.dataset.train_y.mean()
         cls.train_y_std = cls.dataset.train_y.std()

@@ -1,6 +1,7 @@
 """
 Utility functions for the configuration file.
 """
+
 import itertools
 import os
 import shutil
@@ -29,8 +30,11 @@ def process_notebooks(notebook_file_paths):
         with open(notebook_path) as rf:
             notebook = nbformat.read(rf, as_version=4)
 
-        notebook.cells = [cell for cell in notebook.cells if cell.source
-                          and not cell["source"].startswith("# sphinx ignore")]
+        notebook.cells = [
+            cell  #
+            for cell in notebook.cells
+            if cell.source and not cell["source"].startswith("# sphinx ignore")
+        ]
 
         correct_cell_numbers = itertools.count(1)
         for cell in notebook.cells:

@@ -1,6 +1,7 @@
 """
 Tests for the Multitask decorator.
 """
+
 import unittest
 
 from vanguard.datasets.synthetic import SyntheticDataset
@@ -14,12 +15,14 @@ class ErrorTests(unittest.TestCase):
     """
     Tests that the correct error messages are thrown.
     """
+
     def setUp(self) -> None:
         """Code to run before each test."""
         self.dataset = SyntheticDataset()
 
     def test_single_task_variational(self) -> None:
         """Should throw an error."""
+
         @Multitask(num_tasks=1)
         @VariationalInference()
         class MultitaskController(GaussianGPController):
@@ -30,10 +33,16 @@ class ErrorTests(unittest.TestCase):
 
     def test_bad_batch_shape(self) -> None:
         """Should throw an error."""
+
         @Multitask(num_tasks=1)
         class MultitaskController(GaussianGPController):
             pass
 
         with self.assertRaises(TypeError):
-            MultitaskController(self.dataset.train_x, self.dataset.train_y, ScaledRBFKernel, self.dataset.train_y_std,
-                                kernel_kwargs={"batch_shape": 2})
+            MultitaskController(
+                self.dataset.train_x,
+                self.dataset.train_y,
+                ScaledRBFKernel,
+                self.dataset.train_y_std,
+                kernel_kwargs={"batch_shape": 2},
+            )

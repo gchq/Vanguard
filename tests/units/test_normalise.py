@@ -1,6 +1,7 @@
 """
 Tests for the NormaliseY decorator.
 """
+
 import unittest
 
 import torch
@@ -14,6 +15,7 @@ from vanguard.vanilla import GaussianGPController
 @NormaliseY(ignore_methods=("__init__",))
 class NormalisedGaussianGPController(GaussianGPController):
     """Test class."""
+
     pass
 
 
@@ -21,13 +23,15 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the NormaliseY decorator.
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
         cls.dataset = SyntheticDataset()
 
-        cls.controller = NormalisedGaussianGPController(cls.dataset.train_x, cls.dataset.train_y,
-                                                        ScaledRBFKernel, cls.dataset.train_y_std)
+        cls.controller = NormalisedGaussianGPController(
+            cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std
+        )
 
         cls.train_y_mean = cls.dataset.train_y.mean()
         cls.train_y_std = cls.dataset.train_y.std()
@@ -51,7 +55,7 @@ class BasicTests(unittest.TestCase):
         external_mean, external_covar = posterior.prediction()
 
         torch.testing.assert_allclose((external_mean - self.train_y_mean) / self.train_y_std, internal_mean)
-        torch.testing.assert_allclose(external_covar / self.train_y_std ** 2, internal_covar)
+        torch.testing.assert_allclose(external_covar / self.train_y_std**2, internal_covar)
 
     def test_fuzzy_prediction_scaling(self) -> None:
         """Internal and external fuzzy predictions should be properly scaled."""
@@ -61,7 +65,7 @@ class BasicTests(unittest.TestCase):
         external_mean, external_covar = posterior.prediction()
 
         torch.testing.assert_allclose((external_mean - self.train_y_mean) / self.train_y_std, internal_mean)
-        torch.testing.assert_allclose(external_covar / self.train_y_std ** 2, internal_covar)
+        torch.testing.assert_allclose(external_covar / self.train_y_std**2, internal_covar)
 
     def test_confidence_interval_scaling(self) -> None:
         """Internal and external predictions should be properly scaled."""

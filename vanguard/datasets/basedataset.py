@@ -4,6 +4,7 @@ Base datasets for Vanguard.
 For the ease of the user, Vanguard contains a number of datasets commonly referenced in examples, and used in tests.
 The dataset instances allow for easy access to the training and testing data through attributes.
 """
+
 import os
 from contextlib import contextmanager
 from typing import Generator, Union
@@ -18,6 +19,7 @@ class Dataset:
     """
     Represents an experimental dataset used by Vanguard.
     """
+
     def __init__(
         self,
         train_x: NDArray[np.floating],
@@ -82,6 +84,7 @@ class FileDataset(Dataset):
     If missing, this file can be
     downloaded with the :meth:`~vanguard.datasets.basedataset.FileDataset.download` method.
     """
+
     @classmethod
     def download(cls):
         """Download the data needed for this dataset."""
@@ -118,13 +121,22 @@ class EmptyDataset(Dataset):
     """
     Represents an empty dataset.
     """
+
     def __init__(self):
         """
         Initialise self.
         """
-        super().__init__(np.array([]), np.array([]), np.array([]), np.array([]),
-                         np.array([]), np.array([]), np.array([]), np.array([]),
-                         significance=0)
+        super().__init__(
+            np.array([]),
+            np.array([]),
+            np.array([]),
+            np.array([]),
+            np.array([]),
+            np.array([]),
+            np.array([]),
+            np.array([]),
+            significance=0,
+        )
 
     @classmethod
     def download(cls):

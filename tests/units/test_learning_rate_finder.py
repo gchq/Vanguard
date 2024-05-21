@@ -1,6 +1,7 @@
 """
 Tests for LearningRateFinder.
 """
+
 import unittest
 
 from vanguard.datasets.synthetic import SyntheticDataset
@@ -13,13 +14,15 @@ class BasicTests(unittest.TestCase):
     """
     Basic tests for the LearningRateFinder decorator.
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
         cls.dataset = SyntheticDataset()
 
-        cls.controller = GaussianGPController(cls.dataset.train_x, cls.dataset.train_y,
-                                              ScaledRBFKernel, cls.dataset.train_y_std)
+        cls.controller = GaussianGPController(
+            cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std
+        )
 
         cls.train_y_mean = cls.dataset.train_y.mean()
         cls.train_y_std = cls.dataset.train_y.std()

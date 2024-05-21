@@ -1,6 +1,7 @@
 """
 Contains a slight adjustment to the standard multitask kernel.
 """
+
 from typing import Any
 
 from gpytorch.kernels import MultitaskKernel
@@ -12,8 +13,10 @@ class BatchCompatibleMultitaskKernel(MultitaskKernel):
     """
     A multitask kernel compatible with input uncertainty and hierarchical.
     """
-    def forward(self, x1: Tensor, x2: Tensor, diag: bool = False,
-                last_dim_is_batch: bool = False, **params: Any) -> Tensor:
+
+    def forward(
+        self, x1: Tensor, x2: Tensor, diag: bool = False, last_dim_is_batch: bool = False, **params: Any
+    ) -> Tensor:
         if last_dim_is_batch:
             raise RuntimeError("MultitaskKernel does not accept the last_dim_is_batch argument.")
 

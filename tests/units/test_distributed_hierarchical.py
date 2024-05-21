@@ -1,6 +1,7 @@
 """
 Tests for the Distributed decorator.
 """
+
 import unittest
 
 import torch
@@ -9,8 +10,11 @@ from scipy.spatial import distance_matrix
 
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.distribute import Distributed, aggregators
-from vanguard.hierarchical import (BayesianHyperparameters, LaplaceHierarchicalHyperparameters,
-                                   VariationalHierarchicalHyperparameters)
+from vanguard.hierarchical import (
+    BayesianHyperparameters,
+    LaplaceHierarchicalHyperparameters,
+    VariationalHierarchicalHyperparameters,
+)
 from vanguard.vanilla import GaussianGPController
 
 
@@ -18,6 +22,7 @@ from vanguard.vanilla import GaussianGPController
 @VariationalHierarchicalHyperparameters()
 class DistributedVariationalHierarchicalGaussianGPController(GaussianGPController):
     """Test class."""
+
     pass
 
 
@@ -25,6 +30,7 @@ class DistributedVariationalHierarchicalGaussianGPController(GaussianGPControlle
 @LaplaceHierarchicalHyperparameters()
 class DistributedLaplaceHierarchicalGaussianGPController(GaussianGPController):
     """Test class."""
+
     pass
 
 
@@ -37,12 +43,14 @@ class VariationalTests(unittest.TestCase):
     """
     Some tests.
     """
+
     def test_variational_distribution_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
         dataset = SyntheticDataset()
 
-        gp = DistributedVariationalHierarchicalGaussianGPController(dataset.train_x, dataset.train_y,
-                                                                    BayesianKernel, dataset.train_y_std)
+        gp = DistributedVariationalHierarchicalGaussianGPController(
+            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+        )
         gp.fit(10)
 
         _ = gp.posterior_over_point(dataset.test_x)
@@ -58,8 +66,9 @@ class VariationalTests(unittest.TestCase):
         """Experts' variation distribution should match the trained subset controller."""
         dataset = SyntheticDataset()
 
-        gp = DistributedVariationalHierarchicalGaussianGPController(dataset.train_x, dataset.train_y,
-                                                                    BayesianKernel, dataset.train_y_std)
+        gp = DistributedVariationalHierarchicalGaussianGPController(
+            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+        )
         gp.fit(10)
 
         _ = gp.posterior_over_point(dataset.test_x)
@@ -78,12 +87,14 @@ class LaplaceTests(unittest.TestCase):
     """
     Some tests.
     """
+
     def test_posterior_mean_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
         dataset = SyntheticDataset()
 
-        gp = DistributedLaplaceHierarchicalGaussianGPController(dataset.train_x, dataset.train_y,
-                                                                BayesianKernel, dataset.train_y_std)
+        gp = DistributedLaplaceHierarchicalGaussianGPController(
+            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+        )
         gp.fit(10)
 
         _ = gp.posterior_over_point(dataset.test_x)
@@ -98,16 +109,19 @@ class LaplaceTests(unittest.TestCase):
         """All experts should share variational distribution."""
         dataset = SyntheticDataset()
 
-        gp = DistributedLaplaceHierarchicalGaussianGPController(dataset.train_x, dataset.train_y,
-                                                                BayesianKernel, dataset.train_y_std)
+        gp = DistributedLaplaceHierarchicalGaussianGPController(
+            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+        )
         gp.fit(10)
 
         _ = gp.posterior_over_point(dataset.test_x)
 
-        posterior_covariance_evals = [expert.hyperparameter_posterior_covariance[0]
-                                      for expert in gp._expert_controllers]
-        posterior_covariance_evecs = [expert.hyperparameter_posterior_covariance[1]
-                                      for expert in gp._expert_controllers]
+        posterior_covariance_evals = [
+            expert.hyperparameter_posterior_covariance[0] for expert in gp._expert_controllers
+        ]
+        posterior_covariance_evecs = [
+            expert.hyperparameter_posterior_covariance[1] for expert in gp._expert_controllers
+        ]
 
         covars_evals = torch.stack(posterior_covariance_evals).detach().cpu().numpy()
         covars_evals = covars_evals.reshape((covars_evals.shape[0], -1))
@@ -123,8 +137,9 @@ class LaplaceTests(unittest.TestCase):
         """Experts' posterior mean should match the trained subset controller."""
         dataset = SyntheticDataset()
 
-        gp = DistributedLaplaceHierarchicalGaussianGPController(dataset.train_x, dataset.train_y,
-                                                                BayesianKernel, dataset.train_y_std)
+        gp = DistributedLaplaceHierarchicalGaussianGPController(
+            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+        )
         gp.fit(10)
 
         _ = gp.posterior_over_point(dataset.test_x)
@@ -139,16 +154,19 @@ class LaplaceTests(unittest.TestCase):
         """Experts' posterior covariance should match the trained subset controller."""
         dataset = SyntheticDataset()
 
-        gp = DistributedLaplaceHierarchicalGaussianGPController(dataset.train_x, dataset.train_y,
-                                                                BayesianKernel, dataset.train_y_std)
+        gp = DistributedLaplaceHierarchicalGaussianGPController(
+            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+        )
         gp.fit(10)
 
         _ = gp.posterior_over_point(dataset.test_x)
 
-        posterior_covariance_evals = [expert.hyperparameter_posterior_covariance[0]
-                                      for expert in gp._expert_controllers]
-        posterior_covariance_evecs = [expert.hyperparameter_posterior_covariance[1]
-                                      for expert in gp._expert_controllers]
+        posterior_covariance_evals = [
+            expert.hyperparameter_posterior_covariance[0] for expert in gp._expert_controllers
+        ]
+        posterior_covariance_evecs = [
+            expert.hyperparameter_posterior_covariance[1] for expert in gp._expert_controllers
+        ]
         covars_evals = torch.stack(posterior_covariance_evals).detach().cpu().numpy()
         covars_evals = covars_evals.reshape((covars_evals.shape[0], -1))
         covars_evecs = torch.stack(posterior_covariance_evecs).detach().cpu().numpy()

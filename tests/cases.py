@@ -1,6 +1,7 @@
 """
 Contains test cases for Vanguard testing.
 """
+
 import unittest
 from functools import wraps
 from typing import Callable, Tuple, TypeVar, Union
@@ -15,10 +16,13 @@ class VanguardTestCase(unittest.TestCase):
     """
     A subclass of TestCase designed to check confidence intervals.
     """
+
     @staticmethod
-    def assertInConfidenceInterval(data: numpy.typing.NDArray[np.floating],
-                                   interval: Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]],
-                                   delta: Union[int, float] = 0) -> None:
+    def assertInConfidenceInterval(
+        data: numpy.typing.NDArray[np.floating],
+        interval: Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]],
+        delta: Union[int, float] = 0,
+    ) -> None:
         """
         Assert that data is in a confidence interval.
 
@@ -31,14 +35,18 @@ class VanguardTestCase(unittest.TestCase):
         number_of_elements_outside_interval = np.sum(elements_outside_interval)
         proportion_of_elements_outside_interval = number_of_elements_outside_interval / len(data)
         if proportion_of_elements_outside_interval > delta:
-            error_message = (f"Elements outside interval: {number_of_elements_outside_interval} / {len(data)} "
-                             f"({100 * proportion_of_elements_outside_interval:.2f}%) -- delta = {100 * delta:.2f}%")
+            error_message = (
+                f"Elements outside interval: {number_of_elements_outside_interval} / {len(data)} "
+                f"({100 * proportion_of_elements_outside_interval:.2f}%) -- delta = {100 * delta:.2f}%"
+            )
             raise AssertionError(error_message) from None
 
     @staticmethod
-    def confidence_interval(mu: Union[float, numpy.typing.NDArray[np.floating]],
-                            sigma: Union[float, numpy.typing.NDArray[np.floating]], alpha: float
-                            ) -> Union[Tuple[float, float], Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]]:
+    def confidence_interval(
+        mu: Union[float, numpy.typing.NDArray[np.floating]],
+        sigma: Union[float, numpy.typing.NDArray[np.floating]],
+        alpha: float,
+    ) -> Union[Tuple[float, float], Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]]:
         """Create a confidence interval."""
         sig_fac = stats.norm.ppf(1 - alpha / 2)
         std_dev = np.sqrt(np.diag(sigma))
@@ -48,8 +56,10 @@ class VanguardTestCase(unittest.TestCase):
         except ValueError:
             # Assume due to shape mismatch because mu and sigma are from multitask.
             num_points, num_tasks, *_ = mu.shape
-            covars = [sigma[nt * num_points: (nt + 1) * num_points, nt * num_points: (nt + 1) * num_points]
-                      for nt in range(num_tasks)]
+            covars = [
+                sigma[nt * num_points : (nt + 1) * num_points, nt * num_points : (nt + 1) * num_points]
+                for nt in range(num_tasks)
+            ]
             std_dev = np.stack([np.sqrt(np.diag(cov)) for cov in covars], -1)
             upper = mu + std_dev * sig_fac
         lower = mu - std_dev * sig_fac
@@ -89,4 +99,5 @@ def flaky(test_method: Callable[P, T]) -> Callable[P, T]:
             if attempt_number != last_attempt:
                 # skip the last tearDown as unittest does it for us
                 self.tearDown()
+
     return repeated_test

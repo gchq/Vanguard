@@ -1,6 +1,7 @@
 """
 Contains the HyperparameterCollection class.
 """
+
 from typing import Any, Iterator, List, Tuple, TypeVar
 
 import gpytorch
@@ -9,9 +10,9 @@ from gpytorch.distributions import MultivariateNormal
 
 from ..hierarchical.base import BaseHierarchicalHyperparameters
 
-HyperparameterT = TypeVar('HyperparameterT', bound=BaseHierarchicalHyperparameters)
-ModuleT = TypeVar('ModuleT', bound=gpytorch.module.Module)
-VariationalDistributionT = TypeVar('VariationalDistributionT', bound=gpytorch.variational._VariationalDistribution)
+HyperparameterT = TypeVar("HyperparameterT", bound=BaseHierarchicalHyperparameters)
+ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)
+VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
 
 
 class HyperparameterCollection:
@@ -22,7 +23,13 @@ class HyperparameterCollection:
     so that they can be replaced by batches of parameters representing samples
     from a distribution over those hyperparameters.
     """
-    def __init__(self, module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]], sample_shape: torch.Size, variational_distribution_class: VariationalDistributionT):
+
+    def __init__(
+        self,
+        module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]],
+        sample_shape: torch.Size,
+        variational_distribution_class: VariationalDistributionT,
+    ):
         """
         Initialise self.
 
@@ -34,8 +41,9 @@ class HyperparameterCollection:
         self.sample_shape = sample_shape
         self.module_hyperparameter_pairs = module_hyperparameter_pairs
 
-        self.variational_dimension = sum(self._parameter_index_size(hyperparameter)
-                                         for _, hyperparameter in module_hyperparameter_pairs)
+        self.variational_dimension = sum(
+            self._parameter_index_size(hyperparameter) for _, hyperparameter in module_hyperparameter_pairs
+        )
         self.variational_distribution = variational_distribution_class(self.variational_dimension)
 
         self.prior_mean = torch.zeros(self.variational_dimension)
@@ -73,7 +81,7 @@ class HyperparameterCollection:
         trace_term = torch.trace(sigma_0_inv @ sigma)
         mean_diff = mu_0 - mu
         mean_term = mean_diff.T @ sigma_0_inv @ mean_diff
-        det_term = torch.log(torch.linalg.det(sigma_0)/torch.linalg.det(sigma))
+        det_term = torch.log(torch.linalg.det(sigma_0) / torch.linalg.det(sigma))
 
         return (trace_term + mean_term + det_term - mu.shape[0]) / 2
 
@@ -133,6 +141,7 @@ class OnePointHyperparameterCollection:
     the representation of the hyperparameters as a single combined tensor.
     It also manages the prior placed over the hyperparameters.
     """
+
     def __init__(self, module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]]):
         """
         Initialise self.
@@ -141,8 +150,9 @@ class OnePointHyperparameterCollection:
         """
         self.module_hyperparameter_pairs = module_hyperparameter_pairs
 
-        self.hyperparameter_dimension = sum(self._parameter_index_size(hyperparameter)
-                                            for _, hyperparameter in module_hyperparameter_pairs)
+        self.hyperparameter_dimension = sum(
+            self._parameter_index_size(hyperparameter) for _, hyperparameter in module_hyperparameter_pairs
+        )
 
         self.prior_mean = torch.zeros(self.hyperparameter_dimension)
         self.prior_variance = torch.ones(self.hyperparameter_dimension)

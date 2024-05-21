@@ -1,6 +1,7 @@
 """
 Contains decorators for torch optimisers to apply LR schedulers as part of the optimisation step.
 """
+
 import inspect
 from typing import Callable, Generic, Optional, Type, TypeVar, overload
 
@@ -9,12 +10,15 @@ from torch.optim.lr_scheduler import LRScheduler
 
 OptimiserT = TypeVar("OptimiserT", bound=Optimizer)
 LRSchedulerT = TypeVar("LRSchedulerT", bound=LRScheduler)
+
+
 class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
     """
     Apply a torch learning rate scheduler to a torch optimiser.
 
     The scheduler is stepped at each step of optimiser.
     """
+
     def __init__(self, scheduler_class: Type[LRSchedulerT], *args, **kwargs):
         """
         :param scheduler_class: The (uninstantiated) torch learning rate scheduler to be used.

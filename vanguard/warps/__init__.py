@@ -11,8 +11,18 @@ implementing the :meth:`~basefunction.WarpFunction.forward`,
 Warp functions are applied to a :class:`~vanguard.base.gpcontroller.GPController`
 subclass using the :class:`SetWarp` decorator.
 """
+
 from .basefunction import MultitaskWarpFunction, WarpFunction
 from .decorator import SetWarp
 from .distribution import WarpedGaussian
 from .input import SetInputWarp
 from .intermediate import require_controller_input
+
+__all__ = [
+    "MultitaskWarpFunction",
+    "WarpFunction",
+    "SetWarp",
+    "WarpedGaussian",
+    "SetInputWarp",
+    "require_controller_input",
+]

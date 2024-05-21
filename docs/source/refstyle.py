@@ -3,6 +3,7 @@ Contains a custom reference style for Vanguard.
 
 See https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/2.6.2/test/roots/test-bibliography_style_label_1/conf.py.
 """
+
 from __future__ import annotations
 
 from typing import Generator, Iterable
@@ -19,6 +20,7 @@ class MyLabelStyle(BaseLabelStyle):
     """
     A style which formats labels to use the original key in the .bib file.
     """
+
     def format_labels(self, sorted_entries: Iterable[Entry]) -> Generator[str, None, None]:
         for entry in sorted_entries:
             yield entry.key

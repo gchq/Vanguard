@@ -1,6 +1,7 @@
 """
 Contains the BinaryClassification decorator.
 """
+
 from typing import Tuple, Type, TypeVar, Union
 
 import numpy as np
@@ -60,10 +61,11 @@ class BinaryClassification(Decorator):
         >>> loss = gp.fit(100)
         >>>
         >>> test_x = np.array([0.05, 0.95])
-        >>> preds, probs = gp.classify_points(test_x)
-        >>> preds
+        >>> predictions, probs = gp.classify_points(test_x)
+        >>> predictions
         array([0, 1])
     """
+
     def __init__(self, **kwargs):
         """
         Initialise self.
@@ -78,25 +80,31 @@ class BinaryClassification(Decorator):
             """
             A wrapper for implementing binary classification.
             """
-            def __init__(self, *args, **kwargs):
 
+            def __init__(self, *args, **kwargs):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 if not issubclass(likelihood_class, BernoulliLikelihood):
-                    raise ValueError("The class passed to `likelihood_class` must be a subclass "
-                                     f"of {BernoulliLikelihood.__name__} for binary classification.")
+                    raise ValueError(
+                        "The class passed to `likelihood_class` must be a subclass "
+                        f"of {BernoulliLikelihood.__name__} for binary classification."
+                    )
 
                 super().__init__(likelihood_class=likelihood_class, **all_parameters_as_kwargs)
 
-            def classify_points(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            def classify_points(
+                self, x: Union[float, numpy.typing.NDArray[np.floating]]
+            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             def classify_fuzzy_points(
-                    self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
+                self,
+                x: Union[float, numpy.typing.NDArray[np.floating]],
+                x_std: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
@@ -104,7 +112,7 @@ class BinaryClassification(Decorator):
 
             @staticmethod
             def _get_predictions_from_prediction_means(
-                    means: Union[float, numpy.typing.NDArray[np.floating]]
+                means: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
