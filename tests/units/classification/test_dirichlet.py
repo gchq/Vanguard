@@ -1,6 +1,7 @@
 """
 Tests for the DirichletMulticlassClassification decorator.
 """
+
 import numpy as np
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 

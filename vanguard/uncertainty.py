@@ -1,6 +1,7 @@
 """
 Gaussian processes can be trained on inputs with uncertainty.
 """
+
 import warnings
 from itertools import islice
 from typing import Iterable, NoReturn, Optional, Tuple, Type, Union

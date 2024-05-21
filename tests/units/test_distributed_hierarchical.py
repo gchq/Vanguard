@@ -1,6 +1,7 @@
 """
 Tests for the Distributed decorator.
 """
+
 import unittest
 
 import torch

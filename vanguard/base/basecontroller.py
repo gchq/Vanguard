@@ -4,6 +4,7 @@ The (non-user-facing) base class of Vanguard controllers.
 The :class:`~vanguard.base.basecontroller.BaseGPController` class contains the
 machinery of the :class:`~vanguard.base.gpcontroller.GPController`.
 """
+
 import warnings
 from itertools import islice
 from typing import Callable, Generator, List, Optional, Tuple, Type, Union

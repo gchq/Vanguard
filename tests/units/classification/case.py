@@ -1,6 +1,7 @@
 """
 Contains the ClassificationTestCase class.
 """
+
 import unittest
 from typing import Union
 

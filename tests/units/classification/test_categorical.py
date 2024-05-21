@@ -1,6 +1,7 @@
 """
 Tests for the CategoricalClassification decorator.
 """
+
 import unittest
 
 import numpy as np

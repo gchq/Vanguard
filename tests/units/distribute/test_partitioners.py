@@ -1,6 +1,7 @@
 """
 Tests for partitioner classes.
 """
+
 import unittest
 
 import numpy as np

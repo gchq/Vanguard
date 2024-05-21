@@ -1,6 +1,7 @@
 """
 Tests for the vanguard.utils module.
 """
+
 import unittest
 
 import numpy as np

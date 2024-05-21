@@ -1,6 +1,7 @@
 """
 Tests for the VariationalHierarchicalHyperparameters and BayesianHyperparameters decorators.
 """
+
 import abc
 import unittest
 from typing import Any, Generic, Type, TypeVar

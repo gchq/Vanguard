@@ -1,6 +1,7 @@
 """
 Tests for the Multitask decorator.
 """
+
 import unittest
 
 from vanguard.datasets.synthetic import SyntheticDataset

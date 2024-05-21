@@ -1,6 +1,7 @@
 """
 The :class:`GaussianGPController` provides the user with a standard GP model with no extra features.
 """
+
 from typing import Type, Union
 
 import gpytorch

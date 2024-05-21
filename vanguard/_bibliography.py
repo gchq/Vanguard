@@ -1,6 +1,7 @@
 """
 Contains functions for importing the bibliography from a .bib file.
 """
+
 import os
 import sys
 

@@ -1,6 +1,7 @@
 """
 Doctests for Vanguard.
 """
+
 import doctest
 import importlib
 import io

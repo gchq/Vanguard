@@ -3,6 +3,7 @@ Contains a custom reference style for Vanguard.
 
 See https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/2.6.2/test/roots/test-bibliography_style_label_1/conf.py.
 """
+
 # pylint: disable=import-error
 from __future__ import annotations
 

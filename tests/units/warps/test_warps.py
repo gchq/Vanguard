@@ -1,6 +1,7 @@
 """
 Test that the behaviour of some warp functions.
 """
+
 import unittest
 from typing import Union
 

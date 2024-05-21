@@ -3,6 +3,7 @@ Vanguard implements a small number of base models which are built on by various 
 
 They are syntactically similar to the standard model classes used in GPyTorch.
 """
+
 import gpytorch
 import numpy as np
 import torch

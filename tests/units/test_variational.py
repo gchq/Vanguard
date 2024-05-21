@@ -1,6 +1,7 @@
 """
 Test the behaviour of the VariationalInference decorator.
 """
+
 import unittest
 
 from gpytorch.mlls import ExactMarginalLogLikelihood as InappropriateMarginalLogLikelihood

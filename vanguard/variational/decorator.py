@@ -4,6 +4,7 @@ Enable variational inference in a controller.
 The :class:`VariationalInference` decorator primes a :class:`~vanguard.base.gpcontroller.GPController` class
 for variational inference.
 """
+
 from typing import Any, Generic, Optional, Type, TypeVar, Union
 
 import gpytorch.settings

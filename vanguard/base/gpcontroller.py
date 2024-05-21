@@ -1,6 +1,7 @@
 """
 The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPController` class.
 """
+
 import warnings
 from typing import List, Optional, Union
 

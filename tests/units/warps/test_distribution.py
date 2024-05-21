@@ -1,6 +1,7 @@
 """
 Test the behaviour of the WarpedGaussian distribution.
 """
+
 import unittest
 
 import numpy as np

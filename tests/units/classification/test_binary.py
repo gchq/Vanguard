@@ -1,6 +1,7 @@
 """
 Tests for the BinaryClassification decorator.
 """
+
 import numpy as np
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO

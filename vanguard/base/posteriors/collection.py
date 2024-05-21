@@ -1,6 +1,7 @@
 """
 Contains the MonteCarloPosteriorCollection class.
 """
+
 from typing import Generator, NoReturn, Tuple
 
 import numpy.typing

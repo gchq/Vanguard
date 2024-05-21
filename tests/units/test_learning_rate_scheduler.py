@@ -1,6 +1,7 @@
 """
 Tests for ApplyLearningRateScheduler.
 """
+
 import unittest
 
 import torch

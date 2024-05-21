@@ -1,6 +1,7 @@
 """
 Contains base models for approximate inference.
 """
+
 from typing import Any
 
 import numpy as np

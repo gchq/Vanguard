@@ -1,6 +1,7 @@
 """
 Contains the multitask_model decorator.
 """
+
 from typing import Type, TypeVar
 
 import gpytorch

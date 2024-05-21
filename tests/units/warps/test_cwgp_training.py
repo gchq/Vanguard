@@ -1,6 +1,7 @@
 """
 Test that the posterior predictions of CWGP models are sensible in various ways.
 """
+
 import numpy as np
 import torch
 from gpytorch.utils.errors import NanError
