@@ -40,7 +40,8 @@ class PartitionTests(unittest.TestCase):
             partitioners.KMedoidsPartitioner: [[8, 1, 5], [8, 1, 5, 0, 1, 3, 7, 8, 9], [8, 1, 5, 2, 4, 5, 6]],
         }
 
-    @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO
+    @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO: investigate this!
+    # https://github.com/gchq/Vanguard/issues/72
     def test_output_results(self) -> None:
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_partition_results.items():
@@ -54,7 +55,8 @@ class PartitionTests(unittest.TestCase):
                 observed_partition = partitioner.create_partition()
                 self.assertListEqual(expected_partition, observed_partition)
 
-    @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO
+    @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO: investigate this!
+    # https://github.com/gchq/Vanguard/issues/72
     def test_output_results_with_communication(self) -> None:
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_communication_partition_results.items():

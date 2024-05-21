@@ -18,7 +18,9 @@ from sklearn_extra.cluster import KMedoids as _KMedoids
 
 
 # TODO: should this be an abstract base class?
+# https://github.com/gchq/Vanguard/issues/198 (TEMPORARY)
 # TODO: Should we make BasePartitioner generic in the NDArray dtype?
+# https://github.com/gchq/Vanguard/issues/198 (TEMPORARY)
 class BasePartitioner:
     """
     Generate a partition over index space using various methods. All partitioners should inherit from this class.
@@ -78,6 +80,7 @@ class BasePartitioner:
         :return partition: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
         # TODO: should this be an abstract method?
+        # https://github.com/gchq/Vanguard/issues/197 (TEMPORARY)
         raise NotImplementedError
 
     def _create_cluster_communication_partition(self) -> List[List[int]]:

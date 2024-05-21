@@ -206,8 +206,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 """Create an expert controller with respect to a subset of the input data."""
                 train_x_subset, train_y_subset = self._full_train_x[subset_indices], self._full_train_y[subset_indices]
                 try:
-                    # TODO: note to reviewer - why is this here? full_y_std is not allowed to be anything other than
-                    #  an int or float
+                    # TODO: _full_y_std is not allowed to be anything other than an int or float, so this will always
+                    #  throw. Do we want to allow non-scalar values of _full_y_std? If not, delete this "try" block.
+                    # https://github.com/gchq/Vanguard/issues/63
                     y_std_subset = self._full_y_std[subset_indices]
                 except (TypeError, IndexError):
                     y_std_subset = self._full_y_std
