@@ -419,7 +419,6 @@ confidence=HIGH,
 disable=too-many-lines,
         # These are all temporary disables.
         method-hidden,
-        missing-module-docstring,
         missing-class-docstring,
         missing-function-docstring,
         fixme,
