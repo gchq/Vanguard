@@ -29,7 +29,8 @@ class ExactGPModel(ExactGP):
 
         :param train_x: (n_samples, n_features) The training inputs (features).
         :param train_y: (n_samples,) The training targets (response).
-        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must be Gaussian.
+        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must be
+            Gaussian.
         :param mean_module: The prior mean function to use.
         :param covar_module: The prior kernel function to use.
         """
@@ -71,7 +72,8 @@ class InducingPointKernelGPModel(ExactGPModel):
 
         :param train_x: (n_samples, n_features) The training inputs (features).
         :param train_y: (n_samples,) The training targets (response).
-        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must be Gaussian.
+        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must be
+            Gaussian.
         :param mean_module: The prior mean function to use.
         :param covar_module: The prior kernel function to use.
         :param n_inducing_points: The number of inducing points in the sparse kernel approximation.

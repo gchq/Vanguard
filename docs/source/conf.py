@@ -168,7 +168,7 @@ autodoc_custom_types.update(
         gpytorch.likelihoods.GaussianLikelihood: ":class:`~gpytorch.likelihoods.GaussianLikelihood`",
         gpytorch.distributions.Distribution: ":class:`~gpytorch.distributions.Distribution`",
         gpytorch.distributions.MultivariateNormal: ":class:`~gpytorch.distributions.MultivariateNormal`",
-        gpytorch.distributions.MultitaskMultivariateNormal: ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`",
+        gpytorch.distributions.MultitaskMultivariateNormal: ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`",  # noqa: E501
         gpytorch.models.ExactGP: ":class:`~gpytorch.models.ExactGP`",
         gpytorch.module.Module: ":class:`~gpytorch.Module",
         gpytorch.constraints.Interval: ":class:`~gpytorch.constraints.Interval`",

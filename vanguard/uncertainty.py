@@ -71,7 +71,8 @@ class GaussianUncertaintyGPController(GPController):
                 :mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
         :param optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
                 gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
-        :param smart_optimiser_class: An uninstantiated subclass of :class:`~vanguard.optimise.optimiser.SmartOptimiser`,
+        :param smart_optimiser_class: An uninstantiated subclass of
+            :class:`~vanguard.optimise.optimiser.SmartOptimiser`,
             that wraps around the given ``optimiser_class`` to enable advanced features, for example early stopping.
         :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
@@ -218,8 +219,8 @@ class GaussianUncertaintyGPController(GPController):
 
         predictions, covar = posterior._tensor_prediction()
 
-        # Each entry of predictions depends only on the matching input vector, so summing them is a simple way of getting the
-        # result we need from autograd (which can only compute gradients of scalars)
+        # Each entry of predictions depends only on the matching input vector, so summing them is a simple way of
+        # getting the result we need from autograd (which can only compute gradients of scalars)
         predictions_grad = []
         if len(predictions.shape) == 1:
             predictions = predictions.unsqueeze(-1)

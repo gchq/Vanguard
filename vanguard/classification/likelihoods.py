@@ -208,7 +208,8 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         r"""
         Compute the MLL given :math:`p(\mathbf f)` and :math:`\mathbf y`.
 
-        :param function_dist: :math:`p(\mathbf f)` the outputs of the latent function (the :obj:`gpytorch.models.ExactGP`)
+        :param function_dist: :math:`p(\mathbf f)` the outputs of the latent function
+            (the :obj:`gpytorch.models.ExactGP`)
         :param target: :math:`\mathbf y` The target values
         :return: Exact MLL. Output shape corresponds to batch shape of the model/input data.
         """
