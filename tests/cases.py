@@ -17,7 +17,7 @@ class VanguardTestCase(unittest.TestCase):
     """
 
     @staticmethod
-    def assertInConfidenceInterval(
+    def assertInConfidenceInterval(  # pylint: disable=invalid-name
         data: numpy.typing.NDArray[np.floating],
         interval: Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]],
         delta: Union[int, float] = 0,

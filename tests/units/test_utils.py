@@ -60,12 +60,12 @@ class TimeDimensionTests(unittest.TestCase):
         augmented_data = add_time_dimension(data)
         self.assertArrayEqualAcrossDimensions(augmented_data[..., 0], augmented_data[0, 0, :, 0])
 
-    def assertArrayEqualAcrossDimensions(
+    def assertArrayEqualAcrossDimensions(  # pylint: disable=invalid-name
         self,
         array_1: numpy.typing.NDArray,
         array_2: numpy.typing.NDArray,
     ) -> None:
         self.assertTrue((array_1 == array_2).all())
 
-    def assertMonotonic(self, array: numpy.typing.NDArray) -> None:
+    def assertMonotonic(self, array: numpy.typing.NDArray) -> None:  # pylint: disable=invalid-name
         np.testing.assert_array_less(array[:-1], array[1:])

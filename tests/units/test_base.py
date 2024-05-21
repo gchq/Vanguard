@@ -4,9 +4,10 @@ Tests for the GPController class.
 import unittest
 from typing import Union
 
+# the numpy.typing import _is_ used, but only as `np.typing`, so this is a false positive from pylint
 import gpytorch
 import numpy as np
-import numpy.typing
+import numpy.typing  # pylint: disable=unused-import
 import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.means import ConstantMean
@@ -30,7 +31,7 @@ class DefaultTensorTypeTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.original_default_tensor_type = GaussianGPController._default_tensor_type
+        self.original_default_tensor_type = GaussianGPController.get_default_tensor_type()
         self.original_dtype = self.original_default_tensor_type.dtype
         self.original_is_cuda = self.original_default_tensor_type.is_cuda
 
@@ -56,11 +57,11 @@ class DefaultTensorTypeTests(unittest.TestCase):
 
     def test_class_default_tensor(self) -> None:
         """Should have changed."""
-        self.assertEqual(self.new_controller_class._default_tensor_type, torch.DoubleTensor)
+        self.assertEqual(self.new_controller_class.get_default_tensor_type(), torch.DoubleTensor)
 
     def test_superclass_default_tensor(self) -> None:
         """Should be unchanged."""
-        self.assertEqual(GaussianGPController._default_tensor_type, self.original_default_tensor_type)
+        self.assertEqual(GaussianGPController.get_default_tensor_type(), self.original_default_tensor_type)
 
     def test_default_tensor(self) -> None:
         """New tensors should now match."""
@@ -140,7 +141,7 @@ class NLLTests(unittest.TestCase):
 
         class UniformSyntheticDataset:
             def __init__(self, function, num_train_points, num_test_points, y_std, seed=None):
-                self.rng = np.random.RandomState(seed)
+                self.rng = np.random.RandomState(seed)  # pylint: disable=no-member
 
                 unscaled_train_x = self.rng.uniform(0, 1, num_train_points).reshape(-1, 1)
                 scaled_train_x = (unscaled_train_x - unscaled_train_x.mean()) / unscaled_train_x.std()
@@ -187,7 +188,7 @@ class NLLTests(unittest.TestCase):
                 self.mean_module = gpytorch.means.ConstantMean()
                 self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
 
-            def forward(self, x):
+            def forward(self, x):  # pylint: disable=arguments-differ
                 mean_x = self.mean_module(x)
                 covar_x = self.covar_module(x)
                 return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
@@ -223,7 +224,6 @@ class NLLTests(unittest.TestCase):
         controller = GaussianGPController(self.dataset.x, self.dataset.y, ScaledRBFKernel, y_std=self.y_std)
 
         controller.likelihood_noise = torch.ones_like(controller.likelihood_noise) * self.noise_variance
-        controller.kernel
         controller.kernel.outputscale = self.outputscale
         controller.kernel.base_kernel.lengthscale = self.lengthscale
 

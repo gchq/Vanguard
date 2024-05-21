@@ -19,7 +19,7 @@ class PartitionTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        rng = np.random.RandomState(seed=1)
+        rng = np.random.RandomState(seed=1)  # pylint: disable=no-member
         self.train_x = rng.random(size=10).reshape(-1, 1) * 20
         self.kernel = RBFKernel()
         self.n_experts = 3
@@ -45,7 +45,7 @@ class PartitionTests(unittest.TestCase):
         for partitioner_class, expected_partition in self.expected_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
                 if issubclass(partitioner_class, partitioners.KMedoidsPartitioner):
-                    partitioner = partitioner_class(
+                    partitioner = partitioner_class(  # pylint: disable=unexpected-keyword-arg
                         train_x=self.train_x, kernel=self.kernel, n_experts=self.n_experts, seed=self.seed
                     )
                 else:
@@ -59,7 +59,7 @@ class PartitionTests(unittest.TestCase):
         for partitioner_class, expected_partition in self.expected_communication_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
                 if issubclass(partitioner_class, partitioners.KMedoidsPartitioner):
-                    partitioner = partitioner_class(
+                    partitioner = partitioner_class(  # pylint: disable=unexpected-keyword-arg
                         train_x=self.train_x,
                         kernel=self.kernel,
                         communication=True,

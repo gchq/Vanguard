@@ -29,16 +29,12 @@ NUM_LATENTS = 10
 class MultitaskBernoulliClassifier(GaussianGPController):
     """A simple multi-class Bernoulli classifier."""
 
-    pass
-
 
 @CategoricalClassification(num_classes=4, ignore_all=True)
 @Multitask(num_tasks=6, lmc_dimension=NUM_LATENTS, ignore_all=True)
 @VariationalInference(ignore_all=True)
 class SoftmaxLMCClassifier(GaussianGPController):
     """A simple multi-class classifier with LMC."""
-
-    pass
 
 
 @CategoricalClassification(num_classes=4, ignore_all=True)
@@ -47,16 +43,12 @@ class SoftmaxLMCClassifier(GaussianGPController):
 class SoftmaxClassifier(GaussianGPController):
     """A simple multi-class classifier without LMC."""
 
-    pass
-
 
 @CategoricalClassification(num_classes=4, ignore_all=True)
 @Multitask(num_tasks=5, ignore_all=True)
 @VariationalInference(ignore_all=True)
 class MultitaskBernoulliClassifierWrongNumberOfTasks(GaussianGPController):
     """An incorrectly configured multi-class classifier."""
-
-    pass
 
 
 class MulticlassTests(ClassificationTestCase):
@@ -90,29 +82,29 @@ class MulticlassFuzzyTests(ClassificationTestCase):
 
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20, num_classes=4)
+        dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20, num_classes=4)
         test_x_std = 0.005
-        test_x = np.random.normal(self.dataset.test_x, scale=test_x_std)
+        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
 
-        self.controller = MultitaskBernoulliClassifier(
-            self.dataset.train_x,
-            one_hot(self.dataset.train_y),
+        controller = MultitaskBernoulliClassifier(
+            dataset.train_x,
+            one_hot(dataset.train_y),
             kernel_class=ScaledRBFKernel,
             y_std=0,
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        self.controller.fit(100)
+        controller.fit(100)
 
-        predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.5)
+        predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
+        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
 
     def test_fuzzy_predictions_uncertainty(self) -> None:
         """Predictions should be close to the values from the test data."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=50, num_classes=4)
+        dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=50, num_classes=4)
         train_x_std = test_x_std = 0.005
-        train_x = np.random.normal(self.dataset.train_x, scale=train_x_std)
-        test_x = np.random.normal(self.dataset.test_x, scale=test_x_std)
+        train_x = np.random.normal(dataset.train_x, scale=train_x_std)
+        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
 
         @CategoricalClassification(num_classes=4, ignore_all=True)
         @Multitask(num_tasks=4, ignore_all=True)
@@ -120,21 +112,19 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         class UncertaintyMultitaskBernoulliClassifier(GaussianUncertaintyGPController):
             """An uncertain multitask classifier."""
 
-            pass
-
-        self.controller = UncertaintyMultitaskBernoulliClassifier(
+        controller = UncertaintyMultitaskBernoulliClassifier(
             train_x,
             train_x_std,
-            one_hot(self.dataset.train_y),
+            one_hot(dataset.train_y),
             kernel_class=ScaledRBFKernel,
             y_std=0,
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        self.controller.fit(100)
+        controller.fit(100)
 
-        predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.5)
+        predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
+        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
 
 
 class SoftmaxLMCTests(unittest.TestCase):

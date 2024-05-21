@@ -22,20 +22,16 @@ from vanguard.vanilla import GaussianGPController
 class DistributedVariationalHierarchicalGaussianGPController(GaussianGPController):
     """Test class."""
 
-    pass
-
 
 @Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
 @LaplaceHierarchicalHyperparameters()
 class DistributedLaplaceHierarchicalGaussianGPController(GaussianGPController):
     """Test class."""
 
-    pass
-
 
 @BayesianHyperparameters()
 class BayesianKernel(RBFKernel):
-    pass
+    """Test class."""
 
 
 class VariationalTests(unittest.TestCase):
@@ -54,6 +50,7 @@ class VariationalTests(unittest.TestCase):
 
         _ = gp.posterior_over_point(dataset.test_x)
 
+        # pylint: disable=protected-access
         hyperparameter_collections = (expert.hyperparameter_collection for expert in gp._expert_controllers)
         var_dists = [collection.variational_distribution() for collection in hyperparameter_collections]
 
@@ -72,6 +69,7 @@ class VariationalTests(unittest.TestCase):
 
         _ = gp.posterior_over_point(dataset.test_x)
 
+        # pylint: disable=protected-access
         hyperparameter_collections = (expert.hyperparameter_collection for expert in gp._expert_controllers)
         var_dists = [collection.variational_distribution() for collection in hyperparameter_collections]
 
@@ -98,6 +96,7 @@ class LaplaceTests(unittest.TestCase):
 
         _ = gp.posterior_over_point(dataset.test_x)
 
+        # pylint: disable=protected-access
         posterior_means = [expert.hyperparameter_posterior_mean for expert in gp._expert_controllers]
 
         means = torch.stack(posterior_means).detach().cpu().numpy()
@@ -116,10 +115,14 @@ class LaplaceTests(unittest.TestCase):
         _ = gp.posterior_over_point(dataset.test_x)
 
         posterior_covariance_evals = [
-            expert.hyperparameter_posterior_covariance[0] for expert in gp._expert_controllers
+            # pylint: disable=protected-access
+            expert.hyperparameter_posterior_covariance[0]
+            for expert in gp._expert_controllers
         ]
         posterior_covariance_evecs = [
-            expert.hyperparameter_posterior_covariance[1] for expert in gp._expert_controllers
+            # pylint: disable=protected-access
+            expert.hyperparameter_posterior_covariance[1]
+            for expert in gp._expert_controllers
         ]
 
         covars_evals = torch.stack(posterior_covariance_evals).detach().cpu().numpy()
@@ -143,6 +146,7 @@ class LaplaceTests(unittest.TestCase):
 
         _ = gp.posterior_over_point(dataset.test_x)
 
+        # pylint: disable=protected-access
         posterior_means = [expert.hyperparameter_posterior_mean for expert in gp._expert_controllers]
         means = torch.stack(posterior_means).detach().cpu().numpy()
         fit_mean = gp.hyperparameter_posterior_mean.unsqueeze(dim=0).detach().cpu().numpy()
@@ -161,10 +165,14 @@ class LaplaceTests(unittest.TestCase):
         _ = gp.posterior_over_point(dataset.test_x)
 
         posterior_covariance_evals = [
-            expert.hyperparameter_posterior_covariance[0] for expert in gp._expert_controllers
+            # pylint: disable=protected-access
+            expert.hyperparameter_posterior_covariance[0]
+            for expert in gp._expert_controllers
         ]
         posterior_covariance_evecs = [
-            expert.hyperparameter_posterior_covariance[1] for expert in gp._expert_controllers
+            # pylint: disable=protected-access
+            expert.hyperparameter_posterior_covariance[1]
+            for expert in gp._expert_controllers
         ]
         covars_evals = torch.stack(posterior_covariance_evals).detach().cpu().numpy()
         covars_evals = covars_evals.reshape((covars_evals.shape[0], -1))
