@@ -4,6 +4,7 @@ Enabling multitask Gaussian processes.
 The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
+
 from typing import Any, Dict, Optional, Type, TypeVar
 
 import torch

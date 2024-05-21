@@ -1,6 +1,7 @@
 """
 Tests for the BinaryClassification decorator.
 """
+
 from unittest import expectedFailure
 
 import numpy as np

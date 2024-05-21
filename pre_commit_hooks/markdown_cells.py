@@ -1,6 +1,7 @@
 """
 A simple pre-commit hook which forbids markdown cells in Jupyter notebooks.
 """
+
 import argparse
 from typing import Optional, Sequence
 

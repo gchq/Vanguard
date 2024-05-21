@@ -1,6 +1,7 @@
 """
 Contain some small utilities of use in some cases.
 """
+
 from typing import Any, Generator, Tuple
 
 import numpy as np

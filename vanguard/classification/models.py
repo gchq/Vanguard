@@ -1,6 +1,7 @@
 """
 Contains model classes to enable classification in Vanguard.
 """
+
 import warnings
 from typing import Optional
 

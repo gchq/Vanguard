@@ -1,6 +1,7 @@
 """
 Contains the HyperparameterCollection class.
 """
+
 from typing import Any, Iterator, List, Tuple, TypeVar
 
 import gpytorch

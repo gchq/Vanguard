@@ -1,6 +1,7 @@
 """
 Tests for the GPController class.
 """
+
 import unittest
 from typing import Union
 

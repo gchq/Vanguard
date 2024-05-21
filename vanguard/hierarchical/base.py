@@ -1,6 +1,7 @@
 """
 Contains the BaseHierarchicalHyperparameters decorator.
 """
+
 import warnings
 from typing import Any, Generator, List, Tuple, Type, TypeVar, Union
 

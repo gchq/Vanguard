@@ -1,6 +1,7 @@
 """
 Contains the VariationalHierarchicalHyperparameters decorator.
 """
+
 from typing import Any, Generator, List, Optional, Type, TypeVar, Union
 
 import gpytorch

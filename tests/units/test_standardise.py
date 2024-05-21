@@ -1,6 +1,7 @@
 """
 Test the behaviour of the StandardiseXModule class.
 """
+
 import unittest
 
 import numpy as np

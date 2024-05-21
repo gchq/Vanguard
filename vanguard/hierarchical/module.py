@@ -5,6 +5,7 @@ Applying the :class:`~vanguard.hierarchical.module.BayesianHyperparameters`
 to a module will make its parameters Bayesian, so posteriors can be inferred
 over them rather than point estimates.
 """
+
 from functools import partial
 from typing import Iterable, List, Optional, Tuple, TypeVar
 

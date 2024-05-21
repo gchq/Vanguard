@@ -1,6 +1,7 @@
 """
 Tests for aggregator classes.
 """
+
 import unittest
 
 import torch

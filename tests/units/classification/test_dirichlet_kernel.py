@@ -1,6 +1,7 @@
 """
 Tests for the DirichletKernelMulticlassClassification decorator.
 """
+
 from unittest import skip
 
 from gpytorch import kernels, means

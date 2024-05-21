@@ -1,6 +1,7 @@
 """
 Contains the DirichletMulticlassClassification decorator.
 """
+
 from typing import Tuple, Type, TypeVar, Union
 
 import gpytorch

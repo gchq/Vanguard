@@ -1,6 +1,7 @@
 """
 There are several pre-defined warp functions implementing some common maps.
 """
+
 from typing import Tuple, Union
 
 import numpy as np

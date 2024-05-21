@@ -6,6 +6,7 @@ order to initialise properly. In order to avoid needing to set this ahead of tim
 the :func:`require_controller_input` decorator will allow a warp function to be
 initialised lazily, only becoming a full warp function upon activation.
 """
+
 from typing import Any, Callable, Type, TypeVar
 
 from ..decoratorutils import process_args, wraps_class

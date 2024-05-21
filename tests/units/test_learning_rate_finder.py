@@ -1,6 +1,7 @@
 """
 Tests for LearningRateFinder.
 """
+
 import unittest
 
 from vanguard.datasets.synthetic import SyntheticDataset
