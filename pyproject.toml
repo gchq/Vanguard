@@ -84,6 +84,7 @@ extend-select = [
     "D201",  # No blank lines allowed before function docstring
     "D202",  # No blank lines allowed after function docstring
     "D211",  # No blank lines allowed before class docstring
+    "E501",  # Docstring line lengths
     # TODO: We should enable more of the pydocstyle lints!
     "S102",  # use of `exec` builtin
     "S307",  # Suspicious `eval` usage

@@ -18,7 +18,7 @@ class ScaledRBFKernel(kernels.ScaleKernel):
         Initialise self.
 
         :param batch_shape: The batch shape. Defaults to no batching.
-        :param ard_num_dims: Set this if you want a separate lengthscale for each input dimension. Defaults to none. Checking a really really really really really really really really really really really really really really really really really really really really really long line.
+        :param ard_num_dims: Set this if you want a separate lengthscale for each input dimension. Defaults to none.
         """
         super().__init__(kernels.RBFKernel(ard_num_dims=ard_num_dims, batch_shape=batch_shape), batch_shape=batch_shape)
 

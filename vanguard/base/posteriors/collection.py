@@ -18,7 +18,8 @@ class MonteCarloPosteriorCollection(Posterior):
     uncertainty.
     Samples are lazily loaded if more are needed for a better prediction.
 
-    :param posterior_generator: A :class:`~vanguard.base.posteriors.Posterior` object defining an infinite generator of posteriors.
+    :param posterior_generator: A :class:`~vanguard.base.posteriors.Posterior` object defining an infinite generator
+        of posteriors.
 
     .. warning::
         In order to ensure reproducible output for predictions and confidence
@@ -210,8 +211,8 @@ class MonteCarloPosteriorCollection(Posterior):
         Determine an appropriately large number of Monte Carlo samples.
 
         Determine an appropriately large number of Monte Carlo samples for a desired confidence level when computing
-        confidence intervals with Monte Carlo integration. This method is motivated by a simple remark in :cite:`Owen13`.
-        The factor is arbitrary, we just want the number of samples to be a lot larger than
+        confidence intervals with Monte Carlo integration. This method is motivated by a simple remark in
+        :cite:`Owen13`. The factor is arbitrary, we just want the number of samples to be a lot larger than
         :math:`\frac{1}{\min(alpha, 1-alpha)}`.
 
         .. warning::

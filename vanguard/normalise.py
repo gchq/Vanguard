@@ -105,8 +105,8 @@ class NormaliseY(Decorator):
                             """
                             Un-normalise values.
 
-                            :param alpha: Confidence threshold that interval should cover. The resulting confidence interval
-                                should contain the underlying data with probability :math:`1 - \alpha`.
+                            :param alpha: Confidence threshold that interval should cover. The resulting confidence
+                                interval should contain the underlying data with probability :math:`1 - \alpha`.
                             :return: The mean and covariance, on the original scale of the data.
                             """
                             mean, lower, upper = super().confidence_interval(alpha)
