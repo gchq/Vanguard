@@ -120,11 +120,13 @@ quickstart
 randn
 rcfile
 rcparams
+refs
 refstyle
 relazified
 relazifying
 rpds
 rsample
+rtype
 seealso
 setdiff
 setuptools
