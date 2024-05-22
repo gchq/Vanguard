@@ -233,6 +233,7 @@ class BaseGPController:
 
     @classmethod
     def get_default_tensor_type(cls) -> Type[Tensor]:
+        """Get the default tensor type for this controller class."""
         return cls._default_tensor_type
 
     def _predictive_likelihood(

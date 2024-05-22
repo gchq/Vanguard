@@ -158,6 +158,8 @@ class DirichletMulticlassClassification(Decorator):
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_point(x)
+                # TODO: why is this 256 hardcoded?
+                # https://github.com/gchq/Vanguard/issues/202
                 samples = posterior._tensor_sample(torch.Size((256,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)
@@ -179,6 +181,8 @@ class DirichletMulticlassClassification(Decorator):
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_fuzzy_point(x, x_std)
+                # TODO: why is this 256 hardcoded?
+                # https://github.com/gchq/Vanguard/issues/202
                 samples = posterior._tensor_sample_condensed(torch.Size((256,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)

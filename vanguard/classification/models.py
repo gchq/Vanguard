@@ -74,8 +74,8 @@ class InertKernelModel(ExactGPModel):
                 train_inputs = (train_inputs,)
             try:
                 self.train_inputs = tuple(tri.unsqueeze(-1) if tri.ndimension() == 1 else tri for tri in train_inputs)
-            except AttributeError:
-                raise TypeError("Train inputs must be a tensor, or a list/tuple of tensors") from None
+            except AttributeError as exc:
+                raise TypeError("Train inputs must be a tensor, or a list/tuple of tensors") from exc
             self.train_targets = train_targets
 
         self.prediction_strategy = None

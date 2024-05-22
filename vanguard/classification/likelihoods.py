@@ -174,7 +174,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     ) -> DirichletKernelDistribution:
         return DirichletKernelDistribution(function_dist.labels, function_dist.kernel, self.alpha)
 
-    # parameter `input` is taken from superclass method
+    # The parameter `input` is taken from superclass method, so we can't rename it here.
     # pylint: disable=redefined-builtin
     def __call__(
         self, input: Union[torch.Tensor, DummyKernelDistribution], *args, **kwargs
