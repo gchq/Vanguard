@@ -46,9 +46,13 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         """Set the fixed noise."""
         self._fixed_noise = value
 
-    # pylint: disable=unused-argument
     def marginal(
-        self, function_dist: MultitaskMultivariateNormal, *params: Any, noise: Optional[Tensor] = None, **kwargs: Any
+        # pylint: disable-next=unused-argument
+        self,
+        function_dist: MultitaskMultivariateNormal,
+        *params: Any,
+        noise: Optional[Tensor] = None,
+        **kwargs: Any,
     ) -> MultitaskMultivariateNormal:
         r"""
         Return the marginal distribution.

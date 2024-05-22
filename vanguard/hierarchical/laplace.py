@@ -25,10 +25,8 @@ HESSIAN_JITTER = 1e-5
 ControllerT = TypeVar("ControllerT", bound=GPController)
 LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-VariationalDistributionT = TypeVar(
-    "VariationalDistributionT",
-    bound=gpytorch.variational._VariationalDistribution,  # pylint: disable=protected-access
-)
+# pylint: disable-next=protected-access
+VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
 
 
 class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
@@ -212,8 +210,9 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         """
         tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         while True:
-            # pylint: disable=protected-access
+            # pylint: disable-next=protected-access
             controller._sample_and_set_hyperparameters()
+            # pylint: disable-next=protected-access
             yield controller._gp_forward(tx).add_jitter(1e-3)
 
     @staticmethod
@@ -233,10 +232,11 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         tx = torch.tensor(x, dtype=torch.float32, device=controller.device)
         tx_std = controller._process_x_std(x_std).to(controller.device)  # pylint: disable=protected-access
         while True:
-            # pylint: disable=protected-access
+            # pylint: disable-next=protected-access
             controller._sample_and_set_hyperparameters()  # type: ignore[reportAttributeAccessIssue]
             sample_shape = x.shape
             x_sample = torch.randn(size=sample_shape, device=controller.device) * tx_std + tx
+            # pylint: disable-next=protected-access
             output = controller._gp_forward(x_sample).add_jitter(1e-3)
             yield output
 
@@ -284,9 +284,10 @@ def _posterior_to_likelihood_samples(
     def generator(controller: ControllerT, x: NDArray[np.floating], *args) -> Generator[torch.Tensor, None, None]:
         """Yield likelihood samples forever."""
         for sample in posterior_generator(controller, x, *args):
-            # pylint: disable=protected-access
+            # pylint: disable-next=protected-access
             shape = controller._decide_noise_shape(controller.posterior_class(sample), x)
             noise = torch.zeros(shape, dtype=torch.float32, device=controller.device)
+            # pylint: disable-next=protected-access
             likelihood_output = controller._likelihood(sample, noise=noise)
             yield likelihood_output
 

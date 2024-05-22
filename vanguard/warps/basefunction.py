@@ -62,7 +62,7 @@ class WarpFunction(gpytorch.Module):
             components = [self]
         return components
 
-    # pylint: disable=arguments-differ
+    # pylint: disable-next=arguments-differ
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         """
         Pass an input tensor through the warp function.
@@ -148,7 +148,7 @@ class WarpFunction(gpytorch.Module):
             new_warp.inverse = _composition_factory(other.inverse, self.inverse)
             new_warp.deriv = _multiply_factory(_composition_factory(self.deriv, other), other.deriv)
             # Overwrite parameters method with an iterator
-            # pylint: disable=protected-access
+            # pylint: disable-next=protected-access
             new_warp.parameters = new_warp._combined_parameters  # pyright: ignore [reportAttributeAccessIssue]
         except AttributeError:
             if not isinstance(other, WarpFunction):

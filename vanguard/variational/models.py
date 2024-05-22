@@ -36,11 +36,10 @@ class SVGPModel(ApproximateGP):
     else:
         device = torch.device("cpu")
 
-    # pylint: disable=unused-argument
     def __init__(
-        self,
+        self,  # pylint: disable=unused-argument
         train_x: Tensor,
-        train_y: Tensor,
+        train_y: Tensor,  # pylint: disable=unused-argument
         likelihood: GaussianLikelihood,
         mean_module: Mean,
         covar_module: Kernel,
@@ -139,7 +138,7 @@ class SVGPModel(ApproximateGP):
         """
         return VariationalStrategy(self, inducing_points, variational_distribution, learn_inducing_locations=True)
 
-    # pylint: disable=unused-argument
+    # pylint: disable-next=unused-argument
     def _check_batch_shape(self, mean_module: Mean, covar_module: Kernel) -> None:
         """
         Ensure that the shapes are compatible.

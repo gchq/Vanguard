@@ -72,14 +72,14 @@ class Multitask(Decorator):
                 all_parameters_as_kwargs.pop("self")
 
                 # it's OK to access self.gp_model_class as it's set in super().__init__ above
-                # pylint: disable=access-member-before-definition
+                original_gp_model_class = self.gp_model_class  # pylint: disable=access-member-before-definition
                 if is_variational:
                     if decorator.lmc_dimension is not None:
-                        gp_model_class = lmc_variational_multitask_model(self.gp_model_class)
+                        gp_model_class = lmc_variational_multitask_model(original_gp_model_class)
                     else:
-                        gp_model_class = independent_variational_multitask_model(self.gp_model_class)
+                        gp_model_class = independent_variational_multitask_model(original_gp_model_class)
                 else:
-                    gp_model_class = self.gp_model_class
+                    gp_model_class = original_gp_model_class
 
                 # Pyright cannot resolve dynamic base class
                 @multitask_model
