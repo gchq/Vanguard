@@ -150,7 +150,7 @@ class AttributeTests(unittest.TestCase):
             A superfluous subclass.
             """
 
-        # ignore the invalid-name warnings, these are classes!
+        # Ignore the invalid-name warnings, these are classes!
         self.SimilarNumberBefore = SimilarNumber  # pylint: disable=invalid-name
         self.SimilarNumberAfter = SquareResult()(SimilarNumber)  # pylint: disable=invalid-name
         self.number = self.SimilarNumberAfter(10)
@@ -240,7 +240,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
                 return InnerClass
 
-        # ignore the invalid-name warnings, these are classes!
+        # Ignore the invalid-name warnings, these are classes!
         self.SimpleNumber = SimpleNumber  # pylint: disable=invalid-name
         self.SquareResult = SquareResult  # pylint: disable=invalid-name
 
@@ -491,7 +491,7 @@ class SignatureTests(unittest.TestCase):
             A superfluous subclass.
             """
 
-        # ignore the invalid-name warnings - these are classes!
+        # Ignore the invalid-name warnings - these are classes!
         self.SimilarNumberBefore = SimilarNumber  # pylint: disable=invalid-name
         self.SimilarNumberAfter = SquareResult()(self.SimilarNumberBefore)  # pylint: disable=invalid-name
 
