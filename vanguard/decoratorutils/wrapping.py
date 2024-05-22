@@ -63,8 +63,9 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
     except TypeError:
         pass
 
-    # TODO: This function is deprecated since python 3.5 - replace with inspect.Signature.bind() asap!
-    # TODO: TEMPORARY pylint disable
+    # TODO: This function is deprecated since python 3.5 - replace with inspect.Signature.bind() asap and remove
+    #  this Pylint disable!
+    # https://github.com/gchq/Vanguard/issues/203
     # pylint: disable=deprecated-method
     parameters_as_kwargs = inspect.getcallargs(func, *args, **kwargs)
     inner_kwargs = parameters_as_kwargs.pop("kwargs", {})
