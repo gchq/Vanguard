@@ -142,6 +142,8 @@ class NLLTests(unittest.TestCase):
 
         class UniformSyntheticDataset:
             def __init__(self, function, num_train_points, num_test_points, y_std, seed=None):
+                # TODO: np.random.RandomState is deprecated, use Generator API instead
+                # https://github.com/gchq/Vanguard/issues/206
                 self.rng = np.random.RandomState(seed)  # pylint: disable=no-member
 
                 unscaled_train_x = self.rng.uniform(0, 1, num_train_points).reshape(-1, 1)
