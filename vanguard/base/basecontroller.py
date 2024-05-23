@@ -28,7 +28,7 @@ from .posteriors import MonteCarloPosteriorCollection, Posterior
 from .standardise import StandardiseXModule
 
 NOISE_LOWER_BOUND = 1e-3
-# pylint: disable=invalid-name
+# pylint: disable-next=invalid-name
 ttypes = Type[
     Union[
         torch.FloatTensor,
@@ -43,19 +43,19 @@ ttypes = Type[
         torch.LongTensor,
     ]
 ]
-# pylint: disable=invalid-name, no-member
+# pylint: disable-next=invalid-name
 ttypes_cuda = Type[
     Union[
-        torch.cuda.FloatTensor,
-        torch.cuda.DoubleTensor,
-        torch.cuda.IntTensor,
-        torch.cuda.BoolTensor,
-        torch.cuda.HalfTensor,
-        torch.cuda.BFloat16Tensor,
-        torch.cuda.ByteTensor,
-        torch.cuda.CharTensor,
-        torch.cuda.ShortTensor,
-        torch.cuda.LongTensor,
+        torch.cuda.FloatTensor,  # pylint: disable=no-member
+        torch.cuda.DoubleTensor,  # pylint: disable=no-member
+        torch.cuda.IntTensor,  # pylint: disable=no-member
+        torch.cuda.BoolTensor,  # pylint: disable=no-member
+        torch.cuda.HalfTensor,  # pylint: disable=no-member
+        torch.cuda.BFloat16Tensor,  # pylint: disable=no-member
+        torch.cuda.ByteTensor,  # pylint: disable=no-member
+        torch.cuda.CharTensor,  # pylint: disable=no-member
+        torch.cuda.ShortTensor,  # pylint: disable=no-member
+        torch.cuda.LongTensor,  # pylint: disable=no-member
     ]
 ]
 
@@ -97,6 +97,7 @@ class BaseGPController:
     """
 
     if torch.cuda.is_available():
+        # pylint: disable-next=no-member
         _default_tensor_type: ttypes_cuda = torch.cuda.FloatTensor
     else:
         _default_tensor_type: ttypes = torch.FloatTensor
@@ -134,6 +135,7 @@ class BaseGPController:
         else:
             self.train_y = torch.tensor(train_y, dtype=self.dtype, device="cpu")
 
+        # pylint: disable-next=invalid-name
         self.N, self.dim, *_ = self.train_x.shape
 
         self._original_y_variance_as_tensor = torch.as_tensor(y_std**2, dtype=self.dtype)
