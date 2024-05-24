@@ -65,6 +65,7 @@ jumanjihouse
 jupyterlab
 keepdim
 kernelspec
+kmedoids
 lazify
 lengthscale
 lengthscales
@@ -124,6 +125,7 @@ relazified
 relazifying
 rpds
 rsample
+seealso
 setuptools
 sklearn
 sphinxcontrib

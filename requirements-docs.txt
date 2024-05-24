@@ -33,7 +33,9 @@ jupyter_client==8.6.1
 jupyter_core==5.7.2
 jupyterlab_pygments==0.3.0
 kiwisolver==1.4.5
+kmedoids==0.5.1
 latexcodec==3.0.0
+linear-operator==0.5.2
 MarkupSafe==2.1.5
 matplotlib==3.8.4
 matplotlib-inline==0.1.7
