@@ -51,6 +51,13 @@ jobs:
           python-version: 3.9
           # Re-enable when going public
           # cache: pip
+      - name: Set up virtual environment
+        run: python -m venv .venv
+      - name: Activate virtual environment
+        run: |
+          . .venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+        # ^^ This ensures that the virtual env is used for all subsequent steps.
       - name: Upgrade Pip
         run: python -m pip install --upgrade pip
       - name: Install pre-commit
