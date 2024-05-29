@@ -51,10 +51,10 @@ jobs:
           python-version: 3.9
           # Re-enable when going public
           # cache: pip
-      - name: Upgrade Pip
-        run: python -m pip install --upgrade pip
+      - name: Upgrade pip and pipenv
+        run: python -m pip install --upgrade pip pipenv
       - name: Install pre-commit
-        run: pip install pre-commit
+        run: pipenv install pre-commit
       - name: Store hash of baseline pre-commit config for comparison
         id: old_file
         run: echo "hash=$( sha256sum $config_path )" >> $GITHUB_OUTPUT
@@ -66,7 +66,7 @@ jobs:
       - name: Run pre-commit autoupdate on develop pre-commit config
         id: autoupdate
         run: |
-          pre-commit autoupdate > ${{ env.update_message_path }}
+          pipenv run pre-commit autoupdate > ${{ env.update_message_path }}
           sed -i "/updating/!d" ${{ env.update_message_path }}
       - name: Store hash of new pre-commit config for comparison
         id: new_file
@@ -105,3 +105,7 @@ jobs:
             # If a PR doesn't already exist, and no previous PR can be reopened, create a new PR.
             gh pr create -t "$title" -b "$body" -l dependencies -B develop -H ${{ env.update_branch }}
           fi
+
+      - name: Clean up pipenv's virtualenv
+        run: pipenv --rm
+        if: always()

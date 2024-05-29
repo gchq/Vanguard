@@ -21,9 +21,12 @@ jobs:
         # Re-enable when going public
         # cache: pip
         # cache-dependency-path: requirements.txt
-    - name: Upgrade pip
-      run: python -m pip install --upgrade pip
+    - name: Upgrade pip and pipenv
+      run: python -m pip install --upgrade pip pipenv
     - name: Install test dependencies
-      run: pip install -r requirements.txt --no-deps
+      run: pipenv install -r requirements.txt --extra-pip-args "--no-deps"
     - name: Test with pytest
-      run: pytest --ignore=tests/test_examples.py
+      run: pipenv run pytest --ignore=tests/test_examples.py
+    - name: Clean up pipenv's virtualenv
+      run: pipenv --rm
+      if: always()
