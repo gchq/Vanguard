@@ -124,6 +124,7 @@ relazified
 relazifying
 rpds
 rsample
+setdiff
 setuptools
 sklearn
 sphinxcontrib

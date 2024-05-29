@@ -5,6 +5,7 @@ Basic end to end functionality test for Vanguard.
 import unittest
 
 import numpy as np
+
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 
@@ -13,6 +14,7 @@ class VanguardTestCase(unittest.TestCase):
     """
     A subclass of TestCase designed to check end-to-end usage of base code.
     """
+
     def setUp(self) -> None:
         """
         Define data shared across tests.
@@ -45,15 +47,11 @@ class VanguardTestCase(unittest.TestCase):
         np.random.seed(self.random_seed)
 
         # Define some data for the test
-        x = np.linspace(
-            start=0, stop=10, num=self.num_train_points + self.num_test_points
-        ).reshape(-1, 1)
+        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
         y = np.squeeze(x * np.sin(x))
 
         # Split data into training and testing
-        train_indices = np.random.choice(
-            np.arange(y.shape[0]), size=self.num_train_points, replace=False
-        )
+        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # Define the controller object, with an assumed small amount of noise
@@ -61,7 +59,7 @@ class VanguardTestCase(unittest.TestCase):
             train_x=x[train_indices],
             train_y=y[train_indices],
             kernel_class=ScaledRBFKernel,
-            y_std=self.small_noise * np.ones_like(y[train_indices])
+            y_std=self.small_noise * np.ones_like(y[train_indices]),
         )
 
         # Fit the GP
@@ -70,8 +68,8 @@ class VanguardTestCase(unittest.TestCase):
         # Get predictions from the controller object
         posterior = gp.predictive_likelihood(x)
         prediction_means, prediction_covariances = posterior.prediction()
-        prediction_ci_median, prediction_ci_lower, prediction_ci_upper = (
-            posterior.confidence_interval(alpha=self.confidence_interval_alpha)
+        prediction_ci_median, prediction_ci_lower, prediction_ci_upper = posterior.confidence_interval(
+            alpha=self.confidence_interval_alpha
         )
 
         # Sense check the outputs
@@ -79,28 +77,26 @@ class VanguardTestCase(unittest.TestCase):
         self.assertTrue(np.all(prediction_means >= prediction_ci_lower))
 
         # Are the prediction intervals reasonable?
-        pct_above_ci_upper_train = 100.0 * np.sum(
-            y[train_indices] >= prediction_ci_upper[train_indices]
-        ) / x[train_indices].shape[0]
-        pct_above_ci_upper_test = 100.0 * np.sum(
-            y[test_indices] >= prediction_ci_upper[test_indices]
-        ) / x[test_indices].shape[0]
-        pct_below_ci_lower_train = 100.0 * np.sum(
-            y[train_indices] <= prediction_ci_lower[train_indices]
-        ) / x[train_indices].shape[0]
-        pct_below_ci_lower_test = 100.0 * np.sum(
-            y[test_indices] <= prediction_ci_lower[test_indices]
-        ) / x[test_indices].shape[0]
+        pct_above_ci_upper_train = (
+            100.0 * np.sum(y[train_indices] >= prediction_ci_upper[train_indices]) / x[train_indices].shape[0]
+        )
+        pct_above_ci_upper_test = (
+            100.0 * np.sum(y[test_indices] >= prediction_ci_upper[test_indices]) / x[test_indices].shape[0]
+        )
+        pct_below_ci_lower_train = (
+            100.0 * np.sum(y[train_indices] <= prediction_ci_lower[train_indices]) / x[train_indices].shape[0]
+        )
+        pct_below_ci_lower_test = (
+            100.0 * np.sum(y[test_indices] <= prediction_ci_lower[test_indices]) / x[test_indices].shape[0]
+        )
         for pct_check in [
             pct_above_ci_upper_train,
             pct_above_ci_upper_test,
             pct_below_ci_lower_train,
-            pct_below_ci_lower_test
+            pct_below_ci_lower_test,
         ]:
             self.assertLessEqual(
-                pct_check,
-                self.confidence_interval_alpha/2.0 +
-                self.accepted_confidence_interval_error
+                pct_check, self.confidence_interval_alpha / 2.0 + self.accepted_confidence_interval_error
             )
 
 
