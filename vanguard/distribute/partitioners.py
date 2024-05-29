@@ -9,12 +9,12 @@ import gpytorch.kernels
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from kmedoids import KMedoids as _KMedoids
 from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 from sklearn.cluster import KMeans as _KMeans
 from sklearn.cluster import MiniBatchKMeans as _MiniBatchKMeans
 from sklearn.manifold import TSNE
-from sklearn_extra.cluster import KMedoids as _KMedoids
 
 
 # TODO: should this be an abstract base class?
@@ -159,6 +159,8 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
 class KMedoidsPartitioner(BasePartitioner):
     """
     Create a partition using KMedoids with similarity defined by the kernel.
+
+    :seealso: Clusters are computed using a :class:`kmedoids.KMedoids` object.
     """
 
     def __init__(

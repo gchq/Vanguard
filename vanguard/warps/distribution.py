@@ -70,8 +70,8 @@ class WarpedGaussian(Normal):
         :param lr: The learning rate for optimisation.
         :returns: A fit distribution.
         """
-        t_samples = torch.as_tensor(samples, dtype=BaseGPController._default_tensor_type.dtype)  # pyright: ignore [reportCallIssue]
-        optim = optimiser(params=[{"params": warp.parameters(), "lr": lr}])
+        t_samples = torch.as_tensor(samples, dtype=BaseGPController.get_default_tensor_type().dtype)
+        optim = optimiser(params=[{"params": warp.parameters(), "lr": lr}])  # pyright: ignore [reportCallIssue]
 
         for i in range(n_iterations):
             loss = -cls._mle_log_prob_parametrised_with_warp_parameters(warp, t_samples)
@@ -95,6 +95,11 @@ class WarpedGaussian(Normal):
         w_data = warp(data)
         loc = w_data.mean(dim=0).detach()
         scale = w_data.std(dim=0).detach() + 1e-4
-        gaussian_log_prob = (-((w_data - loc) ** 2) / (2 * scale**2) - torch.log(scale)).sum()  # pyright: ignore [reportOperatorIssue]
+        gaussian_log_prob = (
+            -((w_data - loc) ** 2) / (2 * scale**2) - torch.log(scale)  # pyright: ignore [reportOperatorIssue]
+        ).sum()
         log_jacobian = torch.log(warp.deriv(data).abs()).sum()
         return gaussian_log_prob + log_jacobian
+
+    def enumerate_support(self, expand: bool = True) -> torch.Tensor:
+        raise NotImplementedError

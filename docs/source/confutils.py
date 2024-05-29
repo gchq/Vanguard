@@ -21,13 +21,13 @@ def copy_filtered_files(source_folder, destination_folder, file_types=()):
                 shutil.copyfile(source_filename, dest_filename)
 
 
-def process_notebooks(notebook_file_paths):
+def process_notebooks(notebook_file_paths, encoding="utf8"):
     """Remove empty cells from Jupyter notebook files, filter sphinx commands and set raw mimetype."""
     for notebook_path in notebook_file_paths:
         if not notebook_path.endswith(".ipynb"):
             continue
 
-        with open(notebook_path) as rf:
+        with open(notebook_path, encoding=encoding) as rf:
             notebook = nbformat.read(rf, as_version=4)
 
         notebook.cells = [
@@ -49,5 +49,5 @@ def process_notebooks(notebook_file_paths):
             if cell["cell_type"] == "raw":
                 cell["metadata"]["raw_mimetype"] = "text/restructuredtext"
 
-        with open(notebook_path, "w") as wf:
+        with open(notebook_path, "w", encoding=encoding) as wf:
             nbformat.write(notebook, wf, version=4)

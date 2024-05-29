@@ -56,6 +56,8 @@ class MultitaskBernoulliLikelihood(BernoulliLikelihood):
         self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, *args, **kwargs
     ):
         """Compute the log probability sum summing the log probabilities over the tasks."""
+        # TODO: investigate why this works/why it's been missed that it doesn't work?
+        # pylint: disable=no-member
         return super().log_prob(observations, function_dist, *args, **kwargs).sum(dim=-1)
 
     def expected_log_prob(
@@ -85,6 +87,7 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
 
 
 class DirichletKernelDistribution(torch.distributions.Dirichlet):
+    # pylint: disable=abstract-method
     """
     A pseudo Dirichlet distribution with the log probability modified to match that from [CITATION NEEDED]_.
     """
@@ -155,9 +158,11 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     def alpha(self) -> Optional[Union[float, numpy.typing.NDArray[np.floating]]]:
         return self._alpha_var.noise
 
+    # pylint: disable=arguments-differ
     def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
         return None
 
+    # pylint: disable=arguments-differ
     def log_marginal(
         self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, **kwargs
     ) -> torch.Tensor:
@@ -169,6 +174,8 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     ) -> DirichletKernelDistribution:
         return DirichletKernelDistribution(function_dist.labels, function_dist.kernel, self.alpha)
 
+    # The parameter `input` is taken from superclass method, so we can't rename it here.
+    # pylint: disable=redefined-builtin
     def __call__(
         self, input: Union[torch.Tensor, DummyKernelDistribution], *args, **kwargs
     ) -> torch.distributions.Distribution:

@@ -20,7 +20,9 @@ class PartitionTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        rng = np.random.RandomState(seed=1)
+        # TODO: np.random.RandomState is deprecated, use Generator API instead
+        # https://github.com/gchq/Vanguard/issues/206
+        rng = np.random.RandomState(seed=1)  # pylint: disable=no-member
         self.train_x = rng.random(size=10).reshape(-1, 1) * 20
         self.kernel = RBFKernel()
         self.n_experts = 3
@@ -30,7 +32,7 @@ class PartitionTests(unittest.TestCase):
             partitioners.RandomPartitioner: [[8, 1, 5], [0, 7, 2], [9, 4, 3]],
             partitioners.KMeansPartitioner: [[2, 4, 5, 6], [1, 9], [0, 3, 7, 8]],
             partitioners.MiniBatchKMeansPartitioner: [[0, 3, 7, 8], [1, 9], [2, 4, 5, 6]],
-            partitioners.KMedoidsPartitioner: [[1, 3, 7], [2, 4, 5, 6], [0, 8, 9]],
+            partitioners.KMedoidsPartitioner: [[0, 8, 9], [1, 3, 7], [2, 4, 5, 6]],
         }
 
         self.expected_communication_partition_results = {
@@ -40,13 +42,15 @@ class PartitionTests(unittest.TestCase):
             partitioners.KMedoidsPartitioner: [[8, 1, 5], [8, 1, 5, 0, 1, 3, 7, 8, 9], [8, 1, 5, 2, 4, 5, 6]],
         }
 
-    @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO: investigate this!
+    @unittest.skip  # TODO: fix test; appears to be multiple issues
     # https://github.com/gchq/Vanguard/issues/72
     def test_output_results(self) -> None:
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
                 if issubclass(partitioner_class, partitioners.KMedoidsPartitioner):
+                    # This is a Pylint bug - it doesn't see the type narrowing here
+                    # pylint: disable-next=unexpected-keyword-arg
                     partitioner = partitioner_class(
                         train_x=self.train_x, kernel=self.kernel, n_experts=self.n_experts, seed=self.seed
                     )
@@ -55,13 +59,15 @@ class PartitionTests(unittest.TestCase):
                 observed_partition = partitioner.create_partition()
                 self.assertListEqual(expected_partition, observed_partition)
 
-    @unittest.skip("Fails on 3.12, but succeeds on 3.8/3.9. TODO investigate.")  # TODO: investigate this!
+    @unittest.skip  # TODO: fix test; appears to be multiple issues
     # https://github.com/gchq/Vanguard/issues/72
     def test_output_results_with_communication(self) -> None:
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_communication_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
                 if issubclass(partitioner_class, partitioners.KMedoidsPartitioner):
+                    # This is a Pylint bug - it doesn't see the type narrowing here
+                    # pylint: disable-next=unexpected-keyword-arg
                     partitioner = partitioner_class(
                         train_x=self.train_x,
                         kernel=self.kernel,

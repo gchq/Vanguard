@@ -126,7 +126,6 @@ class SmartOptimiser(Generic[OptimiserT]):
 
     def set_parameters(self) -> None:
         """Tidy up after optimisation is completed."""
-        pass
 
     def _reset_module_parameters(self) -> None:
         """
@@ -334,5 +333,3 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
 
 class NoImprovementError(RuntimeError):
     """Raised when the loss of the model is consistently increasing."""
-
-    pass

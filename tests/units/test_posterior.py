@@ -1,3 +1,7 @@
+"""
+Tests for the Posterior class.
+"""
+
 import unittest
 
 import numpy as np

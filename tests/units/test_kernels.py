@@ -1,3 +1,7 @@
+"""
+Tests for kernels.
+"""
+
 import unittest
 
 from numpy.testing import assert_array_less
@@ -9,7 +13,7 @@ from vanguard.vanilla import GaussianGPController
 
 class BasicTests(unittest.TestCase):
     """
-    Basic tests for the TimeSeriesExogenousRegressorKernel decorator.
+    Basic tests for the TimeSeriesKernel decorator.
     """
 
     def test_trains_time_feature_only(self) -> None:

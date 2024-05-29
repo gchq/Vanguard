@@ -9,7 +9,7 @@ from typing import Iterable, Set, Type, TypeVar
 from . import errors
 
 T = TypeVar("T")
-DecoratorType = TypeVar("DecoratorType", bound="Decorator")
+DecoratorT = TypeVar("DecoratorT", bound="Decorator")
 
 
 class Decorator:
@@ -42,7 +42,7 @@ class Decorator:
     def __init__(
         self,
         framework_class: Type[T],
-        required_decorators: Iterable[Type[DecoratorType]],
+        required_decorators: Iterable[Type[DecoratorT]],
         ignore_methods: Iterable[str] = (),
         ignore_all: bool = False,
         raise_instead: bool = False,
@@ -179,5 +179,3 @@ class TopMostDecorator(Decorator):
             ...
         vanguard.decoratorutils.errors.TopmostDecoratorError: Cannot decorate this class!
     """
-
-    pass
