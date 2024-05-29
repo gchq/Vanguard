@@ -1,7 +1,5 @@
 """
 Basic end to end functionality test for Vanguard.
-
-# TODO
 """
 
 import unittest
@@ -13,13 +11,13 @@ from vanguard.vanilla import GaussianGPController
 
 class VanguardTestCase(unittest.TestCase):
     """
-    A subclass of TestCase designed to check confidence intervals.
+    A subclass of TestCase designed to check end-to-end usage of base code.
     """
     def setUp(self) -> None:
         """
-        TODO
+        Define data shared across tests.
         """
-        self.random_seed = 1989
+        self.random_seed = 1_989
         self.num_train_points = 500
         self.num_test_points = 500
         self.n_sgd_iters = 100
@@ -37,7 +35,12 @@ class VanguardTestCase(unittest.TestCase):
 
     def test_basic_gp(self) -> None:
         """
-        # TODO
+        Verify Vanguard usage on a simple, single variable regression problem.
+
+        We generate a single feature `x` and a continuous target `y`, and verify that a
+        GP can be fit to this data. We check that the confidence intervals are ordered
+        correctly, and they contain the expected number of points in both the training
+        and testing data.
         """
         np.random.seed(self.random_seed)
 
