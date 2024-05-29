@@ -275,6 +275,9 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
     def test_overwrite_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
         try:
+            # TODO: This seems like an overly verbose method of doing things, and counter to what assertWarns is
+            #  meant to do. Use `warnings.catch_warnings(record=True)` and check nothing was caught instead.
+            # https://github.com/gchq/Vanguard/issues/220
             with self.assertWarns(errors.OverwrittenMethodWarning):
 
                 @self.SquareResult(ignore_methods=("add_5",))
@@ -284,7 +287,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
                     """
 
         except AssertionError:
-            pass  # TODO: is this pass correct?
+            pass
         except errors.OverwrittenMethodError as error:
             self.fail(f"Should not have thrown error: {error!s}")
         else:

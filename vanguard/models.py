@@ -38,6 +38,7 @@ class ExactGPModel(ExactGP):
         self.mean_module = mean_module
         self.covar_module = covar_module
         # TODO: warn if kwargs is non-empty here?
+        # https://github.com/gchq/Vanguard/issues/219
 
     def forward(self, x: torch.Tensor) -> gpytorch.distributions.MultivariateNormal:  # pylint: disable=arguments-differ
         """
