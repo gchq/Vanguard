@@ -416,8 +416,13 @@ confidence=HIGH,
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=too-many-lines,
-        import-error,
+
+disable=too-many-lines, # Disable too-many-lines warning for the moment.
+        method-hidden, # Disable method-hidden as it raises in the wrong place, so it's difficult to suppress safely.
+        missing-class-docstring,
+        missing-function-docstring,
+        fixme, # Disable FIXME and TODO comment warnings.
+        R, # Disable all refactoring suggestions.
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

@@ -25,6 +25,7 @@ HESSIAN_JITTER = 1e-5
 ControllerT = TypeVar("ControllerT", bound=GPController)
 LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
+# pylint: disable-next=protected-access
 VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
 
 
@@ -117,9 +118,13 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             def new(cls: Type[ControllerT], instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
                 """Copy hyperparameter posteriors."""
                 new_instance = super().new(instance, **kwargs)
-                new_instance.hyperparameter_posterior_mean = instance.hyperparameter_posterior_mean  # type: ignore[reportAttributeAccessIssue]
-                new_instance.hyperparameter_posterior_covariance = instance.hyperparameter_posterior_covariance  # type: ignore[reportAttributeAccessIssue]
-                new_instance.temperature = instance.temperature  # type: ignore[reportAttributeAccessIssue]
+                new_instance.hyperparameter_posterior_mean = (
+                    instance.hyperparameter_posterior_mean  # pyright: ignore[reportAttributeAccessIssue]
+                )
+                new_instance.hyperparameter_posterior_covariance = (
+                    instance.hyperparameter_posterior_covariance  # pyright: ignore[reportAttributeAccessIssue]
+                )
+                new_instance.temperature = instance.temperature  # pyright: ignore[reportAttributeAccessIssue]
                 return new_instance
 
             @property
@@ -148,7 +153,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 hessian = self._compute_loss_hessian().detach().clone()
                 eigenvalues, eigenvectors = _subspace_hessian_inverse_eig(hessian, cutoff=uv_cutoff)
                 mean = self.hyperparameter_collection.hyperparameter_tensor
-                return mean, (eigenvalues.detach().clone(), eigenvectors.detach().clone())  # type: ignore[reportAttributeAccessIssue]
+                return mean, (eigenvalues.detach().clone(), eigenvectors.detach().clone())
 
             def _compute_loss_hessian(self) -> torch.Tensor:
                 batch_size = self.batch_size if self.batch_size else len(self.train_x)
@@ -156,7 +161,8 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
                 total_loss = 0
                 for train_x, train_y, train_y_noise in itertools.islice(self.train_data_generator, single_epoch_iters):
-                    self.likelihood_noise = train_y_noise
+                    # Pylint false positive here - this should be defined in the parent class
+                    self.likelihood_noise = train_y_noise  # pylint: disable=attribute-defined-outside-init
                     total_loss += self._loss(train_x, train_y)
 
                 gradient_list = torch.autograd.grad(total_loss, iter(self.hyperparameter_collection), create_graph=True)
@@ -204,7 +210,9 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         """
         tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         while True:
+            # pylint: disable-next=protected-access
             controller._sample_and_set_hyperparameters()
+            # pylint: disable-next=protected-access
             yield controller._gp_forward(tx).add_jitter(1e-3)
 
     @staticmethod
@@ -222,11 +230,13 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             * float: Assume homoskedastic noise.
         """
         tx = torch.tensor(x, dtype=torch.float32, device=controller.device)
-        tx_std = controller._process_x_std(x_std).to(controller.device)
+        tx_std = controller._process_x_std(x_std).to(controller.device)  # pylint: disable=protected-access
         while True:
+            # pylint: disable-next=protected-access
             controller._sample_and_set_hyperparameters()  # type: ignore[reportAttributeAccessIssue]
             sample_shape = x.shape
             x_sample = torch.randn(size=sample_shape, device=controller.device) * tx_std + tx
+            # pylint: disable-next=protected-access
             output = controller._gp_forward(x_sample).add_jitter(1e-3)
             yield output
 
@@ -259,7 +269,7 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -
     Along bad directions, we set the Hessian inverse eigenvalues to a fixed
     small jitter value.
     """
-    eigenvalues, eigenvectors = torch.linalg.eigh(hessian)
+    eigenvalues, eigenvectors = torch.linalg.eigh(hessian)  # pylint: disable=not-callable
     keep_indices = eigenvalues > cutoff
     inverse_eigenvalues = 1 / eigenvalues
     inverse_eigenvalues[~keep_indices] = HESSIAN_JITTER
@@ -274,8 +284,10 @@ def _posterior_to_likelihood_samples(
     def generator(controller: ControllerT, x: NDArray[np.floating], *args) -> Generator[torch.Tensor, None, None]:
         """Yield likelihood samples forever."""
         for sample in posterior_generator(controller, x, *args):
+            # pylint: disable-next=protected-access
             shape = controller._decide_noise_shape(controller.posterior_class(sample), x)
             noise = torch.zeros(shape, dtype=torch.float32, device=controller.device)
+            # pylint: disable-next=protected-access
             likelihood_output = controller._likelihood(sample, noise=noise)
             yield likelihood_output
 

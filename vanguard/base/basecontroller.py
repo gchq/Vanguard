@@ -16,6 +16,7 @@ from gpytorch import constraints
 from gpytorch.models import ApproximateGP, ExactGP
 from gpytorch.utils.errors import NanError
 from numpy import dtype
+from torch import Tensor
 
 from ..decoratorutils import wraps_class
 from ..models import ExactGPModel
@@ -27,6 +28,7 @@ from .posteriors import MonteCarloPosteriorCollection, Posterior
 from .standardise import StandardiseXModule
 
 NOISE_LOWER_BOUND = 1e-3
+# pylint: disable-next=invalid-name
 ttypes = Type[
     Union[
         torch.FloatTensor,
@@ -41,18 +43,19 @@ ttypes = Type[
         torch.LongTensor,
     ]
 ]
+# pylint: disable-next=invalid-name
 ttypes_cuda = Type[
     Union[
-        torch.cuda.FloatTensor,
-        torch.cuda.DoubleTensor,
-        torch.cuda.IntTensor,
-        torch.cuda.BoolTensor,
-        torch.cuda.HalfTensor,
-        torch.cuda.BFloat16Tensor,
-        torch.cuda.ByteTensor,
-        torch.cuda.CharTensor,
-        torch.cuda.ShortTensor,
-        torch.cuda.LongTensor,
+        torch.cuda.FloatTensor,  # pylint: disable=no-member
+        torch.cuda.DoubleTensor,  # pylint: disable=no-member
+        torch.cuda.IntTensor,  # pylint: disable=no-member
+        torch.cuda.BoolTensor,  # pylint: disable=no-member
+        torch.cuda.HalfTensor,  # pylint: disable=no-member
+        torch.cuda.BFloat16Tensor,  # pylint: disable=no-member
+        torch.cuda.ByteTensor,  # pylint: disable=no-member
+        torch.cuda.CharTensor,  # pylint: disable=no-member
+        torch.cuda.ShortTensor,  # pylint: disable=no-member
+        torch.cuda.LongTensor,  # pylint: disable=no-member
     ]
 ]
 
@@ -94,6 +97,7 @@ class BaseGPController:
     """
 
     if torch.cuda.is_available():
+        # pylint: disable-next=no-member
         _default_tensor_type: ttypes_cuda = torch.cuda.FloatTensor
     else:
         _default_tensor_type: ttypes = torch.FloatTensor
@@ -103,6 +107,7 @@ class BaseGPController:
     gp_model_class: Type[Union[ExactGP, ApproximateGP]] = ExactGPModel
     posterior_class = Posterior
     posterior_collection_class = MonteCarloPosteriorCollection
+    likelihood_noise = None
 
     _y_batch_axis: int = 0
 
@@ -130,6 +135,7 @@ class BaseGPController:
         else:
             self.train_y = torch.tensor(train_y, dtype=self.dtype, device="cpu")
 
+        # pylint: disable-next=invalid-name
         self.N, self.dim, *_ = self.train_x.shape
 
         self._original_y_variance_as_tensor = torch.as_tensor(y_std**2, dtype=self.dtype)
@@ -226,6 +232,11 @@ class BaseGPController:
         """Set trainable parameters to evaluation mode."""
         self._gp.eval()
         self._set_requires_grad(False)
+
+    @classmethod
+    def get_default_tensor_type(cls) -> Type[Tensor]:
+        """Get the default tensor type for this controller class."""
+        return cls._default_tensor_type
 
     def _predictive_likelihood(
         self,
@@ -337,7 +348,7 @@ class BaseGPController:
         for iter_num, (train_x, train_y, train_y_noise) in enumerate(islice(self.train_data_generator, n_iters)):
             self.likelihood_noise = train_y_noise
             try:
-                loss = self._single_optimisation_step(train_x, train_y, retain_graph=(iter_num < n_iters - 1))
+                loss = self._single_optimisation_step(train_x, train_y, retain_graph=iter_num < n_iters - 1)
 
             except NoImprovementError:
                 loss = self._smart_optimiser.last_n_losses[-1]
@@ -519,11 +530,11 @@ class BaseGPController:
 
         try:
             shape = shape_mapping[(mean.ndim, covar.ndim)]
-        except KeyError:
+        except KeyError as exc:
             raise ValueError(
                 f"A posterior distribution with mean and covariance matrix of dimensions {mean.ndim} and "
                 f"{covar.ndim} are not currently supported."
-            )
+            ) from exc
         return shape
 
     @staticmethod
@@ -572,7 +583,7 @@ def _catch_and_check_module_errors(
                     result = super().__call__(*args, **kwargs)
                 except NanError:  # otherwise we catch this as a RuntimeError
                     raise
-                except RuntimeError:
+                except RuntimeError as exc:
                     decorator_names = {decorator.__name__ for decorator in controller.__decorators__}
                     if controller.train_x.ndim > 2 and "HigherRankFeatures" not in decorator_names:
                         raise ValueError(
@@ -582,7 +593,7 @@ def _catch_and_check_module_errors(
                             "consider using the HigherRankFeatures decorator on your controller "
                             "and make sure that your kernel and mean functions are defined "
                             "for the rank of your input features."
-                        )
+                        ) from exc
                     else:
                         raise
                 else:

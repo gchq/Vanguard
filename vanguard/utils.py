@@ -86,14 +86,13 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
             incorrect_likelihood_parameter_passed = _RE_INCORRECT_LIKELIHOOD_PARAMETER.match(str(type_error))
             try:
                 incorrect_parameter = incorrect_likelihood_parameter_passed.group(1)
-            except AttributeError:
-                raise type_error
+            except AttributeError as exc:
+                raise type_error from exc
             else:
                 remaining_kwargs.pop(incorrect_parameter)
         else:
             return instance
-    else:
-        return cls()
+    return cls()
 
 
 def infinite_tensor_generator(
@@ -113,9 +112,8 @@ def infinite_tensor_generator(
     if batch_size is None:
         batch_size = first_tensor_length
 
-        def shuffle(array: numpy.typing.NDArray) -> None:
+        def shuffle(array: numpy.typing.NDArray) -> None:  # pylint: disable=unused-argument
             """Identity shuffle function."""
-            pass
     else:
 
         def shuffle(array: numpy.typing.NDArray) -> None:

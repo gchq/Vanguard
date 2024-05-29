@@ -25,7 +25,10 @@ ControllerT = TypeVar("ControllerT", bound=GPController)
 KernelT = TypeVar("KernelT", bound=gpytorch.kernels.Kernel)
 LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
+VariationalDistributionT = TypeVar(
+    "VariationalDistributionT",
+    bound=gpytorch.variational._VariationalDistribution,  # pylint: disable=protected-access
+)
 
 
 class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
@@ -126,6 +129,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         while True:
             controller.hyperparameter_collection.sample_and_update()
+            # pylint: disable=protected-access
             output = _safe_index_batched_multivariate_normal(controller._gp_forward(x=tx).add_jitter(1e-3))
             yield from output
 
@@ -144,6 +148,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             * float: Assume homoskedastic noise.
         """
         tx = torch.tensor(x, dtype=torch.float32, device=controller.device)
+        # pylint: disable-next=protected-access
         tx_std = controller._process_x_std(std=x_std).to(controller.device)
         while True:
             controller.hyperparameter_collection.sample_and_update()
@@ -152,6 +157,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             # and from independent variational posterior samples.
             sample_shape = controller.hyperparameter_collection.sample_shape + tx.shape
             x_sample = torch.randn(size=sample_shape, device=controller.device) * tx_std + tx
+            # pylint: disable-next=protected-access
             output = _safe_index_batched_multivariate_normal(controller._gp_forward(x=x_sample).add_jitter(1e-3))
             yield from output
 
@@ -168,10 +174,13 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         while True:
             controller.hyperparameter_collection.sample_and_update()
+            # pylint: disable-next=protected-access
             output = _safe_index_batched_multivariate_normal(controller._gp_forward(x=tx).add_jitter(1e-3))
             for sample in output:
+                # pylint: disable-next=protected-access
                 shape = controller._decide_noise_shape(controller.posterior_class(sample), x=tx)
                 noise = torch.zeros(shape, dtype=torch.float32, device=controller.device)
+                # pylint: disable-next=protected-access
                 likelihood_output = controller._likelihood(sample, noise=noise)
                 yield likelihood_output
 
@@ -190,6 +199,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             * float: Assume homoskedastic noise.
         """
         tx = torch.tensor(x, dtype=torch.float32, device=controller.device)
+        # pylint: disable-next=protected-access
         tx_std = controller._process_x_std(x_std).to(controller.device)
 
         while True:
@@ -199,10 +209,13 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             # and from independent variational posterior samples.
             sample_shape = controller.hyperparameter_collection.sample_shape + tx.shape
             x_sample = torch.randn(size=sample_shape, device=controller.device) * tx_std + tx
+            # pylint: disable-next=protected-access
             output = _safe_index_batched_multivariate_normal(controller._gp_forward(x=x_sample).add_jitter(1e-3))
             for sample in output:
+                # pylint: disable-next=protected-access
                 shape = controller._decide_noise_shape(controller.posterior_class(sample), x=tx)
                 noise = torch.zeros(shape, dtype=torch.float32, device=controller.device)
+                # pylint: disable-next=protected-access
                 likelihood_output = controller._likelihood(sample, noise=noise)
                 yield likelihood_output
 

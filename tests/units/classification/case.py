@@ -38,7 +38,7 @@ class ClassificationTestCase(unittest.TestCase):
     """
 
     @staticmethod
-    def assertPredictionsEqual(
+    def assertPredictionsEqual(  # pylint: disable=invalid-name
         x: numpy.typing.NDArray[np.floating], y: numpy.typing.NDArray[np.floating], delta: Union[float, int] = 0
     ) -> None:
         """
