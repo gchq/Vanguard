@@ -4,6 +4,8 @@ Configuration file for the Sphinx documentation builder.
 This file only contains a selection of the most common options.
 For a full list see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html.
 """
+# a bunch of pylint disables as this file is uniquely weird:
+# pylint: disable=import-error,invalid-name,wrong-import-order,wrong-import-position
 
 import os
 import shutil
@@ -48,7 +50,7 @@ from refstyle import STYLE_NAME  # noqa: E402
 # -- Project information -----------------------------------------------------
 
 project = "Vanguard"
-copyright = "UK Crown"
+copyright = "UK Crown"  # pylint: disable=redefined-builtin
 author = "GCHQ"
 version = "v" + vanguard.__version__
 
@@ -79,7 +81,7 @@ linkcheck_timeout = 5
 coverage_show_missing_items = True
 coverage_write_headline = False
 coverage_ignore_classes = ["EmptyDataset"]
-coverage_ignore_pyobjects = ["vanguard\.warps\.warpfunctions\..*?WarpFunction\.(deriv|forward|inverse)"]
+coverage_ignore_pyobjects = [r"vanguard\.warps\.warpfunctions\..*?WarpFunction\.(deriv|forward|inverse)"]
 
 nbsphinx_execute = "never"
 nbsphinx_thumbnails = {"examples/*": "_static/logo_circle.png"}
@@ -169,10 +171,13 @@ autodoc_custom_types.update(
         gpytorch.likelihoods.GaussianLikelihood: ":class:`~gpytorch.likelihoods.GaussianLikelihood`",
         gpytorch.distributions.Distribution: ":class:`~gpytorch.distributions.Distribution`",
         gpytorch.distributions.MultivariateNormal: ":class:`~gpytorch.distributions.MultivariateNormal`",
-        gpytorch.distributions.MultitaskMultivariateNormal: ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`",  # noqa: E501
+        gpytorch.distributions.MultitaskMultivariateNormal: (
+            ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`"
+        ),
         gpytorch.models.ExactGP: ":class:`~gpytorch.models.ExactGP`",
         gpytorch.module.Module: ":class:`~gpytorch.Module",
         gpytorch.constraints.Interval: ":class:`~gpytorch.constraints.Interval`",
+        # pylint: disable=protected-access
         gpytorch.variational._VariationalStrategy: ":class:`~gpytorch.variational._VariationalStrategy`",
         gpytorch.variational._VariationalDistribution: ":class:`~gpytorch.variational._VariationalDistribution`",
     }
@@ -218,7 +223,7 @@ def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Option
     return None
 
 
-def skip(app, what, name, obj, would_skip, options):
+def skip(app, what, name, obj, would_skip, options):  # pylint: disable=unused-argument
     """Ensure that __init__ files are NOT skipped."""
     if name == "__init__":
         return False

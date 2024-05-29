@@ -268,11 +268,12 @@ class HigherRankSyntheticDataset(Dataset):
         :param interval_length: Use to scale the exact image of the function, defaults to 1.
         :return: The output and the mean and standard deviation of the input, in the form ``(x_mean, x_std), y``.
         """
+        # pylint is getting a false positive from `reshape` twice here
         x_mean = np.linspace(0, interval_length, n_points)
-        x_mean = np.random.randn(n_points, 2, 2) + x_mean.reshape(-1, 1, 1)
+        x_mean = np.random.randn(n_points, 2, 2) + x_mean.reshape(-1, 1, 1)  # pylint: disable=too-many-function-args
 
         x_std = np.linspace(*input_noise_bounds, n_points)
-        x_std = np.ones((n_points, 2, 2)) + x_std.reshape(-1, 1, 1)
+        x_std = np.ones((n_points, 2, 2)) + x_std.reshape(-1, 1, 1)  # pylint: disable=too-many-function-args
 
         fixed_matrix = np.array([[1, 0.5], [0, 2]])
 

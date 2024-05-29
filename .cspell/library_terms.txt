@@ -137,8 +137,10 @@ tinycss
 toctree
 tril
 ttypes
+typecheck
 typehints
 unsrt
+vararg
 viewcode
 warpfunctions
 xlabel

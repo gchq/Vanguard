@@ -19,6 +19,7 @@ from vanguard.vanilla import GaussianGPController
 
 
 class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
+    # pylint: disable=abstract-method
     @classmethod
     def from_lazy_evaluated_kernel_tensor(cls: Type[Self], lazy_tensor: gpytorch.lazy.LazyTensor) -> Self:
         kernel = lazy_tensor.kernel
@@ -41,7 +42,7 @@ class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
 
 class HigherRankKernel(ScaledRBFKernel):
     def forward(
-        self, x1: torch.Tensor, x2: torch.Tensor, diag: bool = False, last_dim_is_batch: bool = False, **params: Any
+        self, x1: torch.Tensor, x2: torch.Tensor, last_dim_is_batch: bool = False, diag: bool = False, **params: Any
     ) -> torch.Tensor:
         return super().forward(
             x1.reshape(x1.shape[0], 4),
@@ -59,8 +60,8 @@ class HigherRankKernel(ScaledRBFKernel):
 
 
 class HigherRankMean(ConstantMean):
-    def forward(self, x: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
-        return super().forward(x.reshape(x.shape[0], 4), *args, **kwargs)
+    def forward(self, input: torch.Tensor) -> torch.Tensor:  # pylint: disable=redefined-builtin
+        return super().forward(input.reshape(input.shape[0], 4))
 
 
 @HigherRankFeatures(2)
@@ -94,5 +95,5 @@ class BasicTests(unittest.TestCase):
 
     def test_posterior_shape(self) -> None:
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
-        mean, lower, upper = posterior.confidence_interval()
+        mean, _, _ = posterior.confidence_interval()
         self.assertEqual(mean.shape, self.dataset.test_y.shape)

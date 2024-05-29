@@ -16,8 +16,6 @@ from vanguard.warps import SetWarp, warpfunctions
 class WarpedGaussianGPController(GaussianGPController):
     """Test class."""
 
-    pass
-
 
 class BasicTests(unittest.TestCase):
     """
@@ -37,6 +35,7 @@ class BasicTests(unittest.TestCase):
         """Should throw a TypeError."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
         try:
+            # pylint: disable=protected-access
             posterior._tensor_prediction()
         except TypeError as error:
             self.fail(f"Should not have thrown {type(error)}")
@@ -48,6 +47,7 @@ class BasicTests(unittest.TestCase):
         """Should throw a TypeError."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
         try:
+            # pylint: disable=protected-access
             posterior._tensor_prediction()
         except TypeError as error:
             self.fail(f"Should not have thrown {type(error)}")
@@ -59,6 +59,7 @@ class BasicTests(unittest.TestCase):
         """Internal and external predictions should be properly scaled."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
+        # pylint: disable=protected-access
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         external_median, external_upper, external_lower = posterior.confidence_interval(0.05)
 
@@ -80,6 +81,7 @@ class BasicTests(unittest.TestCase):
         """Internal and external predictions should be properly scaled."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
 
+        # pylint: disable=protected-access
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         external_median, external_upper, external_lower = posterior.confidence_interval(0.05)
 

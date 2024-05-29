@@ -147,6 +147,5 @@ class NormaliseY(Decorator):
             @staticmethod
             def warn_normalise_y():
                 """Override base warning because y normalisation has been applied."""
-                pass
 
         return InnerClass

@@ -220,6 +220,7 @@ class PositiveAffineWarpTests(unittest.TestCase):
                     self.test_a_b_points, x_values
                 )
 
+                # pylint: disable=protected-access
                 affine_constraint_points = warpfunctions.PositiveAffineWarpFunction._get_constraint_slopes(x_values)
                 in_boundary_for_two_points = self._get_points_in_boundary_of_feasible_region(
                     self.test_a_b_points, affine_constraint_points
@@ -229,6 +230,7 @@ class PositiveAffineWarpTests(unittest.TestCase):
     def test_feasible_region_no_points(self) -> None:
         """Should raise a ValueError."""
         with self.assertRaises(ValueError):
+            # pylint: disable=protected-access
             warpfunctions.PositiveAffineWarpFunction._get_constraint_slopes(np.array([]))
 
     @staticmethod

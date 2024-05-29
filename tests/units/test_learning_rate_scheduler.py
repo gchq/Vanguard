@@ -47,5 +47,8 @@ class BasicTests(unittest.TestCase):
         self.controller.fit(num_iters)
 
     def test_learning_rate_is_stepped(self) -> None:
+        # TODO: this does look like a _lot_ of protected accesses - review this test?
+        # https://github.com/gchq/Vanguard/issues/207
+        # pylint: disable=protected-access
         current_lr = self.controller._smart_optimiser._internal_optimiser._applied_scheduler.get_lr()[0]
         self.assertAlmostEqual(current_lr, self.expected_lr)

@@ -12,7 +12,10 @@ from ..hierarchical.base import BaseHierarchicalHyperparameters
 
 HyperparameterT = TypeVar("HyperparameterT", bound=BaseHierarchicalHyperparameters)
 ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)
-VariationalDistributionT = TypeVar("VariationalDistributionT", bound=gpytorch.variational._VariationalDistribution)
+VariationalDistributionT = TypeVar(
+    "VariationalDistributionT",
+    bound=gpytorch.variational._VariationalDistribution,  # pylint: disable=protected-access
+)
 
 
 class HyperparameterCollection:
@@ -81,7 +84,7 @@ class HyperparameterCollection:
         trace_term = torch.trace(sigma_0_inv @ sigma)
         mean_diff = mu_0 - mu
         mean_term = mean_diff.T @ sigma_0_inv @ mean_diff
-        det_term = torch.log(torch.linalg.det(sigma_0) / torch.linalg.det(sigma))
+        det_term = torch.log(torch.linalg.det(sigma_0) / torch.linalg.det(sigma))  # pylint: disable=not-callable
 
         return (trace_term + mean_term + det_term - mu.shape[0]) / 2
 
