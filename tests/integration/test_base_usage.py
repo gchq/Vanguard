@@ -67,8 +67,8 @@ class VanguardTestCase(unittest.TestCase):
 
         # Get predictions from the controller object
         posterior = gp.predictive_likelihood(x)
-        prediction_means, prediction_covariances = posterior.prediction()
-        prediction_ci_median, prediction_ci_lower, prediction_ci_upper = posterior.confidence_interval(
+        prediction_means, _prediction_covariances = posterior.prediction()
+        _prediction_ci_median, prediction_ci_lower, prediction_ci_upper = posterior.confidence_interval(
             alpha=self.confidence_interval_alpha
         )
 
