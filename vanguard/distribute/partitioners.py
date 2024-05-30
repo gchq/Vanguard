@@ -18,9 +18,9 @@ from sklearn.manifold import TSNE
 
 
 # TODO: should this be an abstract base class?
-# https://github.com/gchq/Vanguard/issues/198 (TEMPORARY)
+# https://github.com/gchq/Vanguard/issues/198
 # TODO: Should we make BasePartitioner generic in the NDArray dtype?
-# https://github.com/gchq/Vanguard/issues/198 (TEMPORARY)
+# https://github.com/gchq/Vanguard/issues/198
 class BasePartitioner:
     """
     Generate a partition over index space using various methods. All partitioners should inherit from this class.
@@ -80,7 +80,7 @@ class BasePartitioner:
         :return partition: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
         # TODO: should this be an abstract method?
-        # https://github.com/gchq/Vanguard/issues/197 (TEMPORARY)
+        # https://github.com/gchq/Vanguard/issues/198
         raise NotImplementedError
 
     def _create_cluster_communication_partition(self) -> List[List[int]]:
