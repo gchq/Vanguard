@@ -58,6 +58,8 @@ version = "v" + vanguard.__version__
 
 show_warning_types = True
 suppress_warnings = ["config.cache"]  # TODO: Remove this if/when Sphinx fix the caching issue
+# https://github.com/gchq/Vanguard/issues/196
+
 
 extensions = [
     "sphinx.ext.coverage",
@@ -101,6 +103,7 @@ autodoc_mock_imports = ["pandas", "sklearn_extra"]
 
 intersphinx_mapping = {
     "gpytorch": ("https://docs.gpytorch.ai/en/v1.8.1/", None),  # TODO: Bump this when updating gpytorch
+    # https://github.com/gchq/Vanguard/issues/197
     "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
@@ -114,7 +117,9 @@ nitpicky_ignore_mapping: Dict[str, List[str]] = {
     "py:class": [
         "torch.Size",
         "gpytorch.distributions.multivariate_normal.MultivariateNormal",  # TODO: Remove when bumping gpytorch
+        # https://github.com/gchq/Vanguard/issues/197
         "gpytorch.likelihoods.likelihood.Likelihood",  # TODO: Remove when bumping gpytorch
+        # https://github.com/gchq/Vanguard/issues/197
     ],
     "py:meth": [
         "activate",
@@ -163,6 +168,7 @@ autodoc_custom_types: dict[TypeAlias, str] = {
 
 
 # TODO: Remove these when gpytorch is sufficiently bumped:
+# https://github.com/gchq/Vanguard/issues/197
 autodoc_custom_types.update(
     {
         gpytorch.means.Mean: ":class:`~gpytorch.means.Mean`",

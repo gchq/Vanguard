@@ -245,11 +245,13 @@ class Parameters:
         self.priority_value = value
 
     def __lt__(self, other: "Parameters") -> bool:
-        # TODO: this should check whether `isinstance(other, Parameters)` and if not return `NotImplemented`
+        if not isinstance(other, Parameters):
+            return NotImplemented
         return self.priority_value < other.priority_value
 
     def __eq__(self, other: "Parameters") -> bool:
-        # TODO: as for __lt__ above
+        if not isinstance(other, Parameters):
+            return NotImplemented
         return self.priority_value == other.priority_value
 
     @staticmethod

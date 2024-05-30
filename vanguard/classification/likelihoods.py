@@ -57,6 +57,7 @@ class MultitaskBernoulliLikelihood(BernoulliLikelihood):
     ):
         """Compute the log probability sum summing the log probabilities over the tasks."""
         # TODO: investigate why this works/why it's been missed that it doesn't work?
+        # https://github.com/gchq/Vanguard/issues/218
         # pylint: disable=no-member
         return super().log_prob(observations, function_dist, *args, **kwargs).sum(dim=-1)
 

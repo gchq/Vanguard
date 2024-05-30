@@ -43,7 +43,8 @@ class PartitionTests(unittest.TestCase):
         }
 
     @unittest.skip  # TODO: fix test; appears to be multiple issues
-    def test_output_results(self):
+    # https://github.com/gchq/Vanguard/issues/72
+    def test_output_results(self) -> None:
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
@@ -59,7 +60,8 @@ class PartitionTests(unittest.TestCase):
                 self.assertListEqual(expected_partition, observed_partition)
 
     @unittest.skip  # TODO: fix test; appears to be multiple issues
-    def test_output_results_with_communication(self):
+    # https://github.com/gchq/Vanguard/issues/72
+    def test_output_results_with_communication(self) -> None:
         """Partitions should be the same."""
         for partitioner_class, expected_partition in self.expected_communication_partition_results.items():
             with self.subTest(partitioner_class=partitioner_class.__name__):
