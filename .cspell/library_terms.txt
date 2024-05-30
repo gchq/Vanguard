@@ -126,6 +126,7 @@ relazifying
 rpds
 rsample
 seealso
+setdiff
 setuptools
 sklearn
 sphinxcontrib
