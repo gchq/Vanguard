@@ -6,6 +6,7 @@ import inspect
 import unittest
 from typing import Any, Type, TypeVar, Union
 
+from tests.cases import VanguardTestCase
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, errors, process_args, wraps_class
 
@@ -196,7 +197,7 @@ class AttributeTests(unittest.TestCase):
             self.fail("Wrapped class does not have '__wrapped__' attribute.")
 
 
-class TestErrorsWhenOverwriting(unittest.TestCase):
+class TestErrorsWhenOverwriting(VanguardTestCase):
     """
     Testing breaking the decorator by overwriting or extending.
     """
@@ -274,24 +275,13 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
     def test_overwrite_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
-        try:
-            # TODO: This seems like an overly verbose method of doing things, and counter to what assertWarns is
-            #  meant to do. Use `warnings.catch_warnings(record=True)` and check nothing was caught instead.
-            # https://github.com/gchq/Vanguard/issues/220
-            with self.assertWarns(errors.OverwrittenMethodWarning):
+        with self.assertNotWarns(errors.OverwrittenMethodWarning):
 
-                @self.SquareResult(ignore_methods=("add_5",))
-                class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                    """
-                    Declaring this class should raise a warning.
-                    """
-
-        except AssertionError:
-            pass
-        except errors.OverwrittenMethodError as error:
-            self.fail(f"Should not have thrown error: {error!s}")
-        else:
-            self.fail("Should not have thrown warning.")
+            @self.SquareResult(ignore_methods=("add_5",))
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
+                """
+                Declaring this class should not raise OverwrittenMethodWarning.
+                """
 
     def test_unexpected_method_with_raise(self) -> None:
         """Test that creating a new method throws an error instead."""
@@ -323,23 +313,16 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
     def test_unexpected_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
-        try:
-            with self.assertWarns(errors.UnexpectedMethodWarning):
+        with self.assertNotWarns(errors.UnexpectedMethodWarning):
 
-                @self.SquareResult(ignore_methods=["something_new"])
-                class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                    """
-                    Declaring this class should raise a warning.
-                    """
+            @self.SquareResult(ignore_methods=["something_new"])
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
+                """
+                Declaring this class should not raise UnexpectedMethodWarning.
+                """
 
-                    def something_new(self) -> None:
-                        pass
-        except AssertionError:
-            pass
-        except errors.UnexpectedMethodError as error:
-            self.fail(f"Should not have thrown error: {error!s}")
-        else:
-            self.fail("Should not have thrown warning.")
+                def something_new(self) -> None:
+                    pass
 
     def test_overwrite_method_with_superclass_subclass_wrong(self) -> None:
         """Warning should reference the SUBCLASS."""
