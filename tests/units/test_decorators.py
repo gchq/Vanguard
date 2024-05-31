@@ -283,6 +283,9 @@ class TestErrorsWhenOverwriting(VanguardTestCase):
                 Declaring this class should not raise OverwrittenMethodWarning.
                 """
 
+                def add_5(self) -> Union[int, float]:
+                    return super().add_5() + 1
+
     def test_unexpected_method_with_raise(self) -> None:
         """Test that creating a new method throws an error instead."""
         expected_error_message = "The class 'NewNumber' has added the following unexpected methods: {'something_new'}."
