@@ -51,7 +51,7 @@ class MetricsTracker:
     def __init__(
         self,
         *metrics: Callable,
-    ):
+    ) -> None:
         """
         Initialise self.
 

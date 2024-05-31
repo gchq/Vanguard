@@ -16,7 +16,7 @@ class BatchScaledRBFKernel(ScaleKernel):
     The recommended starting place for a kernel.
     """
 
-    def __init__(self, batch_shape: torch.Size):
+    def __init__(self, batch_shape: torch.Size) -> None:
         batch_shape = batch_shape if isinstance(batch_shape, torch.Size) else torch.Size([batch_shape])
         super().__init__(RBFKernel(batch_shape=batch_shape), batch_shape=batch_shape)
 

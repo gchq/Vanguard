@@ -1,7 +1,8 @@
 """
 The :class:`NormaliseY` decorator will scale the y-inputs to a unit normal distribution.
 """
-from typing import Tuple, Type, TypeVar
+
+from typing import Any, Tuple, Type, TypeVar
 
 import numpy as np
 import torch
@@ -47,7 +48,7 @@ class NormaliseY(Decorator):
         tensor([[-1.0000, -0.7143,  0.1429,  1.5714]])
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initialise self.
 

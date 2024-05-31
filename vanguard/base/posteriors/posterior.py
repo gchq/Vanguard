@@ -29,8 +29,8 @@ class Posterior:
 
     def __init__(
         self,
-        distribution: gpytorch.distributions.Distribution,
-    ):
+        distribution: gpytorch.distributions.MultivariateNormal,
+    ) -> None:
         """Initialise self."""
         self.distribution = self._add_jitter(distribution)
 
@@ -191,7 +191,7 @@ class Posterior:
         """
         return self.distribution.rsample(sample_shape=sample_shape)
 
-    def _tensor_sample_condensed(self, sample_shape=torch.Size()) -> torch.Tensor:
+    def _tensor_sample_condensed(self, sample_shape: torch.Size = torch.Size()) -> torch.Tensor:
         """
         Return samples from the condensed distribution as a tensor.
 

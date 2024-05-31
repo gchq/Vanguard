@@ -117,7 +117,7 @@ class BaseGPController:
         optimiser_class: Type[torch.optim.Optimizer],
         smart_optimiser_class: Type[SmartOptimiser],
         **kwargs,
-    ):
+    ) -> None:
         """Initialise self."""
         if train_x.ndim == 1:
             self.train_x = torch.tensor(train_x, dtype=self.dtype, device="cpu").unsqueeze(1)

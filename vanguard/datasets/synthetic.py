@@ -55,7 +55,7 @@ class SyntheticDataset(Dataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -134,7 +134,7 @@ class MultidimensionalSyntheticDataset(Dataset):
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f, complicated_f),
         **kwargs: Unpack[_SyntheticDataParams],
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -181,7 +181,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -222,7 +222,7 @@ class HigherRankSyntheticDataset(Dataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
-    ):
+    ) -> None:
         """
         Initialise self.
 

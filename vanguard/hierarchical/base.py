@@ -30,7 +30,7 @@ class BaseHierarchicalHyperparameters(Decorator):
     for Bayesian inference. The remaining hyperparameters will be inferred as point estimates.
     """
 
-    def __init__(self, num_mc_samples: int = 100, **kwargs: Any):
+    def __init__(self, num_mc_samples: int = 100, **kwargs: Any) -> None:
         """
         Initialise self.
 

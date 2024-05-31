@@ -27,7 +27,7 @@ class BinaryStripeClassificationDataset(Dataset):
         plt.show()
     """
 
-    def __init__(self, num_train_points: int, num_test_points: int):
+    def __init__(self, num_train_points: int, num_test_points: int) -> None:
         """
         Initialise self.
 
@@ -68,7 +68,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         num_classes: int,
         covariance_scale: float = 1.0,
         seed: Optional[int] = None,
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -180,7 +180,7 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
 
     def __init__(
         self, num_train_points: int, num_test_points: int, covariance_scale: float = 1.0, seed: Optional[int] = None
-    ):
+    ) -> None:
         """
         Initialise self.
 

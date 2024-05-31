@@ -16,7 +16,7 @@ class DummyDecorator1(Decorator):
     A dummy decorator used for testing.
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -34,7 +34,7 @@ class DummyDecorator2(Decorator):
     A dummy decorator used for testing.
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -139,7 +139,7 @@ class AttributeTests(unittest.TestCase):
             Square the result of a SimpleNumber class.
             """
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
             def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -149,7 +149,7 @@ class AttributeTests(unittest.TestCase):
                     A wrapper for normalising y inputs and variance.
                     """
 
-                    def __init__(self, *args: Any, **kwargs: Any):
+                    def __init__(self, *args: Any, **kwargs: Any) -> None:
                         """Inner initialisation."""
                         super().__init__(*args, **kwargs)
 

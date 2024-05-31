@@ -2,7 +2,9 @@
 Contains the _StoreInitValues metaclass.
 """
 import inspect
+from typing import Any, Type, TypeVar
 
+T = TypeVar('T')
 
 class _StoreInitValues(type):
     """
@@ -12,7 +14,7 @@ class _StoreInitValues(type):
     will be stored in the :attr:`_init_params` attribute.
     """
 
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls: Type[T], *args: Any, **kwargs: Any) -> Type[T]:
         instance = super().__call__(*args, **kwargs)
         init_signature = inspect.signature(instance.__init__)
         init_params_as_kwargs = init_signature.bind_partial(*args, **kwargs).arguments

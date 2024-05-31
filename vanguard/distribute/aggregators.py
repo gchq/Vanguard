@@ -19,7 +19,7 @@ class BaseAggregator:
     All aggregators should inherit from this class.
     """
 
-    def __init__(self, means: List[torch.Tensor], covars: List[torch.Tensor], prior_var: Optional[torch.Tensor] = None):
+    def __init__(self, means: List[torch.Tensor], covars: List[torch.Tensor], prior_var: Optional[torch.Tensor] = None) -> None:
         """
         Initialise self.
 

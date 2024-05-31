@@ -19,7 +19,7 @@ class LearningRateFinder:
     the best learning rate (i.e. the largest learning rate giving stable training).
     """
 
-    def __init__(self, controller: "GPController"):
+    def __init__(self, controller: "GPController") -> None:
         """
         Initialise self.
 

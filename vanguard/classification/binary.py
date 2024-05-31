@@ -1,7 +1,7 @@
 """
 Contains the BinaryClassification decorator.
 """
-from typing import Tuple, Type, TypeVar, Union
+from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -65,7 +65,7 @@ class BinaryClassification(Decorator):
         array([0, 1])
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -80,7 +80,7 @@ class BinaryClassification(Decorator):
             A wrapper for implementing binary classification.
             """
 
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 

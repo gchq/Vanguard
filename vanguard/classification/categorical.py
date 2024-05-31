@@ -1,7 +1,8 @@
 """
 Contains the CategoricalClassification decorator.
 """
-from typing import Tuple, Type, TypeVar, Union
+
+from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -58,7 +59,7 @@ class CategoricalClassification(Decorator):
         array([0, 2])
     """
 
-    def __init__(self, num_classes: int, **kwargs):
+    def __init__(self, num_classes: int, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -116,6 +117,7 @@ class CategoricalClassification(Decorator):
                 """
                 probs = posterior.distribution.probs.detach().cpu().numpy()
                 if probs.ndim == 3:
+                    # TODO: unsure why this is here? Document this
                     probs = probs.mean(0)
                 normalised_probs = probs / probs.sum(axis=-1).reshape((-1, 1))
                 prediction = np.argmax(normalised_probs, axis=1)

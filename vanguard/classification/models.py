@@ -19,7 +19,7 @@ class DummyKernelDistribution:
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
 
-    def __init__(self, labels: torch.Tensor, kernel: torch.Tensor):
+    def __init__(self, labels: torch.Tensor, kernel: torch.Tensor) -> None:
         """
         Initialise self.
 
@@ -51,7 +51,7 @@ class InertKernelModel(ExactGPModel):
         mean_module: gpytorch.means.Mean,
         likelihood: gpytorch.likelihoods.Likelihood,
         num_classes: int,
-    ):
+    ) -> None:
         """
         Initialise self.
 

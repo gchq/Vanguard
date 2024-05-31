@@ -2,7 +2,7 @@
 Contains the Distributed decorator.
 """
 import warnings
-from typing import Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -58,8 +58,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         seed: Optional[int] = 42,
         aggregator_class: Type[BaseAggregator] = RBCMAggregator,
         partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise self.
 
@@ -98,7 +98,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
             _y_batch_axis = 0
 
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 

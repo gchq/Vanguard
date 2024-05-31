@@ -30,7 +30,7 @@ class Dataset:
         test_y: NDArray[np.floating],
         test_y_std: Union[float, NDArray[np.floating]],
         significance: float,
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -121,7 +121,7 @@ class EmptyDataset(Dataset):
     Represents an empty dataset.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialise self.
         """

@@ -26,7 +26,7 @@ class MonteCarloPosteriorCollection(Posterior):
 
     INITIAL_NUMBER_OF_SAMPLES: int = 100
 
-    def __init__(self, posterior_generator: Generator[Posterior, None, None]):
+    def __init__(self, posterior_generator: Generator[Posterior, None, None]) -> None:
         """Initialise self."""
         self._posterior_generator = posterior_generator
         self._posteriors_skipped = 0

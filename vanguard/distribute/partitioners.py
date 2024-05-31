@@ -25,7 +25,7 @@ class BasePartitioner:
 
     def __init__(
         self, train_x: NDArray[np.floating], n_experts: int = 3, communication: bool = False, seed: Optional[int] = 42
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -164,7 +164,7 @@ class KMedoidsPartitioner(BasePartitioner):
         n_experts: int = 2,
         communication: bool = False,
         seed: Optional[int] = 42,
-    ):
+    ) -> None:
         """
         Initialise self.
 
