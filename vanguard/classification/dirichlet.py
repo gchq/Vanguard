@@ -66,7 +66,8 @@ class DirichletMulticlassClassification(Decorator):
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
-            A wrapper for implementing variational inference.
+            A wrapper for implementing multiclass GP classification using a Dirichlet
+            transformation.
             """
 
             _y_batch_axis = 1
