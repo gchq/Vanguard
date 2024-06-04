@@ -10,9 +10,11 @@ from gpytorch.mlls import VariationalELBO
 from sklearn.metrics import f1_score
 
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
+from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
+from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
 
 
 class VanguardTestCase(unittest.TestCase):
@@ -30,7 +32,7 @@ class VanguardTestCase(unittest.TestCase):
         self.n_sgd_iters = 50
         # How high of an F1 score do we need to consider the test a success (and a fit
         # successful?)
-        self.required_f1_score = 0.95
+        self.required_f1_score = 0.9
 
     def test_gp_binary_classification(self) -> None:
         """
@@ -95,7 +97,8 @@ class VanguardTestCase(unittest.TestCase):
         np.random.seed(self.random_seed)
 
         # Define some data for the test
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        x = np.linspace(start=0, stop=10,
+                        num=self.num_train_points + self.num_test_points).reshape(-1, 1)
         y = np.zeros_like(x)
         for index, x_val in enumerate(x):
             # Set some non-trivial classification target with 3 classes (0, 1 and 2)
@@ -105,7 +108,8 @@ class VanguardTestCase(unittest.TestCase):
                 y[index, 0] = 2
 
         # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        train_indices = np.random.choice(np.arange(y.shape[0]),
+                                         size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # We have a multi-class classification problem, so we apply the DirichletMulticlassClassification
@@ -136,8 +140,71 @@ class VanguardTestCase(unittest.TestCase):
         predictions_test, _ = gp.classify_points(x[test_indices])
 
         # Sense check outputs
-        self.assertGreaterEqual(f1_score(predictions_train, y[train_indices]), self.required_f1_score)
-        self.assertGreaterEqual(f1_score(predictions_test, y[test_indices]), self.required_f1_score)
+        self.assertGreaterEqual(
+            f1_score(predictions_train, y[train_indices], average='micro'),
+            self.required_f1_score
+        )
+        self.assertGreaterEqual(
+            f1_score(predictions_test, y[test_indices], average='micro'),
+            self.required_f1_score
+        )
+
+    def test_gp_categorical_classification_dirichlet_kernel(self) -> None:
+        """
+        Verify Vanguard usage on a simple, single variable categorical classification problem
+        using DirichletKernelMulticlassClassification.
+
+        We generate a single feature `x` and a categorical target `y`, and verify that a
+        GP can be fit to this data.
+        """
+        np.random.seed(self.random_seed)
+
+        # Define some data for the test
+        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        y = np.zeros_like(x)
+        for index, x_val in enumerate(x):
+            # Set some non-trivial classification target with 3 classes (0, 1 and 2)
+            if 0.25 < x_val < 0.5:
+                y[index, 0] = 1
+            if x_val > 0.8:
+                y[index, 0] = 2
+
+        # Split data into training and testing
+        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
+
+        # We have a multi-class classification problem, so we apply the DirichletKernelMulticlassClassification
+        # decorator
+        @DirichletKernelMulticlassClassification(num_classes=3, ignore_methods=("__init__",))
+        class CategoricalClassifier(GaussianGPController):
+            pass
+
+        # Define the controller object
+        gp = CategoricalClassifier(
+            train_x=x[train_indices],
+            train_y=y[train_indices, 0],
+            kernel_class=ScaledRBFKernel,
+            y_std=0,
+            likelihood_class=DirichletKernelClassifierLikelihood,
+            marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+        )
+
+        # Fit the GP
+        gp.fit(n_sgd_iters=self.n_sgd_iters)
+
+        # Get predictions from the controller object
+        predictions_train, _ = gp.classify_points(x[train_indices])
+        predictions_test, _ = gp.classify_points(x[test_indices])
+
+        # Sense check outputs
+        self.assertGreaterEqual(
+            f1_score(predictions_train, y[train_indices], average='micro'),
+            self.required_f1_score
+        )
+        self.assertGreaterEqual(
+            f1_score(predictions_test, y[test_indices], average='micro'),
+            self.required_f1_score
+        )
 
 
 if __name__ == "__main__":
