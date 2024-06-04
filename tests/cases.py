@@ -2,9 +2,11 @@
 Contains test cases for Vanguard testing.
 """
 
+import contextlib
 import unittest
+import warnings
 from functools import wraps
-from typing import Callable, Tuple, TypeVar, Union
+from typing import Callable, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -64,6 +66,18 @@ class VanguardTestCase(unittest.TestCase):
             upper = mu + std_dev * sig_fac
         lower = mu - std_dev * sig_fac
         return lower, upper
+
+    # Ignore invalid-name: we're conforming to the unittest name scheme here, so using camelCase
+    @contextlib.contextmanager
+    def assertNotWarns(self, expected_warning_type: Type[Warning] = Warning) -> None:  # pylint: disable=invalid-name
+        """Assert that enclosed code raises no warnings, or no warnings of a given type."""
+        with warnings.catch_warnings(record=True) as ws:
+            yield
+
+        ws = list(filter(lambda w: issubclass(w.category, expected_warning_type), ws))
+
+        if len(ws) > 0:
+            self.fail(f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}")
 
 
 class FlakyTestError(AssertionError):
