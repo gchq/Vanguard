@@ -11,10 +11,10 @@ from sklearn.metrics import f1_score
 
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
+from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
-from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
 
 
 class VanguardTestCase(unittest.TestCase):
@@ -97,8 +97,7 @@ class VanguardTestCase(unittest.TestCase):
         np.random.seed(self.random_seed)
 
         # Define some data for the test
-        x = np.linspace(start=0, stop=10,
-                        num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
         y = np.zeros_like(x)
         for index, x_val in enumerate(x):
             # Set some non-trivial classification target with 3 classes (0, 1 and 2)
@@ -108,8 +107,7 @@ class VanguardTestCase(unittest.TestCase):
                 y[index, 0] = 2
 
         # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]),
-                                         size=self.num_train_points, replace=False)
+        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # We have a multi-class classification problem, so we apply the DirichletMulticlassClassification
@@ -140,14 +138,8 @@ class VanguardTestCase(unittest.TestCase):
         predictions_test, _ = gp.classify_points(x[test_indices])
 
         # Sense check outputs
-        self.assertGreaterEqual(
-            f1_score(predictions_train, y[train_indices], average='micro'),
-            self.required_f1_score
-        )
-        self.assertGreaterEqual(
-            f1_score(predictions_test, y[test_indices], average='micro'),
-            self.required_f1_score
-        )
+        self.assertGreaterEqual(f1_score(predictions_train, y[train_indices], average="micro"), self.required_f1_score)
+        self.assertGreaterEqual(f1_score(predictions_test, y[test_indices], average="micro"), self.required_f1_score)
 
     def test_gp_categorical_classification_dirichlet_kernel(self) -> None:
         """
@@ -197,14 +189,8 @@ class VanguardTestCase(unittest.TestCase):
         predictions_test, _ = gp.classify_points(x[test_indices])
 
         # Sense check outputs
-        self.assertGreaterEqual(
-            f1_score(predictions_train, y[train_indices], average='micro'),
-            self.required_f1_score
-        )
-        self.assertGreaterEqual(
-            f1_score(predictions_test, y[test_indices], average='micro'),
-            self.required_f1_score
-        )
+        self.assertGreaterEqual(f1_score(predictions_train, y[train_indices], average="micro"), self.required_f1_score)
+        self.assertGreaterEqual(f1_score(predictions_test, y[test_indices], average="micro"), self.required_f1_score)
 
 
 if __name__ == "__main__":
