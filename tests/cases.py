@@ -67,7 +67,7 @@ class VanguardTestCase(unittest.TestCase):
         lower = mu - std_dev * sig_fac
         return lower, upper
 
-    # ignore invalid-name: we're conforming to the unittest name scheme here, so using camelCase
+    # Ignore invalid-name: we're conforming to the unittest name scheme here, so using camelCase
     @contextlib.contextmanager
     def assertNotWarns(self, expected_warning_type: Type[Warning] = Warning) -> None:  # pylint: disable=invalid-name
         """Assert that enclosed code raises no warnings, or no warnings of a given type."""
