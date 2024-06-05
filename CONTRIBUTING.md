@@ -91,13 +91,13 @@ manual implementation by authors and reviewers. Conversely, further style points
 are not documented here are enforced by pre-commit hooks; it is unlikely that authors
 need to be aware of them.
 
-### Style Guide
+## Style Guide
 
  - Vanguard is formatted using the [Ruff formatter][ruff], and is linted by both the [Ruff linter][ruff] and [Pylint][pylint].
  - Vanguard should be compatible with the supported Python versions listed in the README.
  - Avoid inline comments; a combination of good docstrings and self-documenting code is preferred.
  - Follow [PEP8][pep-8] style where possible.
- - Use clear naming of variables rather than mathematical shorthand (e.g. kernel instead of k).
+ - Use clear naming of variables rather than mathematical shorthand (e.g. `kernel` instead of `k`).
  - Type annotations must be used for all function or method parameters.
 
 Please note some Vanguard "specifics":
