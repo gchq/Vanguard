@@ -43,8 +43,10 @@ class DirichletMulticlassClassification(Decorator):
         >>> train_x = np.array([0, 0.1, 0.45, 0.55, 0.9, 1])
         >>> train_y = np.array([0, 0, 1, 1, 2, 2])
         >>>
-        >>> gp = MulticlassClassifier(train_x, train_y, Kernel, y_std=0,
-        ...                           likelihood_class=DirichletClassificationLikelihood)
+        >>> gp = MulticlassClassifier(
+        ...     train_x, train_y, Kernel, y_std=0, likelihood_class=DirichletClassificationLikelihood,
+        ...     mean_kwargs={"batch_shape": (3,)}, kernel_kwargs={"batch_shape": (3,)}
+        ... )
         >>> loss = gp.fit(100)
         >>>
         >>> test_x = np.array([0.05, 0.5, 0.95])
