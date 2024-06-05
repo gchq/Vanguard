@@ -1,3 +1,5 @@
+"""Tests for the InertKernelModel."""
+
 from unittest import TestCase
 
 import torch
@@ -11,6 +13,7 @@ from vanguard.classification.models import InertKernelModel
 
 class TestInertKernelModelFailures(TestCase):
     def test_train_fails_with_no_data(self):
+        """Test that model training fails if no training inputs are provided."""
         model = InertKernelModel(
             train_inputs=None,
             train_targets=None,
@@ -30,6 +33,7 @@ class TestInertKernelModelFailures(TestCase):
         )
 
     def test_illegal_train_inputs(self):
+        """Test that model training fails if training inputs are of an illegal type."""
         with self.assertRaises(TypeError) as ctx:
             _ = InertKernelModel(
                 train_inputs=[1, 2, 3],  # type: ignore
@@ -59,6 +63,7 @@ class TestInertKernelModel(TestCase):
         )
 
     def test_train_fails_in_debug_if_input_is_not_train_input(self):
+        """Test that, when in debug mode, training fails if inputs other than the training inputs are provided."""
         other_input = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 
         with self.assertRaises(RuntimeError) as ctx:
@@ -68,7 +73,8 @@ class TestInertKernelModel(TestCase):
 
         self.assertEqual("You must train on the training inputs!", ctx.exception.args[0])
 
-    def test_train_warns_in_debug_if_forget_to_call_train(self):
+    def test_using_training_data_outside_train_mode_warns_in_debug_if_forget_to_call_train(self):
+        """Test that, when in debug mode, calling the model with the training data raises an appropriate warning."""
         with self.assertWarns(
             GPInputWarning, msg="The input matches the stored training data. Did you forget to call model.train()?"
         ):
