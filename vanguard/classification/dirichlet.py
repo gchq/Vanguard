@@ -45,7 +45,7 @@ class DirichletMulticlassClassification(Decorator):
         >>>
         >>> gp = MulticlassClassifier(
         ...     train_x, train_y, Kernel, y_std=0, likelihood_class=DirichletClassificationLikelihood,
-        ...     mean_kwargs={"batch_shape": (3,)}, kernel_kwargs={"batch_shape": (3,)}
+        ...     kernel_kwargs={"batch_shape": (3,)}
         ... )
         >>> loss = gp.fit(100)
         >>>
