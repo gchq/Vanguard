@@ -64,8 +64,7 @@ class MulticlassTests(ClassificationTestCase):
 
         self.assertEqual(
             "The class passed to `likelihood_class` must be a subclass "
-            f"of {DirichletClassificationLikelihood.__name__} for binary classification.",
-            # TODO should this say "multiclass classification" instead?
+            f"of {DirichletClassificationLikelihood.__name__} for multiclass classification.",
             ctx.exception.args[0],
         )
 

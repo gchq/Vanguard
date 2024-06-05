@@ -118,6 +118,7 @@ class CategoricalClassification(Decorator):
                 probs: numpy.typing.NDArray = posterior.distribution.probs.detach().cpu().numpy()
                 if probs.ndim == 3:
                     # TODO: unsure why this is here? Document this
+                    # https://github.com/gchq/Vanguard/issues/234
                     probs = probs.mean(0)
                 normalised_probs = probs / probs.sum(axis=-1).reshape((-1, 1))
                 prediction = np.argmax(normalised_probs, axis=1)

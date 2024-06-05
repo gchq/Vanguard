@@ -46,6 +46,8 @@ class MulticlassTests(ClassificationTestCase):
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
 
+    # TODO: This test gets stuck in an infinite loop in in MonteCarloPosteriorCollection._yield_posteriors.
+    # https://github.com/gchq/Vanguard/issues/189
     @skip("Currently hangs - gets stuck in an infinite loop in MonteCarloPosteriorCollection._yield_posteriors")
     @flaky
     def test_fuzzy_predictions(self) -> None:
