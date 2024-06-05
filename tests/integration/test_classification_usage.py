@@ -116,17 +116,13 @@ class VanguardTestCase(unittest.TestCase):
         class CategoricalClassifier(GaussianGPController):
             pass
 
-        # TODO: This currently fails, is it a python version issue or a Vanguard issue?
-        #   Note that if we use the example directly from the decorator definition:
-        #   train_x=np.array([0, 0.1, 0.45, 0.55, 0.9, 1]),
-        #   train_y=np.array([0, 0, 1, 1, 2, 2]),
-        #   We get the same error, so this might be an issue with the underlying code
         # Define the controller object
         gp = CategoricalClassifier(
             train_x=x[train_indices],
             train_y=y[train_indices, 0],
             kernel_class=ScaledRBFKernel,
             y_std=0,
+            kernel_kwargs={"batch_shape": (3,)},
             likelihood_class=DirichletClassificationLikelihood,
         )
 
