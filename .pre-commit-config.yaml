@@ -111,15 +111,15 @@ repos:
         entry: python pre_commit_hooks/markdown_cells.py
         language: python
         additional_dependencies: ["nbformat"]
-#      - id: pylint
-#        name: pylint
-#        description: Run Pylint static analysis
-#        entry: pylint
-#        language: system
-#        types:
-#          - python
-#        args:
-#          - "-rn" # Only display messages
-#          - "-sn" # Don't display the score
-#          - "--rcfile=.pylintrc" # pylint configuration file
-#        exclude: "documentation/source/snippets"
+      - id: pylint
+        name: pylint
+        description: Run Pylint static analysis
+        entry: pylint
+        language: system
+        types:
+          - python
+        args:
+          - "-rn" # Only display messages
+          - "-sn" # Don't display the score
+          - "--rcfile=.pylintrc" # pylint configuration file
+        exclude: "documentation/source/snippets"

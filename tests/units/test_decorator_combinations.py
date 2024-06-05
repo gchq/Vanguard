@@ -35,8 +35,6 @@ ControllerT = TypeVar("ControllerT", bound=GPController)
 class TestHierarchicalKernel(RBFKernel):
     """A kernel to test Bayesian hierarchical hyperparameters"""
 
-    pass
-
 
 DECORATORS = {
     BinaryClassification: {
@@ -122,6 +120,9 @@ class CombinationTests(unittest.TestCase):
     """
 
     def test_combinations(self) -> None:
+        # pylint: disable=broad-exception-caught
+        # If/when these tests are upgraded to use pytest, we can just let the exceptions be raised, rather than
+        # explicitly transforming them into test failures.
         """Shouldn't throw any errors."""
         for upper_decorator, lower_decorator, controller_kwargs, dataset in self._yield_initialised_decorators():
             with self.subTest(upper=type(upper_decorator).__name__, lower=type(lower_decorator).__name__):
@@ -155,7 +156,9 @@ class CombinationTests(unittest.TestCase):
                     except KeyError:
                         self.fail(f"Could not train: {error}")
 
-                    if type(error) != expected_error_class:
+                    if type(error) != expected_error_class:  # pylint: disable=unidiomatic-typecheck
+                        # using type() here rather than isinstance() as we do specifically want the given error class
+                        # and not some subclass
                         self.fail(f"Expected {expected_error_class} but got: {error}")
                     elif not re.match(expected_error_message, str(error)):
                         self.fail(f"Expected error with the message {expected_error_message!r} but got: {error}")

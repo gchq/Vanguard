@@ -43,8 +43,8 @@ class NotebookMetaClass(type):
                 avoid unexpected behaviours which occur when using non-local
                 loop variables within a new function.
                 """
-                notebook_path = self.tests_to_notebook_paths[self._testMethodName]
-                self._test_notebook(notebook_path)
+                notebook_path = self.tests_to_notebook_paths[self._testMethodName]  # pylint: disable=protected-access
+                self._test_notebook(notebook_path)  # pylint: disable=protected-access
 
             inner_test.__name__ = test_name
             inner_test.__qualname__ = ".".join((cls.__qualname__, test_name))
@@ -64,9 +64,9 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
         self.processor = ExecutePreprocessor(timeout=TIMEOUT, allow_errors=True)
         self.save_notebook_outputs = os.environ.get("SAVE_NOTEBOOK_OUTPUT", False)
 
-    def _test_notebook(self, notebook_path: str) -> None:
+    def _test_notebook(self, notebook_path: str, encoding: str = "utf8") -> None:
         """No errors should be thrown."""
-        with open(notebook_path) as rf:
+        with open(notebook_path, encoding=encoding) as rf:
             notebook = nbformat.read(rf, as_version=4)
 
         self.processor.preprocess(notebook)
@@ -76,7 +76,7 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
                 self._verify_cell_outputs(cell_no, cell)
 
         if self.save_notebook_outputs:
-            with open(notebook_path, "w") as wf:
+            with open(notebook_path, "w", encoding=encoding) as wf:
                 nbformat.write(notebook, wf, version=4)
 
     def _verify_cell_outputs(self, cell_no: int, cell: nbformat.notebooknode.NotebookNode) -> None:

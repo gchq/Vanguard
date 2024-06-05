@@ -6,6 +6,7 @@ import inspect
 import unittest
 from typing import Any, Type, TypeVar, Union
 
+from tests.cases import VanguardTestCase
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, errors, process_args, wraps_class
 
@@ -25,8 +26,6 @@ class DummyDecorator1(Decorator):
         class InnerClass(cls):
             """A subclass which adds no functionality."""
 
-            pass
-
         return super()._decorate_class(InnerClass)
 
 
@@ -43,8 +42,6 @@ class DummyDecorator2(Decorator):
         class InnerClass(cls):
             """A subclass which adds no functionality."""
 
-            pass
-
         return super()._decorate_class(InnerClass)
 
 
@@ -59,8 +56,6 @@ class DummySubclass(DummyDecorator1):
         @wraps_class(super_decorated)
         class InnerClass(super_decorated):
             """A subclass which adds no functionality."""
-
-            pass
 
         return super()._decorate_class(InnerClass)
 
@@ -77,20 +72,14 @@ class TrackingTests(unittest.TestCase):
         class DecoratedOnceGPController(GPController):
             """A dummy decorated class."""
 
-            pass
-
         @DummyDecorator2()
         @DummyDecorator1()
         class DecoratedTwiceGPController(GPController):
             """A dummy decorated class."""
 
-            pass
-
         @DummySubclass()
         class DecoratedWithSubclassController(GPController):
             """A dummy class decorated with a controller."""
-
-            pass
 
         self.decorated_once_controller_class = DecoratedOnceGPController
         self.decorated_twice_controller_class = DecoratedTwiceGPController
@@ -150,10 +139,6 @@ class AttributeTests(unittest.TestCase):
                     A wrapper for normalising y inputs and variance.
                     """
 
-                    def __init__(self, *args: Any, **kwargs: Any):
-                        """Inner initialisation."""
-                        super().__init__(*args, **kwargs)
-
                     def add_5(self) -> Union[float, int]:
                         """Square the result of this method."""
                         result = super().add_5()
@@ -166,10 +151,9 @@ class AttributeTests(unittest.TestCase):
             A superfluous subclass.
             """
 
-            pass
-
-        self.SimilarNumberBefore = SimilarNumber
-        self.SimilarNumberAfter = SquareResult()(SimilarNumber)
+        # Ignore the invalid-name warnings, these are classes!
+        self.SimilarNumberBefore = SimilarNumber  # pylint: disable=invalid-name
+        self.SimilarNumberAfter = SquareResult()(SimilarNumber)  # pylint: disable=invalid-name
         self.number = self.SimilarNumberAfter(10)
 
     def test_answer(self) -> None:
@@ -213,7 +197,7 @@ class AttributeTests(unittest.TestCase):
             self.fail("Wrapped class does not have '__wrapped__' attribute.")
 
 
-class TestErrorsWhenOverwriting(unittest.TestCase):
+class TestErrorsWhenOverwriting(VanguardTestCase):
     """
     Testing breaking the decorator by overwriting or extending.
     """
@@ -250,10 +234,6 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
                     A wrapper for normalising y inputs and variance.
                     """
 
-                    def __init__(self, *args: Any, **kwargs: Any):
-                        """Inner initialisation."""
-                        super().__init__(*args, **kwargs)
-
                     def add_5(self) -> Union[int, float]:
                         """Square the result of this method."""
                         result = super().add_5()
@@ -261,8 +241,9 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
                 return InnerClass
 
-        self.SimpleNumber = SimpleNumber
-        self.SquareResult = SquareResult
+        # Ignore the invalid-name warnings, these are classes!
+        self.SimpleNumber = SimpleNumber  # pylint: disable=invalid-name
+        self.SquareResult = SquareResult  # pylint: disable=invalid-name
 
     def test_overwrite_method_with_raise(self) -> None:
         """Test that overwriting a method throws an error instead."""
@@ -270,13 +251,13 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         with self.assertRaisesRegex(errors.OverwrittenMethodError, expected_error_message):
 
             @self.SquareResult(raise_instead=True)
-            class NewNumber(self.SimpleNumber):
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
                 """
                 Declaring this class should throw an error.
                 """
 
                 def add_5(self) -> Union[int, float]:
-                    return super().add_5()
+                    return super().add_5() + 1
 
     def test_overwrite_method(self) -> None:
         """Test that overwriting a method throws a warning."""
@@ -284,33 +265,26 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
 
             @self.SquareResult()
-            class NewNumber(self.SimpleNumber):
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
                 """
-                Declaring this class should throw an error.
+                Declaring this class should raise a warning.
                 """
 
                 def add_5(self) -> Union[int, float]:
-                    return super().add_5()
+                    return super().add_5() + 1
 
     def test_overwrite_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
-        try:
-            with self.assertWarns(errors.OverwrittenMethodWarning):
+        with self.assertNotWarns(errors.OverwrittenMethodWarning):
 
-                @self.SquareResult(ignore_methods=("add_5",))
-                class NewNumber(self.SimpleNumber):
-                    """
-                    Declaring this class should throw an error.
-                    """
+            @self.SquareResult(ignore_methods=("add_5",))
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
+                """
+                Declaring this class should not raise OverwrittenMethodWarning.
+                """
 
-                    def add_5(self) -> Union[int, float]:
-                        return super().add_5()
-        except AssertionError:
-            pass
-        except errors.OverwrittenMethodError as error:
-            self.fail(f"Should not have thrown error: {error!s}")
-        else:
-            self.fail("Should not have thrown warning.")
+                def add_5(self) -> Union[int, float]:
+                    return super().add_5() + 1
 
     def test_unexpected_method_with_raise(self) -> None:
         """Test that creating a new method throws an error instead."""
@@ -318,7 +292,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         with self.assertRaisesRegex(errors.UnexpectedMethodError, expected_error_message):
 
             @self.SquareResult(raise_instead=True)
-            class NewNumber(self.SimpleNumber):
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
                 """
                 Declaring this class should throw an error.
                 """
@@ -332,9 +306,9 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         with self.assertWarnsRegex(errors.UnexpectedMethodWarning, expected_error_message):
 
             @self.SquareResult()
-            class NewNumber(self.SimpleNumber):
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
                 """
-                Declaring this class should throw an error.
+                Declaring this class should raise a warning.
                 """
 
                 def something_new(self) -> None:
@@ -342,23 +316,16 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
     def test_unexpected_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
-        try:
-            with self.assertWarns(errors.UnexpectedMethodWarning):
+        with self.assertNotWarns(errors.UnexpectedMethodWarning):
 
-                @self.SquareResult(ignore_methods=["something_new"])
-                class NewNumber(self.SimpleNumber):
-                    """
-                    Declaring this class should throw an error.
-                    """
+            @self.SquareResult(ignore_methods=["something_new"])
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
+                """
+                Declaring this class should not raise UnexpectedMethodWarning.
+                """
 
-                    def something_new(self) -> None:
-                        pass
-        except AssertionError:
-            pass
-        except errors.UnexpectedMethodError as error:
-            self.fail(f"Should not have thrown error: {error!s}")
-        else:
-            self.fail("Should not have thrown warning.")
+                def something_new(self) -> None:
+                    pass
 
     def test_overwrite_method_with_superclass_subclass_wrong(self) -> None:
         """Warning should reference the SUBCLASS."""
@@ -367,18 +334,16 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         class MiddleNumber(self.SimpleNumber):
             """An intermediate number."""
 
-            pass
-
         with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
 
             @self.SquareResult()
-            class NewNumber(MiddleNumber):
+            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
                 """
-                Declaring this class should throw an error.
+                Declaring this class should raise a warning.
                 """
 
                 def add_5(self) -> Union[int, float]:
-                    return super().add_5()
+                    return super().add_5() + 1
 
     def test_overwrite_method_with_superclass_superclass_wrong(self) -> None:
         """Warning should reference the SUPERCLASS."""
@@ -388,17 +353,15 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
             """An intermediate number."""
 
             def add_5(self) -> Union[int, float]:
-                return super().add_5()
+                return super().add_5() + 1
 
         with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
 
             @self.SquareResult()
-            class NewNumber(MiddleNumber):
+            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
                 """
-                Declaring this class should throw an error.
+                Declaring this class should raise a warning.
                 """
-
-                pass
 
     def test_overwrite_method_with_superclass_both_wrong(self) -> None:
         """Warning should reference the SUPERCLASS."""
@@ -408,18 +371,18 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
             """An intermediate number."""
 
             def add_5(self) -> Union[int, float]:
-                return super().add_5()
+                return super().add_5() + 1
 
         with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
 
             @self.SquareResult()
-            class NewNumber(MiddleNumber):
+            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
                 """
-                Declaring this class should throw an error.
+                Declaring this class should raise a warning.
                 """
 
                 def add_5(self) -> Union[int, float]:
-                    return super().add_5()
+                    return super().add_5() + 2
 
     def test_missing_requirements(self) -> None:
         """Should throw an error."""
@@ -437,12 +400,10 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         with self.assertRaises(errors.MissingRequirementsError):
 
             @RequirementDecorator()
-            class NewNumber(self.SimpleNumber):
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
                 """
                 Declaring this class should throw an error.
                 """
-
-                pass
 
     def test_passed_requirements(self) -> None:
         """Should not throw an error."""
@@ -461,12 +422,11 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
             @RequirementDecorator(ignore_methods=("__init__", "add_5"))
             @self.SquareResult()
-            class NewNumber(self.SimpleNumber):
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
                 """
                 Declaring this class should throw an error.
                 """
 
-                pass
         except errors.MissingRequirementsError as error:
             self.fail(f"Should not have thrown {str(error)}")
 
@@ -508,10 +468,6 @@ class SignatureTests(unittest.TestCase):
                     A wrapper for normalising y inputs and variance.
                     """
 
-                    def __init__(self, *args: Any, **kwargs: Any):
-                        """Inner initialisation."""
-                        super().__init__(*args, **kwargs)
-
                     def add_5(self) -> Union[int, float]:
                         """Square the result of this method."""
                         result = super().add_5()
@@ -524,10 +480,9 @@ class SignatureTests(unittest.TestCase):
             A superfluous subclass.
             """
 
-            pass
-
-        self.SimilarNumberBefore = SimilarNumber
-        self.SimilarNumberAfter = SquareResult()(self.SimilarNumberBefore)
+        # Ignore the invalid-name warnings - these are classes!
+        self.SimilarNumberBefore = SimilarNumber  # pylint: disable=invalid-name
+        self.SimilarNumberAfter = SquareResult()(self.SimilarNumberBefore)  # pylint: disable=invalid-name
 
     def test_signature_before(self) -> None:
         """Signature should contain number."""

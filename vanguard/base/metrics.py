@@ -166,6 +166,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float, controller: "BaseGPController") -> float:
+def loss(loss_value: float, controller: "BaseGPController") -> float:  # pylint: disable=unused-argument
     """Return the loss value."""
     return loss_value

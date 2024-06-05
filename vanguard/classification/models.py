@@ -33,6 +33,7 @@ class DummyKernelDistribution:
         self.mean = self.kernel @ self.labels.evaluate()
         self.covariance_matrix = torch.zeros_like(self.mean)
 
+    # pylint: disable-next=unused-argument
     def add_jitter(self, *args, **kwargs):
         return self
 

@@ -126,7 +126,6 @@ class SmartOptimiser(Generic[OptimiserT]):
 
     def set_parameters(self) -> None:
         """Tidy up after optimisation is completed."""
-        pass
 
     def _reset_module_parameters(self) -> None:
         """
@@ -246,11 +245,13 @@ class Parameters:
         self.priority_value = value
 
     def __lt__(self, other: "Parameters") -> bool:
-        # TODO: this should check whether `isinstance(other, Parameters)` and if not return `NotImplemented`
+        if not isinstance(other, Parameters):
+            return NotImplemented
         return self.priority_value < other.priority_value
 
     def __eq__(self, other: "Parameters") -> bool:
-        # TODO: as for __lt__ above
+        if not isinstance(other, Parameters):
+            return NotImplemented
         return self.priority_value == other.priority_value
 
     @staticmethod
@@ -332,5 +333,3 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
 
 class NoImprovementError(RuntimeError):
     """Raised when the loss of the model is consistently increasing."""
-
-    pass

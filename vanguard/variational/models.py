@@ -37,9 +37,9 @@ class SVGPModel(ApproximateGP):
         device = torch.device("cpu")
 
     def __init__(
-        self,
+        self,  # pylint: disable=unused-argument
         train_x: Tensor,
-        train_y: Tensor,
+        train_y: Tensor,  # pylint: disable=unused-argument
         likelihood: GaussianLikelihood,
         mean_module: Mean,
         covar_module: Kernel,
@@ -71,10 +71,12 @@ class SVGPModel(ApproximateGP):
             def __call__(self, *args: Any, **kwargs: Any) -> MultivariateNormal:
                 try:
                     return super().__call__(*args, **kwargs)
-                except RuntimeError:
+                except RuntimeError as exc:
                     cls = type(self)
                     full_path = ".".join((cls.__module__, cls.__qualname__))
-                    raise RuntimeError(f"{full_path} may not be the correct choice for a variational strategy.")
+                    raise RuntimeError(
+                        f"{full_path} may not be the correct choice for a variational strategy."
+                    ) from exc
 
         variational_strategy.__class__ = SafeVariationalStrategy
         super().__init__(variational_strategy)
@@ -136,6 +138,7 @@ class SVGPModel(ApproximateGP):
         """
         return VariationalStrategy(self, inducing_points, variational_distribution, learn_inducing_locations=True)
 
+    # pylint: disable-next=unused-argument
     def _check_batch_shape(self, mean_module: Mean, covar_module: Kernel) -> None:
         """
         Ensure that the shapes are compatible.

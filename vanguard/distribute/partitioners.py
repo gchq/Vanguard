@@ -9,16 +9,18 @@ import gpytorch.kernels
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from kmedoids import KMedoids as _KMedoids
 from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 from sklearn.cluster import KMeans as _KMeans
 from sklearn.cluster import MiniBatchKMeans as _MiniBatchKMeans
 from sklearn.manifold import TSNE
-from sklearn_extra.cluster import KMedoids as _KMedoids
 
 
 # TODO: should this be an abstract base class?
+# https://github.com/gchq/Vanguard/issues/198
 # TODO: Should we make BasePartitioner generic in the NDArray dtype?
+# https://github.com/gchq/Vanguard/issues/198
 class BasePartitioner:
     """
     Generate a partition over index space using various methods. All partitioners should inherit from this class.
@@ -78,6 +80,7 @@ class BasePartitioner:
         :return partition: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
         # TODO: should this be an abstract method?
+        # https://github.com/gchq/Vanguard/issues/198
         raise NotImplementedError
 
     def _create_cluster_communication_partition(self) -> List[List[int]]:
@@ -156,6 +159,8 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
 class KMedoidsPartitioner(BasePartitioner):
     """
     Create a partition using KMedoids with similarity defined by the kernel.
+
+    :seealso: Clusters are computed using a :class:`kmedoids.KMedoids` object.
     """
 
     def __init__(
