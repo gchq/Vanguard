@@ -16,6 +16,7 @@ from vanguard.distribute.aggregators import (
     EKPOEAggregator,
     GPOEAggregator,
     GRBCMAggregator,
+    POEAggregator,
     RBCMAggregator,
     XBCMAggregator,
     XGRBCMAggregator,
@@ -47,6 +48,20 @@ class VanguardTestCase(unittest.TestCase):
         # successful?)
         self.required_f1_score = 0.9
 
+        # Define some data for the test
+        self.x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        self.y = np.zeros_like(self.x)
+        for index, x_val in enumerate(self.x):
+            # Set some non-trivial classification target
+            if 0.25 < x_val < 0.5:
+                self.y[index, 0] = 1
+            if x_val > 0.8:
+                self.y[index, 0] = 1
+
+        # Split data into training and testing
+        self.train_indices = np.random.choice(np.arange(self.y.shape[0]), size=self.num_train_points, replace=False)
+        self.test_indices = np.setdiff1d(np.arange(self.y.shape[0]), self.train_indices)
+
     def test_distributed_gp_vary_aggregator_fix_partition(self) -> None:
         """
         Verify Vanguard usage on a simple, single variable distributed binary classification problem
@@ -56,20 +71,6 @@ class VanguardTestCase(unittest.TestCase):
         GP can be fit to this data.
         """
         np.random.seed(self.random_seed)
-
-        # Define some data for the test
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.zeros_like(x)
-        for index, x_val in enumerate(x):
-            # Set some non-trivial classification target
-            if 0.25 < x_val < 0.5:
-                y[index, 0] = 1
-            if x_val > 0.8:
-                y[index, 0] = 1
-
-        # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # We have a binary classification problem, so we apply the BinaryClassification
         # decorator and will need to use VariationalInference to perform inference on
@@ -82,9 +83,10 @@ class VanguardTestCase(unittest.TestCase):
             XBCMAggregator,
             GRBCMAggregator,
             XGRBCMAggregator,
+            POEAggregator,
         ]:
 
-            @Distributed(n_experts=3, aggregator_class=aggregator)
+            @Distributed(n_experts=3, aggregator_class=aggregator, partitioner_class=KMeansPartitioner)
             @BinaryClassification()
             @VariationalInference()
             class BinaryClassifier(GaussianGPController):
@@ -92,8 +94,8 @@ class VanguardTestCase(unittest.TestCase):
 
             # Define the controller object
             gp = BinaryClassifier(
-                train_x=x[train_indices],
-                train_y=y[train_indices],
+                train_x=self.x[self.train_indices],
+                train_y=self.y[self.train_indices],
                 kernel_class=ScaledRBFKernel,
                 y_std=0,
                 likelihood_class=BernoulliLikelihood,
@@ -104,12 +106,12 @@ class VanguardTestCase(unittest.TestCase):
             gp.fit(n_sgd_iters=self.n_sgd_iters)
 
             # Get predictions from the controller object
-            predictions_train, _ = gp.classify_points(x[train_indices])
-            predictions_test, _ = gp.classify_points(x[test_indices])
+            predictions_train, _ = gp.classify_points(self.x[self.train_indices])
+            predictions_test, _ = gp.classify_points(self.x[self.test_indices])
 
             # Sense check outputs
-            self.assertGreaterEqual(f1_score(predictions_train, y[train_indices]), self.required_f1_score)
-            self.assertGreaterEqual(f1_score(predictions_test, y[test_indices]), self.required_f1_score)
+            self.assertGreaterEqual(f1_score(predictions_train, self.y[self.train_indices]), self.required_f1_score)
+            self.assertGreaterEqual(f1_score(predictions_test, self.y[self.test_indices]), self.required_f1_score)
 
     def test_distributed_gp_vary_partition_fix_aggregator(self) -> None:
         """
@@ -121,20 +123,6 @@ class VanguardTestCase(unittest.TestCase):
         """
         np.random.seed(self.random_seed)
 
-        # Define some data for the test
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.zeros_like(x)
-        for index, x_val in enumerate(x):
-            # Set some non-trivial classification target
-            if 0.25 < x_val < 0.5:
-                y[index, 0] = 1
-            if x_val > 0.8:
-                y[index, 0] = 1
-
-        # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
-
         # We have a binary classification problem, so we apply the BinaryClassification
         # decorator and will need to use VariationalInference to perform inference on
         # data. We try each partition method to ensure they are all functional.
@@ -143,10 +131,11 @@ class VanguardTestCase(unittest.TestCase):
             KMeansPartitioner,
             MiniBatchKMeansPartitioner,
             # TODO: Do we have an example of this working?
+            # https://github.com/gchq/Vanguard/issues/233
             # KMedoidsPartitioner,
         ]:
 
-            @Distributed(n_experts=3, partitioner_class=partitioner)
+            @Distributed(n_experts=3, aggregator_class=EKPOEAggregator, partitioner_class=partitioner)
             @BinaryClassification()
             @VariationalInference()
             class BinaryClassifier(GaussianGPController):
@@ -154,8 +143,8 @@ class VanguardTestCase(unittest.TestCase):
 
             # Define the controller object
             gp = BinaryClassifier(
-                train_x=x[train_indices],
-                train_y=y[train_indices],
+                train_x=self.x[self.train_indices],
+                train_y=self.y[self.train_indices],
                 kernel_class=ScaledRBFKernel,
                 y_std=0,
                 likelihood_class=BernoulliLikelihood,
@@ -166,12 +155,12 @@ class VanguardTestCase(unittest.TestCase):
             gp.fit(n_sgd_iters=self.n_sgd_iters)
 
             # Get predictions from the controller object
-            predictions_train, _ = gp.classify_points(x[train_indices])
-            predictions_test, _ = gp.classify_points(x[test_indices])
+            predictions_train, _ = gp.classify_points(self.x[self.train_indices])
+            predictions_test, _ = gp.classify_points(self.x[self.test_indices])
 
             # Sense check outputs
-            self.assertGreaterEqual(f1_score(predictions_train, y[train_indices]), self.required_f1_score)
-            self.assertGreaterEqual(f1_score(predictions_test, y[test_indices]), self.required_f1_score)
+            self.assertGreaterEqual(f1_score(predictions_train, self.y[self.train_indices]), self.required_f1_score)
+            self.assertGreaterEqual(f1_score(predictions_test, self.y[self.test_indices]), self.required_f1_score)
 
 
 if __name__ == "__main__":
