@@ -121,6 +121,7 @@ class VanguardTestCase(unittest.TestCase):
         #   train_x=np.array([0, 0.1, 0.45, 0.55, 0.9, 1]),
         #   train_y=np.array([0, 0, 1, 1, 2, 2]),
         #   We get the same error, so this might be an issue with the underlying code
+        # https://github.com/gchq/Vanguard/issues/232
         # Define the controller object
         gp = CategoricalClassifier(
             train_x=x[train_indices],
