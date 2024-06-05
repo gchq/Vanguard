@@ -7,9 +7,12 @@ If you would like to contribute to the development of Vanguard, you can do so in
 - Contribute example usages & documentation improvements.
 - Increase awareness of Vanguard with other potential users.
 
-All contributors must sign the [GCHQ Contributor Licence Agreement][cla - TODO].
+All contributors must sign the [GCHQ Contributor Licence Agreement][cla].
+(TODO: Update link when this is set up; see the linked issue.)
 
-The authors of Vanguard welcome any improvements that you may have, via a pull request.
+In addition, all contributors must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+The maintainers of Vanguard welcome any improvements that you may have, via a pull request.
 Please familiarise yourself with this document before contributing.
 
 We recommend installing our pre-commit hooks, which will be run automatically when a pull request is opened,
@@ -20,12 +23,19 @@ $ pip install pre-commit
 $ pre-commit install
 ```
 
-Before contributing, please get in touch with the Vanguard creators to check whether work is underway to address your concern,
-and do not proceed until you have been given a JIRA ticket number.
+## Reporting issues
+
+- [Search existing issues][github-issues] (both open **and** closed).
+- Make sure you are using the latest version of Vanguard.
+- Open a new issue:
+  - For bugs use the [bug report issue template][gh-bug-report].
+  - For features use the [feature request issue template][gh-feature-request].
+  - This will make the issue a candidate for inclusion in future sprints, as-well as open to the community to address.
+- If you are able to fix the bug or implement the feature, [create a pull request](#pull-requests) with the relevant changes.
 
 ## Pull requests
 
-Currently, we are using a [GitHub Flow][github-flow] development approach.
+We are using a [Git Flow][github-flow] development approach.
 
 - To avoid duplicate work, [search existing pull requests][gh-prs].
 - All pull requests should relate to an existing issue.
@@ -33,7 +43,7 @@ Currently, we are using a [GitHub Flow][github-flow] development approach.
 - Make changes on a [feature branch][git-feature-branch] instead of the main branch.
 - Branch names should take one of the following forms:
   - `feature/<feature-name>`: for adding, removing or refactoring a feature.
-  - `bugfix/<bug-name>`: for bug fixes.
+  - `fix/<bug-name>`: for bug fixes.
 - Avoid changes to unrelated files in the same commit.
 - Changes must conform to the [code](#code) guidelines.
 - Changes must have sufficient [test coverage][run-tests].
@@ -72,8 +82,9 @@ Refs: #123
 
 ## Code
 
-Code must be documented, adequately tested and compliant with in style prior to merging into the main branch. To
-facilitate code review, code should meet these standards prior to creating a pull request.
+Code must be documented, adequately tested and compliant with our [style guide](#style-guide) prior to merging
+into the `develop` branch.
+To facilitate code review, code should meet these standards prior to creating a pull request.
 
 Some of the following points are checked by pre-commit hooks, although others require
 manual implementation by authors and reviewers. Conversely, further style points that
@@ -82,28 +93,14 @@ need to be aware of them.
 
 ### Style Guide
 
-Vanguard is formatted using the [Ruff formatter][ruff], and is linted by both the [Ruff linter][ruff] and [Pylint][pylint].
-Vanguard should be compatible with the supported Python versions listed in the README.
-There should be very few inline comments; a combination of good docstrings and self-documenting code is preferred.
-Docstrings should be written in a style similar to the [Sphinx format][sphinx-format].
+ - Vanguard is formatted using the [Ruff formatter][ruff], and is linted by both the [Ruff linter][ruff] and [Pylint][pylint].
+ - Vanguard should be compatible with the supported Python versions listed in the README.
+ - Avoid inline comments; a combination of good docstrings and self-documenting code is preferred.
+ - Follow [PEP8][pep-8] style where possible.
+ - Use clear naming of variables rather than mathematical shorthand (e.g. kernel instead of k).
+ - Type annotations must be used for all function or method parameters.
 
 Please note some Vanguard "specifics":
-
-### Imports
-
-Imports should be in alphabetical order within distinct groups: standard library imports, external imports, first-party (GCHQ) imports and relative (local) imports.
-Each import should be on one line, unless multiple things are being imported.
-This is enforced by pre-commit hooks.
-
-```python
-import argparse
-import zlib
-
-import numpy as np
-from torch import Module, Tensor
-
-from vanguard import kernels
-```
 
 ### Docstrings
 
@@ -111,12 +108,10 @@ All docstrings must:
 - Be written for private functions, methods and classes where their purpose or usage is not immediately obvious.
 - Be written in [reStructured Text][sphinx-rst] ready to be compiled into documentation via [Sphinx][sphinx].
 - Follow the [PEP 257][pep-257] style guide.
-- Not have a blank line inserted after a function or method docstring unless the following statement is a function,
-   method or class definition.
 - Start with a capital letter unless referring to the name of an object, in which case match that case sensitively.
 - Have a full stop at the end of the one-line descriptive sentence.
 - Use full stops in extended paragraphs of text.
-- Not have full stops at the end of parameter definitions.
+- Have full stops at the end of parameter definitions.
 - Not use type hints in `:param:` fields - e.g. use `:param x:` rather than `:param float x:`. Use function annotations
    instead.
 - Not use `:type:` or `:rtype:` fields. Use function annotations instead.
@@ -206,7 +201,9 @@ For hardcoded integers >= 1000, an underscore should be written to separate the 
 ### Type annotations
 
 All functions and methods should have type annotations for all parameters and for the return type.
-Type comments should not be used, except for `#type: ignore`.
+Type comments should not be used, _including_ `# type: ignore`.
+If you're sure the code's typing is correct, but Pyright still raises errors, use a specific
+`# pyright: ignore [specific-error]`, with an accompanying comment explaining why the ignore is necessary.
 Don't use `from __future__ import annotations` - it can mask errors in the type annotations.
 
 ### Spelling and grammar
@@ -216,16 +213,8 @@ word is missing from the dictionary, double check that it is a real word spelled
 correctly. Contractions in object or reference names should be avoided unless the
 meaning is obvious; consider inserting an underscore to effectively split into two
 words. If you need to add a word to the dictionary, use the appropriate dictionary
-inside the `.cspell` folder:
-
- - `acronyms.txt`: Acronyms or initialisms (self-explanatory).
- - `custom_misc.txt`: Things that don't fit in the other files, including exceptions for American English spellings where required
- - `library_terms.txt`: Terms from third-party code, such as package, function and argument names.
-     Often these are shortenings or concatenations of English words, like `diag` or `lengthscale`.
-     If cspell complains about a code term that is _not_ from third-party code, change the code term rather than adding
-     it to the dictionary!
- - `maths_terms.txt`: Maths terms that are missing from the default dictionary, like "heteroskedastic".
- - `people.txt`: Names of people; largely these are authors cited in `references.bib`.
+inside the `.cspell` folder - see [`.cspell/README.md`](.cspell/README.md) for an explanation of
+which dictionary to use for what.
 
 If the word fragment only makes sense as part of a longer phase, add the longer phrase
 to avoid inadvertently permitting spelling errors elsewhere, e.g. add `Blu-Tack`
@@ -276,9 +265,6 @@ Please minimise functional code within your notebook.
 For example, functions for plotting datasets fit better as methods of the corresponding `Dataset` subclass (which you should have added with a new dataset).
 If you need a new plotting function, consider adding a new, more specific plotting method, or attempting to generalise the existing one.
 
-All examples notebooks should be run using **Python 3.8.3** with a kernel named "vanguard", and the format version should be **4.5**.
-The pre-commit hooks will catch any discrepancies here.
-
 
 ## Documentation
 
@@ -293,59 +279,23 @@ Vanguard is an academic project and therefore all work should be referenced.
 New references should be placed in the file [`references.bib`](references.bib).
 An entry with the keyword `Doe99` can then be referenced within a docstring anywhere with `[Doe99]_`.
 
-## Code of Conduct
-
-### Our Pledge
-
-In the interest of fostering an open and welcoming environment, we as contributors and maintainers pledge to making
-participation in our project, and our community a harassment-free experience for everyone.
-
-### Our Standards
-
-Examples of behaviour that contributes to creating a positive environment include:
-
-* Using welcoming and inclusive language
-* Being respectful of differing viewpoints and experiences
-* Gracefully accepting constructive criticism
-* Focusing on what is best for the community
-* Showing empathy towards other community members
-
-Examples of unacceptable behaviour by participants include:
-
-* The use of sexualized language or imagery and unwelcome sexual attention or advances
-* Trolling, insulting/derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or electronic address, without explicit permission
-* Other conduct which could reasonably be considered inappropriate in a professional setting
-
-### Our Responsibilities
-
-Project maintainers are responsible for clarifying the standards of acceptable behaviour and are expected to take
-appropriate and fair corrective action in response to any instances of unacceptable behaviour.
-
-Project maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits,
-issues, and other contributions that are not aligned to this Code of Conduct, or to ban temporarily or permanently any
-contributor for other behaviors that they deem inappropriate, threatening, offensive, or harmful.
-
-### Attribution
-
-This Code of Conduct is adapted from version 1.4 of the [Contributor Covenant][contributor-covenant].
-
-[contributor-covenant]: http://contributor-covenant.org/version/1/4/
+[cla]: https://github.com/gchq/Vanguard/issues/230
 [conventional_commits]: https://www.conventionalcommits.org
 [cspell]: https://cspell.org/
 [doctest]: https://docs.python.org/3/library/doctest.html
-[gh-feature-request]: https://github.com/gchq/Vanguard/issues/new?assignees=&labels=enhancement%2Cnew&projects=&template=feature_request.yml&title=%5BFeature%5D%3A+
-[gh-prs]: https://github.com/gchq/Vanguard/pulls?q=
+[gh-bug-report]: https://github.com/gchq/Vanguard/issues/new?assignees=&labels=new%2Cbug&projects=gchq%2F16&template=bug_report.yml
+[gh-feature-request]: https://github.com/gchq/Vanguard/issues/new?assignees=&labels=new%2Cenhancement&projects=gchq%2F16&template=feature_request.yml
+[gh-prs]: https://github.com/gchq/Vanguard/pulls
 [git-feature-branch]: https://www.atlassian.com/git/tutorials/comparing-workflows
 [github-flow]: https://docs.github.com/en/get-started/quickstart/github-flow
 [github-issues]: https://github.com/gchq/Vanguard/issues?q=
+[pep-8]: https://peps.python.org/pep-0008/
+[pep-257]: https://peps.python.org/pep-0257/
 [pr-draft]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request
 [pr-ready]: https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/changing-the-stage-of-a-pull-request
 [pylint]: https://www.pylint.org/
 [ruff]: https://docs.astral.sh/ruff/
 [run-tests]: https://github.com/gchq/Vanguard/actions/workflows/unittests.yml
-[pep-257]: https://peps.python.org/pep-0257/
 [sphinx]: https://www.sphinx-doc.org/en/master/index.html
 [sphinx-format]: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html
 [sphinx-rst]: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
