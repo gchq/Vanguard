@@ -1,3 +1,5 @@
+"""Tests for DirichletKernelClassifierLikelihood."""
+
 from unittest import TestCase
 
 import numpy as np
@@ -15,7 +17,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
         for illegal_input in illegal_inputs:
             with self.subTest(repr(illegal_input)):
-                with self.assertRaises(RuntimeError) as ctx:
+                with self.assertRaises(TypeError) as ctx:
                     # ignore type: it's intentionally incorrect
                     likelihood(illegal_input)  # type: ignore
                 self.assertEqual(
