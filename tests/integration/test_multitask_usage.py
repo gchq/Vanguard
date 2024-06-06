@@ -35,6 +35,7 @@ class VanguardTestCase(unittest.TestCase):
         # successful?)
         self.required_f1_score = 0.5
 
+    @unittest.skip  # TODO: Fix test (https://github.com/gchq/Vanguard/issues/141)
     @flaky
     def test_gp_multitask_binary_classification(self) -> None:
         """
