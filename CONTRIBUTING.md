@@ -35,7 +35,7 @@ $ pre-commit install
 
 ## Pull requests
 
-We are using a [Git Flow][github-flow] development approach.
+We are using a [Git Flow][git-flow] development approach.
 
 - To avoid duplicate work, [search existing pull requests][gh-prs].
 - All pull requests should relate to an existing issue.
@@ -287,7 +287,7 @@ An entry with the keyword `Doe99` can then be referenced within a docstring anyw
 [gh-feature-request]: https://github.com/gchq/Vanguard/issues/new?assignees=&labels=new%2Cenhancement&projects=gchq%2F16&template=feature_request.yml
 [gh-prs]: https://github.com/gchq/Vanguard/pulls
 [git-feature-branch]: https://www.atlassian.com/git/tutorials/comparing-workflows
-[github-flow]: https://docs.github.com/en/get-started/quickstart/github-flow
+[git-flow]: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 [github-issues]: https://github.com/gchq/Vanguard/issues?q=
 [pep-8]: https://peps.python.org/pep-0008/
 [pep-257]: https://peps.python.org/pep-0257/
