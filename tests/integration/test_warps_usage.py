@@ -15,6 +15,7 @@ from vanguard.warps.warpfunctions import (
     BoxCoxWarpFunction,
     LogitWarpFunction,
     PositiveAffineWarpFunction,
+    SinhWarpFunction,
     SoftPlusWarpFunction,
 )
 
@@ -39,8 +40,8 @@ class VanguardTestCase(unittest.TestCase):
         Verify Vanguard usage on a simple, single variable regression problem.
 
         Warping is applied, where we consider the warping functions: AffineWarpFunction,
-        PositiveAffineWarpFunction, BoxCoxWarpFunction and ArcSinhWarpFunction. These are
-        tested together as they can be applied to the same candidate data without modification,
+        PositiveAffineWarpFunction, BoxCoxWarpFunction, ArcSinhWarpFunction and SinhWarpFunction.
+        These are tested together as they can be applied to the same candidate data without modification,
         so reduces code duplication.
 
         We generate a single feature `x` and a continuous target `y`, and verify that a
@@ -62,6 +63,7 @@ class VanguardTestCase(unittest.TestCase):
             PositiveAffineWarpFunction(b=6.0),
             BoxCoxWarpFunction(lambda_=0.5),
             ArcSinhWarpFunction(),
+            SinhWarpFunction(),
         ]:
             # Define the warped controller object
             @SetWarp(warp_function, ignore_all=True)
@@ -99,8 +101,11 @@ class VanguardTestCase(unittest.TestCase):
         """
         np.random.seed(self.random_seed)
 
-        # Define some data - note that for numerical reasons, we keep `y` close 2 and
-        # 3, which ensures we don't take huge exponents or logs of negative numbers
+        # Define some data - note that for numerical reasons, we must avoid certain values of `y`.
+        # This is due to SoftPlusWarpFunction, which applies the warp :math:`y\mapsto\log(e^y - 1)`,
+        # meaning we don't want `y` to grow too large or we might hit numerical issues when taking the exponential,
+        # but also we need to ensure that :math:`e^y - 1` does not get too close to zero or become negative. For this
+        # reason, we ensure `y` takes values around 2-3 which covers both cases.
         x = np.linspace(start=4, stop=6, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
         y = np.squeeze(x / 2.0) + np.random.normal(scale=self.small_noise, size=x.shape[0])
 
@@ -132,6 +137,17 @@ class VanguardTestCase(unittest.TestCase):
         # Sense check the outputs
         self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
         self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
+
+        # Also try to specify the gp with invalid `y` data that should not allow such warping,
+        # and check an appropriate error is raised
+        gp_invalid = WarpedController(
+            train_x=x[train_indices],
+            train_y=-100.0 * y[train_indices],
+            kernel_class=ScaledRBFKernel,
+            y_std=self.small_noise * np.ones_like(y[train_indices]),
+        )
+        with self.assertRaises(Exception):
+            gp_invalid.fit(n_sgd_iters=self.n_sgd_iters)
 
     def test_logit_warp(self) -> None:
         """
@@ -177,6 +193,17 @@ class VanguardTestCase(unittest.TestCase):
         # Sense check the outputs
         self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
         self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
+
+        # Also try to specify the gp with invalid `y` data that should not allow such warping,
+        # and check an appropriate error is raised
+        gp_invalid = WarpedController(
+            train_x=x[train_indices],
+            train_y=-100.0 * y[train_indices],
+            kernel_class=ScaledRBFKernel,
+            y_std=self.small_noise * np.ones_like(y[train_indices]),
+        )
+        with self.assertRaises(Exception):
+            gp_invalid.fit(n_sgd_iters=self.n_sgd_iters)
 
 
 if __name__ == "__main__":
