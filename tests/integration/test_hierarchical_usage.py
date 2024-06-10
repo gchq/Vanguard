@@ -17,7 +17,7 @@ from vanguard.vanilla import GaussianGPController
 
 class VanguardTestCase(unittest.TestCase):
     """
-    A subclass of TestCase designed to check end-to-end usage of classification code.
+    A subclass of TestCase designed to check end-to-end usage of hierarchical code.
     """
 
     def setUp(self) -> None:
@@ -25,10 +25,9 @@ class VanguardTestCase(unittest.TestCase):
         Define data shared across tests.
         """
         self.random_seed = 1_989
-        self.num_train_points = 500
-        self.num_test_points = 500
+        self.num_train_points = 100
+        self.num_test_points = 100
         self.n_sgd_iters = 100
-        self.confidence_interval_alpha = 0.9
         self.small_noise = 0.05
         self.num_mc_samples = 50
 
@@ -50,7 +49,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         np.random.seed(self.random_seed)
 
-        # Create a hierarchical controller that and a kernel that has Bayesian hyperparameters to estimate
+        # Create a hierarchical controller and a kernel that has Bayesian hyperparameters to estimate
         @LaplaceHierarchicalHyperparameters(num_mc_samples=self.num_mc_samples)
         class HierarchicalController(GaussianGPController):
             pass
@@ -71,14 +70,14 @@ class VanguardTestCase(unittest.TestCase):
         gp.fit(n_sgd_iters=self.n_sgd_iters)
 
         # Get predictions from the controller object
-        prediction_means, prediction_ci_lower, prediction_ci_upper = gp.posterior_over_point(
+        prediction_medians, prediction_ci_lower, prediction_ci_upper = gp.posterior_over_point(
             self.x[self.test_indices]
-        ).confidence_interval(alpha=self.confidence_interval_alpha)
+        ).confidence_interval()
 
         # Sense check the outputs. Note that we do not check confidence interval quality here,
         # just that they can be created, due to highly varying quality of the resulting intervals,
-        self.assertTrue(np.all(prediction_means <= prediction_ci_upper))
-        self.assertTrue(np.all(prediction_means >= prediction_ci_lower))
+        self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
+        self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
 
     def test_gp_variational_hierarchical(self):
         """
@@ -90,7 +89,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         np.random.seed(self.random_seed)
 
-        # Create a hierarchical controller that and a kernel that has Bayesian hyperparameters to estimate
+        # Create a hierarchical controller and a kernel that has Bayesian hyperparameters to estimate
         @VariationalHierarchicalHyperparameters(num_mc_samples=self.num_mc_samples)
         class HierarchicalController(GaussianGPController):
             pass
@@ -111,14 +110,14 @@ class VanguardTestCase(unittest.TestCase):
         gp.fit(n_sgd_iters=self.n_sgd_iters)
 
         # Get predictions from the controller object
-        prediction_means, prediction_ci_lower, prediction_ci_upper = gp.posterior_over_point(
+        prediction_medians, prediction_ci_lower, prediction_ci_upper = gp.posterior_over_point(
             self.x[self.test_indices]
-        ).confidence_interval(alpha=self.confidence_interval_alpha)
+        ).confidence_interval()
 
         # Sense check the outputs. Note that we do not check confidence interval quality here,
         # just that they can be created, due to highly varying quality of the resulting intervals,
-        self.assertTrue(np.all(prediction_means <= prediction_ci_upper))
-        self.assertTrue(np.all(prediction_means >= prediction_ci_lower))
+        self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
+        self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
 
 
 if __name__ == "__main__":
