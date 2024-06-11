@@ -15,6 +15,9 @@ import numpy as np
 import numpy.typing
 
 
+# TODO: Turns this mixin into a decorator. Currently, due to method resolution order, it's not able to "close"
+#  the methods it's intended to close, and so the mixin does nothing.
+# https://github.com/gchq/Vanguard/issues/188
 class ClassificationMixin:
     """
     Converts a decorator class to expect a classification task.
