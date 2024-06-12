@@ -5,7 +5,8 @@ Contains the _StoreInitValues metaclass.
 import inspect
 from typing import Any, Type, TypeVar
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class _StoreInitValues(type):
     """

@@ -75,7 +75,9 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
     This wrapper allows the arg names more consistent with other likelihoods.
     """
 
-    def __init__(self, *args: Any, num_classes: Optional[int] = None, num_tasks: Optional[int] = None, **kwargs: Any) -> None:
+    def __init__(
+        self, *args: Any, num_classes: Optional[int] = None, num_tasks: Optional[int] = None, **kwargs: Any
+    ) -> None:
         r"""
         Initialise self.
 
