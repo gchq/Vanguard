@@ -6,6 +6,7 @@ update all method names and docstrings with those of the super class. The
 :func:`process_args` function is a helper function for organising arguments
 to a function into a dictionary for straightforward access.
 """
+
 import inspect
 import types
 from functools import WRAPPER_ASSIGNMENTS, wraps
@@ -62,6 +63,10 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
     except TypeError:
         pass
 
+    # TODO: This function is deprecated since python 3.5 - replace with inspect.Signature.bind() asap and remove
+    #  this Pylint disable!
+    # https://github.com/gchq/Vanguard/issues/203
+    # pylint: disable=deprecated-method
     parameters_as_kwargs = inspect.getcallargs(func, *args, **kwargs)
     inner_kwargs = parameters_as_kwargs.pop("kwargs", {})
     parameters_as_kwargs.update(inner_kwargs)

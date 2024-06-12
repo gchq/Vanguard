@@ -1,6 +1,7 @@
 """
 Test that the posterior predictions of CWGP models are sensible in various ways.
 """
+
 import numpy as np
 import torch
 from gpytorch.utils.errors import NanError
@@ -53,12 +54,12 @@ class CompositionTests(VanguardTestCase):
     def test_matmul_with_negative_int(self) -> None:
         """Should raise a TypeError."""
         with self.assertRaises(TypeError):
-            self.affine @ -3
+            _ = self.affine @ -3
 
     def test_matmul_with_float(self) -> None:
         """Should raise a TypeError."""
         with self.assertRaises(TypeError):
-            self.affine @ 2.3
+            _ = self.affine @ 2.3
 
     def test_matmul_with_zero(self) -> None:
         """Should be the identity."""
@@ -124,8 +125,6 @@ class ParameterTests(VanguardTestCase):
         class TestController(GaussianGPController):
             """A test controller."""
 
-            pass
-
         scaler = StandardScaler()
         gp_1 = TestController(
             scaler.fit_transform(self.DATASET.train_x),
@@ -156,8 +155,6 @@ class ParameterTests(VanguardTestCase):
         class TestController(GaussianGPController):
             """A test controller."""
 
-            pass
-
         scaler = StandardScaler()
         gp_1 = TestController(
             scaler.fit_transform(self.DATASET.train_x),
@@ -186,8 +183,6 @@ class ParameterTests(VanguardTestCase):
         class TestController(GaussianGPController):
             """A test controller."""
 
-            pass
-
         scaler = StandardScaler()
         gp = TestController(
             scaler.fit_transform(self.DATASET.train_x),
@@ -210,8 +205,6 @@ class ParameterTests(VanguardTestCase):
         class TestController(GaussianGPController):
             """A test controller."""
 
-            pass
-
         scaler = StandardScaler()
         gp = TestController(
             scaler.fit_transform(self.DATASET.train_x),
@@ -232,8 +225,6 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
-
-            pass
 
         scaler = StandardScaler()
         gp = TestController(
@@ -258,8 +249,6 @@ class ParameterTests(VanguardTestCase):
         class TestController(GaussianGPController):
             """A test controller."""
 
-            pass
-
         scaler = StandardScaler()
         gp = TestController(
             scaler.fit_transform(self.DATASET.train_x),
@@ -282,8 +271,6 @@ class ParameterTests(VanguardTestCase):
         @SetWarp(affine @ 2, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
-
-            pass
 
         scaler = StandardScaler()
         gp = TestController(
@@ -321,8 +308,6 @@ class ConstraintTests(VanguardTestCase):
         class TestController(GaussianGPController):
             """A test controller."""
 
-            pass
-
         scaler = StandardScaler()
         gp = TestController(
             scaler.fit_transform(self.DATASET.train_x),
@@ -344,8 +329,6 @@ class ConstraintTests(VanguardTestCase):
         @SetWarp(box_cox @ affine, ignore_methods=("__init__",))
         class TestController(GaussianGPController):
             """A test controller."""
-
-            pass
 
         scaler = StandardScaler()
         gp = TestController(

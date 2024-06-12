@@ -1,6 +1,7 @@
 """
 Tests for the NormaliseY decorator.
 """
+
 import unittest
 
 import torch
@@ -14,8 +15,6 @@ from vanguard.vanilla import GaussianGPController
 @NormaliseY(ignore_methods=("__init__",))
 class NormalisedGaussianGPController(GaussianGPController):
     """Test class."""
-
-    pass
 
 
 class BasicTests(unittest.TestCase):
@@ -50,6 +49,9 @@ class BasicTests(unittest.TestCase):
         """Internal and external predictions should be properly scaled."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
+        # protected access is ok - we're specifically reaching in to test the internals
+        # pylint: disable=protected-access
+
         internal_mean, internal_covar = posterior._tensor_prediction()
         external_mean, external_covar = posterior.prediction()
 
@@ -59,6 +61,9 @@ class BasicTests(unittest.TestCase):
     def test_fuzzy_prediction_scaling(self) -> None:
         """Internal and external fuzzy predictions should be properly scaled."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
+
+        # protected access is ok - we're specifically reaching in to test the internals
+        # pylint: disable=protected-access
 
         internal_mean, internal_covar = posterior._tensor_prediction()
         external_mean, external_covar = posterior.prediction()
@@ -70,6 +75,8 @@ class BasicTests(unittest.TestCase):
         """Internal and external predictions should be properly scaled."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
+        # protected access is ok - we're specifically reaching in to test the internals
+        # pylint: disable=protected-access
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         external_median, external_upper, external_lower = posterior.confidence_interval(0.05)
 
@@ -81,6 +88,8 @@ class BasicTests(unittest.TestCase):
         """Internal and external predictions should be properly scaled."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
 
+        # protected access is ok - we're specifically reaching in to test the internals
+        # pylint: disable=protected-access
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         external_median, external_upper, external_lower = posterior.confidence_interval(0.05)
 

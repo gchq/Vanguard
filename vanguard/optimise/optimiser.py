@@ -1,6 +1,7 @@
 """
 Vanguard defines its own optimiser wrapper to enable additional features.
 """
+
 import inspect
 from collections import deque
 from functools import total_ordering
@@ -91,12 +92,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     @overload
-    def step(self, loss: float, closure: None = ...) -> None:
-        ...
+    def step(self, loss: float, closure: None = ...) -> None: ...
 
     @overload
-    def step(self, loss: float, closure: Callable[[], float]) -> float:
-        ...
+    def step(self, loss: float, closure: Callable[[], float]) -> float: ...
 
     def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
@@ -127,7 +126,6 @@ class SmartOptimiser(Generic[OptimiserT]):
 
     def set_parameters(self) -> None:
         """Tidy up after optimisation is completed."""
-        pass
 
     def _reset_module_parameters(self) -> None:
         """
@@ -154,12 +152,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         )
 
     @overload
-    def _step(self, loss: float, closure: None = ...) -> None:
-        ...
+    def _step(self, loss: float, closure: None = ...) -> None: ...
 
     @overload
-    def _step(self, loss: float, closure: Callable[[], float]) -> float:
-        ...
+    def _step(self, loss: float, closure: Callable[[], float]) -> float: ...
 
     def _step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
@@ -249,11 +245,13 @@ class Parameters:
         self.priority_value = value
 
     def __lt__(self, other: "Parameters") -> bool:
-        # TODO: this should check whether `isinstance(other, Parameters)` and if not return `NotImplemented`
+        if not isinstance(other, Parameters):
+            return NotImplemented
         return self.priority_value < other.priority_value
 
     def __eq__(self, other: "Parameters") -> bool:
-        # TODO: as for __lt__ above
+        if not isinstance(other, Parameters):
+            return NotImplemented
         return self.priority_value == other.priority_value
 
     @staticmethod
@@ -335,5 +333,3 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
 
 class NoImprovementError(RuntimeError):
     """Raised when the loss of the model is consistently increasing."""
-
-    pass

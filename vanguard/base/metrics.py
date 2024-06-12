@@ -5,6 +5,7 @@ Vanguard supports a number of metrics pre-attached and tracked to all
 controller classes. These are calculated per iteration by the
 :class:`MetricsTracker` class.
 """
+
 import itertools
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Callable, Optional
@@ -165,6 +166,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float, controller: "BaseGPController") -> float:
+def loss(loss_value: float, controller: "BaseGPController") -> float:  # pylint: disable=unused-argument
     """Return the loss value."""
     return loss_value

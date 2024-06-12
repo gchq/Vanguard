@@ -1,6 +1,7 @@
 """
 Doctests for Vanguard.
 """
+
 import doctest
 import importlib
 import io
@@ -61,7 +62,7 @@ class DoctestMetaClass(type):
                 avoid unexpected behaviours which occur when using non-local
                 loop variables within a new function.
                 """
-                suite = self.names_to_suites[self._testMethodName]
+                suite = self.names_to_suites[self._testMethodName]  # pylint: disable=protected-access
                 result = self.test_runner.run(suite)
                 if result.failures or result.errors:
                     for _, result in result.failures:

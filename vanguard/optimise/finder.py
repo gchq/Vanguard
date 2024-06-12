@@ -1,6 +1,7 @@
 """
 Contains the LearningRateFinder class to aid with choosing the largest possible learning rate.
 """
+
 import typing
 
 import matplotlib.pyplot as plt

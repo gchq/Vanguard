@@ -1,6 +1,7 @@
 """
 Contains the Posterior class.
 """
+
 from typing import Tuple, TypeVar, Union
 
 import gpytorch

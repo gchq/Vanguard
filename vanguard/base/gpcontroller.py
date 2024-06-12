@@ -1,6 +1,7 @@
 """
 The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPController` class.
 """
+
 import warnings
 from typing import List, Optional, Union
 
@@ -205,6 +206,6 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
             Attributes such as the training data, and kernel are likely to be shared across instances. To
             mitigate this, explicitly pass copies of these as keyword parameters.
         """
-        initialisation_params = instance._init_params.copy()
+        initialisation_params = instance._init_params.copy()  # pylint: disable=protected-access
         initialisation_params.update(kwargs)
         return cls(**initialisation_params)

@@ -65,6 +65,7 @@ jumanjihouse
 jupyterlab
 keepdim
 kernelspec
+kmedoids
 lazify
 lengthscale
 lengthscales
@@ -119,11 +120,15 @@ quickstart
 randn
 rcfile
 rcparams
+refs
 refstyle
 relazified
 relazifying
 rpds
 rsample
+rtype
+seealso
+setdiff
 setuptools
 sklearn
 sphinxcontrib
@@ -135,8 +140,10 @@ tinycss
 toctree
 tril
 ttypes
+typecheck
 typehints
 unsrt
+vararg
 viewcode
 warpfunctions
 xlabel

@@ -3,6 +3,7 @@ Vanguard implements a small number of base models which are built on by various 
 
 They are syntactically similar to the standard model classes used in GPyTorch.
 """
+
 import gpytorch
 import numpy as np
 import torch
@@ -14,7 +15,7 @@ class ExactGPModel(ExactGP):
     Standard GPyTorch exact GP model subclassing :class:`gpytorch.models.ExactGP` with flexible prior kernel, mean.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=unused-argument
         self,
         train_x: torch.Tensor,
         train_y: torch.Tensor,
@@ -28,15 +29,18 @@ class ExactGPModel(ExactGP):
 
         :param train_x: (n_samples, n_features) The training inputs (features).
         :param train_y: (n_samples,) The training targets (response).
-        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must be Gaussian.
+        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must
+            be Gaussian.
         :param mean_module: The prior mean function to use.
         :param covar_module: The prior kernel function to use.
         """
         super().__init__(train_x, train_y, likelihood)
         self.mean_module = mean_module
         self.covar_module = covar_module
+        # TODO: warn if kwargs is non-empty here?
+        # https://github.com/gchq/Vanguard/issues/219
 
-    def forward(self, x: torch.Tensor) -> gpytorch.distributions.MultivariateNormal:
+    def forward(self, x: torch.Tensor) -> gpytorch.distributions.MultivariateNormal:  # pylint: disable=arguments-differ
         """
         Compute the prior latent distribution on a given input.
 
@@ -70,7 +74,8 @@ class InducingPointKernelGPModel(ExactGPModel):
 
         :param train_x: (n_samples, n_features) The training inputs (features).
         :param train_y: (n_samples,) The training targets (response).
-        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must be Gaussian.
+        :param likelihood: Likelihood to use with model. Since we're using exact inference, the likelihood must
+            be Gaussian.
         :param mean_module: The prior mean function to use.
         :param covar_module: The prior kernel function to use.
         :param n_inducing_points: The number of inducing points in the sparse kernel approximation.

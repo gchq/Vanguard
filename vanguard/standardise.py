@@ -1,6 +1,7 @@
 """
 The :class:`DisableStandardScaling` decorator will disable the default input standard scaling.
 """
+
 from typing import Type, TypeVar
 
 from .base import GPController

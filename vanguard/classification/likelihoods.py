@@ -56,6 +56,9 @@ class MultitaskBernoulliLikelihood(BernoulliLikelihood):
         self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, *args, **kwargs
     ):
         """Compute the log probability sum summing the log probabilities over the tasks."""
+        # TODO: investigate why this works/why it's been missed that it doesn't work?
+        # https://github.com/gchq/Vanguard/issues/218
+        # pylint: disable=no-member
         return super().log_prob(observations, function_dist, *args, **kwargs).sum(dim=-1)
 
     def expected_log_prob(
@@ -85,6 +88,7 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
 
 
 class DirichletKernelDistribution(torch.distributions.Dirichlet):
+    # pylint: disable=abstract-method
     """
     A pseudo Dirichlet distribution with the log probability modified to match that from [CITATION NEEDED]_.
     """
@@ -155,9 +159,11 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     def alpha(self) -> Optional[Union[float, numpy.typing.NDArray[np.floating]]]:
         return self._alpha_var.noise
 
+    # pylint: disable=arguments-differ
     def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
         return None
 
+    # pylint: disable=arguments-differ
     def log_marginal(
         self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, **kwargs
     ) -> torch.Tensor:
@@ -169,6 +175,8 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     ) -> DirichletKernelDistribution:
         return DirichletKernelDistribution(function_dist.labels, function_dist.kernel, self.alpha)
 
+    # The parameter `input` is taken from superclass method, so we can't rename it here.
+    # pylint: disable=redefined-builtin
     def __call__(
         self, input: Union[torch.Tensor, DummyKernelDistribution], *args, **kwargs
     ) -> torch.distributions.Distribution:
@@ -180,8 +188,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         elif is_marginal:
             return self.marginal(input, *args, **kwargs)
         else:
-            # TODO: this should probably be a TypeError instead
-            raise RuntimeError(
+            raise TypeError(
                 "Likelihoods expects a DummyKernelDistribution input to make marginal predictions, or a "
                 f"torch.Tensor for conditional predictions. Got a {type(input).__name__}"
             )
@@ -209,7 +216,8 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         r"""
         Compute the MLL given :math:`p(\mathbf f)` and :math:`\mathbf y`.
 
-        :param function_dist: :math:`p(\mathbf f)` the outputs of the latent function (the :obj:`gpytorch.models.ExactGP`)
+        :param function_dist: :math:`p(\mathbf f)` the outputs of the latent function
+            (the :obj:`gpytorch.models.ExactGP`)
         :param target: :math:`\mathbf y` The target values
         :return: Exact MLL. Output shape corresponds to batch shape of the model/input data.
         """

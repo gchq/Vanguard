@@ -1,6 +1,7 @@
 """
 Tests for the greedy optimisation behaviour in GreedySmartOptimiser.
 """
+
 import unittest
 
 import numpy as np
@@ -85,6 +86,7 @@ class ParameterAgreementTests(unittest.TestCase):
         self.assertEqual(self.controller.mean.constant.item(), self.controller2.mean.constant.item())
 
     def test_loss_is_best_greedy(self) -> None:
+        # pylint: disable=protected-access
         best_loss = min(np.nan_to_num(self.greedy_controller._smart_optimiser.last_n_losses, nan=np.inf))
         used_loss = -self.greedy_controller._smart_optimiser._top_n_parameters.best().priority_value
         self.assertEqual(used_loss, best_loss)

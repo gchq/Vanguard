@@ -4,6 +4,7 @@ Enable variational inference in a controller.
 The :class:`VariationalInference` decorator primes a :class:`~vanguard.base.gpcontroller.GPController` class
 for variational inference.
 """
+
 from typing import Any, Generic, Optional, Type, TypeVar, Union
 
 import gpytorch.settings
@@ -17,7 +18,9 @@ from ..decoratorutils import Decorator, process_args, wraps_class
 from .models import SVGPModel
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
+# pylint: disable-next=protected-access
 StrategyT = TypeVar("StrategyT", bound=gpytorch.variational._VariationalStrategy)
+# pylint: disable-next=protected-access
 DistributionT = TypeVar("DistributionT", bound=gpytorch.variational._VariationalDistribution)
 
 

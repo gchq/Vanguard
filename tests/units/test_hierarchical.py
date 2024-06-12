@@ -1,6 +1,7 @@
 """
 Tests for the VariationalHierarchicalHyperparameters and BayesianHyperparameters decorators.
 """
+
 import abc
 import unittest
 from typing import Any, Generic, Type, TypeVar
@@ -77,19 +78,19 @@ class KernelConversionTests(unittest.TestCase):
         self.assertEqual(gp.hyperparameter_collection.sample_tensor.shape, torch.Size([N_MC_SAMPLES, 1]))
 
 
-T_GPController = TypeVar("T_GPController", bound=GPController)
+GPControllerT = TypeVar("GPControllerT", bound=GPController)
 
 
 class AbstractTests:
     # namespace the test case ABCs below so they don't get run by unittest
-    class TrainingTests(unittest.TestCase, Generic[T_GPController], metaclass=abc.ABCMeta):
+    class TrainingTests(unittest.TestCase, Generic[GPControllerT], metaclass=abc.ABCMeta):
         """
         Basic tests for an hierarchical controller and BayesianHyperparameters decorators.
         """
 
         @property
         @abc.abstractmethod
-        def controller_class(self) -> Type[T_GPController]:
+        def controller_class(self) -> Type[GPControllerT]:
             """
             The GPController subclass to be tested.
 
@@ -141,7 +142,7 @@ class AbstractTests:
             self.assertNoNans(upper)
             self.assertNoNans(lower)
 
-        def assertNoNans(self, array) -> None:
+        def assertNoNans(self, array) -> None:  # pylint: disable=invalid-name
             self.assertFalse(np.isnan(array).any())
 
 

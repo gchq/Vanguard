@@ -4,6 +4,7 @@ Enabling multitask Gaussian processes.
 The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
+
 from typing import Any, Dict, Optional, Type, TypeVar
 
 import torch
@@ -70,20 +71,20 @@ class Multitask(Decorator):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
+                # it's OK to access self.gp_model_class as it's set in super().__init__ above
+                original_gp_model_class = self.gp_model_class  # pylint: disable=access-member-before-definition
                 if is_variational:
                     if decorator.lmc_dimension is not None:
-                        gp_model_class = lmc_variational_multitask_model(self.gp_model_class)
+                        gp_model_class = lmc_variational_multitask_model(original_gp_model_class)
                     else:
-                        gp_model_class = independent_variational_multitask_model(self.gp_model_class)
+                        gp_model_class = independent_variational_multitask_model(original_gp_model_class)
                 else:
-                    gp_model_class = self.gp_model_class
+                    gp_model_class = original_gp_model_class
 
                 # Pyright cannot resolve dynamic base class
                 @multitask_model
                 class MultitaskGPModelClass(gp_model_class):  # pyright: ignore[reportGeneralTypeIssues]
                     """Multitask version of gp_model_class."""
-
-                    pass
 
                 self.gp_model_class = MultitaskGPModelClass
 

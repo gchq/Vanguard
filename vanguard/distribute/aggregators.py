@@ -3,6 +3,7 @@ A suite of aggregators to be used with the :class:`~vanguard.distribute.decorato
 
 These are responsible for combining the predictions of several independent expert controllers.
 """
+
 from typing import List, Optional, Tuple
 
 import torch

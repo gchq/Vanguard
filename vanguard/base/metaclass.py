@@ -1,6 +1,7 @@
 """
 Contains the _StoreInitValues metaclass.
 """
+
 import inspect
 from typing import Any, Type, TypeVar
 

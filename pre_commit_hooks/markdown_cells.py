@@ -1,15 +1,16 @@
 """
 A simple pre-commit hook which forbids markdown cells in Jupyter notebooks.
 """
+
 import argparse
 from typing import Optional, Sequence
 
 import nbformat
 
 
-def count_markdown_cells_in_notebook(file_path: str) -> int:
+def count_markdown_cells_in_notebook(file_path: str, encoding="utf8") -> int:
     """Check a file and return the number of lambdas present."""
-    with open(file_path) as rf:
+    with open(file_path, encoding=encoding) as rf:
         notebook = nbformat.read(rf, as_version=4)
 
     number_of_bad_cells = 0

@@ -1,7 +1,9 @@
 """
 Contains model classes to enable classification in Vanguard.
 """
+
 import warnings
+from typing import Optional
 
 import gpytorch
 import torch
@@ -31,6 +33,7 @@ class DummyKernelDistribution:
         self.mean = self.kernel @ self.labels.evaluate()
         self.covariance_matrix = torch.zeros_like(self.mean)
 
+    # pylint: disable-next=unused-argument
     def add_jitter(self, *args, **kwargs):
         return self
 
@@ -45,10 +48,10 @@ class InertKernelModel(ExactGPModel):
 
     def __init__(
         self,
-        train_inputs: torch.Tensor,
-        train_targets: torch.Tensor,
+        train_inputs: Optional[torch.Tensor],
+        train_targets: Optional[torch.Tensor],
         covar_module: gpytorch.kernels.Kernel,
-        mean_module: gpytorch.means.Mean,
+        mean_module: Optional[gpytorch.means.Mean],
         likelihood: gpytorch.likelihoods.Likelihood,
         num_classes: int,
     ) -> None:
@@ -72,8 +75,8 @@ class InertKernelModel(ExactGPModel):
                 train_inputs = (train_inputs,)
             try:
                 self.train_inputs = tuple(tri.unsqueeze(-1) if tri.ndimension() == 1 else tri for tri in train_inputs)
-            except AttributeError:
-                raise TypeError("Train inputs must be a tensor, or a list/tuple of tensors")
+            except AttributeError as exc:
+                raise TypeError("Train inputs must be a tensor, or a list/tuple of tensors") from exc
             self.train_targets = train_targets
 
         self.prediction_strategy = None

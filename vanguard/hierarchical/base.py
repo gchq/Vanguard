@@ -1,6 +1,7 @@
 """
 Contains the BaseHierarchicalHyperparameters decorator.
 """
+
 import warnings
 from typing import Any, Generator, List, Tuple, Type, TypeVar, Union
 
@@ -62,6 +63,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 """
                 posteriors = (
                     self.posterior_class(posterior_sample)
+                    # pylint: disable=protected-access
                     for posterior_sample in decorator._infinite_posterior_samples(self, x)
                 )
                 posterior_collection = self.posterior_collection_class(posteriors)
@@ -76,6 +78,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 """
                 likelihoods = (
                     self.posterior_class(posterior_sample)
+                    # pylint: disable=protected-access
                     for posterior_sample in decorator._infinite_likelihood_samples(self, x)
                 )
                 likelihood_collection = self.posterior_collection_class(likelihoods)
@@ -101,6 +104,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 self.set_to_evaluation_mode()
                 posteriors = (
                     self.posterior_class(x_sample)
+                    # pylint: disable=protected-access
                     for x_sample in decorator._infinite_fuzzy_posterior_samples(self, x, x_std)
                 )
                 posterior_collection = self.posterior_collection_class(posteriors)
@@ -126,6 +130,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 self.set_to_evaluation_mode()
                 likelihoods = (
                     self.posterior_class(posterior_sample)
+                    # pylint: disable=protected-access
                     for posterior_sample in decorator._infinite_fuzzy_likelihood_samples(self, x, x_std)
                 )
                 likelihood_collection = self.posterior_collection_class(likelihoods)

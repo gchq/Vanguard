@@ -1,6 +1,7 @@
 """
 Vanguard includes :class:`gpytorch.kernels.Kernel` subclasses which are recommended for use in controllers.
 """
+
 from typing import Optional, Tuple, Union
 
 import torch

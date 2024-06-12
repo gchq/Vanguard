@@ -1,6 +1,7 @@
 """
 Contains the BinaryClassification decorator.
 """
+
 from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
@@ -126,6 +127,5 @@ class BinaryClassification(Decorator):
             @staticmethod
             def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
-                pass
 
         return InnerClass

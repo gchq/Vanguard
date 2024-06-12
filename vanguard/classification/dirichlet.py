@@ -66,7 +66,7 @@ class DirichletMulticlassClassification(Decorator):
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
-            A wrapper for implementing variational inference.
+            A wrapper for multiclass GP classification using a Dirichlet transformation.
             """
 
             _y_batch_axis = 1
@@ -79,7 +79,7 @@ class DirichletMulticlassClassification(Decorator):
                 if not issubclass(likelihood_class, DirichletClassificationLikelihood):
                     raise ValueError(
                         "The class passed to `likelihood_class` must be a subclass of "
-                        f"{DirichletClassificationLikelihood.__name__} for binary classification."
+                        f"{DirichletClassificationLikelihood.__name__} for multiclass classification."
                     )
 
                 train_y = all_parameters_as_kwargs.pop("train_y")
@@ -158,7 +158,9 @@ class DirichletMulticlassClassification(Decorator):
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_point(x)
-                samples = posterior._tensor_sample(torch.Size((256,)))
+                # TODO: why is this 256 hardcoded?
+                # https://github.com/gchq/Vanguard/issues/202
+                samples = posterior._tensor_sample(torch.Size((256,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)
                 detached_probs = probs.detach().cpu().numpy()
@@ -179,7 +181,9 @@ class DirichletMulticlassClassification(Decorator):
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_fuzzy_point(x, x_std)
-                samples = posterior._tensor_sample_condensed(torch.Size((256,)))
+                # TODO: why is this 256 hardcoded?
+                # https://github.com/gchq/Vanguard/issues/202
+                samples = posterior._tensor_sample_condensed(torch.Size((256,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)
                 detached_probs = probs.detach().cpu().numpy()
@@ -197,6 +201,5 @@ class DirichletMulticlassClassification(Decorator):
             @staticmethod
             def warn_normalise_y() -> None:
                 """Override base warning because classification renders y normalisation irrelevant."""
-                pass
 
         return InnerClass

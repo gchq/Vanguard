@@ -1,6 +1,7 @@
 """
 Contains GPyTorch likelihoods required in Vanguard but not implemented in GPyTorch.
 """
+
 from typing import Any, Optional
 
 from gpytorch.distributions import MultitaskMultivariateNormal
@@ -46,7 +47,12 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         self._fixed_noise = value
 
     def marginal(
-        self, function_dist: MultitaskMultivariateNormal, *params: Any, noise: Optional[Tensor] = None, **kwargs: Any
+        # pylint: disable-next=unused-argument
+        self,
+        function_dist: MultitaskMultivariateNormal,
+        *params: Any,
+        noise: Optional[Tensor] = None,
+        **kwargs: Any,
     ) -> MultitaskMultivariateNormal:
         r"""
         Return the marginal distribution.
@@ -83,6 +89,7 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
 
         return function_dist.__class__(mean, covar)
 
+    # pylint: disable=arguments-differ, arguments-renamed, keyword-arg-before-vararg
     def _shaped_noise_covar(  # pyright: ignore [reportIncompatibleMethodOverride]
         self,
         base_shape: Size,

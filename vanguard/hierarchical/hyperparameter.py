@@ -1,6 +1,7 @@
 """
 Contains the BayesianHyperparameter class.
 """
+
 from typing import Optional
 
 import torch

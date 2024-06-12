@@ -1,6 +1,7 @@
 """
 Contains the MonteCarloPosteriorCollection class.
 """
+
 from typing import Generator, NoReturn, Tuple
 
 import numpy.typing
@@ -17,7 +18,8 @@ class MonteCarloPosteriorCollection(Posterior):
     uncertainty.
     Samples are lazily loaded if more are needed for a better prediction.
 
-    :param posterior_generator: A :class:`~vanguard.base.posteriors.Posterior` object defining an infinite generator of posteriors.
+    :param posterior_generator: A :class:`~vanguard.base.posteriors.Posterior` object defining an infinite generator
+        of posteriors.
 
     .. warning::
         In order to ensure reproducible output for predictions and confidence
@@ -149,8 +151,8 @@ class MonteCarloPosteriorCollection(Posterior):
 
         try:
             (new_distribution_class,) = new_distribution_classes
-        except ValueError:
-            raise TypeError(f"Posteriors have multiple distribution types: {repr(new_distribution_classes)}.")
+        except ValueError as exc:
+            raise TypeError(f"Posteriors have multiple distribution types: {repr(new_distribution_classes)}.") from exc
 
         if old_distribution_class is not None and new_distribution_class != old_distribution_class:
             raise TypeError(f"Cannot add {new_distribution_class} types to {old_distribution_class}.")
@@ -173,7 +175,8 @@ class MonteCarloPosteriorCollection(Posterior):
         while num_yielded < num_posteriors:
             posterior = next(self._posterior_generator)
             try:
-                torch.linalg.cholesky(posterior.distribution.covariance_matrix)
+                # pylint false positive
+                torch.linalg.cholesky(posterior.distribution.covariance_matrix)  # pylint: disable=not-callable
             except RuntimeError:
                 self._posteriors_skipped += 1
             else:
@@ -209,8 +212,8 @@ class MonteCarloPosteriorCollection(Posterior):
         Determine an appropriately large number of Monte Carlo samples.
 
         Determine an appropriately large number of Monte Carlo samples for a desired confidence level when computing
-        confidence intervals with Monte Carlo integration. This method is motivated by a simple remark in :cite:`Owen13`.
-        The factor is arbitrary, we just want the number of samples to be a lot larger than
+        confidence intervals with Monte Carlo integration. This method is motivated by a simple remark in
+        :cite:`Owen13`. The factor is arbitrary, we just want the number of samples to be a lot larger than
         :math:`\frac{1}{\min(alpha, 1-alpha)}`.
 
         .. warning::

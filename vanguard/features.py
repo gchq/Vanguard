@@ -1,6 +1,7 @@
 """
 Contains decorators to deal with input features that aren't vectors.
 """
+
 from functools import partial
 from typing import Tuple, Type, TypeVar, Union
 
@@ -137,13 +138,6 @@ class _HigherRankFeaturesKernel(_HigherRankFeaturesModel):
     to the model forward method, this method is exposed directly to the flattened
     data.
     """
-
-    def __init__(self, shape: Union[Tuple[int], torch.Size]):
-        """
-        :param shape: The native shape of a single data point.
-        """
-        self.shape = tuple(shape)
-        self.flat_shape = np.prod(self.shape)
 
     def __call__(self, kernel_cls: Type[kernels.Kernel]) -> Type[kernels.Kernel]:
         shape = self.shape

@@ -4,6 +4,7 @@ Base datasets for Vanguard.
 For the ease of the user, Vanguard contains a number of datasets commonly referenced in examples, and used in tests.
 The dataset instances allow for easy access to the training and testing data through attributes.
 """
+
 import os
 from contextlib import contextmanager
 from typing import Generator, Union

@@ -1,6 +1,7 @@
 """
 Tests for the LossTracker class.
 """
+
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
@@ -44,12 +45,12 @@ class BasicTests(unittest.TestCase):
     def test_out_of_range(self) -> None:
         """Should raise an IndexError."""
         with self.assertRaises(IndexError):
-            self.tracker[500]
+            _ = self.tracker[500]
 
     def test_bad_type(self) -> None:
         """Should raise a TypeError."""
         with self.assertRaises(TypeError):
-            self.tracker["hello"]
+            _ = self.tracker["hello"]
 
 
 class NanTests(unittest.TestCase):

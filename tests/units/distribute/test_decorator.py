@@ -1,6 +1,7 @@
 """
 Tests for the Distributed decorator.
 """
+
 import unittest
 
 from vanguard.datasets.synthetic import HeteroskedasticSyntheticDataset, SyntheticDataset
@@ -14,15 +15,11 @@ from vanguard.warps import SetWarp, warpfunctions
 class DistributedGaussianGPController(GaussianGPController):
     """Test class."""
 
-    pass
-
 
 @Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_all=True)
 @SetWarp(warpfunctions.AffineWarpFunction(a=3, b=-1) @ warpfunctions.BoxCoxWarpFunction(0.2), ignore_all=True)
 class DistributedWarpedGaussianGPController(GaussianGPController):
     """Test class."""
-
-    pass
 
 
 class InitialisationTests(unittest.TestCase):
@@ -62,28 +59,33 @@ class SharedDataTests(unittest.TestCase):
 
     def test_experts_have_been_created(self) -> None:
         """Lists should not be empty."""
+        # pylint: disable=protected-access
         self.assertNotEqual(0, len(self.controller._expert_controllers))
         self.assertNotEqual(0, len(self.warp_controller._expert_controllers))
 
     def test_expert_losses(self) -> None:
         """All losses should be different."""
+        # pylint: disable=protected-access
         unique_expert_losses = set(self.controller.expert_losses())
         self.assertEqual(len(unique_expert_losses), len(self.controller._expert_controllers))
 
     def test_expert_kernels_are_different(self) -> None:
         """The set of ids needs to be the correct length."""
+        # pylint: disable=protected-access
         kernel_ids = {id(expert.kernel) for expert in self.controller._expert_controllers}
         self.assertEqual(len(self.controller._expert_controllers), len(kernel_ids))
         self.assertNotIn(id(self.controller.kernel), kernel_ids)
 
     def test_expert_means_are_different(self) -> None:
         """The set of ids needs to be the correct length."""
+        # pylint: disable=protected-access
         mean_ids = {id(expert.mean) for expert in self.controller._expert_controllers}
         self.assertEqual(len(self.controller._expert_controllers), len(mean_ids))
         self.assertNotIn(id(self.controller.mean), mean_ids)
 
     def test_expert_warps_are_identical(self) -> None:
         """The set should only have one element."""
+        # pylint: disable=protected-access
         warp_ids = {id(expert.warp) for expert in self.warp_controller._expert_controllers}
         warp_ids.add(id(self.warp_controller.warp))
         self.assertEqual(1, len(warp_ids))
