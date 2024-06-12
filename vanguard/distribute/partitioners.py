@@ -6,15 +6,14 @@ from collections import defaultdict
 from typing import Iterable, List, Optional, Union
 
 import gpytorch.kernels
+import kmedoids
 import matplotlib.pyplot as plt
 import numpy as np
+import sklearn.cluster
+import sklearn.manifold
 import torch
-from kmedoids import KMedoids as _KMedoids
 from matplotlib.colors import Colormap
 from numpy.typing import NDArray
-from sklearn.cluster import KMeans as _KMeans
-from sklearn.cluster import MiniBatchKMeans as _MiniBatchKMeans
-from sklearn.manifold import TSNE
 
 
 # TODO: should this be an abstract base class?
@@ -68,7 +67,7 @@ class BasePartitioner:
         :param partition: List of data partitions to plot
         :param cmap: Colormap to use for plotting
         """
-        embedding = TSNE().fit_transform(self.train_x)
+        embedding = sklearn.manifold.TSNE().fit_transform(self.train_x)
 
         colours = [-1 for _ in range(len(self.train_x))]
         for group_index, group in enumerate(partition):
@@ -155,7 +154,7 @@ class KMeansPartitioner(BasePartitioner):
         :param n_clusters: The number of clusters.
         :return: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
-        clusterer = _KMeans(n_clusters=n_clusters, random_state=self.seed)
+        clusterer = sklearn.cluster.KMeans(n_clusters=n_clusters, random_state=self.seed)
         labels = clusterer.fit(self.train_x).labels_
         partition = self._group_indices_by_label(labels)
         return partition
@@ -173,7 +172,7 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
         :param n_clusters: The number of clusters.
         :return: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
-        clusterer = _MiniBatchKMeans(n_clusters=n_clusters, random_state=self.seed)
+        clusterer = sklearn.cluster.MiniBatchKMeans(n_clusters=n_clusters, random_state=self.seed)
         labels = clusterer.fit(self.train_x).labels_
         partition = self._group_indices_by_label(labels)
         return partition
@@ -215,7 +214,7 @@ class KMedoidsPartitioner(BasePartitioner):
         :return: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
         dist_matrix = self._construct_distance_matrix()
-        clusterer = _KMedoids(n_clusters=n_clusters, metric="precomputed", random_state=self.seed)
+        clusterer = kmedoids.KMedoids(n_clusters=n_clusters, metric="precomputed", random_state=self.seed)
         labels = clusterer.fit(dist_matrix).labels_
         partition = self._group_indices_by_label(labels)
         return partition
