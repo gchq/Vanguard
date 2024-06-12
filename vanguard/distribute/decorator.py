@@ -33,7 +33,7 @@ ControllerT = TypeVar("ControllerT", bound=GPController)
 
 class Distributed(TopMostDecorator, Generic[ControllerT]):
     """
-    Uses multiple controller classes to aggregate predictions.
+    Use multiple controller classes to aggregate predictions.
 
     .. note::
         Because of the way expert controllers are created, the output standard deviation must be a
@@ -50,6 +50,23 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         >>> @Distributed(n_experts=10, aggregator_class=GRBCMAggregator)
         ... class DistributedGPController(GPController):
         ...     pass
+
+
+    :param n_experts: The number of partitions in which to split the data. Defaults to 3.
+    :param subset_fraction: The proportion of the training data to be used to train the hyperparameters.
+        Defaults to 0.1.
+    :param seed: The seed used for creating the subset of the training data used to train the hyperparameters.
+        Defaults to 42.
+    :param aggregator_class: The class to be used for aggregation. Defaults to
+        :class:`~vanguard.distribute.aggregators.RBCMAggregator`.
+    :param partitioner_class: The class to be used for partitioning. Defaults to
+        :class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
+
+    :Keyword Arguments:
+
+        * **partitioner_args** *dict*: Additional parameters passed to the partitioner initialisation.
+        * For other possible keyword arguments, see the
+          :class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
     """
 
     def __init__(
@@ -62,23 +79,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         **kwargs,
     ):
         """
-        Initialise self.
-
-        :param n_experts: The number of partitions in which to split the data. Defaults to 3.
-        :param subset_fraction: The proportion of the training data to be used to train the hyperparameters.
-            Defaults to 0.1.
-        :param seed: The seed used for creating the subset of the training data used to train the hyperparameters.
-            Defaults to 42.
-        :param aggregator_class: The class to be used for aggregation. Defaults to
-            :class:`~vanguard.distribute.aggregators.RBCMAggregator`.
-        :param partitioner_class: The class to be used for partitioning. Defaults to
-            :class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
-
-        :Keyword Arguments:
-
-            * **partitioner_args** *dict*: Additional parameters passed to the partitioner initialisation.
-            * For other possible keyword arguments, see the
-              :class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
+        Initialise the Distributed decorator.
         """
         self.n_experts = n_experts
         self.subset_fraction = subset_fraction
@@ -144,7 +145,14 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 )
 
             def fit(self, n_sgd_iters: int = 10, gradient_every: int = 10) -> torch.Tensor:
-                """Also create the expert controllers."""
+                """
+                Create the expert controllers.
+
+                :param n_sgd_iters: The number of gradient updates to perform in each round of hyperparameter tuning.
+                :param gradient_every: How often (in iterations) to do special HNIGP input gradient steps.
+                    Defaults to same as `n_sgd_iters` normally, overridden to 1 in batch-mode.
+                :returns: The loss.
+                """
                 loss = super().fit(n_sgd_iters, gradient_every=gradient_every)
                 partition = self.partitioner.create_partition()
                 self._expert_controllers = [
@@ -174,14 +182,25 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 return losses
 
             def posterior_over_point(self, x: Union[NDArray[np.floating], torch.Tensor]) -> Posterior:
-                """Aggregate expert posteriors."""
+                """
+                Aggregate expert posteriors.
+
+                :param x: Data-point we wish to generate predictions for
+                :return: Posterior for prediction of input `x`
+                """
                 expert_posteriors = (expert.posterior_over_point(x) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
             def posterior_over_fuzzy_point(
                 self, x: Union[NDArray[np.floating], torch.Tensor], x_std: float
             ) -> Posterior:
-                """Aggregate expert fuzzy posteriors."""
+                """
+                Aggregate expert fuzzy posteriors.
+
+                :param x: Data-point we wish to generate predictions for
+                :param x_std: Standard deviation of noise associated with input `x`
+                :return: Posterior for prediction of input `x`
+                """
                 expert_posteriors = (expert.posterior_over_fuzzy_point(x, x_std) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
@@ -204,8 +223,13 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 aggregated_posterior = self.posterior_class(aggregated_distribution)
                 return aggregated_posterior
 
-            def _create_expert_controller(self, subset_indices) -> ControllerT:
-                """Create an expert controller with respect to a subset of the input data."""
+            def _create_expert_controller(self, subset_indices: List[int]) -> ControllerT:
+                """
+                Create an expert controller with respect to a subset of the input data.
+
+                :param subset_indices: List of indices to subset the training data using
+                :return: Expert controller trained using a subset of the training data specified by `subset_indices`
+                """
                 train_x_subset, train_y_subset = self._full_train_x[subset_indices], self._full_train_y[subset_indices]
                 try:
                     # TODO: _full_y_std is not allowed to be anything other than an int or float, so this will always
@@ -267,8 +291,10 @@ def _create_subset(
     """
     Return subsets of the arrays along the same random indices.
 
-    :param arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is.
-    :returns: The array subsets.
+    :param arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is
+    :param subset_fraction: Fraction of points to include in the subset
+    :param seed: Random seed to use
+    :returns: The array subsets
 
     :Example:
         >>> x = np.array([1, 2, 3, 4, 5])
@@ -287,7 +313,8 @@ def _create_subset(
         except AttributeError:
             continue
     else:
-        return list(arrays)  # contains no subscriptable arrays
+        # If the arrays contain no subscriptable arrays, just return them as a list
+        return list(arrays)
 
     np.random.seed(seed)
     total_number_of_indices = length_of_first_subscriptable_array

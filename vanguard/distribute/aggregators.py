@@ -18,17 +18,18 @@ class BaseAggregator:
     Aggregate experts' posteriors to an approximate predictive posterior.
 
     All aggregators should inherit from this class.
+
+    :param means: List with `d` elements, each element is an array of a single expert's predictive mean
+        at the evaluation points.
+    :param covars: List with `d` elements, each :math:`d \times d` element is the individual experts posterior
+        predictive covariance at the test points.
+    :param prior_var: Tensor with `d` elements, with each element being the diagonal of the test kernel with
+        added noise.
     """
 
     def __init__(self, means: List[torch.Tensor], covars: List[torch.Tensor], prior_var: Optional[torch.Tensor] = None):
         """
-        Initialise self.
-
-        :param means: (d,) Each element is an array of a single expert's predictive mean
-                at the evaluation points.
-        :param covars: (d,d) The individual experts posterior predictive covariance
-                at the test points.
-        :param prior_var: (d,) The diagonal of the test kernel with added noise.
+        Initialise the BaseAggregator class.
         """
         self.means = torch.stack(means).type(torch.float32)
         self.covars = torch.stack(covars).type(torch.float32)
@@ -51,6 +52,8 @@ class BaseAggregator:
 
         :return: The mean and variance of the combined experts.
         """
+        # TODO: should this be an abstract method?
+        # https://github.com/gchq/Vanguard/issues/241
         raise NotImplementedError
 
     def _beta_correction(self, delta_diff: torch.Tensor, delta_val: torch.Tensor) -> torch.Tensor:
@@ -65,7 +68,6 @@ class BaseAggregator:
         :param delta_diff: The delta used to determine if correction is applied
                 (proxy for in-vs-out of training data).
         :param delta_val: The delta value to be corrected. Must be the same shape as ``delta_diff``.
-
         :return: The corrected expert weights, the same shape as ``delta_diff``.
         """
         in_training_data = delta_diff > 1
@@ -76,7 +78,12 @@ class BaseAggregator:
 
     @staticmethod
     def _make_pseudo_covar(variance: torch.Tensor) -> torch.Tensor:
-        """Convert a variance to a covariance matrix, where all entries except the diagonal are zeros."""
+        """
+        Convert a variance to a covariance matrix, where all entries except the diagonal are zeros.
+
+        :param variance: Tensor of variances for each point of interest
+        :return: Covariance matrix, where all non-diagonal elements are zero
+        """
         dim = variance.size(-1)
         covar = torch.zeros((dim, dim), dtype=variance.dtype)
         covar[range(dim), range(dim)] = variance
@@ -96,6 +103,11 @@ class POEAggregator(BaseAggregator):
     """
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Combine the predictions of the individual experts into a single PoE prediction.
+
+        :return: The mean and variance of the combined experts.
+        """
         covar_inverses = torch.stack([torch.inverse(covar) for covar in self.covars])
         covar = torch.inverse(torch.sum(covar_inverses, dim=0))
         mean = torch.tensordot(
@@ -127,6 +139,11 @@ class EKPOEAggregator(POEAggregator):
     """
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Combine the predictions of the individual experts into a single PoE prediction.
+
+        :return: The mean and variance of the combined experts.
+        """
         mean, variance = super().aggregate()
         return mean, variance * self.n_experts
 
@@ -146,6 +163,11 @@ class GPOEAggregator(BaseAggregator):
     """
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Combine the predictions of the individual experts into a single PoE prediction.
+
+        :return: The mean and variance of the combined experts.
+        """
         beta = torch.ones_like(self.means) / self.n_experts
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
         variance = torch.sum(beta / self.variances, dim=0)
@@ -168,6 +190,11 @@ class BCMAggregator(BaseAggregator):
     """
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Combine the predictions of the individual experts into a single PoE prediction.
+
+        :return: The mean and variance of the combined experts.
+        """
         beta = torch.ones_like(self.means)
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
         variance = torch.sum(beta / self.variances, dim=0)
@@ -192,6 +219,11 @@ class RBCMAggregator(BaseAggregator):
     """
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Combine the predictions of the individual experts into a single PoE prediction.
+
+        :return: The mean and variance of the combined experts.
+        """
         beta = 0.5 * (torch.log(self.prior_var) - torch.log(self.variances)).reshape(self.n_experts, -1)
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
         variance = torch.sum((beta / self.variances) - (beta / self.prior_var), dim=0) + (1 / self.prior_var)
@@ -207,6 +239,11 @@ class XBCMAggregator(BaseAggregator):
     """
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Combine the predictions of the individual experts into a single PoE prediction.
+
+        :return: The mean and variance of the combined experts.
+        """
         delta = 0.5 * (torch.log(self.prior_var) - torch.log(self.variances)).reshape(self.n_experts, -1)
         beta = self._beta_correction(delta, delta)
         mean = torch.sum((beta / self.variances) * self.means, dim=0)
@@ -237,6 +274,11 @@ class GRBCMAggregator(BaseAggregator):
     """
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Combine the predictions of the individual experts into a single PoE prediction.
+
+        :return: The mean and variance of the combined experts.
+        """
         comm_mean = self.means[0]
         comm_var = self.variances[0]
         means = self.means[1:]
@@ -259,6 +301,11 @@ class XGRBCMAggregator(BaseAggregator):
     """
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Combine the predictions of the individual experts into a single PoE prediction.
+
+        :return: The mean and variance of the combined experts.
+        """
         comm_mean = self.means[0]
         comm_var = self.variances[0]
         means = self.means[1:]
