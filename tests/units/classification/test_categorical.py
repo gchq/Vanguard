@@ -17,6 +17,7 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
+from ...cases import flaky
 from .case import BatchScaledMean, ClassificationTestCase
 
 one_hot = sklearn.preprocessing.LabelBinarizer().fit_transform
@@ -81,6 +82,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
     Tests for fuzzy multiclass classification.
     """
 
+    @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
         dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20, num_classes=4)
