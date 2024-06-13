@@ -5,11 +5,11 @@ Tests for partitioner classes.
 import unittest
 from unittest.mock import MagicMock, patch
 
+import kmedoids
+import matplotlib
 import numpy as np
 import sklearn.cluster
 from gpytorch.kernels import RBFKernel
-import kmedoids
-import matplotlib
 
 from vanguard.distribute import partitioners
 
@@ -153,9 +153,7 @@ class MockedPartitionTests(unittest.TestCase):
 
         # Verify the expected calls were made to the mocked objects - i.e. the clustering was done
         # as expected
-        mock_clustering.assert_called_once_with(
-            n_clusters=self.n_experts, metric="precomputed", random_state=self.seed
-        )
+        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, metric="precomputed", random_state=self.seed)
         mocked_fit.assert_called_once_with(actual_distances)
 
     def test_construct_distance_matrix(self):
