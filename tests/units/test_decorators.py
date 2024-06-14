@@ -117,7 +117,7 @@ class AttributeTests(unittest.TestCase):
 
             __decorators__ = []
 
-            def __init__(self, number: Union[float, int]):
+            def __init__(self, number: Union[float, int]) -> None:
                 self.number = number
 
             def add_5(self) -> Union[float, int]:
@@ -212,7 +212,7 @@ class TestErrorsWhenOverwriting(VanguardTestCase):
 
             __decorators__ = []
 
-            def __init__(self, number: Union[int, float]):
+            def __init__(self, number: Union[int, float]) -> None:
                 self.number = number
 
             def add_5(self) -> Union[int, float]:
@@ -224,7 +224,7 @@ class TestErrorsWhenOverwriting(VanguardTestCase):
             Square the result of a SimpleNumber class.
             """
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
             def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -392,7 +392,7 @@ class TestErrorsWhenOverwriting(VanguardTestCase):
         class RequirementDecorator(Decorator):
             """A decorator with a requirement."""
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(
                     framework_class=simple_number_class, required_decorators={square_result_class}, **kwargs
                 )
@@ -413,7 +413,7 @@ class TestErrorsWhenOverwriting(VanguardTestCase):
         class RequirementDecorator(Decorator):
             """A decorator with a requirement."""
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(
                     framework_class=simple_number_class, required_decorators={square_result_class}, **kwargs
                 )
@@ -446,7 +446,7 @@ class SignatureTests(unittest.TestCase):
 
             __decorators__ = []
 
-            def __init__(self, number: Union[int, float]):
+            def __init__(self, number: Union[int, float]) -> None:
                 self.number = number
 
             def add_5(self) -> Union[int, float]:
@@ -458,7 +458,7 @@ class SignatureTests(unittest.TestCase):
             Square the result of a SimpleNumber class.
             """
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
             def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -486,11 +486,15 @@ class SignatureTests(unittest.TestCase):
 
     def test_signature_before(self) -> None:
         """Signature should contain number."""
-        self.assertEqual("(self, number: Union[int, float])", str(inspect.signature(self.SimilarNumberBefore.__init__)))
+        self.assertEqual(
+            "(self, number: Union[int, float]) -> None", str(inspect.signature(self.SimilarNumberBefore.__init__))
+        )
 
     def test_signature_after(self) -> None:
         """Signature should contain number."""
-        self.assertEqual("(self, number: Union[int, float])", str(inspect.signature(self.SimilarNumberAfter.__init__)))
+        self.assertEqual(
+            "(self, number: Union[int, float]) -> None", str(inspect.signature(self.SimilarNumberAfter.__init__))
+        )
 
     def test_arg_spec_before(self) -> None:
         """Signature should contain number."""

@@ -63,7 +63,7 @@ class NormaliseY(Decorator):
             A wrapper for normalising y inputs and variance.
             """
 
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 

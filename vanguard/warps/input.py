@@ -27,7 +27,7 @@ class _SetModuleInputWarp:
     warping to both using this class alone.
     """
 
-    def __init__(self, warp: WarpFunction):
+    def __init__(self, warp: WarpFunction) -> None:
         self.warp = warp
 
     def __call__(self, module_class: Type[ModuleT]) -> Type[ModuleT]:
@@ -58,7 +58,7 @@ class SetInputWarp(Decorator):
             ...     pass
     """
 
-    def __init__(self, warp_function: WarpFunction, **kwargs):
+    def __init__(self, warp_function: WarpFunction, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -77,7 +77,7 @@ class SetInputWarp(Decorator):
             A wrapper for applying a warp to inputs for non-Gaussian input uncertainty.
             """
 
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 

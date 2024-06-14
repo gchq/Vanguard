@@ -3,16 +3,15 @@ Tests for the GPController class.
 """
 
 import unittest
-from typing import Union
+from typing import Callable, Optional, Union
 
-# the numpy.typing import _is_ used, but only as `np.typing`, so this is a false positive from pylint
 import gpytorch
 import numpy as np
-import numpy.typing  # pylint: disable=unused-import
 import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.means import ConstantMean
 from gpytorch.mlls import ExactMarginalLogLikelihood
+from numpy.typing import NDArray
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 
@@ -141,7 +140,14 @@ class NLLTests(unittest.TestCase):
         """Code to run before each test."""
 
         class UniformSyntheticDataset:
-            def __init__(self, function, num_train_points, num_test_points, y_std, seed=None):
+            def __init__(
+                self,
+                function: Callable,
+                num_train_points: int,
+                num_test_points: int,
+                y_std: Union[float, NDArray[np.floating]],
+                seed: Optional[int] = None,
+            ) -> None:
                 # TODO: np.random.RandomState is deprecated, use Generator API instead
                 # https://github.com/gchq/Vanguard/issues/206
                 self.rng = np.random.RandomState(seed)  # pylint: disable=no-member
@@ -186,7 +192,9 @@ class NLLTests(unittest.TestCase):
 
     def test_gpytorch_nll(self) -> None:
         class ExactGPModel(gpytorch.models.ExactGP):
-            def __init__(self, train_x, train_y, likelihood):
+            def __init__(
+                self, train_x: torch.Tensor, train_y: torch.Tensor, likelihood: gpytorch.likelihoods.likelihood
+            ) -> None:
                 super().__init__(train_x, train_y, likelihood)
                 self.mean_module = gpytorch.means.ConstantMean()
                 self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())

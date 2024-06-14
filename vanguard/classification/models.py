@@ -3,7 +3,7 @@ Contains model classes to enable classification in Vanguard.
 """
 
 import warnings
-from typing import Optional
+from typing import Any, Optional
 
 import gpytorch
 import torch
@@ -34,7 +34,7 @@ class DummyKernelDistribution:
         self.covariance_matrix = torch.zeros_like(self.mean)
 
     # pylint: disable-next=unused-argument
-    def add_jitter(self, *args, **kwargs):
+    def add_jitter(self, *args: Any, **kwargs: Any):
         return self
 
 
@@ -97,7 +97,7 @@ class InertKernelModel(ExactGPModel):
     def _label_tensor(self, targets: torch.Tensor) -> torch.Tensor:
         return DiagLazyTensor(torch.ones(self.n_classes))[targets.long()]
 
-    def __call__(self, *args, **kwargs) -> DummyKernelDistribution:
+    def __call__(self, *args: Any, **kwargs: Any) -> DummyKernelDistribution:
         train_inputs = list(self.train_inputs) if self.train_inputs is not None else []
         inputs = [arg.unsqueeze(-1) if arg.ndimension() == 1 else arg for arg in args]
 

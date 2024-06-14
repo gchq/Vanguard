@@ -50,7 +50,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         >>> test_x = np.array([0.05, 0.5, 0.95])
         >>> predictions, probs = gp.classify_points(test_x)
         >>> predictions
-        array([0, 1, 2])
+        array([0, 1, 2], dtype=int64)
     """
 
     def __init__(self, num_classes: int, **kwargs: Any) -> None:

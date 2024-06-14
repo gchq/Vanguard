@@ -24,7 +24,7 @@ class StandardiseModuleTests(unittest.TestCase):
         class BaseMean(LinearMean):
             """A test base mean."""
 
-            def __init__(self):
+            def __init__(self) -> None:
                 super().__init__(input_size=2)
 
         scaled_mean_class = self.standardiser.apply(BaseMean)
