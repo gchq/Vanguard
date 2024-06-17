@@ -35,7 +35,7 @@ dependencies = [
     "scipy",
     "torch>=1.7.0",
     "typing_extensions",
-    "urllib3>=2.2.1"
+    "urllib3>=2.2.1",
 ]
 
 [project.optional-dependencies]
@@ -46,11 +46,20 @@ test = [
 ]
 # Compile documentation
 doc = [
-    # TODO - get from requirements-docs
+    "furo",
+    "nbformat",
+    "nbsphinx",
+    "pillow",
+    "pybtex",
+    "setuptools; python_version>='3.12'",  # TODO: Remove once pybtex releases > 0.24.0
+    # https://github.com/gchq/Vanguard/issues/246
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinxcontrib-bibtex",
 ]
 # All tools for a developer including those for running pylint
 dev = [
-    "vanguard[test]", # TODO include doc?
+    "vanguard[test, doc]",
     "isort",
     "jupyterlab",
     "pre-commit",
