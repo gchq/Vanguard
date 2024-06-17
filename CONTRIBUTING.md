@@ -245,6 +245,13 @@ $ pytest tests/test_examples.py # run example tests (slow)
 Note that some tests are non-deterministic and as such may occasionally fail due to randomness.
 Please try running them again before raising an issue.
 
+### Testing before releases to PyPI
+
+Before a release is issued on PyPI, all tests for Vanguard will be run on a GPU machine. 
+This avoids having to incorporate GPU runners into the CI/CD, but still tests issues that can arise with torch and gpytorch.
+However, note that code pushed to main may not necessarily have been tested on a GPU machine until a release to PyPI is made.
+If you observe any issues on GPU machines using the code, please raise an issue detailing the behaviour, and create a PR with the relevant fix if possible. 
+
 ## Examples
 
 Writing an example notebook for new functionality is encouraged, as it improves understanding of a technique.
