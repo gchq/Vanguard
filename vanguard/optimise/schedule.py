@@ -3,7 +3,7 @@ Contains decorators for torch optimisers to apply LR schedulers as part of the o
 """
 
 import inspect
-from typing import Callable, Generic, Optional, Type, TypeVar, overload
+from typing import Any, Callable, Generic, Optional, Type, TypeVar, overload
 
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
@@ -19,7 +19,7 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
     The scheduler is stepped at each step of optimiser.
     """
 
-    def __init__(self, scheduler_class: Type[LRSchedulerT], *args, **kwargs):
+    def __init__(self, scheduler_class: Type[LRSchedulerT], *args: Any, **kwargs: Any) -> None:
         """
         :param scheduler_class: The (uninstantiated) torch learning rate scheduler to be used.
         """
@@ -37,7 +37,7 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
 
         # can't use @wraps_class here as it causes a unit test failure?
         class InnerClass(cls):
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 super().__init__(*args, **kwargs)
                 self._applied_scheduler = scheduler_class(self, *scheduler_args, **scheduler_kwargs)
 

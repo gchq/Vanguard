@@ -46,7 +46,7 @@ class Decorator:
         ignore_methods: Iterable[str] = (),
         ignore_all: bool = False,
         raise_instead: bool = False,
-    ):
+    ) -> None:
         """
         Initialise self.
 

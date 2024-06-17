@@ -20,7 +20,7 @@ class BayesianHyperparameter:
         constraint: Optional[constraints.Interval],
         prior_mean: float,
         prior_variance: float,
-    ):
+    ) -> None:
         """
         Initialise self.
 

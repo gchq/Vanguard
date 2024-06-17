@@ -241,7 +241,7 @@ class MultitaskWarpFunction(WarpFunction):
                 [0., 1.]])
     """
 
-    def __init__(self, *warps: WarpFunction):
+    def __init__(self, *warps: WarpFunction) -> None:
         """
         Initialise self.
 

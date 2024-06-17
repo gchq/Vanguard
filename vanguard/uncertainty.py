@@ -4,7 +4,7 @@ Gaussian processes can be trained on inputs with uncertainty.
 
 import warnings
 from itertools import islice
-from typing import Iterable, NoReturn, Optional, Tuple, Type, Union
+from typing import Any, Iterable, NoReturn, Optional, Tuple, Type, Union
 
 import gpytorch
 import numpy as np
@@ -41,8 +41,8 @@ class GaussianUncertaintyGPController(GPController):
         marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
         optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
         smart_optimiser_class: Type[SmartOptimiser] = SmartOptimiser,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise self.
 

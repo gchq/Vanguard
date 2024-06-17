@@ -39,13 +39,13 @@ class BayesianRBFKernel(RBFKernel):
 
 
 class ScaledBayesianRBFKernel(ScaleKernel):
-    def __init__(self, *args: Any, batch_shape: torch.Size = torch.Size([]), **kwargs: Any):
+    def __init__(self, *args: Any, batch_shape: torch.Size = torch.Size([]), **kwargs: Any) -> None:
         super().__init__(BayesianRBFKernel(*args, batch_shape=batch_shape, **kwargs), batch_shape=batch_shape)
 
 
 @BayesianHyperparameters()
 class BayesianScaledRBFKernel(ScaleKernel):
-    def __init__(self, *args: Any, batch_shape: torch.Size = torch.Size([]), **kwargs: Any):
+    def __init__(self, *args: Any, batch_shape: torch.Size = torch.Size([]), **kwargs: Any) -> None:
         super().__init__(BayesianRBFKernel(*args, batch_shape=batch_shape, **kwargs), batch_shape=batch_shape)
 
 

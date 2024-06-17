@@ -45,7 +45,7 @@ class SVGPModel(ApproximateGP):
         covar_module: Kernel,
         n_inducing_points: int,
         **kwargs: Any,
-    ):
+    ) -> None:
         """
         Initialise self.
 

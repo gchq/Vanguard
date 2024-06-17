@@ -32,7 +32,7 @@ class HyperparameterCollection:
         module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]],
         sample_shape: torch.Size,
         variational_distribution_class: VariationalDistributionT,
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -145,7 +145,7 @@ class OnePointHyperparameterCollection:
     It also manages the prior placed over the hyperparameters.
     """
 
-    def __init__(self, module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]]):
+    def __init__(self, module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]]) -> None:
         """
         Initialise self.
 

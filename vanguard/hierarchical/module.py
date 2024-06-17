@@ -7,7 +7,7 @@ over them rather than point estimates.
 """
 
 from functools import partial
-from typing import Iterable, List, Optional, Tuple, TypeVar
+from typing import Any, Iterable, List, Optional, Tuple, TypeVar
 
 import gpytorch
 import torch
@@ -51,7 +51,7 @@ class BayesianHyperparameters:
         ignored_parameters: Optional[Iterable[str]] = frozenset(),
         prior_means: Optional[dict] = None,
         prior_variances: Optional[dict] = None,
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -77,7 +77,7 @@ class BayesianHyperparameters:
         )
 
         class InnerClass(module_class):
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 super().__init__(*args, **kwargs)
                 self.bayesian_hyperparameters = []
 

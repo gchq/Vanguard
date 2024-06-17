@@ -2,7 +2,7 @@
 The :class:`DisableStandardScaling` decorator will disable the default input standard scaling.
 """
 
-from typing import Type, TypeVar
+from typing import Any, Type, TypeVar
 
 from .base import GPController
 from .decoratorutils import Decorator, wraps_class
@@ -33,7 +33,7 @@ class DisableStandardScaling(Decorator):
         ...                     )
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initialise self.
 

@@ -3,7 +3,7 @@ Contains decorators to deal with input features that aren't vectors.
 """
 
 from functools import partial
-from typing import Tuple, Type, TypeVar, Union
+from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import torch
@@ -30,7 +30,7 @@ class HigherRankFeatures(Decorator):
         ...     pass
     """
 
-    def __init__(self, rank: int, **kwargs):
+    def __init__(self, rank: int, **kwargs: Any) -> None:
         """
         :param rank: The rank of the input features. Should be a positive integer.
         """
@@ -42,7 +42,7 @@ class HigherRankFeatures(Decorator):
 
         @wraps_class(cls)
         class InnerClass(cls):
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 train_x = all_parameters_as_kwargs["train_x"]
                 all_parameters_as_kwargs.pop("self")
@@ -68,7 +68,7 @@ class _HigherRankFeaturesModel:
     computation (e.g. inside kernels) is performed.
     """
 
-    def __init__(self, shape: Union[Tuple[int], torch.Size]):
+    def __init__(self, shape: Union[Tuple[int], torch.Size]) -> None:
         """
         :param shape: The native shape of a single data point.
         """
@@ -83,7 +83,7 @@ class _HigherRankFeaturesModel:
 
         @wraps_class(model_cls)
         class InnerClass(model_cls):
-            def __init__(self, train_x: torch.Tensor, *args, **kwargs):
+            def __init__(self, train_x: torch.Tensor, *args: Any, **kwargs: Any) -> None:
                 super().__init__(_flatten(train_x), *args, **kwargs)
 
             def __call__(self, *args, **kwargs):
@@ -145,12 +145,12 @@ class _HigherRankFeaturesKernel(_HigherRankFeaturesModel):
 
         @wraps_class(kernel_cls)
         class InnerClass(kernel_cls):
-            def get_vof_basis(self, *args, **kwargs):
+            def get_vof_basis(self, *args: Any, **kwargs: Any):
                 basis_type = type(super().get_vof_basis(*args, **kwargs))
 
                 @wraps_class(basis_type)
                 class InnerBasisType(basis_type):
-                    def forward(self, x, *args, **kwargs):
+                    def forward(self, x, *args: Any, **kwargs: Any):
                         return super().forward(_unflatten(x), *args, **kwargs)
 
                 return InnerBasisType(*args, **kwargs)
