@@ -82,6 +82,8 @@ class MulticlassFuzzyTests(ClassificationTestCase):
     Tests for fuzzy multiclass classification.
     """
 
+    # TODO: Seems too flaky on 3.8 and 3.9 but reliable on 3.12, especially when delta=0.5.
+    # https://github.com/gchq/Vanguard/issues/128
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""

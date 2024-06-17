@@ -94,3 +94,8 @@ extend-select = [
 
 [tool.ruff.lint.isort]
 known-local-folder = ["confutils","refstyle"]
+
+[tool.coverage.report]
+exclude_also = [
+    "raise NotImplementedError",
+]

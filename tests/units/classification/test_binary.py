@@ -2,6 +2,8 @@
 Tests for the BinaryClassification decorator.
 """
 
+from unittest import expectedFailure
+
 import numpy as np
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO
@@ -46,6 +48,45 @@ class BinaryTests(ClassificationTestCase):
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.05)
+
+    def test_illegal_likelihood_class(self) -> None:
+        """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
+
+        class IllegalLikelihoodClass:
+            pass
+
+        with self.assertRaises(ValueError) as ctx:
+            __ = BinaryClassifier(
+                self.dataset.train_x,
+                self.dataset.train_y,
+                kernel_class=PeriodicRBFKernel,
+                y_std=0,
+                likelihood_class=IllegalLikelihoodClass,
+                marginal_log_likelihood_class=VariationalELBO,
+            )
+
+        self.assertEqual(
+            "The class passed to `likelihood_class` must be a subclass "
+            f"of {BernoulliLikelihood.__name__} for binary classification.",
+            ctx.exception.args[0],
+        )
+
+    @expectedFailure  # TODO: These tests currently fail, as ClassificationMixin doesn't function correctly.
+    # https://github.com/gchq/Vanguard/issues/188
+    def test_closed_methods(self):
+        """Test that the ClassificationMixin has correctly closed the prediction methods of the underlying controller"""
+        cases = [
+            ((lambda: self.controller.posterior_over_point(1.0)), "classify_points"),
+            ((lambda: self.controller.posterior_over_fuzzy_point(1.0, 1.0)), "classify_fuzzy_points"),
+            ((lambda: self.controller.predictive_likelihood(1.0)), "classify_points"),
+            ((lambda: self.controller.fuzzy_predictive_likelihood(1.0, 1.0)), "classify_fuzzy_points"),
+        ]
+
+        for call_method, alternative_method in cases:
+            with self.subTest():
+                with self.assertRaises(TypeError) as ctx:
+                    call_method()
+                self.assertEqual(f"The '{alternative_method}' method should be used instead.", ctx.exception.args[0])
 
 
 class BinaryFuzzyTests(ClassificationTestCase):

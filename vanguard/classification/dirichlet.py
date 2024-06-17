@@ -79,7 +79,7 @@ class DirichletMulticlassClassification(Decorator):
                 if not issubclass(likelihood_class, DirichletClassificationLikelihood):
                     raise ValueError(
                         "The class passed to `likelihood_class` must be a subclass of "
-                        f"{DirichletClassificationLikelihood.__name__} for binary classification."
+                        f"{DirichletClassificationLikelihood.__name__} for multiclass classification."
                     )
 
                 train_y = all_parameters_as_kwargs.pop("train_y")

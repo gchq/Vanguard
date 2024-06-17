@@ -3,6 +3,7 @@ Contains model classes to enable classification in Vanguard.
 """
 
 import warnings
+from typing import Optional
 
 import gpytorch
 import torch
@@ -47,10 +48,10 @@ class InertKernelModel(ExactGPModel):
 
     def __init__(
         self,
-        train_inputs: torch.Tensor,
-        train_targets: torch.Tensor,
+        train_inputs: Optional[torch.Tensor],
+        train_targets: Optional[torch.Tensor],
         covar_module: gpytorch.kernels.Kernel,
-        mean_module: gpytorch.means.Mean,
+        mean_module: Optional[gpytorch.means.Mean],
         likelihood: gpytorch.likelihoods.Likelihood,
         num_classes: int,
     ):

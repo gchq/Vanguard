@@ -188,7 +188,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         elif is_marginal:
             return self.marginal(input, *args, **kwargs)
         else:
-            raise RuntimeError(
+            raise TypeError(
                 "Likelihoods expects a DummyKernelDistribution input to make marginal predictions, or a "
                 f"torch.Tensor for conditional predictions. Got a {type(input).__name__}"
             )
