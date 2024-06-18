@@ -14,6 +14,7 @@ Regression
     :maxdepth: 1
 
     examples/intro_to_gps.ipynb
+    examples/laplace-hierarchical.ipynb
 
 Classification
 ==============

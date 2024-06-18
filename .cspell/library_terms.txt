@@ -27,6 +27,7 @@ booktitle
 bysource
 cmap
 codemirror
+colorbar
 confutils
 covar
 covars
@@ -57,6 +58,7 @@ furo
 genindex
 gpcontroller
 gpytorch
+imshow
 inproceedings
 intersphinx
 ipynb
@@ -72,6 +74,7 @@ lengthscale
 lengthscales
 lexer
 linalg
+linestyles
 linkcheck
 linspace
 logspace
@@ -142,6 +145,7 @@ thresholding
 timesteps
 tinycss
 toctree
+tqdm
 tril
 ttypes
 typecheck
@@ -149,7 +153,9 @@ typehints
 unsrt
 vararg
 viewcode
+vlines
 warpfunctions
 xlabel
 xlim
+xscale
 ylabel

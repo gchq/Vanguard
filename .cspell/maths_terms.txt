@@ -2,6 +2,7 @@ clusterer
 cutoff
 eigenbasis
 eigendecomposition
+eigendirections
 heteroskedastic
 homoskedastic
 hyperparameters
@@ -10,6 +11,7 @@ latents
 logit
 logits
 lognormal
+Matern
 medoids
 nonlinear
 nonparametric
