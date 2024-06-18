@@ -70,10 +70,12 @@ dev = [
 ]
 
 [project.urls]
-#Documentation = "https://example.org/" # TODO
+#Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved
+# https://github.com/gchq/Vanguard/issues/254
 Repository = "https://github.com/gchq/Vanguard"
 Issues = "https://github.com/gchq/Vanguard/issues"
-#Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md" # TODO
+#Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md" # TODO: Create CHANGELOG
+# https://github.com/gchq/Vanguard/issues/255
 
 [tool.setuptools]
 packages = ["vanguard"]
@@ -95,6 +97,7 @@ extend-select = [
     "D211",  # No blank lines allowed before class docstring
     "E501",  # Docstring line lengths
     # TODO: We should enable more of the pydocstyle lints!
+    # https://github.com/gchq/Vanguard/issues/256
     "S102",  # use of `exec` builtin
     "S307",  # Suspicious `eval` usage
     "I",     # isort rules
