@@ -191,7 +191,7 @@ class BCMAggregator(BaseAggregator):
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Combine the predictions of the individual experts into a single PoE prediction.
+        Combine the predictions of the individual experts into a single BCM prediction.
 
         :return: The mean and variance of the combined experts.
         """
@@ -220,7 +220,7 @@ class RBCMAggregator(BaseAggregator):
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Combine the predictions of the individual experts into a single PoE prediction.
+        Combine the predictions of the individual experts into a single RBCM prediction.
 
         :return: The mean and variance of the combined experts.
         """
@@ -240,7 +240,7 @@ class XBCMAggregator(BaseAggregator):
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Combine the predictions of the individual experts into a single PoE prediction.
+        Combine the predictions of the individual experts into a single XBCM prediction.
 
         :return: The mean and variance of the combined experts.
         """
@@ -275,7 +275,7 @@ class GRBCMAggregator(BaseAggregator):
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Combine the predictions of the individual experts into a single PoE prediction.
+        Combine the predictions of the individual experts into a single GRBCM prediction.
 
         :return: The mean and variance of the combined experts.
         """
@@ -302,7 +302,7 @@ class XGRBCMAggregator(BaseAggregator):
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Combine the predictions of the individual experts into a single PoE prediction.
+        Combine the predictions of the individual experts into a single XGRBCM prediction.
 
         :return: The mean and variance of the combined experts.
         """

@@ -193,7 +193,10 @@ class SubsetCreationTests(unittest.TestCase):
 
     def test_create_subset_expected_inputs(self):
         """
-        TODO
+        Test the handling of expected inputs (arrays with the shape attribute) when calling _create_subset.
+
+        We pass two numpy arrays to _create_subset, and expect the result from _create_subset to return subsets
+        of each.
         """
         np.random.seed(1_989)
 
@@ -213,6 +216,8 @@ class SubsetCreationTests(unittest.TestCase):
         self.assertEqual(len(subset_arrays[1]), 2)
         self.assertTrue(set(subset_arrays[0]) <= set(first_array))
         self.assertTrue(set(subset_arrays[1]) <= set(second_array))
+        self.assertTrue(len(set(subset_arrays[0])) == 2)
+        self.assertTrue(len(set(subset_arrays[1])) == 2)
 
     def test_create_subset_unexpected_inputs(self):
         """
@@ -221,6 +226,13 @@ class SubsetCreationTests(unittest.TestCase):
         When using the function _create_subset and passing arrays that do not have the
         shape attribute, we should simply get the input returned as a list.
         """
-        self.assertListEqual(
-            [[[1, 2, 3, 4], [5, 6, 7, 8]]], _create_subset([[1, 2, 3, 4], [5, 6, 7, 8]], subset_fraction=0.5)
+        with self.assertWarns(Warning) as warning_raised:
+            self.assertListEqual(
+                [[[1, 2, 3, 4], [5, 6, 7, 8]]], _create_subset([[1, 2, 3, 4], [5, 6, 7, 8]], subset_fraction=0.5)
+            )
+        # To ensure an unrelated warning is raised, check the warning text is as expected
+        self.assertEqual(
+            str(warning_raised.warning),
+            "Input 'arrays' are expected to be numpy arrays or floats. Got an array of type `list' which will not be "
+            "split into a subset.",
         )

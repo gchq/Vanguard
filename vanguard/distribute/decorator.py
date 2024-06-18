@@ -311,6 +311,11 @@ def _create_subset(
             length_of_first_subscriptable_array = array.shape[0]
             break
         except AttributeError:
+            if isinstance(array, list):
+                warnings.warn(
+                    "Input 'arrays' are expected to be numpy arrays or floats. Got an array of type "
+                    "`list' which will not be split into a subset."
+                )
             continue
     else:
         # If the arrays contain no subscriptable arrays, just return them as a list

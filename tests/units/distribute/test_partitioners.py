@@ -105,7 +105,7 @@ class MockedPartitionTests(unittest.TestCase):
         mocked_clustering_return = MagicMock()
         mocked_fit = MagicMock()
         mocked_fit_return = MagicMock()
-        mocked_fit_return.labels_ = [0, 0, 1, 0, 1, 1, 2, 1]
+        mocked_fit_return.labels_ = self.example_labels
         mocked_fit.return_value = mocked_fit_return
         mocked_clustering_return.fit = mocked_fit
         mock_clustering.return_value = mocked_clustering_return
@@ -178,7 +178,7 @@ class MockedPartitionTests(unittest.TestCase):
 
         # Check output matches expected - note that pylint flags access to a private method, but we
         # want to test it gives sensible results here
-        # pylint: disable=W0212
+        # pylint: disable-next=protected-access
         np.testing.assert_array_equal(expected_distance_matrix, partitioner._construct_distance_matrix())
 
     @patch.object(sklearn.manifold, "TSNE")
