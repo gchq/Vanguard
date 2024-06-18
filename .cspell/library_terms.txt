@@ -53,6 +53,7 @@ facecolor
 figsize
 fixsize
 framealpha
+furo
 genindex
 gpcontroller
 gpytorch
