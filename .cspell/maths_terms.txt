@@ -8,6 +8,8 @@ hyperparameters
 jittered
 latents
 logit
+logits
+lognormal
 medoids
 nonlinear
 nonparametric

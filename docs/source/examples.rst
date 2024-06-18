@@ -23,3 +23,4 @@ Classification
 
     examples/binary_classification.ipynb
     examples/multiclass_classification.ipynb
+    examples/multiclass_dirichlet_classification.ipynb
