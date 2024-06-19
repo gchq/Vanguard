@@ -74,6 +74,7 @@ lexer
 linalg
 linkcheck
 linspace
+logpdf
 logspace
 logsumexp
 mapsto

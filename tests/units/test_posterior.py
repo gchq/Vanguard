@@ -3,6 +3,7 @@ Tests for the Posterior class.
 """
 
 import unittest
+from unittest.mock import Mock
 
 import numpy as np
 import torch
@@ -60,3 +61,14 @@ class BasicTests(unittest.TestCase):
         log_prob_rand = posterior.log_probability(torch.randn(*self.mean.shape))
         log_prob_centre = posterior.log_probability(self.mean)
         self.assertLess(log_prob_rand, log_prob_centre)
+
+    def test_sample(self) -> None:
+        mock_distribution = Mock()
+        del mock_distribution.covariance_matrix  # no covariance matrix, so no jitter is added
+        mock_distribution.rsample.side_effect = torch.ones
+
+        posterior = Posterior(mock_distribution)
+
+        for size in [0, 1, 10]:
+            with self.subTest(size=size):
+                np.testing.assert_array_equal(np.ones(size), posterior.sample(size))
