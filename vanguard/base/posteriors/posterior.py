@@ -111,7 +111,7 @@ class Posterior:
 
     def log_probability(
         self,
-        y: Union[numpy.typing.NDArray[np.floating], float],
+        y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
     ) -> float:
         r"""
         Compute the log-likelihood of some values under the posterior.
