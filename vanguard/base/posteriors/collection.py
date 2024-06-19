@@ -68,7 +68,7 @@ class MonteCarloPosteriorCollection(Posterior):
                   shape of the args.
         """
         raise NotImplementedError(
-            "Constructed a MonteCarloPosteriorCollection from a single mean and covariance of a"
+            "Constructing a MonteCarloPosteriorCollection from a single mean and covariance of a"
             "Gaussian is not supported."
         )
 
