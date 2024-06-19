@@ -7,7 +7,9 @@ from unittest.mock import Mock
 
 import numpy as np
 import torch
+from gpytorch.distributions import MultivariateNormal
 from scipy import stats
+from scipy.stats import multivariate_normal
 
 from vanguard.base.posteriors import Posterior
 
@@ -72,3 +74,22 @@ class BasicTests(unittest.TestCase):
         for size in [0, 1, 10]:
             with self.subTest(size=size):
                 np.testing.assert_array_equal(np.ones(size), posterior.sample(size))
+
+    def test_log_probability(self):
+        """
+        Test that the log_probability method works as expected when a two-dimensional sample is passed in.
+
+        ...and when the collection consists of identical posteriors.
+        """
+        posterior = Posterior(MultivariateNormal(torch.zeros((2,)), torch.eye(2)))
+
+        distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=1234)
+
+        # for 10 random points, check that the log-pdf calculated by the collection is the same as that for the
+        # single distribution
+        for _ in range(10):
+            points = distribution.rvs([1, 5])
+            with self.subTest(points=points):
+                expected_value = np.sum(distribution.logpdf(points), axis=0)
+                return_value = posterior.log_probability(points)
+                self.assertAlmostEqual(expected_value, return_value, delta=1e-4)

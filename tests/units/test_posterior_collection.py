@@ -103,7 +103,9 @@ class PosteriorCollectionTests(unittest.TestCase):
                 expected_value = distribution.logpdf(point)
                 self.assertAlmostEqual(expected_value, collection.log_probability(point), delta=1e-4)
 
-    @skip("Throws a RuntimeError complaining about mismatched dimensions. Is this a bug or have I misunderstood?")
+    @skip("Throws a RuntimeError complaining about mismatched dimensions.")  # TODO: This seems to be a bug.
+    # https://github.com/gchq/Vanguard/issues/260
+
     def test_log_probability_multidimensional(self):
         """
         Test that the log_probability method works as expected when a two-dimensional sample is passed in.
