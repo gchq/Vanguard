@@ -127,7 +127,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
                     "This does not make mathematical sense and your value of gradient every will be ignored "
                     " and replaced by 1."
                 )
-            gradient_every = 1 # TODO: Check. Should gradient_every = n_sgd_iters if gradient_every is None, as below?
+            gradient_every = 1
 
         gradient_every = n_sgd_iters if gradient_every is None else gradient_every
 
