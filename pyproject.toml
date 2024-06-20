@@ -42,7 +42,6 @@ dependencies = [
 # These match the suffixes on the various requirements-*.txt files
 # Run unit tests
 test = [
-    "pytest",
     "pytest-cov",
 ]
 # Compile documentation
