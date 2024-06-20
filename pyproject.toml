@@ -42,7 +42,7 @@ dependencies = [
 # These match the suffixes on the various requirements-*.txt files
 # Run unit tests
 test = [
-    "pytest",
+    "pytest-cov",
 ]
 # Compile documentation
 doc = [
@@ -107,7 +107,18 @@ extend-select = [
 [tool.ruff.lint.isort]
 known-local-folder = ["confutils","refstyle"]
 
+[tool.coverage.run]
+command_line = "-m pytest tests/units --cov"
+branch = true
+relative_files = true
+source = ["vanguard"]
+
 [tool.coverage.report]
+show_missing = true
+sort = "Cover"
 exclude_also = [
+    "pass",
     "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "raise$",
 ]
