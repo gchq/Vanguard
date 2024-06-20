@@ -27,7 +27,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.random_seed = 1_989
+        self.rng = np.random.default_rng(1_989)
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 500
@@ -45,8 +45,6 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a multivariate target `y`, and verify that a
         GP can be fit to this data.
         """
-        np.random.seed(self.random_seed)
-
         # Define some data for the test
         x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
         y = np.zeros([x.shape[0], 2])
@@ -58,7 +56,7 @@ class VanguardTestCase(unittest.TestCase):
                 y[index, 1] = 1
 
         # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # We have a multitask binary classification problem, so we apply the BinaryClassification

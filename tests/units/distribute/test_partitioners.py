@@ -3,7 +3,7 @@ Tests for partitioner classes.
 """
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import kmedoids
 import matplotlib
@@ -41,20 +41,22 @@ class MockedPartitionTests(unittest.TestCase):
             [6],
         ]
 
-    @patch.object(np.random, "choice")
-    def test_random_sample(self, mock_choice) -> None:
+    @patch.object(np.random, "default_rng")
+    def test_random_sample(self, mock_rng_factory) -> None:
         """
         Test generation of partitions using the random sample method.
 
         We mock the random choice method used within the code to avoid random-seed dependence.
         """
-        partitioner = partitioners.RandomPartitioner(train_x=self.train_x, n_experts=self.n_experts)
-
         # With the RandomPartitioner, we should sample values uniformly at random from
         # [0, 1, ..., num data points-1] without replacement. We have 3 experts and 10 data points.
         # Set a known output to the random choice - this should be a num experts (3) by
         # num data points / num experts (10 / 3 which rounds to 3) array
-        mock_choice.return_value = np.array([[8, 1, 5], [0, 7, 2], [9, 4, 3]])
+        mock_rng = Mock()
+        mock_rng.choice = Mock(return_value=np.array([[8, 1, 5], [0, 7, 2], [9, 4, 3]]))
+        mock_rng_factory.return_value = mock_rng
+
+        partitioner = partitioners.RandomPartitioner(train_x=self.train_x, n_experts=self.n_experts)
 
         # The partition created should be exactly the random choice result we have specified,
         # no other processing on the data should occur
@@ -68,6 +70,8 @@ class MockedPartitionTests(unittest.TestCase):
         We mock the clustering method used within the code to avoid random-seed dependence.
         """
         partitioner = partitioners.KMeansPartitioner(train_x=self.train_x, n_experts=self.n_experts, seed=self.seed)
+        rng_copy = np.random.default_rng(self.seed)
+        expected_clustering_seed = rng_copy.integers(0, 2**32 - 1)
 
         # When creating a partition, we should create a clustering object, fit it to the training data,
         # then creation partitions based on those cluster labels
@@ -86,7 +90,7 @@ class MockedPartitionTests(unittest.TestCase):
 
         # Verify the expected calls were made to the mocked objects - i.e. the clustering was done
         # as expected
-        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=self.seed)
+        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=expected_clustering_seed)
         mocked_fit.assert_called_once_with(self.train_x)
 
     @patch.object(sklearn.cluster, "MiniBatchKMeans")
@@ -99,6 +103,8 @@ class MockedPartitionTests(unittest.TestCase):
         partitioner = partitioners.MiniBatchKMeansPartitioner(
             train_x=self.train_x, n_experts=self.n_experts, seed=self.seed
         )
+        rng_copy = np.random.default_rng(self.seed)
+        expected_clustering_seed = rng_copy.integers(0, 2**32 - 1)
 
         # When creating a partition, we should create a clustering object, fit it to the training data,
         # then creation partitions based on those cluster labels
@@ -117,7 +123,7 @@ class MockedPartitionTests(unittest.TestCase):
 
         # Verify the expected calls were made to the mocked objects - i.e. the clustering was done
         # as expected
-        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=self.seed)
+        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=expected_clustering_seed)
         mocked_fit.assert_called_once_with(self.train_x)
 
     @patch.object(kmedoids, "KMedoids")
@@ -134,6 +140,8 @@ class MockedPartitionTests(unittest.TestCase):
         partitioner = partitioners.KMedoidsPartitioner(
             train_x=self.train_x, n_experts=self.n_experts, kernel=mocked_kernel, seed=self.seed
         )
+        rng_copy = np.random.default_rng(self.seed)
+        expected_clustering_seed = rng_copy.integers(0, 2**32 - 1)
 
         # When creating a partition, we should create a clustering object, fit it to the training data,
         # then creation partitions based on those cluster labels
@@ -153,7 +161,9 @@ class MockedPartitionTests(unittest.TestCase):
 
         # Verify the expected calls were made to the mocked objects - i.e. the clustering was done
         # as expected
-        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, metric="precomputed", random_state=self.seed)
+        mock_clustering.assert_called_once_with(
+            n_clusters=self.n_experts, metric="precomputed", random_state=expected_clustering_seed
+        )
         mocked_fit.assert_called_once_with(actual_distances)
 
     def test_construct_distance_matrix(self):

@@ -23,6 +23,8 @@ from vanguard.vanilla import GaussianGPController
 
 from ..cases import VanguardTestCase
 
+RANDOM_SEED = 1234
+
 
 class DefaultTensorTypeTests(unittest.TestCase):
     """
@@ -113,7 +115,8 @@ class InputTests(VanguardTestCase):
     def test_error_handling_of_higher_rank_features(self) -> None:
         """Check that shape errors due to incorrectly treated high-rank features are caught and explained."""
         shape = (len(self.DATASET.train_y), 31, 4)
-        train_x_mean = np.random.randn(*shape)
+        rng = np.random.default_rng(RANDOM_SEED)
+        train_x_mean = rng.standard_normal(shape)
         gp = GaussianGPController(
             train_x=train_x_mean,
             train_y=self.DATASET.train_y,

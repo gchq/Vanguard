@@ -2,7 +2,7 @@
 Contain some small utilities of use in some cases.
 """
 
-from typing import Any, Generator, Tuple
+from typing import Any, Generator, Optional, Tuple
 
 import numpy as np
 import numpy.typing
@@ -96,7 +96,10 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
 
 
 def infinite_tensor_generator(
-    batch_size: int, device: torch.DeviceObjType, *tensor_axis_pairs: Tuple[torch.Tensor, int]
+    batch_size: int,
+    device: torch.DeviceObjType,
+    *tensor_axis_pairs: Tuple[torch.Tensor, int],
+    rng: Optional[np.random.Generator] = None,
 ) -> Generator[torch.Tensor, None, None]:
     """
     Return a never-ending generator that return random mini-batches of tensors with a shared first dimension.
@@ -106,6 +109,7 @@ def infinite_tensor_generator(
         the tensor should be batched. If an axis is out of range, the maximum axis value is used instead.
     :returns: A tensor generator.
     """
+    rng = rng if rng is not None else np.random.default_rng()
     first_tensor, first_axis = tensor_axis_pairs[0]
     first_tensor_length = first_tensor.shape[first_axis]
 
@@ -118,7 +122,7 @@ def infinite_tensor_generator(
 
         def shuffle(array: numpy.typing.NDArray) -> None:
             """Random shuffle function."""
-            np.random.shuffle(array)
+            rng.shuffle(array)
 
     index = 0
     indices = np.arange(first_tensor_length)

@@ -94,12 +94,16 @@ class BinaryFuzzyTests(ClassificationTestCase):
     Tests for fuzzy binary classification.
     """
 
+    def setUp(self):
+        """Set up data shared between tests."""
+        self.rng = np.random.default_rng(1234)
+
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
         dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=50)
         test_x_std = 0.005
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         controller = BinaryClassifier(
             dataset.train_x,
@@ -119,8 +123,8 @@ class BinaryFuzzyTests(ClassificationTestCase):
         """Predictions should be close to the values from the test data."""
         dataset = BinaryStripeClassificationDataset(100, 50)
         train_x_std = test_x_std = 0.005
-        train_x = np.random.normal(dataset.train_x, scale=train_x_std)
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std).reshape(-1, 1)
+        train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std).reshape(-1, 1)
 
         @BinaryClassification(ignore_all=True)
         @VariationalInference(ignore_all=True)

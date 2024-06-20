@@ -321,10 +321,10 @@ def _create_subset(
         # If the arrays contain no subscriptable arrays, just return them as a list
         return list(arrays)
 
-    np.random.seed(seed)
+    rng = np.random.default_rng(seed)
     total_number_of_indices = length_of_first_subscriptable_array
     number_of_indices_in_subset = int(total_number_of_indices * subset_fraction)
-    indices = np.random.choice(total_number_of_indices, size=number_of_indices_in_subset, replace=False)
+    indices = rng.choice(total_number_of_indices, size=number_of_indices_in_subset, replace=False)
 
     subset_arrays = []
     for array in arrays:

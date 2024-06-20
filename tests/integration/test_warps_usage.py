@@ -29,7 +29,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.random_seed = 1_989
+        self.rng = np.random.default_rng(1_989)
         self.num_train_points = 500
         self.num_test_points = 500
         self.n_sgd_iters = 100
@@ -47,14 +47,12 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a continuous target `y`, and verify that a
         warped GP can be fit to this data.
         """
-        np.random.seed(self.random_seed)
-
         # Define some data
         x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.squeeze(x * np.sin(x)) + np.random.normal(scale=self.small_noise, size=x.shape[0])
+        y = np.squeeze(x * np.sin(x)) + self.rng.normal(scale=self.small_noise, size=x.shape[0])
 
         # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # Consider multiple different warping functions
@@ -99,18 +97,16 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a continuous target `y`, and verify that a
         GP can be fit to this data.
         """
-        np.random.seed(self.random_seed)
-
         # Define some data - note that for numerical reasons, we must avoid certain values of `y`.
         # This is due to SoftPlusWarpFunction, which applies the warp :math:`y\mapsto\log(e^y - 1)`,
         # meaning we don't want `y` to grow too large or we might hit numerical issues when taking the exponential,
         # but also we need to ensure that :math:`e^y - 1` does not get too close to zero or become negative. For this
         # reason, we ensure `y` takes values around 2-3 which covers both cases.
         x = np.linspace(start=4, stop=6, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.squeeze(x / 2.0) + np.random.normal(scale=self.small_noise, size=x.shape[0])
+        y = np.squeeze(x / 2.0) + self.rng.normal(scale=self.small_noise, size=x.shape[0])
 
         # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # Define the warped controller object
@@ -158,15 +154,13 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a continuous target `y`, and verify that a
         GP can be fit to this data.
         """
-        np.random.seed(self.random_seed)
-
         # Define some data - note that for numerical reasons, we keep `y` between 0 and
         # 1, which ensures the logits make sense
         x = np.linspace(start=0.1, stop=1.0, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.squeeze(x / 2.0) + np.random.normal(scale=0.1 * self.small_noise, size=x.shape[0])
+        y = np.squeeze(x / 2.0) + self.rng.normal(scale=0.1 * self.small_noise, size=x.shape[0])
 
         # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # Define the warped controller object

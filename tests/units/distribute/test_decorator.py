@@ -198,7 +198,7 @@ class SubsetCreationTests(unittest.TestCase):
         We pass two numpy arrays to _create_subset, and expect the result from _create_subset to return subsets
         of each.
         """
-        np.random.seed(1_989)
+        random_seed = 1_989
 
         # Define arrays to subset
         first_array = np.array([1, 2, 3, 4])
@@ -206,7 +206,7 @@ class SubsetCreationTests(unittest.TestCase):
 
         # Subset the arrays - setting subset_fraction such that we expect 2 points to be
         # taken from each array passed
-        subset_arrays = _create_subset(first_array, second_array, subset_fraction=0.5)
+        subset_arrays = _create_subset(first_array, second_array, subset_fraction=0.5, seed=random_seed)
 
         # Regardless of random seed, package version and so on, we expect the results to have the following properties:
         # Each of the two resulting subset arrays has exactly 2 elements, both taken from the corresponding input array

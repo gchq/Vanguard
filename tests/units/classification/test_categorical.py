@@ -82,6 +82,10 @@ class MulticlassFuzzyTests(ClassificationTestCase):
     Tests for fuzzy multiclass classification.
     """
 
+    def setUp(self):
+        """Set up data shared between tests."""
+        self.rng = np.random.default_rng(1234)
+
     # TODO: Seems too flaky on 3.8 and 3.9 but reliable on 3.12, especially when delta=0.5.
     # https://github.com/gchq/Vanguard/issues/128
     @flaky
@@ -89,7 +93,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         """Predictions should be close to the values from the test data."""
         dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20, num_classes=4)
         test_x_std = 0.005
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         controller = MultitaskBernoulliClassifier(
             dataset.train_x,
@@ -108,8 +112,8 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         """Predictions should be close to the values from the test data."""
         dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=50, num_classes=4)
         train_x_std = test_x_std = 0.005
-        train_x = np.random.normal(dataset.train_x, scale=train_x_std)
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         @CategoricalClassification(num_classes=4, ignore_all=True)
         @Multitask(num_tasks=4, ignore_all=True)

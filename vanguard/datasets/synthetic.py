@@ -2,7 +2,7 @@
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
 
-from typing import Callable, Iterable, Tuple, TypedDict
+from typing import Callable, Iterable, Optional, Tuple, TypedDict
 
 import numpy as np
 from numpy.typing import NDArray
@@ -56,6 +56,7 @@ class SyntheticDataset(Dataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise self.
@@ -71,6 +72,8 @@ class SyntheticDataset(Dataset):
         :param significance: The significance to be used.
         """
         self.functions = list(functions)
+
+        self.rng = rng if rng is not None else np.random.default_rng()
 
         train_data = self.make_sample_data(n_train_points, train_input_noise_bounds, output_noise)
         test_data = self.make_sample_data(n_test_points, test_input_noise_bounds, 0)
@@ -107,7 +110,7 @@ class SyntheticDataset(Dataset):
         individual_ys = []
         for function in self.functions:
             exact_y = function(x_mean * 2 / interval_length)
-            y_noise = np.random.normal(size=x_mean.shape) * output_noise_level
+            y_noise = self.rng.normal(size=x_mean.shape) * output_noise_level
             y = exact_y + y_noise
             individual_ys.append(y)
 
@@ -205,8 +208,8 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
             n_test_points,
             significance,
         )
-        self.train_y_std = np.random.normal(loc=self.train_y_std, scale=0.01, size=n_train_points)
-        self.test_y_std = np.random.normal(loc=self.test_y_std, scale=0.01, size=n_train_points)
+        self.train_y_std = self.rng.normal(loc=self.train_y_std, scale=0.01, size=n_train_points)
+        self.test_y_std = self.rng.normal(loc=self.test_y_std, scale=0.01, size=n_train_points)
 
 
 class HigherRankSyntheticDataset(Dataset):
@@ -223,6 +226,7 @@ class HigherRankSyntheticDataset(Dataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise self.
@@ -238,6 +242,8 @@ class HigherRankSyntheticDataset(Dataset):
         :param significance: The significance to be used.
         """
         self.functions = list(functions)
+
+        self.rng = rng if rng is not None else np.random.default_rng()
 
         train_data = self.make_sample_data(n_train_points, train_input_noise_bounds, output_noise)
         test_data = self.make_sample_data(n_test_points, test_input_noise_bounds, 0)
@@ -270,7 +276,7 @@ class HigherRankSyntheticDataset(Dataset):
         """
         # pylint is getting a false positive from `reshape` twice here
         x_mean = np.linspace(0, interval_length, n_points)
-        x_mean = np.random.randn(n_points, 2, 2) + x_mean.reshape(-1, 1, 1)  # pylint: disable=too-many-function-args
+        x_mean = self.rng.standard_normal((n_points, 2, 2)) + x_mean.reshape((-1, 1, 1))
 
         x_std = np.linspace(*input_noise_bounds, n_points)
         x_std = np.ones((n_points, 2, 2)) + x_std.reshape(-1, 1, 1)  # pylint: disable=too-many-function-args
@@ -280,7 +286,7 @@ class HigherRankSyntheticDataset(Dataset):
         individual_ys = []
         for function in self.functions:
             exact_y = function(x_mean @ fixed_matrix * 2 / interval_length).mean(axis=1).mean(axis=1)
-            y_noise = np.random.normal(size=x_mean.shape[0]) * output_noise_level
+            y_noise = self.rng.normal(size=x_mean.shape[0]) * output_noise_level
             y = exact_y + y_noise
             individual_ys.append(y)
 
