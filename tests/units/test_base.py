@@ -43,6 +43,7 @@ class DefaultTensorTypeTests(unittest.TestCase):
         self.assertEqual(original_tensor.is_cuda, self.original_is_cuda)
 
         class NewController(GaussianGPController):
+            self.device = torch.device('cpu')
             pass
 
         self.new_controller_class = NewController
