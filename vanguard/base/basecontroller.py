@@ -152,7 +152,6 @@ class BaseGPController:
         # TODO: Should we convert train_x, train_y and _y_variance to device when batch_size is not None?
         # https://github.com/gchq/Vanguard/issues/266
 
-
         all_likelihood_params_as_kwargs = {
             "noise": self._y_variance,
             "noise_constraint": constraints.GreaterThan(NOISE_LOWER_BOUND),
