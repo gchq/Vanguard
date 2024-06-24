@@ -29,6 +29,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
+        # fails on previous seed values of 1_234, 1_989 - bad luck or a bug?
         self.rng = np.random.default_rng(1_989)
         self.num_train_points = 500
         self.num_test_points = 500
@@ -158,6 +159,7 @@ class VanguardTestCase(unittest.TestCase):
         # 1, which ensures the logits make sense
         x = np.linspace(start=0.1, stop=1.0, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
         y = np.squeeze(x / 2.0) + self.rng.normal(scale=0.1 * self.small_noise, size=x.shape[0])
+        y = np.clip(y, 0, 1)
 
         # Split data into training and testing
         train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
@@ -185,8 +187,11 @@ class VanguardTestCase(unittest.TestCase):
         ).confidence_interval()
 
         # Sense check the outputs
-        self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
-        self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
+        assert not any([np.isnan(el) for el in prediction_ci_lower])
+        assert not any([np.isnan(el) for el in prediction_medians])
+        assert not any([np.isnan(el) for el in prediction_ci_upper])
+        np.testing.assert_array_less(prediction_medians, prediction_ci_upper)
+        np.testing.assert_array_less(prediction_ci_lower, prediction_medians)
 
         # Also try to specify the gp with invalid `y` data that should not allow such warping,
         # and check an appropriate error is raised
