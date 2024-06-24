@@ -302,9 +302,9 @@ def _create_subset(
         >>> z = 25
         >>>
         >>> _create_subset(x, y, subset_fraction=0.6, seed=1)
-        [array([3, 2, 5]), array([30, 20, 50])]
+        [array([3, 2, 4]), array([30, 20, 40])]
         >>> _create_subset(x, y, z, subset_fraction=0.6, seed=1)
-        [array([3, 2, 5]), array([30, 20, 50]), 25]
+        [array([3, 2, 4]), array([30, 20, 40]), 25]
     """
     for array in arrays:
         try:
