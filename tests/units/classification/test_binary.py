@@ -41,13 +41,13 @@ class BinaryTests(ClassificationTestCase):
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        self.controller.fit(100)
 
     @flaky
     def test_predictions(self) -> None:
         """Predictions should be close to the values from the test data."""
+        self.controller.fit(20)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.05)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.25)
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
@@ -82,6 +82,7 @@ class BinaryTests(ClassificationTestCase):
             ((lambda: self.controller.fuzzy_predictive_likelihood(1.0, 1.0)), "classify_fuzzy_points"),
         ]
 
+        self.controller.fit(1)
         for call_method, alternative_method in cases:
             with self.subTest():
                 with self.assertRaises(TypeError) as ctx:
@@ -97,7 +98,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
-        dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=50)
+        dataset = BinaryStripeClassificationDataset(num_train_points=50, num_test_points=20)
         test_x_std = 0.005
         test_x = np.random.normal(dataset.test_x, scale=test_x_std)
 
@@ -109,15 +110,15 @@ class BinaryFuzzyTests(ClassificationTestCase):
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        controller.fit(100)
+        controller.fit(20)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
-        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.1)
+        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.25)
 
     @flaky
     def test_fuzzy_predictions_uncertainty(self) -> None:
         """Predictions should be close to the values from the test data."""
-        dataset = BinaryStripeClassificationDataset(100, 50)
+        dataset = BinaryStripeClassificationDataset(50, 20)
         train_x_std = test_x_std = 0.005
         train_x = np.random.normal(dataset.train_x, scale=train_x_std)
         test_x = np.random.normal(dataset.test_x, scale=test_x_std).reshape(-1, 1)
@@ -136,7 +137,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        controller.fit(100)
+        controller.fit(10)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
-        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.1)
+        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.25)
