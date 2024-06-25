@@ -57,8 +57,8 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
         n_likelihood_samples: int = 10,
         variational_strategy_class: Optional[Type[StrategyT]] = None,
         variational_distribution_class: Optional[Type[DistributionT]] = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise self.
 
@@ -129,7 +129,7 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
             gp_model_class = _gp_model_class
 
-            def __init__(self, *args: Any, **kwargs: Any):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 

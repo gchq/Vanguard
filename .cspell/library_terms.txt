@@ -53,6 +53,7 @@ facecolor
 figsize
 fixsize
 framealpha
+furo
 genindex
 gpcontroller
 gpytorch
@@ -120,12 +121,15 @@ quickstart
 randn
 rcfile
 rcparams
+refs
 refstyle
 relazified
 relazifying
 rpds
 rsample
+rtype
 seealso
+setdiff
 setuptools
 sklearn
 sphinxcontrib

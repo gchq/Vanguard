@@ -13,7 +13,9 @@ class ScaledRBFKernel(kernels.ScaleKernel):
     The recommended starting place for a kernel.
     """
 
-    def __init__(self, batch_shape: Union[Tuple[int], torch.Size] = torch.Size(), ard_num_dims: Optional[int] = None):
+    def __init__(
+        self, batch_shape: Union[Tuple[int], torch.Size] = torch.Size(), ard_num_dims: Optional[int] = None
+    ) -> None:
         """
         Initialise self.
 
@@ -28,7 +30,7 @@ class PeriodicRBFKernel(kernels.ScaleKernel):
     An RBF kernel with a periodic element.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialise self."""
         super().__init__(kernels.RBFKernel() + kernels.ScaleKernel(kernels.RBFKernel() * kernels.PeriodicKernel()))
 
@@ -38,7 +40,7 @@ class TimeSeriesKernel(kernels.AdditiveKernel):
     A kernel suited to time series.
     """
 
-    def __init__(self, time_dimension: int = 0):
+    def __init__(self, time_dimension: int = 0) -> None:
         """
         Initialise self.
 

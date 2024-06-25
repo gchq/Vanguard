@@ -19,7 +19,7 @@ class AutogradAffineWarpFunction(WarpFunction):
     A warp of form y |-> ay + b.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.layer = torch.nn.Linear(1, 1, bias=True)
         self.layer.weight.data.fill_(1.0)
@@ -38,7 +38,7 @@ class AutogradBoxCoxWarpFunction(WarpFunction):
     We want to test autograd is working for warp derivs, so this BoxCoxWarp uses the default autograd deriv.
     """
 
-    def __init__(self, lambda_: Union[float, int] = 0):
+    def __init__(self, lambda_: Union[float, int] = 0) -> None:
         super().__init__()
         self.lambda_ = lambda_
 

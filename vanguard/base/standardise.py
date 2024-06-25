@@ -2,7 +2,7 @@
 Contains a class decorator to apply input standard scaling to means and kernels.
 """
 
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import numpy.typing
 import torch
@@ -52,7 +52,7 @@ class StandardiseXModule:
         class ScaledModule(module_class):
             """An inner class which scales the forward method."""
 
-            def forward(self, *args, **kwargs):
+            def forward(self, *args: Any, **kwargs: Any):
                 """Scale the inputs before being passed."""
                 scaled_args = ((arg - mean) / scale for arg in args)
                 return super().forward(*scaled_args, **kwargs)

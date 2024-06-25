@@ -71,7 +71,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         num_mc_samples: int = 100,
         variational_distribution_class: Optional[VariationalDistributionT] = CholeskyVariationalDistribution,
         **kwargs: Any,
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -92,7 +92,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
         @wraps_class(base_decorated_cls)
         class InnerClass(base_decorated_cls):
-            def __init__(self, *args: Any, **kwargs: Any):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 for module_name in ("kernel", "mean", "likelihood"):
                     set_batch_shape(kwargs, module_name, sample_shape)
 

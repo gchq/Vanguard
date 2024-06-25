@@ -4,7 +4,7 @@ Contains the LearnYNoise decorator.
 
 import re
 import warnings
-from typing import Tuple, Type, TypeVar, Union
+from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -31,7 +31,7 @@ class LearnYNoise(Decorator):
         ...     pass
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -48,7 +48,7 @@ class LearnYNoise(Decorator):
             A wrapper for unknown, and hence learned, likelihood noise.
             """
 
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 try:
                     all_parameters_as_kwargs = process_args(super().__init__, *args, y_std=0, **kwargs)
                 except TypeError:

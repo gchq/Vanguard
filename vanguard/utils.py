@@ -56,7 +56,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
         ...     def __init__(self, a, b):
         ...         self.a, self.b = a, b
         >>>
-        >>> MyClass(a=1, b=2, c=3)  # doctest: +ELLIPSIS
+        >>> MyClass(a=1, b=2, c=3)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         TypeError: __init__() got an unexpected keyword argument 'c'
@@ -73,7 +73,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
         ...     def __init__(self, a, b):
         ...         self.a, self.b = a, b
         >>>
-        >>> instantiate_with_subset_of_kwargs(MyClass, a=1, c=3)
+        >>> instantiate_with_subset_of_kwargs(MyClass, a=1, c=3) # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         TypeError: __init__() missing 1 required positional argument: 'b'

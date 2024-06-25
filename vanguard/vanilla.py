@@ -2,7 +2,7 @@
 The :class:`GaussianGPController` provides the user with a standard GP model with no extra features.
 """
 
-from typing import Type, Union
+from typing import Any, Type, Union
 
 import gpytorch
 import numpy as np
@@ -36,8 +36,8 @@ class GaussianGPController(GPController):
         marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
         optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
         smart_optimiser_class: Type[SmartOptimiser] = GreedySmartOptimiser,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise self.
 

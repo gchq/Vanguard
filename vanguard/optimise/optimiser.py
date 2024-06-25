@@ -34,8 +34,8 @@ class SmartOptimiser(Generic[OptimiserT]):
         optimiser_class: Type[OptimiserT],
         *initial_modules: Module,
         early_stop_patience: Optional[int] = None,
-        **optimiser_kwargs,
-    ):
+        **optimiser_kwargs: Any,
+    ) -> None:
         """
         Initialise self.
 
@@ -237,7 +237,7 @@ class Parameters:
     Wrapped for module state_dicts and an objective value of their quality.
     """
 
-    def __init__(self, module_state_dicts: Dict[Module, Dict[str, Tensor]], value: float = np.inf):
+    def __init__(self, module_state_dicts: Dict[Module, Dict[str, Tensor]], value: float = np.inf) -> None:
         """Initialise self."""
         self.parameters = {
             module: self._clone_state_dict(state_dict) for module, state_dict in module_state_dicts.items()
@@ -245,11 +245,13 @@ class Parameters:
         self.priority_value = value
 
     def __lt__(self, other: "Parameters") -> bool:
-        # TODO: this should check whether `isinstance(other, Parameters)` and if not return `NotImplemented`
+        if not isinstance(other, Parameters):
+            return NotImplemented
         return self.priority_value < other.priority_value
 
     def __eq__(self, other: "Parameters") -> bool:
-        # TODO: as for __lt__ above
+        if not isinstance(other, Parameters):
+            return NotImplemented
         return self.priority_value == other.priority_value
 
     @staticmethod
@@ -264,7 +266,7 @@ T = TypeVar("T")
 class MaxLengthHeapQ(Generic[T]):
     """A heapq of fixed maximum length."""
 
-    def __init__(self, max_length: int):
+    def __init__(self, max_length: int) -> None:
         """Initialise self."""
         self.max_length = max_length
         self.heap = []
@@ -304,8 +306,8 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
         optimiser_class: Type[OptimiserT],
         *initial_modules: Module,
         early_stop_patience: Optional[int] = None,
-        **optimiser_kwargs,
-    ):
+        **optimiser_kwargs: Any,
+    ) -> None:
         super().__init__(optimiser_class, *initial_modules, early_stop_patience=early_stop_patience, **optimiser_kwargs)
         self._top_n_parameters = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
 

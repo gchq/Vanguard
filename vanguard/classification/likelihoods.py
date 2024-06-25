@@ -2,7 +2,7 @@
 Contains some multitask classification likelihoods.
 """
 
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import gpytorch.distributions
 import numpy as np
@@ -24,7 +24,7 @@ class DummyNoise:
     Provides a dummy wrapper around a tensor so that the tensor can be accessed as the noise property of the class.
     """
 
-    def __init__(self, value: Union[float, numpy.typing.NDArray[np.floating]]):
+    def __init__(self, value: Union[float, numpy.typing.NDArray[np.floating]]) -> None:
         """
         Initialise self.
 
@@ -44,7 +44,7 @@ class MultitaskBernoulliLikelihood(BernoulliLikelihood):
     Provides an improper likelihood over multiple independent Bernoulli distributions.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Initialise self and ignore the num_tasks kwarg that may be passed to multi-task likelihoods.
         """
@@ -57,6 +57,7 @@ class MultitaskBernoulliLikelihood(BernoulliLikelihood):
     ):
         """Compute the log probability sum summing the log probabilities over the tasks."""
         # TODO: investigate why this works/why it's been missed that it doesn't work?
+        # https://github.com/gchq/Vanguard/issues/218
         # pylint: disable=no-member
         return super().log_prob(observations, function_dist, *args, **kwargs).sum(dim=-1)
 
@@ -74,7 +75,9 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
     This wrapper allows the arg names more consistent with other likelihoods.
     """
 
-    def __init__(self, *args, num_classes: Optional[int] = None, num_tasks: Optional[int] = None, **kwargs):
+    def __init__(
+        self, *args: Any, num_classes: Optional[int] = None, num_tasks: Optional[int] = None, **kwargs: Any
+    ) -> None:
         r"""
         Initialise self.
 
@@ -92,7 +95,7 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
     A pseudo Dirichlet distribution with the log probability modified to match that from [CITATION NEEDED]_.
     """
 
-    def __init__(self, label_matrix: torch.Tensor, kernel_matrix: torch.Tensor, alpha: float):
+    def __init__(self, label_matrix: torch.Tensor, kernel_matrix: torch.Tensor, alpha: float) -> None:
         """
         Initialise self.
 
@@ -126,8 +129,8 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         num_classes: int,
         alpha: Optional[Union[float, numpy.typing.NDArray[np.floating]]] = None,
         learn_alpha: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise self.
 
@@ -187,7 +190,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         elif is_marginal:
             return self.marginal(input, *args, **kwargs)
         else:
-            raise RuntimeError(
+            raise TypeError(
                 "Likelihoods expects a DummyKernelDistribution input to make marginal predictions, or a "
                 f"torch.Tensor for conditional predictions. Got a {type(input).__name__}"
             )

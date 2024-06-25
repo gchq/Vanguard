@@ -2,7 +2,7 @@
 Contains the DirichletKernelMulticlassClassification decorator.
 """
 
-from typing import Tuple, Type, TypeVar, Union
+from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -36,7 +36,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         ...     pass
         >>>
         >>> class Kernel(ScaleKernel):
-        ...     def __init__(self):
+        ...     def __init__(self) -> None:
         ...         super().__init__(RBFKernel())
         >>>
         >>> train_x = np.array([0, 0.1, 0.45, 0.55, 0.9, 1])
@@ -53,7 +53,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         array([0, 1, 2])
     """
 
-    def __init__(self, num_classes: int, **kwargs):
+    def __init__(self, num_classes: int, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -70,7 +70,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         class InnerClass(cls, ClassificationMixin):
             gp_model_class = InertKernelModel
 
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 

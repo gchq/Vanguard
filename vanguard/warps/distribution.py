@@ -23,7 +23,7 @@ class WarpedGaussian(Normal):
         X\sim \mathcal{WN}(\psi; \mu, \sigma) ~ \iff  \psi(X)\sim\mathcal{N}(\mu, \sigma).
     """
 
-    def __init__(self, warp: WarpFunction, *args: Any, **kwargs: Any):
+    def __init__(self, warp: WarpFunction, *args: Any, **kwargs: Any) -> None:
         """
         :param warp`: The warp to be used to define the distribution.
         """

@@ -67,7 +67,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     def __init__(
         self, num_mc_samples: int = 100, temperature: Optional[float] = None, uv_cutoff: float = 1e-3, **kwargs: Any
-    ):
+    ) -> None:
         """
         Initialise self.
 
@@ -93,7 +93,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
         @wraps_class(base_decorated_cls)
         class InnerClass(base_decorated_cls):
-            def __init__(self, *args: Any, **kwargs: Any):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 for module_name in ("kernel", "mean", "likelihood"):
                     set_batch_shape(kwargs, module_name, torch.Size([]))
 

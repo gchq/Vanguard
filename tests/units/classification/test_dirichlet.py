@@ -47,6 +47,27 @@ class MulticlassTests(ClassificationTestCase):
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
 
+    def test_illegal_likelihood_class(self) -> None:
+        """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
+
+        class IllegalLikelihoodClass:
+            pass
+
+        with self.assertRaises(ValueError) as ctx:
+            __ = DirichletMulticlassClassifier(
+                self.dataset.train_x,
+                self.dataset.train_y,
+                kernel_class=BatchScaledRBFKernel,
+                y_std=0,
+                likelihood_class=IllegalLikelihoodClass,
+            )
+
+        self.assertEqual(
+            "The class passed to `likelihood_class` must be a subclass "
+            f"of {DirichletClassificationLikelihood.__name__} for multiclass classification.",
+            ctx.exception.args[0],
+        )
+
 
 class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     """

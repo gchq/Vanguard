@@ -17,7 +17,7 @@ class AffineWarpFunction(WarpFunction):
     A warp of form :math:`y \mapsto ay + b`.
     """
 
-    def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0):
+    def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0) -> None:
         """
         Initialise self.
 
@@ -58,7 +58,7 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
         See :mod:`vanguard.warps.intermediate`.
     """
 
-    def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0):
+    def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0) -> None:
         """
         Initialise self.
 
@@ -122,7 +122,7 @@ class BoxCoxWarpFunction(WarpFunction):
         y\mapsto\frac{sgn(y)|y|^\lambda - 1}{\lambda}, \lambda\in\mathbb{R}_0^+.
     """
 
-    def __init__(self, lambda_: float = 0):
+    def __init__(self, lambda_: float = 0) -> None:
         """
         Initialise self.
 

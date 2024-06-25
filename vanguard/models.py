@@ -4,6 +4,8 @@ Vanguard implements a small number of base models which are built on by various 
 They are syntactically similar to the standard model classes used in GPyTorch.
 """
 
+from typing import Any
+
 import gpytorch
 import numpy as np
 import torch
@@ -22,8 +24,8 @@ class ExactGPModel(ExactGP):
         likelihood: gpytorch.likelihoods.GaussianLikelihood,
         mean_module: gpytorch.means.Mean,
         covar_module: gpytorch.kernels.Kernel,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise self.
 
@@ -38,6 +40,7 @@ class ExactGPModel(ExactGP):
         self.mean_module = mean_module
         self.covar_module = covar_module
         # TODO: warn if kwargs is non-empty here?
+        # https://github.com/gchq/Vanguard/issues/219
 
     def forward(self, x: torch.Tensor) -> gpytorch.distributions.MultivariateNormal:  # pylint: disable=arguments-differ
         """
@@ -67,7 +70,7 @@ class InducingPointKernelGPModel(ExactGPModel):
         mean_module: gpytorch.means.Mean,
         covar_module: gpytorch.kernels.Kernel,
         n_inducing_points: int,
-    ):
+    ) -> None:
         """
         Initialise self.
 

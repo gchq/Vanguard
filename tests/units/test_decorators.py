@@ -6,6 +6,7 @@ import inspect
 import unittest
 from typing import Any, Type, TypeVar, Union
 
+from tests.cases import VanguardTestCase
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, errors, process_args, wraps_class
 
@@ -17,7 +18,7 @@ class DummyDecorator1(Decorator):
     A dummy decorator used for testing.
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -33,7 +34,7 @@ class DummyDecorator2(Decorator):
     A dummy decorator used for testing.
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -116,7 +117,7 @@ class AttributeTests(unittest.TestCase):
 
             __decorators__ = []
 
-            def __init__(self, number: Union[float, int]):
+            def __init__(self, number: Union[float, int]) -> None:
                 self.number = number
 
             def add_5(self) -> Union[float, int]:
@@ -128,7 +129,7 @@ class AttributeTests(unittest.TestCase):
             Square the result of a SimpleNumber class.
             """
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
             def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -196,7 +197,7 @@ class AttributeTests(unittest.TestCase):
             self.fail("Wrapped class does not have '__wrapped__' attribute.")
 
 
-class TestErrorsWhenOverwriting(unittest.TestCase):
+class TestErrorsWhenOverwriting(VanguardTestCase):
     """
     Testing breaking the decorator by overwriting or extending.
     """
@@ -211,7 +212,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
             __decorators__ = []
 
-            def __init__(self, number: Union[int, float]):
+            def __init__(self, number: Union[int, float]) -> None:
                 self.number = number
 
             def add_5(self) -> Union[int, float]:
@@ -223,7 +224,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
             Square the result of a SimpleNumber class.
             """
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
             def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -274,21 +275,16 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
     def test_overwrite_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
-        try:
-            with self.assertWarns(errors.OverwrittenMethodWarning):
+        with self.assertNotWarns(errors.OverwrittenMethodWarning):
 
-                @self.SquareResult(ignore_methods=("add_5",))
-                class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                    """
-                    Declaring this class should raise a warning.
-                    """
+            @self.SquareResult(ignore_methods=("add_5",))
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
+                """
+                Declaring this class should not raise OverwrittenMethodWarning.
+                """
 
-        except AssertionError:
-            pass  # TODO: is this pass correct?
-        except errors.OverwrittenMethodError as error:
-            self.fail(f"Should not have thrown error: {error!s}")
-        else:
-            self.fail("Should not have thrown warning.")
+                def add_5(self) -> Union[int, float]:
+                    return super().add_5() + 1
 
     def test_unexpected_method_with_raise(self) -> None:
         """Test that creating a new method throws an error instead."""
@@ -320,23 +316,16 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
 
     def test_unexpected_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
-        try:
-            with self.assertWarns(errors.UnexpectedMethodWarning):
+        with self.assertNotWarns(errors.UnexpectedMethodWarning):
 
-                @self.SquareResult(ignore_methods=["something_new"])
-                class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                    """
-                    Declaring this class should raise a warning.
-                    """
+            @self.SquareResult(ignore_methods=["something_new"])
+            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
+                """
+                Declaring this class should not raise UnexpectedMethodWarning.
+                """
 
-                    def something_new(self) -> None:
-                        pass
-        except AssertionError:
-            pass
-        except errors.UnexpectedMethodError as error:
-            self.fail(f"Should not have thrown error: {error!s}")
-        else:
-            self.fail("Should not have thrown warning.")
+                def something_new(self) -> None:
+                    pass
 
     def test_overwrite_method_with_superclass_subclass_wrong(self) -> None:
         """Warning should reference the SUBCLASS."""
@@ -403,7 +392,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         class RequirementDecorator(Decorator):
             """A decorator with a requirement."""
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(
                     framework_class=simple_number_class, required_decorators={square_result_class}, **kwargs
                 )
@@ -424,7 +413,7 @@ class TestErrorsWhenOverwriting(unittest.TestCase):
         class RequirementDecorator(Decorator):
             """A decorator with a requirement."""
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(
                     framework_class=simple_number_class, required_decorators={square_result_class}, **kwargs
                 )
@@ -457,7 +446,7 @@ class SignatureTests(unittest.TestCase):
 
             __decorators__ = []
 
-            def __init__(self, number: Union[int, float]):
+            def __init__(self, number: Union[int, float]) -> None:
                 self.number = number
 
             def add_5(self) -> Union[int, float]:
@@ -469,7 +458,7 @@ class SignatureTests(unittest.TestCase):
             Square the result of a SimpleNumber class.
             """
 
-            def __init__(self, **kwargs: Any):
+            def __init__(self, **kwargs: Any) -> None:
                 super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
             def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -497,11 +486,15 @@ class SignatureTests(unittest.TestCase):
 
     def test_signature_before(self) -> None:
         """Signature should contain number."""
-        self.assertEqual("(self, number: Union[int, float])", str(inspect.signature(self.SimilarNumberBefore.__init__)))
+        self.assertEqual(
+            "(self, number: Union[int, float]) -> None", str(inspect.signature(self.SimilarNumberBefore.__init__))
+        )
 
     def test_signature_after(self) -> None:
         """Signature should contain number."""
-        self.assertEqual("(self, number: Union[int, float])", str(inspect.signature(self.SimilarNumberAfter.__init__)))
+        self.assertEqual(
+            "(self, number: Union[int, float]) -> None", str(inspect.signature(self.SimilarNumberAfter.__init__))
+        )
 
     def test_arg_spec_before(self) -> None:
         """Signature should contain number."""

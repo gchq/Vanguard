@@ -2,7 +2,7 @@
 Contains the DirichletMulticlassClassification decorator.
 """
 
-from typing import Tuple, Type, TypeVar, Union
+from typing import Any, Tuple, Type, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -37,7 +37,7 @@ class DirichletMulticlassClassification(Decorator):
         ...     pass
         >>>
         >>> class Kernel(ScaleKernel):
-        ...     def __init__(self):
+        ...     def __init__(self) -> None:
         ...         super().__init__(RBFKernel(batch_shape=(3,)), batch_shape=(3,))
         >>>
         >>> train_x = np.array([0, 0.1, 0.45, 0.55, 0.9, 1])
@@ -53,7 +53,7 @@ class DirichletMulticlassClassification(Decorator):
         array([0, 1, 2])
     """
 
-    def __init__(self, num_classes: int, **kwargs):
+    def __init__(self, num_classes: int, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -66,12 +66,12 @@ class DirichletMulticlassClassification(Decorator):
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
-            A wrapper for implementing variational inference.
+            A wrapper for multiclass GP classification using a Dirichlet transformation.
             """
 
             _y_batch_axis = 1
 
-            def __init__(self, *args, **kwargs):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
@@ -79,7 +79,7 @@ class DirichletMulticlassClassification(Decorator):
                 if not issubclass(likelihood_class, DirichletClassificationLikelihood):
                     raise ValueError(
                         "The class passed to `likelihood_class` must be a subclass of "
-                        f"{DirichletClassificationLikelihood.__name__} for binary classification."
+                        f"{DirichletClassificationLikelihood.__name__} for multiclass classification."
                     )
 
                 train_y = all_parameters_as_kwargs.pop("train_y")

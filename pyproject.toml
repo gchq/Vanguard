@@ -29,28 +29,37 @@ dependencies = [
     "gpytorch>=1.5.1",
     "kmedoids",
     "matplotlib",
-    "numpy>=1.20",
+    "numpy>=1.20,<2",
     "pandas",
     "scikit-learn",
     "scipy",
     "torch>=1.7.0",
     "typing_extensions",
-    "urllib3>=2.2.1"
+    "urllib3>=2.2.1",
 ]
 
 [project.optional-dependencies]
 # These match the suffixes on the various requirements-*.txt files
 # Run unit tests
 test = [
-    "pytest",
+    "pytest-cov",
 ]
 # Compile documentation
 doc = [
-    # TODO - get from requirements-docs
+    "furo",
+    "nbformat",
+    "nbsphinx",
+    "pillow",
+    "pybtex",
+    "setuptools; python_version>='3.12'",  # TODO: Remove once pybtex releases > 0.24.0
+    # https://github.com/gchq/Vanguard/issues/246
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinxcontrib-bibtex",
 ]
 # All tools for a developer including those for running pylint
 dev = [
-    "vanguard[test]", # TODO include doc?
+    "vanguard[test, doc]",
     "isort",
     "jupyterlab",
     "pre-commit",
@@ -61,10 +70,12 @@ dev = [
 ]
 
 [project.urls]
-#Documentation = "https://example.org/" # TODO
+#Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved
+# https://github.com/gchq/Vanguard/issues/254
 Repository = "https://github.com/gchq/Vanguard"
 Issues = "https://github.com/gchq/Vanguard/issues"
-#Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md" # TODO
+#Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md" # TODO: Create CHANGELOG
+# https://github.com/gchq/Vanguard/issues/255
 
 [tool.setuptools]
 packages = ["vanguard"]
@@ -86,6 +97,7 @@ extend-select = [
     "D211",  # No blank lines allowed before class docstring
     "E501",  # Docstring line lengths
     # TODO: We should enable more of the pydocstyle lints!
+    # https://github.com/gchq/Vanguard/issues/256
     "S102",  # use of `exec` builtin
     "S307",  # Suspicious `eval` usage
     "I",     # isort rules
@@ -94,3 +106,19 @@ extend-select = [
 
 [tool.ruff.lint.isort]
 known-local-folder = ["confutils","refstyle"]
+
+[tool.coverage.run]
+command_line = "-m pytest tests/units --cov"
+branch = true
+relative_files = true
+source = ["vanguard"]
+
+[tool.coverage.report]
+show_missing = true
+sort = "Cover"
+exclude_also = [
+    "pass",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "raise$",
+]
