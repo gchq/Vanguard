@@ -5,7 +5,8 @@ Tests for the pairwise combinations of decorators.
 import itertools
 import re
 import unittest
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar
+from collections.abc import Generator
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 from unittest.mock import patch
 
 from gpytorch.kernels import RBFKernel
@@ -212,7 +213,7 @@ class CombinationTests(unittest.TestCase):
 
     def _yield_initialised_decorators(
         self,
-    ) -> Generator[Tuple[Callable, Callable, dict[str, Any], Dataset], None, None]:
+    ) -> "Generator[Tuple[Callable, Callable, dict[str, Any], Dataset], None, None]":
         """Yield pairs of initialised decorators."""
         for upper_decorator_details, lower_decorator_details in itertools.permutations(DECORATORS.items(), r=2):
             upper_decorator, upper_controller_kwargs, upper_dataset = self._create_decorator(upper_decorator_details)
