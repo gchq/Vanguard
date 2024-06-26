@@ -43,7 +43,7 @@ class DefaultTensorTypeTests(unittest.TestCase):
         self.assertEqual(original_tensor.is_cuda, self.original_is_cuda)
 
         class NewController(GaussianGPController):
-            self.device = torch.device("cpu")  # pylint: disable=attribute-defined-outside-init
+            pass
 
         self.new_controller_class = NewController
         self.new_controller_class.set_default_tensor_type(torch.DoubleTensor)
@@ -68,16 +68,16 @@ class DefaultTensorTypeTests(unittest.TestCase):
         """
         Test that the properties of a newly-created tensor are as expected.
 
-        This test fails unless the tensor's dtype is float64, and it is on the CPU. By default, PyTorch creates tensors
-        with float32 dtype. This test checks that the default tensor type is successfully set to torch.DoubleTensor in
-        setUp() above. Note, in BaseGPController, we set _default_tensor_type: ttypes = torch.FloatTensor.
+        This test fails unless the tensor's dtype is float64. By default, PyTorch creates tensors with float32 dtype.
+        This test checks that the default tensor type is successfully set to torch.DoubleTensor in setUp() above. Note,
+        in BaseGPController, we set _default_tensor_type: ttypes = torch.FloatTensor.
 
-        This test expects the new tensor to be on the CPU, not the CUDA device (i.e., GPU). The is_cuda property returns
-        True if the tensor is stored on the GPU, and False otherwise.
+        This test expects the new tensor to be on the CPU if the CUDA device (i.e., GPU) is not available. The is_cuda
+        property returns True if the tensor is stored on the GPU, and False otherwise.
         """
         new_tensor = torch.tensor([])
         self.assertEqual(new_tensor.dtype, torch.float64)
-        self.assertEqual(new_tensor.is_cuda, False)
+        self.assertEqual(new_tensor.is_cuda, torch.cuda.is_available())
 
 
 class InputTests(VanguardTestCase):
