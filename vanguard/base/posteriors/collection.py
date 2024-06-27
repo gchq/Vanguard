@@ -182,7 +182,6 @@ class MonteCarloPosteriorCollection(Posterior):
                 torch.linalg.cholesky(posterior.distribution.covariance_matrix)  # pylint: disable=not-callable
             except RuntimeError as exc:
                 self._posteriors_skipped += 1
-                # TODO: tests for this - including case where 99 fails - 1 pass - 99 fails - 1 pass - etc
                 posteriors_skipped_in_a_row += 1
                 if posteriors_skipped_in_a_row >= self.MAX_POSTERIOR_ERRORS_BEFORE_RAISE:
                     msg = (
