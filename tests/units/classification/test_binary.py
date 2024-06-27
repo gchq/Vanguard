@@ -2,8 +2,6 @@
 Tests for the BinaryClassification decorator.
 """
 
-from unittest import expectedFailure
-
 import numpy as np
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO
@@ -71,8 +69,6 @@ class BinaryTests(ClassificationTestCase):
             ctx.exception.args[0],
         )
 
-    @expectedFailure  # TODO: These tests currently fail, as ClassificationMixin doesn't function correctly.
-    # https://github.com/gchq/Vanguard/issues/188
     def test_closed_methods(self):
         """Test that the ClassificationMixin has correctly closed the prediction methods of the underlying controller"""
         cases = [

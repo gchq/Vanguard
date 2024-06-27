@@ -13,7 +13,7 @@ from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..multitask import Multitask
 from ..variational import VariationalInference
-from .mixin import ClassificationMixin
+from .mixin import Classification, ClassificationMixin
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -72,6 +72,7 @@ class CategoricalClassification(Decorator):
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
 
+        @Classification()
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
