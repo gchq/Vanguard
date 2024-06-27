@@ -92,7 +92,7 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
 class DirichletKernelDistribution(torch.distributions.Dirichlet):
     # pylint: disable=abstract-method
     """
-    A pseudo Dirichlet distribution with the log probability modified to match that from [CITATION NEEDED]_.
+    A pseudo Dirichlet distribution with the log probability modified.
     """
 
     def __init__(self, label_matrix: torch.Tensor, kernel_matrix: torch.Tensor, alpha: float) -> None:
@@ -121,7 +121,7 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
 
 class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     """
-    A pseudo Dirichlet likelihood matching the approximation in [CITATION NEEDED]_.
+    A pseudo Dirichlet likelihood.
     """
 
     def __init__(

@@ -38,7 +38,7 @@ class DefaultTensorTypeTests(unittest.TestCase):
         self.original_is_cuda = self.original_default_tensor_type.is_cuda
 
         if self.original_default_tensor_type == torch.DoubleTensor:
-            self.skipTest("This test us voided because the default tensor type would not be changed.")
+            self.skipTest("Skipping this test because the default tensor type would not be changed.")
 
         original_tensor = torch.tensor([])
         self.assertEqual(original_tensor.dtype, self.original_dtype)
@@ -52,36 +52,53 @@ class DefaultTensorTypeTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         """Code to run after each test."""
+        # Set the NewController's default tensor type as the original GaussianGPController's
         self.new_controller_class.set_default_tensor_type(self.original_default_tensor_type)
         tensor = torch.tensor([])
         self.assertEqual(tensor.dtype, self.original_dtype)
         self.assertEqual(tensor.is_cuda, self.original_is_cuda)
 
     def test_class_default_tensor(self) -> None:
-        """Should have changed."""
+        """Test that the new controller's default tensor type was set correctly to torch.DoubleTensor in setUp()."""
         self.assertEqual(self.new_controller_class.get_default_tensor_type(), torch.DoubleTensor)
 
     def test_superclass_default_tensor(self) -> None:
-        """Should be unchanged."""
+        """Test that the GaussianGPController's default tensor type is unchanged by setUp()."""
         self.assertEqual(GaussianGPController.get_default_tensor_type(), self.original_default_tensor_type)
 
     def test_default_tensor(self) -> None:
-        """New tensors should now match."""
+        """
+        Test that the properties of a newly-created tensor are as expected.
+
+        This test fails unless the tensor's dtype is float64. By default, PyTorch creates tensors with float32 dtype.
+        This test checks that the default tensor type is successfully set to torch.DoubleTensor in setUp() above. Note,
+        in BaseGPController, we set _default_tensor_type: ttypes = torch.FloatTensor.
+
+        This test expects the new tensor to be on the CPU if the CUDA device (i.e., GPU) is not available. The is_cuda
+        property returns True if the tensor is stored on the GPU, and False otherwise.
+        """
         new_tensor = torch.tensor([])
         self.assertEqual(new_tensor.dtype, torch.float64)
-        self.assertEqual(new_tensor.is_cuda, False)
+        self.assertEqual(new_tensor.is_cuda, torch.cuda.is_available())
 
 
 class InputTests(VanguardTestCase):
     """
-    GP controllers are forgiving about the shape of data arrays, where possible.
-    These tests check that this behaviour.
+    Tests for checking the behaviour of GP controllers.
+
+    GP controllers are forgiving about the shape of data arrays, where possible. These tests check this behaviour.
     """
 
     DATASET = SyntheticDataset()
 
     def test_unsqueeze_y(self) -> None:
-        """Make sure the tensor wrangling works if we pass y with the wrong shape."""
+        """
+        Make sure the tensor wrangling works if we pass y with the wrong shape.
+
+        This test reshapes the training outputs to exactly one column (and as many rows as needed). This is then passed
+        to a Vanguard GPController. We assert that storing this attribute on the controller does not affect the original
+        data.
+        """
         squeezed_train_y = self.DATASET.train_y.reshape(-1, 1)
         gp = GPController(
             train_x=self.DATASET.train_x,
@@ -94,13 +111,20 @@ class InputTests(VanguardTestCase):
             optimiser_class=torch.optim.Adam,
             smart_optimiser_class=SmartOptimiser,
         )
-        np.testing.assert_array_almost_equal(squeezed_train_y, gp.train_y.detach().cpu().numpy(), decimal=5)
+        # Convert train_y on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
+        gp_train_y = gp.train_y.detach().cpu().numpy()
+        np.testing.assert_array_almost_equal(squeezed_train_y, gp_train_y, decimal=5)
 
     def test_unsqueeze_x(self) -> None:
-        """Check the tensor wrangling works if we pass x with the wrong shape."""
-        train_x_mean = self.DATASET.train_x.ravel()
+        """
+        Check the tensor wrangling works if we pass x with the wrong shape.
+
+        This test flattens the training input (i.e., reshaping to be exactly one row). This is then passed to a Vanguard
+        GPController. We assert that storing this attribute on the controller does not affect the original data.
+        """
+        flattened_train_x = self.DATASET.train_x.ravel()
         gp = GPController(
-            train_x=train_x_mean,
+            train_x=flattened_train_x,
             train_y=self.DATASET.train_y,
             kernel_class=PeriodicRBFKernel,
             mean_class=ConstantMean,
@@ -110,15 +134,17 @@ class InputTests(VanguardTestCase):
             optimiser_class=torch.optim.Adam,
             smart_optimiser_class=SmartOptimiser,
         )
-        np.testing.assert_array_almost_equal(self.DATASET.train_x, gp.train_x.detach().cpu().numpy(), decimal=5)
+        # Convert train_x on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
+        gp_train_x = gp.train_x.detach().cpu().numpy()
+        np.testing.assert_array_almost_equal(self.DATASET.train_x, gp_train_x, decimal=5)
 
     def test_error_handling_of_higher_rank_features(self) -> None:
-        """Check that shape errors due to incorrectly treated high-rank features are caught and explained."""
+        """Test that shape errors, due to incorrectly treated high-rank features, are caught and explained."""
         shape = (len(self.DATASET.train_y), 31, 4)
         rng = np.random.default_rng(RANDOM_SEED)
-        train_x_mean = rng.standard_normal(shape)
+        random_train_x = rng.standard_normal(shape)
         gp = GaussianGPController(
-            train_x=train_x_mean,
+            train_x=random_train_x,
             train_y=self.DATASET.train_y,
             kernel_class=PeriodicRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -131,12 +157,28 @@ class InputTests(VanguardTestCase):
             r"defined for the rank of your input features\."
         )
         with self.assertRaisesRegex(ValueError, expected_regex):
-            gp.fit(10)
+            gp.fit()
+
+    @unittest.skip  # TODO: fix test; underlying issues in batch mode
+    # https://github.com/gchq/Vanguard/issues/265
+    def test_error_handling_of_batch_size(self) -> None:
+        """Test that a UserWarning is raised when both batch_size and gradient_every are not None."""
+        gp = GaussianGPController(
+            train_x=self.DATASET.train_x,
+            train_y=self.DATASET.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=self.DATASET.train_y_std,
+            batch_size=20,
+        )
+        gradient_every = 2
+        gp.fit()
+        with self.assertWarns(UserWarning):
+            gp.fit(n_sgd_iters=10, gradient_every=gradient_every)
 
 
 class NLLTests(unittest.TestCase):
     """
-    Tests for computing the NLL.
+    Tests for computing the negative log-likelihood (NLL).
     """
 
     def setUp(self) -> None:
@@ -178,27 +220,30 @@ class NLLTests(unittest.TestCase):
         gpr = GaussianProcessRegressor(kernel=kernel, alpha=0)
         gpr.fit(self.dataset.x, self.dataset.y)
 
-        # generate a test set and predict on that
+        # Generate a test set and predict on that (with sklearn)
         z, z_std = gpr.predict(self.dataset.x_test, return_std=True)
 
-        # get the learned hyperparameters
+        # Get the learned hyperparameters
         params = gpr.kernel_.get_params()
         self.outputscale = params["k1__k1__constant_value"]
         self.lengthscale = params["k1__k2__length_scale"]
         self.noise_variance = params["k2__noise_level"]
 
-        # NLL on test set
+        # Get the NLL for this test set
         self.sklearn_nll = self.predictive_nll(
-            z.flatten(), z_std**2, self.noise_variance, self.dataset.y_test.flatten()
+            mean=z.flatten(), variance=z_std**2, noise_variance=self.noise_variance, y=self.dataset.y_test.flatten()
         )
-        self.sklearn_mse = self.predictive_mse(z.flatten(), self.dataset.y_test.flatten())
+        # Get the MSE for this test set
+        self.sklearn_mse = self.predictive_mse(mu_pred=z.flatten(), y=self.dataset.y_test.flatten())
 
     def test_gpytorch_nll(self) -> None:
+        """Test that the NLL calculated with GPyTorch agrees with sklearn."""
+
         class ExactGPModel(gpytorch.models.ExactGP):
             def __init__(
                 self, train_x: torch.Tensor, train_y: torch.Tensor, likelihood: gpytorch.likelihoods.likelihood
             ) -> None:
-                super().__init__(train_x, train_y, likelihood)
+                super().__init__(train_inputs=train_x, train_targets=train_y, likelihood=likelihood)
                 self.mean_module = gpytorch.means.ConstantMean()
                 self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
 
@@ -207,6 +252,7 @@ class NLLTests(unittest.TestCase):
                 covar_x = self.covar_module(x)
                 return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
+        # Flatten and tensor-ify the test data
         train_x = torch.tensor(self.dataset.x.flatten())
         train_y = torch.tensor(self.dataset.y.flatten())
         test_x = torch.tensor(self.dataset.x_test.flatten())
@@ -218,9 +264,11 @@ class NLLTests(unittest.TestCase):
         model.covar_module.outputscale = self.outputscale
         model.covar_module.base_kernel.lengthscale = self.lengthscale
 
+        # Evaluate
         model.eval()
         likelihood.eval()
 
+        # Disable gradient calculation and enable fast predictive variances, to enhance performance
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
             observed_pred = likelihood(model(test_x))
             _, upper = observed_pred.confidence_region()
@@ -228,23 +276,30 @@ class NLLTests(unittest.TestCase):
             std = (upper - observed_pred.mean).detach().cpu().numpy() / 2.0
 
             noise_variance = model.likelihood.noise.item()
-            gpytorch_nll = self.predictive_nll(mean, std**2, noise_variance, self.dataset.y_test.flatten())
-            gpytorch_mse = self.predictive_mse(mean, self.dataset.y_test.flatten())
+            gpytorch_nll = self.predictive_nll(
+                mean=mean, variance=std**2, noise_variance=noise_variance, y=self.dataset.y_test.flatten()
+            )
+            gpytorch_mse = self.predictive_mse(mu_pred=mean, y=self.dataset.y_test.flatten())
 
         self.assertAlmostEqual(self.sklearn_nll, gpytorch_nll)
         self.assertAlmostEqual(self.sklearn_mse, gpytorch_mse)
 
     def test_vanguard_nll(self) -> None:
-        controller = GaussianGPController(self.dataset.x, self.dataset.y, ScaledRBFKernel, y_std=self.y_std)
+        """Test that the NLL calculated with Vanguard agrees with sklearn."""
+        controller = GaussianGPController(
+            train_x=self.dataset.x, train_y=self.dataset.y, kernel_class=ScaledRBFKernel, y_std=self.y_std
+        )
 
         controller.likelihood_noise = torch.ones_like(controller.likelihood_noise) * self.noise_variance
         controller.kernel.outputscale = self.outputscale
         controller.kernel.base_kernel.lengthscale = self.lengthscale
 
-        posterior = controller.predictive_likelihood(self.dataset.x_test.flatten())
+        posterior = controller.predictive_likelihood(x=self.dataset.x_test.flatten())
 
-        vanguard_nll = posterior.nll(self.dataset.y_test.flatten(), controller.likelihood.noise.mean().item())
-        vanguard_mse = posterior.mse(self.dataset.y_test.flatten())
+        vanguard_nll = posterior.nll(
+            y=self.dataset.y_test.flatten(), noise_variance=controller.likelihood.noise.mean().item()
+        )
+        vanguard_mse = posterior.mse(y=self.dataset.y_test.flatten())
 
         self.assertAlmostEqual(self.sklearn_nll, vanguard_nll, delta=1e-6)
         self.assertAlmostEqual(self.sklearn_mse, vanguard_mse, delta=1e-3)
@@ -256,6 +311,15 @@ class NLLTests(unittest.TestCase):
         noise_variance: Union[np.typing.NDArray[np.floating], float],
         y: np.typing.NDArray[np.floating],
     ) -> np.typing.NDArray[np.floating]:
+        """
+        Get the mean negative log-likelihood, for testing purposes.
+
+        :param mean: The mean values of the predictive distribution.
+        :param variance: The variance of the predictive distribution.
+        :param noise_variance: The noise variance, as an array or a single float.
+        :param y: The observed values.
+        :returns: The mean negative log-likelihood of the predictive distribution.
+        """
         sigma = variance + noise_variance
         rss = (y - mean) ** 2
         const = 0.5 * np.log(2 * np.pi * sigma)
@@ -266,4 +330,11 @@ class NLLTests(unittest.TestCase):
     def predictive_mse(
         mu_pred: np.typing.NDArray[np.floating], y: np.typing.NDArray[np.floating]
     ) -> np.typing.NDArray[np.floating]:
+        """
+        Get the mean squared error, for testing purposes.
+
+        :param mu_pred: The mean values of the predictive distribution.
+        :param y: The observed values.
+        :returns: The mean squared error of the predictive distribution.
+        """
         return ((mu_pred - y) ** 2).mean()
