@@ -135,6 +135,7 @@ filterwarnings = [
 
     # Other warnings
     "ignore::pytest.PytestCollectionWarning",
+    "ignore:The input matches the stored training data. Did you forget to call model.train\\(\\)\\?:gpytorch.utils.warnings.GPInputWarning",
     "ignore:To copy construct from a tensor, it is recommended to use sourceTensor.clone\\(\\).detach\\(\\):UserWarning",
     "ignore:Pass auto_restart=True to the controller to automatically restart training up to the last stable iterations:UserWarning",
     "ignore:std\\(\\). degrees of freedom is <= 0:UserWarning",
