@@ -27,6 +27,8 @@ class MonteCarloPosteriorCollection(Posterior):
     """
 
     INITIAL_NUMBER_OF_SAMPLES: int = 100
+    MAX_POSTERIOR_ERRORS_BEFORE_RAISE: int = 100
+    """The maximum number of RuntimeErrors that _yield_posteriors will suppress before raising."""
 
     def __init__(self, posterior_generator: Generator[Posterior, None, None]) -> None:
         """Initialise self."""
@@ -172,15 +174,25 @@ class MonteCarloPosteriorCollection(Posterior):
         :param num_posteriors: The number of posteriors to yield.
         """
         num_yielded = 0
+        posteriors_skipped_in_a_row = 0
         while num_yielded < num_posteriors:
             posterior = next(self._posterior_generator)
             try:
                 # pylint false positive
                 torch.linalg.cholesky(posterior.distribution.covariance_matrix)  # pylint: disable=not-callable
-            except RuntimeError:
+            except RuntimeError as exc:
                 self._posteriors_skipped += 1
+                # TODO: tests for this - including case where 99 fails - 1 pass - 99 fails - 1 pass - etc
+                posteriors_skipped_in_a_row += 1
+                if posteriors_skipped_in_a_row >= self.MAX_POSTERIOR_ERRORS_BEFORE_RAISE:
+                    msg = (
+                        f"{posteriors_skipped_in_a_row} errors in a row were caught "
+                        f"while generating posteriors - aborting"
+                    )
+                    raise RuntimeError(msg) from exc
             else:
                 yield posterior
+                posteriors_skipped_in_a_row = 0
                 num_yielded += 1
 
     def _tensor_log_probability(
