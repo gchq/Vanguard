@@ -22,7 +22,7 @@ class DirichletKernelMulticlassClassification(Decorator):
     """
     Implements multiclass classification using a Dirichlet kernel method.
 
-    Based on the implementation [CITATION NEEDED]_ and the paper :cite:`MacKenzie14`.
+    Based on the paper :cite:`MacKenzie14`.
 
     :Example:
         >>> from gpytorch.kernels import RBFKernel, ScaleKernel

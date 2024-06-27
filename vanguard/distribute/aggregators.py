@@ -60,11 +60,11 @@ class BaseAggregator:
 
     def _beta_correction(self, delta_diff: torch.Tensor, delta_val: torch.Tensor) -> torch.Tensor:
         """
-        Implement the correction to experts' weights found in [CITATION NEEDED]_ and [CITATION NEEDED]_.
+        Implement the correction to experts' weights.
 
         .. note::
-            Delta is as defined in [CITATION NEEDED]_ and [CITATION NEEDED]_ (difference in differential entropy between
-            prior and posterior :cite:`Deisenroth15`). ``delta_diff`` and ``delta_val`` are the same in
+            Delta is the difference in differential entropy between
+            prior and posterior :cite:`Deisenroth15`. ``delta_diff`` and ``delta_val`` are the same in
             :class:`XBCMAggregator`.
 
         :param delta_diff: The delta used to determine if correction is applied
@@ -130,7 +130,7 @@ class POEAggregator(BaseAggregator):
 
 class EKPOEAggregator(POEAggregator):
     r"""
-    Implements the correction of [CITATION NEEDED]_.
+    Implements a correction to the Product-of-Experts method.
 
     Given the posteriors of the experts :math:`p_{i}(y|x) = N(\mu_{i}(x), \sigma_{i}^{2}(x))` for
     :math:`i=1, 2, ..., M`, we define the joint posterior as a Gaussian with moments
@@ -234,7 +234,7 @@ class RBCMAggregator(BaseAggregator):
 
 class XBCMAggregator(BaseAggregator):
     r"""
-    Implements the Corrected Bayesian Committee Machine method of [CITATION NEEDED]_.
+    Implements the Corrected Bayesian Committee Machine method.
 
     We define the joint posterior as in :class:`RBCMAggregator`, but with a correction on \beta.
     (For further details see :meth:`BaseAggregator._beta_correction`.)
@@ -296,7 +296,7 @@ class GRBCMAggregator(BaseAggregator):
 
 class XGRBCMAggregator(BaseAggregator):
     r"""
-    Implements the Corrected Generalised Robust Bayesian Committee Machine method of [CITATION NEEDED]_.
+    Implements the Corrected Generalised Robust Bayesian Committee Machine method.
 
     We define the joint posterior as in :class:`RBCMAggregator`, but with a correction on \beta.
     (For further details see :meth:`BaseAggregator._beta_correction`.)

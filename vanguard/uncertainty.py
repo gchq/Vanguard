@@ -24,9 +24,9 @@ class GaussianUncertaintyGPController(GPController):
     """
     Allows the user to pass the standard deviation of the input values.
 
-    Base class for implementing the HNIGP of [CITATION NEEDED]_. This is a generalised version of the NIGP method in
-    :cite:`Mchutchon11` and our implementation here exploits :mod:`torch.autograd` to circumvent any by-hand
-    calculations of GP derivatives.
+    Base class for implementing the Heteroskedastic Noisy Input Gaussian Process (HNIGP). This is a generalised
+    version of the Noisy Input Gaussian Process (NIGP) method in :cite:`Mchutchon11` and our implementation here
+    exploits :mod:`torch.autograd` to circumvent any by-hand calculations of GP derivatives.
     """
 
     def __init__(
