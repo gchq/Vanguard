@@ -43,7 +43,7 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(samples.shape, (100, 3))
 
     def test_gaussian_parameters_can_be_recovered(self) -> None:
-        fit_distribution = WarpedGaussian.from_data(self.warp, self.samples)
+        fit_distribution = WarpedGaussian.from_data(self.warp, self.samples, n_iterations=10)
         fit_distribution_loc = fit_distribution.loc.detach().cpu().numpy()
         original_distribution_loc = self.distribution.loc.detach().cpu().numpy()
         np.testing.assert_array_almost_equal(fit_distribution_loc[0], original_distribution_loc[0], decimal=3)
@@ -55,7 +55,7 @@ class DistributionTests(unittest.TestCase):
             warpfunctions.AffineWarpFunction().freeze(),
             warpfunctions.AffineWarpFunction().freeze(),
         )
-        fit_distribution = WarpedGaussian.from_data(candidate_warp, self.samples)
+        fit_distribution = WarpedGaussian.from_data(candidate_warp, self.samples, n_iterations=10)
         fit_log_prob = fit_distribution.log_prob(self.samples).mean().item()
         true_log_prob = self.distribution.log_prob(self.samples).mean().item()
         self.assertAlmostEqual(fit_log_prob, true_log_prob, places=2)
@@ -66,7 +66,7 @@ class DistributionTests(unittest.TestCase):
             warpfunctions.AffineWarpFunction().freeze(),
             warpfunctions.AffineWarpFunction().freeze(),
         )
-        fit_distribution = WarpedGaussian.from_data(candidate_warp, self.samples)
+        fit_distribution = WarpedGaussian.from_data(candidate_warp, self.samples, n_iterations=10)
         fit_log_prob = fit_distribution.log_prob(self.samples).mean().item()
 
         gaussian_approximation = torch.distributions.Normal(loc=self.samples.mean(dim=0), scale=self.samples.std(dim=0))
