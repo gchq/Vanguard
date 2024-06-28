@@ -1,41 +1,48 @@
 """Tests for DirichletKernelClassifierLikelihood."""
 
-from unittest import TestCase
+from unittest import TestCase, expectedFailure
+from unittest.mock import patch
 
 import numpy as np
 import torch.testing
 from gpytorch import lazify
+from gpytorch.distributions import MultivariateNormal
 from gpytorch.kernels import RBFKernel
+from gpytorch.likelihoods import Likelihood
 from gpytorch.means import ZeroMean
 
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
-from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
+from vanguard.classification.likelihoods import (
+    DirichletKernelClassifierLikelihood,
+    GenericExactMarginalLogLikelihood,
+    MultitaskBernoulliLikelihood,
+)
 from vanguard.classification.models import DummyKernelDistribution
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.vanilla import GaussianGPController
 
-NUM_CLASSES = 4
-
-
-@DirichletKernelMulticlassClassification(num_classes=NUM_CLASSES, ignore_methods=("__init__",))
-class MulticlassGaussianClassifier(GaussianGPController):
-    """A simple Dirichlet multiclass classifier."""
-
 
 class TestDirichletKernelClassifierLikelihood(TestCase):
+    """Tests for the DirichletKernelClassifierLikelihood class."""
+
     @classmethod
     def setUpClass(cls):
+        """Set up immutable data shared between tests."""
+        cls.num_classes = 4
         cls.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=NUM_CLASSES * 3, num_test_points=NUM_CLASSES, num_classes=NUM_CLASSES, seed=1234
+            num_train_points=cls.num_classes * 3,
+            num_test_points=cls.num_classes,
+            num_classes=cls.num_classes,
+            seed=1234,
         )
+        cls.likelihood = DirichletKernelClassifierLikelihood(num_classes=cls.num_classes)
 
     def setUp(self):
+        """Set up data shared between tests."""
         self.rng = np.random.default_rng(1234)
 
     def test_illegal_input_type(self):
         """Test that we get an appropriate error when an illegal argument type is passed."""
-        likelihood = DirichletKernelClassifierLikelihood(num_classes=NUM_CLASSES)
-
         # various illegal inputs
         illegal_inputs = [object(), np.array([1, 2, 3]), "string"]
 
@@ -43,7 +50,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             with self.subTest(repr(illegal_input)):
                 with self.assertRaises(TypeError) as ctx:
                     # ignore type: it's intentionally incorrect
-                    likelihood(illegal_input)  # type: ignore
+                    self.likelihood(illegal_input)  # type: ignore
                 self.assertEqual(
                     "Likelihoods expects a DummyKernelDistribution input to make marginal predictions, or a "
                     f"torch.Tensor for conditional predictions. Got a {type(illegal_input).__name__}",
@@ -53,12 +60,16 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
     def test_alpha(self):
         """Test that when a value for alpha is provided, it's set correctly."""
         alpha = self.rng.uniform(2, 10)  # ensuring alpha != 1
-        likelihood = DirichletKernelClassifierLikelihood(num_classes=NUM_CLASSES, alpha=alpha)
-        torch.testing.assert_close(torch.ones(NUM_CLASSES) * alpha, likelihood.alpha)
+        likelihood = DirichletKernelClassifierLikelihood(num_classes=self.num_classes, alpha=alpha)
+        torch.testing.assert_close(torch.ones(self.num_classes) * alpha, likelihood.alpha)
 
     def test_learn_alpha(self):
         """Test that when learn_alpha is True, its value is changed during fitting."""
         # TODO: also test alpha_prior and alpha_constraint?
+
+        @DirichletKernelMulticlassClassification(num_classes=self.num_classes, ignore_methods=("__init__",))
+        class MulticlassGaussianClassifier(GaussianGPController):
+            """A simple Dirichlet multiclass classifier."""
 
         controller = MulticlassGaussianClassifier(
             train_x=self.dataset.train_x,
@@ -80,10 +91,55 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
     def test_log_marginal(self):
         """Test that log_marginal gives the log-probabilities of the marginal distribution."""
-        likelihood = DirichletKernelClassifierLikelihood(num_classes=NUM_CLASSES)
-        kernel = torch.tensor(self.rng.uniform(1, 2, size=(NUM_CLASSES, NUM_CLASSES)), dtype=torch.float)
-        distribution = DummyKernelDistribution(lazify(torch.eye(NUM_CLASSES, dtype=torch.float)), lazify(kernel))
-        observations = torch.tensor(self.rng.standard_normal(size=NUM_CLASSES), dtype=torch.float)
+        kernel = torch.tensor(self.rng.uniform(1, 2, size=(self.num_classes, self.num_classes)), dtype=torch.float)
+        distribution = DummyKernelDistribution(lazify(torch.eye(self.num_classes, dtype=torch.float)), lazify(kernel))
+        observations = torch.tensor(self.rng.standard_normal(size=self.num_classes), dtype=torch.float)
+
+        log_prob_direct = self.likelihood.log_marginal(observations, distribution)
+        log_prob_indirect = self.likelihood.marginal(distribution).log_prob(observations)
+        torch.testing.assert_close(log_prob_direct, log_prob_indirect)
+
+    def test_call_conditional(self):
+        """
+        Test that when the likelihood is called directly with a tensor, the conditional distribution is returned.
+
+        This is tested by just checking that the parent class (Likelihood) has its __call__ method called.
+        """
+        input_tensor = torch.tensor(self.rng.standard_normal(size=1), dtype=torch.float)
+        with patch.object(Likelihood, "__call__") as mock_super_call:
+            self.likelihood(input_tensor)
+        mock_super_call.assert_called_once_with(input_tensor)
+
+    def test_call_marginal(self):
+        """
+        Test that when the likelihood is called with a DummyKernelDistribution, the marginal distribution is returned.
+
+        This is tested by just checking that marginal() is called.
+        """
+        kernel = torch.tensor(self.rng.uniform(1, 2, size=(self.num_classes, self.num_classes)), dtype=torch.float)
+        distribution = DummyKernelDistribution(lazify(torch.eye(self.num_classes, dtype=torch.float)), lazify(kernel))
+        with patch.object(DirichletKernelClassifierLikelihood, "marginal") as mock_marginal:
+            self.likelihood(distribution)
+        mock_marginal.assert_called_once_with(distribution)
+
+
+class TestMultitaskBernoulliLikelihood(TestCase):
+    """Tests for the MultitaskBernoulliLikelihood class."""
+
+    def setUp(self):
+        """Set up data shared between tests."""
+        self.rng = np.random.default_rng(1234)
+
+    # TODO: Fails with `AttributeError: 'super' object has no attribute 'log_prob'`.
+    # https://github.com/gchq/Vanguard/issues/218
+    @expectedFailure
+    def test_log_marginal(self):
+        """Test that log_marginal gives the log-probabilities of the marginal distribution."""
+        likelihood = MultitaskBernoulliLikelihood()
+        size = 3
+        mean = torch.tensor(self.rng.standard_normal(size=size), dtype=torch.float)
+        distribution = MultivariateNormal(mean, torch.eye(size, dtype=torch.float))
+        observations = torch.tensor(self.rng.standard_normal(size=5), dtype=torch.float)
 
         log_prob_direct = likelihood.log_marginal(observations, distribution)
         log_prob_indirect = likelihood.marginal(distribution).log_prob(observations)
