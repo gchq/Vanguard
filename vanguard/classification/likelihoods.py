@@ -10,6 +10,7 @@ import numpy.typing
 import torch
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.constraints import Interval, Positive
+from gpytorch.distributions import Distribution
 from gpytorch.lazy import DiagLazyTensor
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.likelihoods import SoftmaxLikelihood as _SoftmaxLikelihood
@@ -167,8 +168,8 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         return self._alpha_var.noise
 
     # pylint: disable=arguments-differ
-    def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
-        # TODO: why is this overridden?
+    # TODO: why is this overridden? Just as defensive programming?
+    def forward(self, function_samples: torch.Tensor, **kwargs) -> Distribution:
         raise NotImplementedError
 
     # pylint: disable=arguments-differ
