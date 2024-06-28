@@ -21,7 +21,7 @@ class DummyKernelDistribution:
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
 
-    def __init__(self, labels: torch.Tensor, kernel: torch.Tensor) -> None:
+    def __init__(self, labels: gpytorch.lazy.LazyTensor, kernel: gpytorch.lazy.LazyTensor) -> None:
         """
         Initialise self.
 

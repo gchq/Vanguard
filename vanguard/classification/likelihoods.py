@@ -9,12 +9,14 @@ import numpy as np
 import numpy.typing
 import torch
 from gpytorch import ExactMarginalLogLikelihood
-from gpytorch.constraints import Positive
+from gpytorch.constraints import Interval, Positive
 from gpytorch.lazy import DiagLazyTensor
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.likelihoods import SoftmaxLikelihood as _SoftmaxLikelihood
 from gpytorch.likelihoods.likelihood import _OneDimensionalLikelihood
 from gpytorch.likelihoods.noise_models import MultitaskHomoskedasticNoise
+from gpytorch.priors import Prior
+from torch import Tensor
 
 from .models import DummyKernelDistribution
 
@@ -24,7 +26,7 @@ class DummyNoise:
     Provides a dummy wrapper around a tensor so that the tensor can be accessed as the noise property of the class.
     """
 
-    def __init__(self, value: Union[float, numpy.typing.NDArray[np.floating]]) -> None:
+    def __init__(self, value: Union[float, numpy.typing.NDArray[np.floating], Tensor]) -> None:
         """
         Initialise self.
 
@@ -33,7 +35,7 @@ class DummyNoise:
         self.value = value
 
     @property
-    def noise(self) -> Union[float, numpy.typing.NDArray[np.floating]]:
+    def noise(self) -> Union[float, numpy.typing.NDArray[np.floating], Tensor]:
         return self.value
 
 
@@ -129,15 +131,20 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         num_classes: int,
         alpha: Optional[Union[float, numpy.typing.NDArray[np.floating]]] = None,
         learn_alpha: bool = False,
-        **kwargs: Any,
+        alpha_prior: Optional[Prior] = None,
+        alpha_constraint: Optional[Interval] = Positive(),
     ) -> None:
         """
         Initialise self.
 
         :param num_classes: The number of classes in the data.
         :param alpha: The Dirichlet prior concentration. If a float will be assumed
-                                                    homogenous.
+            homogenous.
         :param learn_alpha: If to learn the Dirichlet prior concentration as a parameter.
+        :param alpha_prior: Only used if :param:learn_alpha = True. The noise prior to use when learning the Dirichlet
+            prior concentration.
+        :param alpha_constraint: Only used if :param:learn_alpha = True. The constraint to apply to the learned value
+            of `alpha` for the Dirichlet prior concentration.
         """
         super().__init__()
         self.n_classes = num_classes
@@ -147,8 +154,6 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             self._alpha_var = torch.as_tensor(alpha) * torch.ones(self.n_classes)
 
         if learn_alpha:
-            alpha_prior = kwargs.get("alpha_prior", None)
-            alpha_constraint = kwargs.get("alpha_constraint", Positive())
             alpha_val = self._alpha_var.clone()
             self._alpha_var = MultitaskHomoskedasticNoise(
                 num_classes, noise_constraint=alpha_constraint, noise_prior=alpha_prior
@@ -158,23 +163,22 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             self._alpha_var = DummyNoise(self._alpha_var)
 
     @property
-    def alpha(self) -> Optional[Union[float, numpy.typing.NDArray[np.floating]]]:
+    def alpha(self) -> Optional[Union[float, numpy.typing.NDArray[np.floating], Tensor]]:
         return self._alpha_var.noise
 
     # pylint: disable=arguments-differ
     def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
-        return None
+        # TODO: why is this overridden?
+        raise NotImplementedError
 
     # pylint: disable=arguments-differ
     def log_marginal(
-        self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, **kwargs
+        self, observations: torch.Tensor, function_dist: DummyKernelDistribution, **kwargs
     ) -> torch.Tensor:
         marginal = self.marginal(function_dist, **kwargs)
         return marginal.log_prob(observations)
 
-    def marginal(
-        self, function_dist: gpytorch.distributions.Distribution, *args, **kwargs
-    ) -> DirichletKernelDistribution:
+    def marginal(self, function_dist: DummyKernelDistribution, *args, **kwargs) -> DirichletKernelDistribution:
         return DirichletKernelDistribution(function_dist.labels, function_dist.kernel, self.alpha)
 
     # The parameter `input` is taken from superclass method, so we can't rename it here.

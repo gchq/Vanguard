@@ -2,9 +2,14 @@
 Tests for the DirichletMulticlassClassification decorator.
 """
 
-import numpy as np
-from gpytorch.likelihoods import DirichletClassificationLikelihood
+from unittest import TestCase
 
+import numpy as np
+import torch.testing
+from gpytorch.likelihoods import DirichletClassificationLikelihood
+from torch import Tensor
+
+from vanguard.base.posteriors import Posterior
 from vanguard.classification import DirichletMulticlassClassification
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.uncertainty import GaussianUncertaintyGPController
@@ -128,3 +133,26 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.4)
+
+
+class InnerTests(TestCase):
+    def setUp(self):
+        """Set up data shared across tests."""
+        self.rng = np.random.default_rng(1234)
+
+    def test_from_mean_and_covariance(self):
+        """Check that the wrapped class's posterior class transposes its mean matrix."""
+        unwrapped_class = GaussianGPController
+        wrapped_class = DirichletMulticlassClassification(num_classes=4, ignore_methods=("__init__",))(unwrapped_class)
+
+        mean: Tensor = torch.tensor(self.rng.normal(size=(3,)))
+        random_matrix: Tensor = torch.tensor(self.rng.normal(size=(3, 3)))
+        cov = random_matrix @ random_matrix.T  # to ensure positive semidefinite
+
+        unwrapped_posterior: Posterior = unwrapped_class.posterior_class.from_mean_and_covariance(mean, cov)
+        wrapped_posterior: Posterior = wrapped_class.posterior_class.from_mean_and_covariance(mean, cov)
+
+        torch.testing.assert_close(unwrapped_posterior.distribution.mean.T, wrapped_posterior.distribution.mean)
+        torch.testing.assert_close(
+            unwrapped_posterior.distribution.covariance_matrix, wrapped_posterior.distribution.covariance_matrix
+        )

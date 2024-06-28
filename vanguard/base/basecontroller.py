@@ -157,7 +157,9 @@ class BaseGPController:
             "noise_constraint": constraints.GreaterThan(NOISE_LOWER_BOUND),
         }
         all_likelihood_params_as_kwargs.update(kwargs.get("likelihood_kwargs", {}))
-        self.likelihood = instantiate_with_subset_of_kwargs(likelihood_class, **all_likelihood_params_as_kwargs)
+        self.likelihood: gpytorch.likelihoods.Likelihood = instantiate_with_subset_of_kwargs(
+            likelihood_class, **all_likelihood_params_as_kwargs
+        )
 
         mean_class, kernel_class = self._input_standardise_modules(mean_class, kernel_class)
 
