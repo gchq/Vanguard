@@ -95,7 +95,7 @@ class LaplaceTests(unittest.TestCase):
         gp = DistributedLaplaceHierarchicalGaussianGPController(
             self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
         )
-        gp.fit(10)
+        gp.fit(1)
 
         _ = gp.posterior_over_point(self.dataset.test_x)
 

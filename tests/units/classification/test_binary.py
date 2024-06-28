@@ -47,7 +47,7 @@ class BinaryTests(ClassificationTestCase):
         """Predictions should be close to the values from the test data."""
         self.controller.fit(20)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.25)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.1)
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
@@ -82,7 +82,6 @@ class BinaryTests(ClassificationTestCase):
             ((lambda: self.controller.fuzzy_predictive_likelihood(1.0, 1.0)), "classify_fuzzy_points"),
         ]
 
-        self.controller.fit(1)
         for call_method, alternative_method in cases:
             with self.subTest():
                 with self.assertRaises(TypeError) as ctx:
@@ -113,7 +112,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
         controller.fit(20)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
-        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.25)
+        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.1)
 
     @flaky
     def test_fuzzy_predictions_uncertainty(self) -> None:
@@ -137,7 +136,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        controller.fit(10)
+        controller.fit(20)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
-        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.25)
+        self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.1)
