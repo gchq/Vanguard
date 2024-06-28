@@ -1,6 +1,6 @@
 """Tests for the InertKernelModel."""
 
-from unittest import TestCase
+from unittest import TestCase, expectedFailure
 
 import torch
 from gpytorch import settings
@@ -53,6 +53,9 @@ class TestInertKernelModel(TestCase):
         self.train_data = torch.tensor([0.0, 0.1, 0.4, 0.5, 0.9, 1.0])
         self.train_targets = torch.tensor([0, 0, 1, 1, 2, 2])
 
+        # ... and some accompanying test data.
+        self.test_data = torch.tensor([0.05, 0.89])
+
         self.model = InertKernelModel(
             train_inputs=self.train_data,
             train_targets=self.train_targets,
@@ -79,5 +82,54 @@ class TestInertKernelModel(TestCase):
             GPInputWarning, msg="The input matches the stored training data. Did you forget to call model.train()?"
         ):
             with settings.debug(True):
-                self.model.train(False)
+                self.model.eval()
                 self.model(self.train_data)
+
+    # TODO: all three prior mode tests currently fail due to shape mismatches.
+    @expectedFailure
+    def test_prior_mode(self):
+        """Test that in prior mode, the GP is evaluated as if without training data."""
+        # Predict in prior mode
+        self.model.eval()
+        with settings.prior_mode(True):
+            prior_mode_distribution = self.model(self.test_data)
+
+        # Assert the distribution uses the prior distribution and not the training data
+        torch.testing.assert_close(prior_mode_distribution.kernel.T, self.model.covar_module(self.test_data).to_dense())
+
+    @expectedFailure
+    def test_prior_mode_if_no_train_inputs(self):
+        """Test that if no training inputs are present, the model is evaluated as if in prior mode."""
+        # Predict in eval mode
+        self.model.train_inputs = None
+        self.model.eval()
+        prior_mode_distribution = self.model(self.test_data)
+
+        # Assert the distribution uses the prior distribution and not the training data
+        torch.testing.assert_close(prior_mode_distribution.kernel.T, self.model.covar_module(self.test_data).to_dense())
+
+    @expectedFailure
+    def test_prior_mode_if_no_train_targets(self):
+        """Test that if no training targets are present, the model is evaluated as if in prior mode."""
+        # Predict in eval mode
+        self.model.train_targets = None
+        self.model.eval()
+        prior_mode_distribution = self.model(self.test_data)
+
+        # Assert the distribution uses the prior distribution and not the training data
+        torch.testing.assert_close(prior_mode_distribution.kernel.T, self.model.covar_module(self.test_data).to_dense())
+
+    def test_eval_mode(self):
+        """Test that in eval mode, the GP is evaluated with the training data."""
+        # Train the model
+        self.model.train()
+        self.model(self.train_data)
+
+        # Predict in eval mode
+        self.model.eval()
+        distribution = self.model(self.test_data)
+
+        # The distribution kernel should be the covariance between the training data and the test data
+        torch.testing.assert_close(
+            distribution.kernel.T.to_dense(), self.model.covar_module(self.train_data, self.test_data).to_dense()
+        )
