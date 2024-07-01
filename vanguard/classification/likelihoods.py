@@ -168,8 +168,8 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         return self._alpha_var.noise
 
     # pylint: disable=arguments-differ
-    # TODO: why is this overridden? Just as defensive programming?
     def forward(self, function_samples: torch.Tensor, **kwargs) -> Distribution:
+        """Not implemented, but a concrete implementation is required by the abstract base class."""
         raise NotImplementedError
 
     # pylint: disable=arguments-differ

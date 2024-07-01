@@ -86,6 +86,7 @@ class TestInertKernelModel(TestCase):
                 self.model(self.train_data)
 
     # TODO: all three prior mode tests currently fail due to shape mismatches.
+    # https://github.com/gchq/Vanguard/issues/291
     @expectedFailure
     def test_prior_mode(self):
         """Test that when in prior mode, the GP is evaluated as if without training data."""
