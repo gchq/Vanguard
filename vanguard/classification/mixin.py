@@ -6,7 +6,7 @@ in which the standard prediction methods are unavailable. Instead, controllers
 will have :meth:`~ClassificationMixin.classify_points` and
 :meth:`~ClassificationMixin.classify_fuzzy_points` which should be used.
 When creating new decorators, include the :class:`ClassificationMixin` as a
-mixin for the inner class, and then decorate the inner class with :class:Classifier before returning it.
+mixin for the inner class, and then decorate the inner class with :class:`Classification` before returning it.
 """
 
 import warnings
@@ -86,8 +86,7 @@ class Classification(Decorator):
                 f"inherit from {ClassificationMixin.__name__}.",
                 UserWarning,
                 stacklevel=3,
-                # stacklevel 2 is in BaseDecorator.__call__, so we want to raise this at the call site
-                # of BaseDecorator.__call__
+                # stacklevel 2 is in BaseDecorator.__call__, so we raise this at the call site of BaseDecorator.__call__
             )
 
         @wraps_class(cls)
