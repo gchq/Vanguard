@@ -140,7 +140,7 @@ class InnerTests(TestCase):
         """Set up data shared across tests."""
         self.rng = np.random.default_rng(1234)
 
-    def test_from_mean_and_covariance(self):
+    def test_posterior_from_mean_and_covariance(self):
         """Check that the wrapped class's posterior class transposes its mean matrix."""
         unwrapped_class = GaussianGPController
         wrapped_class = DirichletMulticlassClassification(num_classes=4, ignore_methods=("__init__",))(unwrapped_class)

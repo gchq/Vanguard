@@ -119,6 +119,11 @@ class DirichletMulticlassClassification(Decorator):
                     compatibility downstream.
                     """
 
+                    # TODO: This method doesn't actually work!
+                    #  TypeError: 'MultivariateNormal' object is not an iterator
+                    #  Shouldn't expect this to work anyway, as MonteCarloPosteriorCollection doesn't support
+                    #  from_mean_and_covariance in the first place
+                    # https://github.com/gchq/Vanguard/issues/289
                     @classmethod
                     def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> Self:
                         """Transpose the mean before returning."""
