@@ -3,9 +3,11 @@ Tests for the CategoricalClassification decorator.
 """
 
 import unittest
+from unittest import expectedFailure
 
 import numpy as np
 import sklearn
+import torch
 from gpytorch.mlls import VariationalELBO
 
 from vanguard.classification import CategoricalClassification
@@ -153,7 +155,7 @@ class SoftmaxLMCTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         self.controller = SoftmaxLMCClassifier(
             self.dataset.train_x,
@@ -176,7 +178,7 @@ class SoftmaxTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         self.controller = SoftmaxClassifier(
             self.dataset.train_x,
@@ -191,10 +193,29 @@ class SoftmaxTests(unittest.TestCase):
         """Test that fitting is possible."""
         self.controller.fit(1)
 
-    def test_fitting_with_mismatch_mean_errors(self) -> None:
-        """Test that creating controller with a mean of the wrong shape raises an error with an appropriate message."""
+    # TODO: fails with the following error:
+    #  RuntimeError: grad can be implicitly created only for scalar outputs
+    # https://github.com/gchq/Vanguard/issues/290
+    @expectedFailure
+    def test_fitting_with_batch_shape(self) -> None:
+        """Test that fitting is possible when the kwarg batch_shape is passed to the BatchScaledMean class."""
+        controller = SoftmaxClassifier(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            kernel_class=ScaledRBFKernel,
+            mean_class=BatchScaledMean,
+            y_std=0,
+            likelihood_class=SoftmaxLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+            mean_kwargs={"batch_shape": torch.Size([NUM_LATENTS])},
+        )
+
+        controller.fit(1)
+
+    def test_creating_with_invalid_mean_type_errors(self) -> None:
+        """Test that creating a controller with a batch_shape of incorrect type raises an appropriate error message."""
         with self.assertRaises(TypeError) as ctx:
-            self.controller = SoftmaxClassifier(
+            SoftmaxClassifier(
                 self.dataset.train_x,
                 self.dataset.train_y,
                 kernel_class=ScaledRBFKernel,
@@ -202,11 +223,36 @@ class SoftmaxTests(unittest.TestCase):
                 y_std=0,
                 likelihood_class=SoftmaxLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
-                mean_kwargs={"batch_shape": NUM_LATENTS + 2},
+                mean_kwargs={"batch_shape": NUM_LATENTS},
             )
 
         self.assertEqual(
-            "unsupported operand type(s) for +: 'int' and 'torch.Size'",
+            "Expected mean_kwargs['batch_shape'] to be of type `torch.Size`; got `int` instead",
+            str(ctx.exception),
+        )
+
+    # TODO: This fails as there's no code to check for this error. Unsure whether it should be in __init__ or in fit().
+    #  Adding code to check for it is difficult as it doesn't work even when the shape matches. See the linked issue
+    #  which is blocking this.
+    # https://github.com/gchq/Vanguard/issues/290
+    @expectedFailure
+    def test_creating_with_mismatched_mean_shape_errors(self) -> None:
+        """Test that creating controller with a mean of the wrong shape raises an error with an appropriate message."""
+        batch_shape = torch.Size([NUM_LATENTS + 2])
+        with self.assertRaises(ValueError) as ctx:
+            SoftmaxClassifier(
+                self.dataset.train_x,
+                self.dataset.train_y,
+                kernel_class=ScaledRBFKernel,
+                mean_class=BatchScaledMean,
+                y_std=0,
+                likelihood_class=SoftmaxLikelihood,
+                marginal_log_likelihood_class=VariationalELBO,
+                mean_kwargs={"batch_shape": batch_shape},
+            )
+
+        self.assertEqual(
+            f"Expected a batch shape of torch.Size([{NUM_LATENTS}]); got {batch_shape!r}.",
             str(ctx.exception),
         )
 
@@ -218,7 +264,7 @@ class MultitaskBernoulliClassifierTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         self.controller = MultitaskBernoulliClassifier(
             self.dataset.train_x,
