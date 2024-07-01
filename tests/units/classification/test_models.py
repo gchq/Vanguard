@@ -96,7 +96,9 @@ class TestInertKernelModel(TestCase):
             prior_mode_distribution = self.model(self.test_data)
 
         # Assert the distribution uses the prior distribution and not the training data
-        torch.testing.assert_close(prior_mode_distribution.kernel.T, self.model.covar_module(self.test_data).to_dense())
+        torch.testing.assert_close(
+            prior_mode_distribution.kernel.to_dense().T, self.model.covar_module(self.test_data).to_dense()
+        )
 
     @expectedFailure
     def test_prior_mode_if_no_train_inputs(self):
@@ -107,7 +109,9 @@ class TestInertKernelModel(TestCase):
         prior_mode_distribution = self.model(self.test_data)
 
         # Assert the distribution uses the prior distribution and not the training data
-        torch.testing.assert_close(prior_mode_distribution.kernel.T, self.model.covar_module(self.test_data).to_dense())
+        torch.testing.assert_close(
+            prior_mode_distribution.kernel.to_dense().T, self.model.covar_module(self.test_data).to_dense()
+        )
 
     @expectedFailure
     def test_prior_mode_if_no_train_targets(self):
@@ -118,7 +122,9 @@ class TestInertKernelModel(TestCase):
         prior_mode_distribution = self.model(self.test_data)
 
         # Assert the distribution uses the prior distribution and not the training data
-        torch.testing.assert_close(prior_mode_distribution.kernel.T, self.model.covar_module(self.test_data).to_dense())
+        torch.testing.assert_close(
+            prior_mode_distribution.kernel.to_dense().T, self.model.covar_module(self.test_data).to_dense()
+        )
 
     def test_eval_mode(self):
         """Test that in eval mode, the GP is evaluated with the training data."""
@@ -132,5 +138,5 @@ class TestInertKernelModel(TestCase):
 
         # The distribution kernel should be the covariance between the training data and the test data
         torch.testing.assert_close(
-            distribution.kernel.T.to_dense(), self.model.covar_module(self.train_data, self.test_data).to_dense()
+            distribution.kernel.to_dense().T, self.model.covar_module(self.train_data, self.test_data).to_dense()
         )
