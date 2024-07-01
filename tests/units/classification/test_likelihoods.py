@@ -6,6 +6,7 @@ from unittest.mock import patch
 import numpy as np
 import torch.testing
 from gpytorch import lazify
+from gpytorch.constraints import GreaterThan
 from gpytorch.distributions import MultivariateNormal
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import Likelihood
@@ -65,7 +66,6 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
     def test_learn_alpha(self):
         """Test that when learn_alpha is True, its value is changed during fitting."""
-        # TODO: also test alpha_prior and alpha_constraint?
 
         @DirichletKernelMulticlassClassification(num_classes=self.num_classes, ignore_methods=("__init__",))
         class MulticlassGaussianClassifier(GaussianGPController):
@@ -78,7 +78,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             mean_class=ZeroMean,
             kernel_class=RBFKernel,
             likelihood_class=DirichletKernelClassifierLikelihood,
-            likelihood_kwargs={"learn_alpha": True, "alpha": 10},
+            likelihood_kwargs={"learn_alpha": True, "alpha": 1},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
         )
 
@@ -87,7 +87,54 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         fitted_alpha = controller.likelihood.alpha
 
         # assert that alpha has changed
+        print(fitted_alpha)
         assert not torch.all(torch.isclose(fitted_alpha, starting_alpha))
+
+    def test_learn_alpha_constrained(self):
+        """
+        Test that when learn_alpha is True, and a constraint is supplied, that constraint is adhered to.
+        """
+
+        @DirichletKernelMulticlassClassification(num_classes=self.num_classes, ignore_methods=("__init__",))
+        class MulticlassGaussianClassifier(GaussianGPController):
+            """A simple Dirichlet multiclass classifier."""
+
+        constraint_value = 0.5
+        constrained_controller = MulticlassGaussianClassifier(
+            train_x=self.dataset.train_x,
+            train_y=self.dataset.train_y,
+            y_std=0,
+            mean_class=ZeroMean,
+            kernel_class=RBFKernel,
+            likelihood_class=DirichletKernelClassifierLikelihood,
+            likelihood_kwargs={"learn_alpha": True, "alpha": 1, "alpha_constraint": GreaterThan(constraint_value)},
+            marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+        )
+        unconstrained_controller = MulticlassGaussianClassifier(
+            train_x=self.dataset.train_x,
+            train_y=self.dataset.train_y,
+            y_std=0,
+            mean_class=ZeroMean,
+            kernel_class=RBFKernel,
+            likelihood_class=DirichletKernelClassifierLikelihood,
+            likelihood_kwargs={"learn_alpha": True, "alpha": 1},
+            marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+        )
+
+        constrained_controller.fit(10)
+        unconstrained_controller.fit(10)
+        constrained_alpha = constrained_controller.likelihood.alpha
+        unconstrained_alpha = unconstrained_controller.likelihood.alpha
+
+        constraint_limit = torch.ones_like(constrained_alpha) * constraint_value
+
+        # assert that when unconstrained, alpha drops below the constraint value
+        assert torch.all(unconstrained_alpha < constraint_limit)
+        # assert that when constrained, alpha stays above the constraint value
+        assert torch.all(constrained_alpha > constraint_limit)
+
+        # assert that alpha is now equal to the constraint
+        # torch.testing.assert_close(torch.ones_like(fitted_alpha) * constraint_value, fitted_alpha)
 
     def test_log_marginal(self):
         """
