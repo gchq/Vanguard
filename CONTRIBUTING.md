@@ -223,12 +223,26 @@ instead of `Blu`.
 ## Testing
 
 Vanguard is subject to rigorous testing in both function and documentation.
-Tests must be written in the `unittest` style, but can be run with either `unittest` or `pytest`.
-These tests are automatically triggered by opening a pull request, and no merging can occur until they have all passed.
 
-The `requirements.txt` file contains what is needed to run unit tests and doctests, but `docs/requirements-docs.txt` is required for the example tests.
+Either [Pytest][pytest] or [Unittest][unittest] can be used to write tests for Vanguard.
+[Pytest][pytest] is recommended where it would simplify code, such as for parameterized tests.
+As much effort should be put into developing tests as is put into developing the code.
+Tests should be provided to test functionality and also ensuring exceptions and warnings are raised or
+managed appropriately. This includes:
+- Unit testing of new functions added to the codebase
+- Verifying all existing tests pass with the integrated changes
 
-Please ensure that tests are run regularly before opening a pull request, in order to catch errors early:
+Keep in mind the impact on runtime when writing your tests. Favour more tests that are smaller rather than a few large
+tests with many assert statements unless it would significantly affect run time, e.g. due to excess set up or duplicated
+function calls.
+
+The test suite is run automatically on each opened pull request, and no merging can occur until the whole suite has
+passed.
+
+The `requirements.txt` file contains what is needed to run unit tests and doctests,
+but `docs/requirements-docs.txt` is required for the example tests.
+
+Please ensure that tests are run regularly _before_ opening a pull request, in order to catch errors early:
 
 ```shell
 # Unittest:
@@ -301,8 +315,10 @@ An entry with the keyword `Doe99` can then be referenced within a docstring anyw
 [pr-draft]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request
 [pr-ready]: https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/changing-the-stage-of-a-pull-request
 [pylint]: https://www.pylint.org/
+[pytest]: https://docs.pytest.org/
 [ruff]: https://docs.astral.sh/ruff/
 [run-tests]: https://github.com/gchq/Vanguard/actions/workflows/unittests.yml
 [sphinx]: https://www.sphinx-doc.org/en/master/index.html
 [sphinx-format]: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html
 [sphinx-rst]: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
+[unittest]: https://docs.python.org/3/library/unittest.html
