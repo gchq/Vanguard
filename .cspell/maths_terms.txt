@@ -15,8 +15,11 @@ Matern
 medoids
 nonlinear
 nonparametric
+Nystrom
 parsable
 probit
+regressand
+RMSE
 softmax
 unflatten
 unsqueeze

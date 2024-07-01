@@ -18,7 +18,7 @@ class BikeDataset(FileDataset):
 
     Contains the hourly count of rental bikes between years 2011 and 2012 in Capital bikeshare system with the
     corresponding weather and seasonal information. Supplied by the UC Irvine Machine Learning Repository
-    :cite:`misc_bike_sharing_275`.
+    :cite:`FanaeeT2013`.
     """
 
     def __init__(
