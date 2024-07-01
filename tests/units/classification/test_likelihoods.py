@@ -58,7 +58,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
                 )
 
     def test_alpha(self):
-        """Test that when a value for alpha is provided, it's set correctly."""
+        """Test that when a value for alpha is provided to the initialiser, it's set correctly."""
         alpha = self.rng.uniform(2, 10)  # ensuring alpha != 1
         likelihood = DirichletKernelClassifierLikelihood(num_classes=self.num_classes, alpha=alpha)
         torch.testing.assert_close(torch.ones(self.num_classes) * alpha, likelihood.alpha)
@@ -90,7 +90,11 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         assert not torch.all(torch.isclose(fitted_alpha, starting_alpha))
 
     def test_log_marginal(self):
-        """Test that log_marginal gives the log-probabilities of the marginal distribution."""
+        """
+        Test that log_marginal gives the log-probabilities of the marginal distribution.
+
+        That is, we check that `log_marginal(x, dist)` == `marginal(dist).log_prob(x)`.
+        """
         kernel = torch.tensor(self.rng.uniform(1, 2, size=(self.num_classes, self.num_classes)), dtype=torch.float)
         distribution = DummyKernelDistribution(lazify(torch.eye(self.num_classes, dtype=torch.float)), lazify(kernel))
         observations = torch.tensor(self.rng.standard_normal(size=self.num_classes), dtype=torch.float)
@@ -134,7 +138,11 @@ class TestMultitaskBernoulliLikelihood(TestCase):
     # https://github.com/gchq/Vanguard/issues/218
     @expectedFailure
     def test_log_marginal(self):
-        """Test that log_marginal gives the log-probabilities of the marginal distribution."""
+        """
+        Test that log_marginal gives the log-probabilities of the marginal distribution.
+
+        That is, we check that `log_marginal(x, dist)` == `marginal(dist).log_prob(x)`.
+        """
         likelihood = MultitaskBernoulliLikelihood()
         size = 3
         mean = torch.tensor(self.rng.standard_normal(size=size), dtype=torch.float)

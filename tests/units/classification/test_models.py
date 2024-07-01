@@ -13,7 +13,7 @@ from vanguard.classification.models import InertKernelModel
 
 class TestInertKernelModelFailures(TestCase):
     def test_train_fails_with_no_data(self):
-        """Test that model training fails if no training inputs are provided."""
+        """Test that model training fails with an appropriate error message if no training inputs are provided."""
         model = InertKernelModel(
             train_inputs=None,
             train_targets=None,
@@ -33,7 +33,7 @@ class TestInertKernelModelFailures(TestCase):
         )
 
     def test_illegal_train_inputs(self):
-        """Test that model training fails if training inputs are of an illegal type."""
+        """Test that model training fails with an appropriate message if training inputs are of an incorrect type."""
         with self.assertRaises(TypeError) as ctx:
             _ = InertKernelModel(
                 train_inputs=[1, 2, 3],  # type: ignore
@@ -77,7 +77,7 @@ class TestInertKernelModel(TestCase):
         self.assertEqual("You must train on the training inputs!", ctx.exception.args[0])
 
     def test_using_training_data_outside_train_mode_warns_in_debug_if_forget_to_call_train(self):
-        """Test that, when in debug mode, calling the model with the training data raises an appropriate warning."""
+        """Test that, when in debug mode, calling the model with the training data emits an appropriate warning."""
         with self.assertWarns(
             GPInputWarning, msg="The input matches the stored training data. Did you forget to call model.train()?"
         ):
@@ -88,7 +88,7 @@ class TestInertKernelModel(TestCase):
     # TODO: all three prior mode tests currently fail due to shape mismatches.
     @expectedFailure
     def test_prior_mode(self):
-        """Test that in prior mode, the GP is evaluated as if without training data."""
+        """Test that when in prior mode, the GP is evaluated as if without training data."""
         # Predict in prior mode
         self.model.eval()
         with settings.prior_mode(True):

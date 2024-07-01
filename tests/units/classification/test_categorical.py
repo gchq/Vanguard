@@ -69,11 +69,11 @@ class MulticlassTests(ClassificationTestCase):
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        self.controller.fit(10)
 
     @flaky
     def test_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
@@ -87,7 +87,13 @@ class MulticlassFuzzyTests(ClassificationTestCase):
     # https://github.com/gchq/Vanguard/issues/128
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training inputs have no noise applied, but the test inputs do.
+
+        Note that we ignore the `certainties` output here.
+        """
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         test_x_std = 0.005
         test_x = np.random.normal(dataset.test_x, scale=test_x_std)
@@ -106,7 +112,14 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
 
     def test_fuzzy_predictions_uncertainty(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training and test inputs have the same level of noise applied, and we use
+        GaussianUncertaintyGPController as a base class for the controller to allow us to handle the noise.
+
+        Note that we ignore the `certainties` output here.
+        """
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         train_x_std = test_x_std = 0.005
         train_x = np.random.normal(dataset.train_x, scale=train_x_std)
@@ -135,7 +148,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
 
 class SoftmaxLMCTests(unittest.TestCase):
     """
-    Tests for softmax multi-class classification with LMC
+    Tests for softmax multi-class classification with LMC.
     """
 
     def setUp(self) -> None:
@@ -179,8 +192,8 @@ class SoftmaxTests(unittest.TestCase):
         self.controller.fit(1)
 
     def test_fitting_with_mismatch_mean_errors(self) -> None:
-        """Test for error when creating controller with a mean of the wrong shape."""
-        with self.assertRaises(TypeError):
+        """Test that creating controller with a mean of the wrong shape raises an error with an appropriate message."""
+        with self.assertRaises(TypeError) as ctx:
             self.controller = SoftmaxClassifier(
                 self.dataset.train_x,
                 self.dataset.train_y,
@@ -191,6 +204,11 @@ class SoftmaxTests(unittest.TestCase):
                 marginal_log_likelihood_class=VariationalELBO,
                 mean_kwargs={"batch_shape": NUM_LATENTS + 2},
             )
+
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'torch.Size'",
+            str(ctx.exception),
+        )
 
 
 class MultitaskBernoulliClassifierTests(unittest.TestCase):

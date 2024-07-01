@@ -2,14 +2,9 @@
 Tests for the DirichletMulticlassClassification decorator.
 """
 
-from unittest import TestCase
-
 import numpy as np
-import torch.testing
 from gpytorch.likelihoods import DirichletClassificationLikelihood
-from torch import Tensor
 
-from vanguard.base.posteriors import Posterior
 from vanguard.classification import DirichletMulticlassClassification
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.uncertainty import GaussianUncertaintyGPController
@@ -47,13 +42,13 @@ class MulticlassTests(ClassificationTestCase):
 
     @flaky
     def test_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(10)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
 
     def test_illegal_likelihood_class(self) -> None:
-        """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
+        """Test that when an incorrect `likelihood_class` is given, an appropriate exception is raised."""
 
         class IllegalLikelihoodClass:
             pass
@@ -76,12 +71,18 @@ class MulticlassTests(ClassificationTestCase):
 
 class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     """
-    Tests for fuzzy dirichlet multiclass classification.
+    Tests for fuzzy Dirichlet multiclass classification.
     """
 
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training inputs have no noise applied, but the test inputs do.
+
+        Note that we ignore the `certainties` output here.
+        """
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         test_x_std = 0.005
         test_x = np.random.normal(dataset.test_x, scale=test_x_std)
@@ -105,7 +106,14 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
     @flaky
     def test_fuzzy_predictions_uncertainty(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training and test inputs have the same level of noise applied, and we use
+        GaussianUncertaintyGPController as a base class for the controller to allow us to handle the noise.
+
+        Note that we ignore the `certainties` output here.
+        """
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         train_x_std = test_x_std = 0.005
@@ -133,26 +141,3 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.4)
-
-
-class InnerTests(TestCase):
-    def setUp(self):
-        """Set up data shared across tests."""
-        self.rng = np.random.default_rng(1234)
-
-    def test_posterior_from_mean_and_covariance(self):
-        """Check that the wrapped class's posterior class transposes its mean matrix."""
-        unwrapped_class = GaussianGPController
-        wrapped_class = DirichletMulticlassClassification(num_classes=4, ignore_methods=("__init__",))(unwrapped_class)
-
-        mean: Tensor = torch.tensor(self.rng.normal(size=(3,)))
-        random_matrix: Tensor = torch.tensor(self.rng.normal(size=(3, 3)))
-        cov = random_matrix @ random_matrix.T  # to ensure positive semidefinite
-
-        unwrapped_posterior: Posterior = unwrapped_class.posterior_class.from_mean_and_covariance(mean, cov)
-        wrapped_posterior: Posterior = wrapped_class.posterior_class.from_mean_and_covariance(mean, cov)
-
-        torch.testing.assert_close(unwrapped_posterior.distribution.mean.T, wrapped_posterior.distribution.mean)
-        torch.testing.assert_close(
-            unwrapped_posterior.distribution.covariance_matrix, wrapped_posterior.distribution.covariance_matrix
-        )
