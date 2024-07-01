@@ -29,7 +29,7 @@ def complicated_f(x: NDArray[np.floating]) -> NDArray[np.floating]:
     .. math::
         f(x) = -x^\frac{3}{2} + x\sin^2(2\pi x)
     """
-    return -(x**3) / 2 + x * simple_f(x) ** 2
+    return -(x ** (3 / 2)) + x * simple_f(x) ** 2
 
 
 def very_complicated_f(x: NDArray[np.floating]) -> NDArray[np.floating]:
