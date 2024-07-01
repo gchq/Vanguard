@@ -17,6 +17,7 @@ Regression
     examples/laplace-hierarchical.ipynb
     examples/distributed_gp.ipynb
     examples/sparse_variational_gps.ipynb
+    examples/sparse_kernel_approximation.ipynb
 
 Classification
 ==============
