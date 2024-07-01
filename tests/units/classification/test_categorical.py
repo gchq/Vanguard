@@ -2,7 +2,6 @@
 Tests for the CategoricalClassification decorator.
 """
 
-import unittest
 from unittest import expectedFailure
 
 import numpy as np
@@ -148,7 +147,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
 
 
-class SoftmaxLMCTests(unittest.TestCase):
+class SoftmaxLMCTests(ClassificationTestCase):
     """
     Tests for softmax multi-class classification with LMC.
     """
@@ -166,12 +165,15 @@ class SoftmaxLMCTests(unittest.TestCase):
             marginal_log_likelihood_class=VariationalELBO,
         )
 
-    def test_fitting(self) -> None:
-        """Test that fitting is possible."""
-        self.controller.fit(1)
+    @flaky
+    def test_predictions(self) -> None:
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
+        predictions, _ = self.controller.classify_points(self.dataset.test_x)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
 
-class SoftmaxTests(unittest.TestCase):
+class SoftmaxTests(ClassificationTestCase):
     """
     Tests for softmax multi-class classification without LMC.
     """
@@ -189,9 +191,12 @@ class SoftmaxTests(unittest.TestCase):
             marginal_log_likelihood_class=VariationalELBO,
         )
 
-    def test_fitting(self) -> None:
-        """Test that fitting is possible."""
-        self.controller.fit(1)
+    @flaky
+    def test_predictions(self) -> None:
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
+        predictions, _ = self.controller.classify_points(self.dataset.test_x)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
     # TODO: fails with the following error:
     #  RuntimeError: grad can be implicitly created only for scalar outputs
@@ -257,7 +262,7 @@ class SoftmaxTests(unittest.TestCase):
         )
 
 
-class MultitaskBernoulliClassifierTests(unittest.TestCase):
+class MultitaskBernoulliClassifierTests(ClassificationTestCase):
     """
     Tests for softmax multi-class classification with LMC
     """
@@ -275,6 +280,9 @@ class MultitaskBernoulliClassifierTests(unittest.TestCase):
             marginal_log_likelihood_class=VariationalELBO,
         )
 
-    def test_fitting(self) -> None:
-        """Test that fitting is possible."""
-        self.controller.fit(1)
+    @flaky
+    def test_predictions(self) -> None:
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
+        predictions, _ = self.controller.classify_points(self.dataset.test_x)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
