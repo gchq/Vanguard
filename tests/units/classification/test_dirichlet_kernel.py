@@ -47,7 +47,7 @@ class MulticlassTests(ClassificationTestCase):
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
 
     # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
-    # https://github.com/gchq/Vanguard/issues/189
+    # https://github.com/gchq/Vanguard/issues/288
     # @flaky
     @expectedFailure
     def test_fuzzy_predictions(self) -> None:
