@@ -161,11 +161,6 @@ filterwarnings = [
     # https://github.com/gchq/Vanguard/issues/262
     "ignore:`product` is deprecated as of NumPy:DeprecationWarning",
 
-    # TODO: replace with linear_operator.utils.errors.*
-    # https://github.com/gchq/Vanguard/issues/275
-    "ignore:gpytorch.utils.errors.NanError:DeprecationWarning",
-    "ignore:gpytorch.utils.errors.NotPSDError:DeprecationWarning",
-
     # TODO: replace with set_default_dtype/set_default_device
     # https://github.com/gchq/Vanguard/issues/276
     "ignore:torch.set_default_tensor_type\\(\\) is deprecated as of PyTorch 2.1:UserWarning",
