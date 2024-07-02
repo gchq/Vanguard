@@ -123,3 +123,66 @@ exclude_also = [
     "if TYPE_CHECKING:",
     "raise$",
 ]
+
+[tool.pytest.ini_options]
+# TODO: fix as many of these as possible, and for those we can't fix, suppress as many as possible at the point that
+#  they're emitted using the catch_warnings context manager. Suppress globally here only as a last resort.
+# https://github.com/gchq/Vanguard/issues/281
+filterwarnings = [
+    # Numerical error warnings
+    "ignore::linear_operator.utils.warnings.NumericalWarning",
+    "ignore:Hit a numerical error:UserWarning",
+    "ignore:A regression problem with no warping",
+
+    # Other warnings
+    "ignore::pytest.PytestCollectionWarning",
+    "ignore:The input matches the stored training data. Did you forget to call model.train\\(\\)\\?:gpytorch.utils.warnings.GPInputWarning",
+    "ignore:To copy construct from a tensor, it is recommended to use sourceTensor.clone\\(\\).detach\\(\\):UserWarning",
+    "ignore:Pass auto_restart=True to the controller to automatically restart training up to the last stable iterations:UserWarning",
+    "ignore:std\\(\\). degrees of freedom is <= 0:UserWarning",
+    "ignore:You have passed data through a FixedNoiseGaussianLikelihood that did not match the size of the fixed noise:gpytorch.utils.warnings.GPInputWarning",
+    "ignore:To get the last learning rate computed by the scheduler, please use `get_last_lr\\(\\)`:UserWarning",
+
+    # Vanguard being pedantic errors
+    # TODO: add ignore_methods to fix these
+    # https://github.com/gchq/Vanguard/issues/283
+    "ignore::vanguard.decoratorutils.errors.OverwrittenMethodWarning",
+    "ignore::vanguard.decoratorutils.errors.UnexpectedMethodWarning",
+
+    # -- Deprecations --
+
+    # TODO: gpytorch.lazy deprecation
+    # https://github.com/gchq/Vanguard/issues/156
+    "ignore:GPyTorch will be replacing all LazyTensor functionality with the linear operator package:DeprecationWarning",
+    "ignore:LazyTensor#evaluate has been renamed to LinearOperator#to_dense:DeprecationWarning",
+    "ignore:gpytorch.lazy.lazify is deprecated in favor of linear_operator.to_linear_operator:UserWarning",
+
+    # TODO: replace with np.prod
+    # https://github.com/gchq/Vanguard/issues/262
+    "ignore:`product` is deprecated as of NumPy:DeprecationWarning",
+
+    # TODO: replace with linear_operator.utils.errors.*
+    # https://github.com/gchq/Vanguard/issues/275
+    "ignore:gpytorch.utils.errors.NanError:DeprecationWarning",
+    "ignore:gpytorch.utils.errors.NotPSDError:DeprecationWarning",
+
+    # TODO: replace with set_default_dtype/set_default_device
+    # https://github.com/gchq/Vanguard/issues/276
+    "ignore:torch.set_default_tensor_type\\(\\) is deprecated as of PyTorch 2.1:UserWarning",
+
+    # TODO: replace with to_dense
+    # https://github.com/gchq/Vanguard/issues/277
+    "ignore:The `evaluate` method is deprecated. Use `to_dense` instead:DeprecationWarning",
+
+    # TODO: replace with sparse_coo_tensor
+    # https://github.com/gchq/Vanguard/issues/278
+    "ignore:torch.sparse.SparseTensor\\(indices, values, shape, \\*, device=\\) is deprecated:UserWarning",
+
+    # TODO: investigate
+    # https://github.com/gchq/Vanguard/issues/279
+    "ignore:The use of `x.T` on tensors of dimension other than 2 to reverse their shape is deprecated and it will throw an error in a future release:UserWarning",
+
+    # TODO: replace with torch.testing.assert_close
+    # https://github.com/gchq/Vanguard/issues/280
+    "ignore:`torch.testing.assert_allclose\\(\\)` is deprecated:FutureWarning",
+]
