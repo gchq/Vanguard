@@ -46,7 +46,7 @@ class Posterior:
         """
         return self.distribution
 
-    def prediction(self) -> Tuple[numpy.typing.NDArray[float], numpy.typing.NDArray[float]]:
+    def prediction(self) -> Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]:
         """
         Return the prediction as a numpy array.
 
@@ -61,7 +61,7 @@ class Posterior:
     def confidence_interval(
         self,
         alpha: float = 0.05,
-    ) -> Tuple[numpy.typing.NDArray[float], numpy.typing.NDArray[float], numpy.typing.NDArray[float]]:
+    ) -> Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
@@ -74,7 +74,7 @@ class Posterior:
 
     def mse(
         self,
-        y: Union[numpy.typing.NDArray[float], float],
+        y: Union[numpy.typing.NDArray[np.floating], float],
     ) -> float:
         r"""
         Compute the mean-squared of some values under the posterior.
@@ -88,8 +88,8 @@ class Posterior:
 
     def nll(
         self,
-        y: Union[numpy.typing.NDArray[float], float],
-        noise_variance: Union[numpy.typing.NDArray[float], float] = 0,
+        y: Union[numpy.typing.NDArray[np.floating], float],
+        noise_variance: Union[numpy.typing.NDArray[np.floating], float] = 0,
         alpha: float = stats.norm.cdf(-1) * 2,
     ) -> float:
         """
@@ -111,7 +111,7 @@ class Posterior:
 
     def log_probability(
         self,
-        y: Union[numpy.typing.NDArray[float], float],
+        y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
     ) -> float:
         r"""
         Compute the log-likelihood of some values under the posterior.
@@ -123,7 +123,7 @@ class Posterior:
         """
         return self._tensor_log_probability(torch.as_tensor(y).float()).item()
 
-    def sample(self, n_samples: int = 1) -> numpy.typing.NDArray[float]:
+    def sample(self, n_samples: int = 1) -> numpy.typing.NDArray[np.floating]:
         """
         Draw independent samples from the posterior.
 
