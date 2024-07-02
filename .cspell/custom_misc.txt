@@ -1,6 +1,5 @@
 colors
 defenses
 docstrings
-favor
 GCHQ
 linted
