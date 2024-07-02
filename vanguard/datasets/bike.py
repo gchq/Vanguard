@@ -1,5 +1,7 @@
 """
 The bike dataset contains messy information about bike rentals, and is a good dataset for testing performance.
+
+Supplied by the UC Irvine Machine Learning Repository :cite:`FanaeeT2013`.
 """
 
 from typing import Optional
