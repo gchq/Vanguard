@@ -117,6 +117,7 @@ pyobjects
 pyproject
 pyroma
 pytest
+PYTHONHASHSEED
 pytorch
 pyupgrade
 qualnames
