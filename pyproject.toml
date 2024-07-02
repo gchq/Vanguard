@@ -168,8 +168,4 @@ filterwarnings = [
     # TODO: investigate
     # https://github.com/gchq/Vanguard/issues/279
     "ignore:The use of `x.T` on tensors of dimension other than 2 to reverse their shape is deprecated and it will throw an error in a future release:UserWarning",
-
-    # TODO: replace with torch.testing.assert_close
-    # https://github.com/gchq/Vanguard/issues/280
-    "ignore:`torch.testing.assert_allclose\\(\\)` is deprecated:FutureWarning",
 ]
