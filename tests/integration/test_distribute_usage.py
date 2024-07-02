@@ -41,6 +41,7 @@ class VanguardTestCase(unittest.TestCase):
         Define data shared across tests.
         """
         self.random_seed = 1_989
+        self.rng = np.random.default_rng(self.random_seed)
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 50
@@ -59,7 +60,7 @@ class VanguardTestCase(unittest.TestCase):
                 self.y[index, 0] = 1
 
         # Split data into training and testing
-        self.train_indices = np.random.choice(np.arange(self.y.shape[0]), size=self.num_train_points, replace=False)
+        self.train_indices = self.rng.choice(np.arange(self.y.shape[0]), size=self.num_train_points, replace=False)
         self.test_indices = np.setdiff1d(np.arange(self.y.shape[0]), self.train_indices)
 
     def test_distributed_gp_vary_aggregator_fix_partition(self) -> None:
@@ -70,8 +71,6 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a binary target `y`, and verify that a
         GP can be fit to this data.
         """
-        np.random.seed(self.random_seed)
-
         # We have a binary classification problem, so we apply the BinaryClassification
         # decorator and will need to use VariationalInference to perform inference on
         # data. We try each aggregation method to ensure they are all functional.
@@ -121,8 +120,6 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a binary target `y`, and verify that a
         GP can be fit to this data.
         """
-        np.random.seed(self.random_seed)
-
         # We have a binary classification problem, so we apply the BinaryClassification
         # decorator and will need to use VariationalInference to perform inference on
         # data. We try each partition method to ensure they are all functional.

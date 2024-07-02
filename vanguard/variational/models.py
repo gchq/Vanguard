@@ -2,7 +2,7 @@
 Contains base models for approximate inference.
 """
 
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -96,7 +96,9 @@ class SVGPModel(ApproximateGP):
         covar_x = self.covar_module(x)
         return MultivariateNormal(mean_x, covar_x)
 
-    def _init_inducing_points(self, train_x: Tensor, n_inducing_points: int) -> Tensor:
+    def _init_inducing_points(
+        self, train_x: Tensor, n_inducing_points: int, rng: Optional[np.random.Generator] = None
+    ) -> Tensor:
         """
         Create the initial inducing points by sampling from the training inputs.
 
@@ -104,7 +106,8 @@ class SVGPModel(ApproximateGP):
         :param n_inducing_points: How many inducing points to select.
         :returns: The inducing points sampled from the training points.
         """
-        induce_indices = np.random.choice(train_x.shape[0], size=n_inducing_points, replace=True)
+        rng = rng if rng is not None else np.random.default_rng()
+        induce_indices = rng.choice(train_x.shape[0], size=n_inducing_points, replace=True)
         inducing_points = train_x[induce_indices]
         return inducing_points.to(self.device)
 

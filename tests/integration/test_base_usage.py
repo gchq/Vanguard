@@ -19,7 +19,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.random_seed = 1_989
+        self.rng = np.random.default_rng(1_989)
         self.num_train_points = 500
         self.num_test_points = 500
         self.n_sgd_iters = 100
@@ -44,14 +44,12 @@ class VanguardTestCase(unittest.TestCase):
         correctly, and they contain the expected number of points in both the training
         and testing data.
         """
-        np.random.seed(self.random_seed)
-
         # Define some data for the test
         x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
         y = np.squeeze(x * np.sin(x))
 
         # Split data into training and testing
-        train_indices = np.random.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
         # Define the controller object, with an assumed small amount of noise

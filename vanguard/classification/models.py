@@ -21,7 +21,7 @@ class DummyKernelDistribution:
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
 
-    def __init__(self, labels: torch.Tensor, kernel: torch.Tensor) -> None:
+    def __init__(self, labels: gpytorch.lazy.LazyTensor, kernel: gpytorch.lazy.LazyTensor) -> None:
         """
         Initialise self.
 
@@ -98,6 +98,9 @@ class InertKernelModel(ExactGPModel):
         return DiagLazyTensor(torch.ones(self.n_classes))[targets.long()]
 
     def __call__(self, *args: Any, **kwargs: Any) -> DummyKernelDistribution:
+        # TODO: Why do we accept variable numbers of arguments here? It seems to throw errors if you provide too many
+        #  arguments, and the GPyTorch documentation seems very thin here. Also, `kwargs` is ignored entirely.
+        # https://github.com/gchq/Vanguard/issues/292
         train_inputs = list(self.train_inputs) if self.train_inputs is not None else []
         inputs = [arg.unsqueeze(-1) if arg.ndimension() == 1 else arg for arg in args]
 
@@ -111,6 +114,9 @@ class InertKernelModel(ExactGPModel):
             kernel_matrix = self.covar_module(*inputs)
 
         elif settings.prior_mode.on() or self.train_inputs is None or self.train_targets is None:
+            # TODO: Prior mode evaluation fails due to a shape mismatch, seemingly due to the reference to
+            #  train_targets in the return value.
+            # https://github.com/gchq/Vanguard/issues/291
             kernel_matrix = self.covar_module(*args)
 
         else:
@@ -122,4 +128,6 @@ class InertKernelModel(ExactGPModel):
 
             kernel_matrix = self.covar_module(*inputs, *train_inputs)
 
+        # TODO: This will fail if train_targets is None. (AttributeError: 'NoneType' object has no attribute 'long')
+        # https://github.com/gchq/Vanguard/issues/291
         return DummyKernelDistribution(self._label_tensor(self.train_targets), kernel_matrix)

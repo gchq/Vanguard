@@ -28,15 +28,16 @@ class BinaryStripeClassificationDataset(Dataset):
         plt.show()
     """
 
-    def __init__(self, num_train_points: int, num_test_points: int) -> None:
+    def __init__(self, num_train_points: int, num_test_points: int, rng: Optional[np.random.Generator] = None) -> None:
         """
         Initialise self.
 
         :param num_train_points: The number of training points.
         :param num_test_points: The number of testing points.
         """
+        self.rng = rng if rng is not None else np.random.default_rng()
         train_x = np.linspace(0, 1, num_train_points)
-        test_x = np.random.rand(num_test_points)
+        test_x = self.rng.random(num_test_points)
 
         train_y = self.even_split(train_x)
         test_y = self.even_split(test_x)

@@ -13,7 +13,7 @@ from typing_extensions import Self
 
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
-from .mixin import ClassificationMixin
+from .mixin import Classification, ClassificationMixin
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
@@ -63,6 +63,7 @@ class DirichletMulticlassClassification(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+        @Classification()
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """
@@ -119,6 +120,11 @@ class DirichletMulticlassClassification(Decorator):
                     compatibility downstream.
                     """
 
+                    # TODO: This method doesn't actually work!
+                    #  TypeError: 'MultivariateNormal' object is not an iterator
+                    #  Shouldn't expect this to work anyway, as MonteCarloPosteriorCollection doesn't support
+                    #  from_mean_and_covariance in the first place
+                    # https://github.com/gchq/Vanguard/issues/289
                     @classmethod
                     def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> Self:
                         """Transpose the mean before returning."""

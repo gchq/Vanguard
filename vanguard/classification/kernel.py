@@ -11,7 +11,7 @@ import torch
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from .likelihoods import DirichletKernelClassifierLikelihood
-from .mixin import ClassificationMixin
+from .mixin import Classification, ClassificationMixin
 from .models import InertKernelModel
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -66,6 +66,7 @@ class DirichletKernelMulticlassClassification(Decorator):
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         num_classes = self.num_classes
 
+        @Classification()
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             gp_model_class = InertKernelModel
@@ -106,6 +107,8 @@ class DirichletKernelMulticlassClassification(Decorator):
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
+            # TODO: throws an error - see linked issue
+            # https://github.com/gchq/Vanguard/issues/288
             def classify_fuzzy_points(
                 self,
                 x: Union[float, numpy.typing.NDArray[np.floating]],

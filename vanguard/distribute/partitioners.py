@@ -39,7 +39,7 @@ class BasePartitioner:
         self.train_x = train_x
         self.n_experts = n_experts
         self.communication = communication
-        self.seed = seed
+        self.rng = np.random.default_rng(seed)
 
         self.n_examples = self.train_x.shape[0]
 
@@ -49,8 +49,6 @@ class BasePartitioner:
 
         :return: A partition of length ``self.n_experts``.
         """
-        np.random.seed(self.seed)
-
         if self.communication:
             partition = self._create_cluster_communication_partition()
         else:
@@ -94,7 +92,7 @@ class BasePartitioner:
         :return: A partition of length ``self.n_experts``.
         """
         size = self.n_examples // self.n_experts
-        random_partition = np.random.choice(self.n_examples, size=size, replace=False).tolist()
+        random_partition = self.rng.choice(self.n_examples, size=size, replace=False).tolist()
         cluster_partition = self._create_cluster_partition(self.n_experts - 1)
 
         for i in range(self.n_experts - 1):
@@ -138,7 +136,7 @@ class RandomPartitioner(BasePartitioner):
         :return: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
         size = (n_clusters, self.n_examples // n_clusters)
-        partition = np.random.choice(self.n_examples, size=size, replace=False).tolist()
+        partition = self.rng.choice(self.n_examples, size=size, replace=False).tolist()
         return partition
 
 
@@ -154,7 +152,7 @@ class KMeansPartitioner(BasePartitioner):
         :param n_clusters: The number of clusters.
         :return: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
-        clusterer = sklearn.cluster.KMeans(n_clusters=n_clusters, random_state=self.seed)
+        clusterer = sklearn.cluster.KMeans(n_clusters=n_clusters, random_state=self.rng.integers(0, (2**32 - 1)))
         labels = clusterer.fit(self.train_x).labels_
         partition = self._group_indices_by_label(labels)
         return partition
@@ -172,7 +170,9 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
         :param n_clusters: The number of clusters.
         :return: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
-        clusterer = sklearn.cluster.MiniBatchKMeans(n_clusters=n_clusters, random_state=self.seed)
+        clusterer = sklearn.cluster.MiniBatchKMeans(
+            n_clusters=n_clusters, random_state=self.rng.integers(0, (2**32 - 1))
+        )
         labels = clusterer.fit(self.train_x).labels_
         partition = self._group_indices_by_label(labels)
         return partition
@@ -214,7 +214,9 @@ class KMedoidsPartitioner(BasePartitioner):
         :return: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
         dist_matrix = self._construct_distance_matrix()
-        clusterer = kmedoids.KMedoids(n_clusters=n_clusters, metric="precomputed", random_state=self.seed)
+        clusterer = kmedoids.KMedoids(
+            n_clusters=n_clusters, metric="precomputed", random_state=self.rng.integers(0, (2**32 - 1))
+        )
         labels = clusterer.fit(dist_matrix).labels_
         partition = self._group_indices_by_label(labels)
         return partition

@@ -101,7 +101,17 @@ class Multitask(Decorator):
                 else:
                     kernel_class = _multitaskify_kernel(kernel_class, decorator.num_tasks, decorator.rank)
 
-                mean_class = self._match_mean_shape_to_kernel(mean_class, kernel_class, mean_kwargs, kernel_kwargs)
+                try:
+                    mean_class = self._match_mean_shape_to_kernel(mean_class, kernel_class, mean_kwargs, kernel_kwargs)
+                except TypeError as exc:
+                    if "batch_shape" in mean_kwargs:
+                        batch_shape = mean_kwargs["batch_shape"]
+                        if not isinstance(batch_shape, torch.Size):
+                            msg = (
+                                f"Expected mean_kwargs['batch_shape'] to be of type `torch.Size`; "
+                                f"got `{batch_shape.__class__.__name__}` instead"
+                            )
+                            raise TypeError(msg) from exc
 
                 likelihood_kwargs = all_parameters_as_kwargs.pop("likelihood_kwargs", {})
                 likelihood_kwargs["num_tasks"] = decorator.num_tasks

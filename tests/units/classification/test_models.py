@@ -1,6 +1,6 @@
 """Tests for the InertKernelModel."""
 
-from unittest import TestCase
+from unittest import TestCase, expectedFailure
 
 import torch
 from gpytorch import settings
@@ -13,7 +13,7 @@ from vanguard.classification.models import InertKernelModel
 
 class TestInertKernelModelFailures(TestCase):
     def test_train_fails_with_no_data(self):
-        """Test that model training fails if no training inputs are provided."""
+        """Test that model training fails with an appropriate error message if no training inputs are provided."""
         model = InertKernelModel(
             train_inputs=None,
             train_targets=None,
@@ -33,7 +33,7 @@ class TestInertKernelModelFailures(TestCase):
         )
 
     def test_illegal_train_inputs(self):
-        """Test that model training fails if training inputs are of an illegal type."""
+        """Test that model training fails with an appropriate message if training inputs are of an incorrect type."""
         with self.assertRaises(TypeError) as ctx:
             _ = InertKernelModel(
                 train_inputs=[1, 2, 3],  # type: ignore
@@ -52,6 +52,9 @@ class TestInertKernelModel(TestCase):
         # Simple three-class training data.
         self.train_data = torch.tensor([0.0, 0.1, 0.4, 0.5, 0.9, 1.0])
         self.train_targets = torch.tensor([0, 0, 1, 1, 2, 2])
+
+        # ... and some accompanying test data.
+        self.test_data = torch.tensor([0.05, 0.89])
 
         self.model = InertKernelModel(
             train_inputs=self.train_data,
@@ -74,10 +77,66 @@ class TestInertKernelModel(TestCase):
         self.assertEqual("You must train on the training inputs!", ctx.exception.args[0])
 
     def test_using_training_data_outside_train_mode_warns_in_debug_if_forget_to_call_train(self):
-        """Test that, when in debug mode, calling the model with the training data raises an appropriate warning."""
+        """Test that, when in debug mode, calling the model with the training data emits an appropriate warning."""
         with self.assertWarns(
             GPInputWarning, msg="The input matches the stored training data. Did you forget to call model.train()?"
         ):
             with settings.debug(True):
-                self.model.train(False)
+                self.model.eval()
                 self.model(self.train_data)
+
+    # TODO: all three prior mode tests currently fail due to shape mismatches.
+    # https://github.com/gchq/Vanguard/issues/291
+    @expectedFailure
+    def test_prior_mode(self):
+        """Test that when in prior mode, the GP is evaluated as if without training data."""
+        # Predict in prior mode
+        self.model.eval()
+        with settings.prior_mode(True):
+            prior_mode_distribution = self.model(self.test_data)
+
+        # Assert the distribution uses the prior distribution and not the training data
+        torch.testing.assert_close(
+            prior_mode_distribution.kernel.to_dense().T, self.model.covar_module(self.test_data).to_dense()
+        )
+
+    @expectedFailure
+    def test_prior_mode_if_no_train_inputs(self):
+        """Test that if no training inputs are present, the model is evaluated as if in prior mode."""
+        # Predict in eval mode
+        self.model.train_inputs = None
+        self.model.eval()
+        prior_mode_distribution = self.model(self.test_data)
+
+        # Assert the distribution uses the prior distribution and not the training data
+        torch.testing.assert_close(
+            prior_mode_distribution.kernel.to_dense().T, self.model.covar_module(self.test_data).to_dense()
+        )
+
+    @expectedFailure
+    def test_prior_mode_if_no_train_targets(self):
+        """Test that if no training targets are present, the model is evaluated as if in prior mode."""
+        # Predict in eval mode
+        self.model.train_targets = None
+        self.model.eval()
+        prior_mode_distribution = self.model(self.test_data)
+
+        # Assert the distribution uses the prior distribution and not the training data
+        torch.testing.assert_close(
+            prior_mode_distribution.kernel.to_dense().T, self.model.covar_module(self.test_data).to_dense()
+        )
+
+    def test_eval_mode(self):
+        """Test that in eval mode, the GP is evaluated with the training data."""
+        # Train the model
+        self.model.train()
+        self.model(self.train_data)
+
+        # Predict in eval mode
+        self.model.eval()
+        distribution = self.model(self.test_data)
+
+        # The distribution kernel should be the covariance between the training data and the test data
+        torch.testing.assert_close(
+            distribution.kernel.to_dense().T, self.model.covar_module(self.train_data, self.test_data).to_dense()
+        )

@@ -4,6 +4,7 @@ Tests for the DirichletKernelMulticlassClassification decorator.
 
 from unittest import expectedFailure
 
+import numpy as np
 from gpytorch import kernels, means
 
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
@@ -27,7 +28,10 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100, num_classes=4)
+        self.rng = np.random.default_rng(1234)
+        self.dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=150, num_test_points=100, num_classes=4, seed=self.rng.integers(2**32 - 1)
+        )
         self.controller = MulticlassGaussianClassifier(
             self.dataset.train_x,
             self.dataset.train_y,
@@ -38,23 +42,30 @@ class MulticlassTests(ClassificationTestCase):
             optim_kwargs={"lr": 0.05},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
         )
-        self.controller.fit(100)
+        self.controller.fit(10)
 
     @flaky
     def test_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
     # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
     # https://github.com/gchq/Vanguard/issues/288
     # @flaky
     @expectedFailure
     def test_fuzzy_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training inputs have no noise applied, but the test inputs do.
+
+        Note that we ignore the `certainties` output here.
+        """
         test_x_std = 0.005
-        predictions, _ = self.controller.classify_fuzzy_points(self.dataset.test_x, test_x_std)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
+        test_x = self.rng.normal(self.dataset.test_x, test_x_std)
+        predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""

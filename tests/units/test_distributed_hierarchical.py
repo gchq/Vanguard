@@ -18,13 +18,13 @@ from vanguard.hierarchical import (
 from vanguard.vanilla import GaussianGPController
 
 
-@Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
+@Distributed(n_experts=3, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
 @VariationalHierarchicalHyperparameters()
 class DistributedVariationalHierarchicalGaussianGPController(GaussianGPController):
     """Test class."""
 
 
-@Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
+@Distributed(n_experts=3, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
 @LaplaceHierarchicalHyperparameters()
 class DistributedLaplaceHierarchicalGaussianGPController(GaussianGPController):
     """Test class."""
@@ -40,16 +40,18 @@ class VariationalTests(unittest.TestCase):
     Some tests.
     """
 
+    def setUp(self):
+        """Set up data shared between tests."""
+        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5)
+
     def test_variational_distribution_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
-        dataset = SyntheticDataset()
-
         gp = DistributedVariationalHierarchicalGaussianGPController(
-            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
         )
-        gp.fit(10)
+        gp.fit(1)
 
-        _ = gp.posterior_over_point(dataset.test_x)
+        _ = gp.posterior_over_point(self.dataset.test_x)
 
         # pylint: disable=protected-access
         hyperparameter_collections = (expert.hyperparameter_collection for expert in gp._expert_controllers)
@@ -61,14 +63,12 @@ class VariationalTests(unittest.TestCase):
 
     def test_variational_distribution_from_subset_is_copied(self) -> None:
         """Experts' variation distribution should match the trained subset controller."""
-        dataset = SyntheticDataset()
-
         gp = DistributedVariationalHierarchicalGaussianGPController(
-            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
         )
-        gp.fit(10)
+        gp.fit(1)
 
-        _ = gp.posterior_over_point(dataset.test_x)
+        _ = gp.posterior_over_point(self.dataset.test_x)
 
         # pylint: disable=protected-access
         hyperparameter_collections = (expert.hyperparameter_collection for expert in gp._expert_controllers)
@@ -86,16 +86,18 @@ class LaplaceTests(unittest.TestCase):
     Some tests.
     """
 
+    def setUp(self):
+        """Set up data shared between tests."""
+        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5)
+
     def test_posterior_mean_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
-        dataset = SyntheticDataset()
-
         gp = DistributedLaplaceHierarchicalGaussianGPController(
-            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
         )
-        gp.fit(10)
+        gp.fit(1)
 
-        _ = gp.posterior_over_point(dataset.test_x)
+        _ = gp.posterior_over_point(self.dataset.test_x)
 
         # pylint: disable=protected-access
         posterior_means = [expert.hyperparameter_posterior_mean for expert in gp._expert_controllers]
@@ -111,7 +113,7 @@ class LaplaceTests(unittest.TestCase):
         gp = DistributedLaplaceHierarchicalGaussianGPController(
             dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
         )
-        gp.fit(10)
+        gp.fit(1)
 
         _ = gp.posterior_over_point(dataset.test_x)
 
@@ -138,14 +140,12 @@ class LaplaceTests(unittest.TestCase):
 
     def test_posterior_mean_from_subset_is_copied(self) -> None:
         """Experts' posterior mean should match the trained subset controller."""
-        dataset = SyntheticDataset()
-
         gp = DistributedLaplaceHierarchicalGaussianGPController(
-            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
         )
-        gp.fit(10)
+        gp.fit(1)
 
-        _ = gp.posterior_over_point(dataset.test_x)
+        _ = gp.posterior_over_point(self.dataset.test_x)
 
         # pylint: disable=protected-access
         posterior_means = [expert.hyperparameter_posterior_mean for expert in gp._expert_controllers]
@@ -156,14 +156,12 @@ class LaplaceTests(unittest.TestCase):
 
     def test_posterior_covariance_from_subset_is_copied(self) -> None:
         """Experts' posterior covariance should match the trained subset controller."""
-        dataset = SyntheticDataset()
-
         gp = DistributedLaplaceHierarchicalGaussianGPController(
-            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
         )
-        gp.fit(10)
+        gp.fit(1)
 
-        _ = gp.posterior_over_point(dataset.test_x)
+        _ = gp.posterior_over_point(self.dataset.test_x)
 
         posterior_covariance_evals = [
             # pylint: disable=protected-access

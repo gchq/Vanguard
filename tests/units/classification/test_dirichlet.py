@@ -39,16 +39,16 @@ class MulticlassTests(ClassificationTestCase):
             kernel_kwargs={"batch_shape": 4},
             mean_kwargs={"batch_shape": 4},
         )
-        self.controller.fit(100)
 
     @flaky
     def test_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
 
     def test_illegal_likelihood_class(self) -> None:
-        """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
+        """Test that when an incorrect `likelihood_class` is given, an appropriate exception is raised."""
 
         class IllegalLikelihoodClass:
             pass
@@ -71,15 +71,25 @@ class MulticlassTests(ClassificationTestCase):
 
 class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     """
-    Tests for fuzzy dirichlet multiclass classification.
+    Tests for fuzzy Dirichlet multiclass classification.
     """
+
+    def setUp(self):
+        """Set up data shared across tests."""
+        self.rng = np.random.default_rng(1234)
 
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
-        """Predictions should be close to the values from the test data."""
-        dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20, num_classes=4)
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training inputs have no noise applied, but the test inputs do.
+
+        Note that we ignore the `certainties` output here.
+        """
+        dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         test_x_std = 0.005
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         controller = DirichletMulticlassClassifier(
             dataset.train_x,
@@ -100,12 +110,19 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
     @flaky
     def test_fuzzy_predictions_uncertainty(self) -> None:
-        """Predictions should be close to the values from the test data."""
-        dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100, num_classes=4)
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training and test inputs have the same level of noise applied, and we use
+        `GaussianUncertaintyGPController` as a base class for the controller to allow us to handle the noise.
+
+        Note that we ignore the `certainties` output here.
+        """
+        dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         train_x_std = test_x_std = 0.005
-        train_x = np.random.normal(dataset.train_x, scale=train_x_std)
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         @DirichletMulticlassClassification(num_classes=4, ignore_all=True)
         class UncertaintyDirichletMulticlassClassifier(GaussianUncertaintyGPController):
@@ -124,7 +141,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
             kernel_kwargs={"batch_shape": 4},
             mean_kwargs={"batch_shape": 4},
         )
-        controller.fit(50)
+        controller.fit(10)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.4)

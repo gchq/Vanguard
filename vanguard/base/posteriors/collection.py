@@ -70,7 +70,7 @@ class MonteCarloPosteriorCollection(Posterior):
                   shape of the args.
         """
         raise NotImplementedError(
-            "Constructed a MonteCarloPosteriorCollection from a single mean and covariance of a"
+            "Constructing a MonteCarloPosteriorCollection from a single mean and covariance of a"
             "Gaussian is not supported."
         )
 
@@ -94,7 +94,7 @@ class MonteCarloPosteriorCollection(Posterior):
     def _tensor_confidence_interval(
         self,
         alpha: float,
-    ) -> Tuple[torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
@@ -176,7 +176,14 @@ class MonteCarloPosteriorCollection(Posterior):
         num_yielded = 0
         posteriors_skipped_in_a_row = 0
         while num_yielded < num_posteriors:
-            posterior = next(self._posterior_generator)
+            try:
+                posterior = next(self._posterior_generator)
+            except StopIteration:
+                msg = (
+                    "ran out of samples from the generator! "
+                    "MonteCarloPosteriorCollection must be given an infinite generator."
+                )
+                raise RuntimeError(msg) from None
             try:
                 # pylint false positive
                 torch.linalg.cholesky(posterior.distribution.covariance_matrix)  # pylint: disable=not-callable

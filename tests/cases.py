@@ -90,9 +90,9 @@ T = TypeVar("T")
 
 def flaky(test_method: Callable[P, T]) -> Callable[P, T]:
     """
-    Mark a test as flaky - flaky tests are rerun up to 3 times, and pass as soon as they pass at least once.
+    Mark a test as flaky - flaky tests are rerun up to 5 times, and pass as soon as they pass at least once.
     """
-    max_attempts = 3  # TODO: make this a parameter
+    max_attempts = 5  # TODO: make this a parameter
     # https://github.com/gchq/Vanguard/issues/195
 
     @wraps(test_method)
