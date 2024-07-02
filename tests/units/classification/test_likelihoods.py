@@ -133,9 +133,6 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         # assert that when constrained, alpha stays above the constraint value
         assert torch.all(constrained_alpha > constraint_limit)
 
-        # assert that alpha is now equal to the constraint
-        # torch.testing.assert_close(torch.ones_like(fitted_alpha) * constraint_value, fitted_alpha)
-
     def test_log_marginal(self):
         """
         Test that log_marginal gives the log-probabilities of the marginal distribution.
