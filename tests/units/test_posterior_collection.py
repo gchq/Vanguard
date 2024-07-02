@@ -17,17 +17,17 @@ from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior
 
 # pylint: disable-next=abstract-method
 class OtherMultivariateNormal(MultivariateNormal):
-    """Dummy class that exists to be different from MultivariateNormal in name only."""
+    """Dummy class that exists to be different from `MultivariateNormal` in name only."""
 
 
 class PosteriorCollectionTests(unittest.TestCase):
-    """Tests for the MonteCarloPosteriorCollection class."""
+    """Tests for the `MonteCarloPosteriorCollection` class."""
 
     def test_illegal_multiple_distribution_types(self):
         """Test that an appropriate exception is raised when multiple different distribution types are provided."""
 
         def infinite_multi_type_generator() -> Generator[Distribution, None, None]:
-            """Generate alternating MultivariateNormal and OtherMultivariateNormal posteriors."""
+            """Generate alternating `MultivariateNormal` and `OtherMultivariateNormal` posteriors."""
             for i in itertools.count():
                 if i % 2 == 0:
                     yield Posterior(MultivariateNormal(torch.zeros((2,)), torch.eye(2)))
@@ -53,7 +53,7 @@ class PosteriorCollectionTests(unittest.TestCase):
 
         def infinite_multi_type_generator() -> Generator[Distribution, None, None]:
             """
-            Generate a large number of MultivariateNormal posteriors, then switch to OtherMultivariateNormal posteriors.
+            Generate a large number of `MultivariateNormal` posteriors, then switch to `OtherMultivariateNormal`.
             """
             for i in itertools.count():
                 if i < MonteCarloPosteriorCollection.INITIAL_NUMBER_OF_SAMPLES:
@@ -84,11 +84,11 @@ class PosteriorCollectionTests(unittest.TestCase):
 
     def test_log_probability(self):
         """
-        Test that the log_probability method works as expected when the collection consists of identical posteriors.
+        Test that the `log_probability` method works as expected when the collection consists of identical posteriors.
         """
 
         def infinite_generator():
-            """Generate infinite MultivariateNormal posteriors."""
+            """Generate infinite `MultivariateNormal` posteriors."""
             while True:
                 yield Posterior(MultivariateNormal(torch.zeros((2,)), torch.eye(2)))
 
@@ -108,13 +108,13 @@ class PosteriorCollectionTests(unittest.TestCase):
 
     def test_log_probability_multidimensional(self):
         """
-        Test that the log_probability method works as expected when a two-dimensional sample is passed in.
+        Test that the `log_probability` method works as expected when a two-dimensional sample is passed in.
 
         ...and when the collection consists of identical posteriors.
         """
 
         def infinite_generator():
-            """Generate infinite MultivariateNormal posteriors."""
+            """Generate infinite `MultivariateNormal` posteriors."""
             while True:
                 yield Posterior(MultivariateNormal(torch.zeros((2,)), torch.eye(2)))
 

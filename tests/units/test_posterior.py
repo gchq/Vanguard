@@ -100,7 +100,7 @@ class BasicTests(unittest.TestCase):
                 self.assertLess(log_prob_rand, log_prob_centre)
 
     def test_sample(self) -> None:
-        """Test that the sample() function simply returns a sample from the internal distribution."""
+        """Test that the `sample()` function simply returns a sample from the internal distribution."""
         # Set up a mock distribution
         mock_distribution = Mock()
         del mock_distribution.covariance_matrix  # no covariance matrix, so no jitter is added
