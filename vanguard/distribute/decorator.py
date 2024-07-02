@@ -302,9 +302,9 @@ def _create_subset(
         >>> z = 25
         >>>
         >>> _create_subset(x, y, subset_fraction=0.6, seed=1)
-        [array([3, 2, 5]), array([30, 20, 50])]
+        [array([3, 2, 4]), array([30, 20, 40])]
         >>> _create_subset(x, y, z, subset_fraction=0.6, seed=1)
-        [array([3, 2, 5]), array([30, 20, 50]), 25]
+        [array([3, 2, 4]), array([30, 20, 40]), 25]
     """
     for array in arrays:
         try:
@@ -321,10 +321,10 @@ def _create_subset(
         # If the arrays contain no subscriptable arrays, just return them as a list
         return list(arrays)
 
-    np.random.seed(seed)
+    rng = np.random.default_rng(seed)
     total_number_of_indices = length_of_first_subscriptable_array
     number_of_indices_in_subset = int(total_number_of_indices * subset_fraction)
-    indices = np.random.choice(total_number_of_indices, size=number_of_indices_in_subset, replace=False)
+    indices = rng.choice(total_number_of_indices, size=number_of_indices_in_subset, replace=False)
 
     subset_arrays = []
     for array in arrays:

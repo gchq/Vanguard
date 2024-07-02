@@ -74,12 +74,16 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     Tests for fuzzy dirichlet multiclass classification.
     """
 
+    def setUp(self):
+        """Set up data shared across tests."""
+        self.rng = np.random.default_rng(1234)
+
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         test_x_std = 0.005
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         controller = DirichletMulticlassClassifier(
             dataset.train_x,
@@ -104,8 +108,8 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         train_x_std = test_x_std = 0.005
-        train_x = np.random.normal(dataset.train_x, scale=train_x_std)
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         @DirichletMulticlassClassification(num_classes=4, ignore_all=True)
         class UncertaintyDirichletMulticlassClassifier(GaussianUncertaintyGPController):

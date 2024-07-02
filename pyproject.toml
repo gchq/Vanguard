@@ -102,6 +102,7 @@ extend-select = [
     "S307",  # Suspicious `eval` usage
     "I",     # isort rules
     "UP",    # pyupgrade rules
+    "NPY",   # numpy linting rules
 ]
 
 [tool.ruff.lint.isort]

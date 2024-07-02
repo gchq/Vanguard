@@ -200,17 +200,21 @@ class PositiveAffineWarpTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
+        self.generator = np.random.default_rng(1234)
         self.train_x = (
-            np.random.random(self.NUM_TRAINING_POINTS) * self.TRAINING_POINT_RANGE - self.TRAINING_POINT_RANGE / 2
+            self.generator.random(self.NUM_TRAINING_POINTS) * self.TRAINING_POINT_RANGE - self.TRAINING_POINT_RANGE / 2
         )
 
         self.test_a_b_points = (
-            np.random.random((self.NUM_TESTING_POINTS, 2)) * self.TESTING_POINT_RANGE - self.TESTING_POINT_RANGE / 2
+            self.generator.random((self.NUM_TESTING_POINTS, 2)) * self.TESTING_POINT_RANGE
+            - self.TESTING_POINT_RANGE / 2
         )
 
     def test_feasible_region(self) -> None:
         """Should return correct feasible region."""
-        train_x = np.random.random(self.NUM_TRAINING_POINTS) * self.TRAINING_POINT_RANGE - self.TRAINING_POINT_RANGE / 2
+        train_x = (
+            self.generator.random(self.NUM_TRAINING_POINTS) * self.TRAINING_POINT_RANGE - self.TRAINING_POINT_RANGE / 2
+        )
         all_positive_train_x = np.abs(train_x)
         all_negative_train_x = -all_positive_train_x
 
@@ -241,5 +245,5 @@ class PositiveAffineWarpTests(unittest.TestCase):
         a_points = np.repeat(a_b_points[:, 0].reshape(1, -1), len(x_values), axis=0)
         b_points = np.repeat(a_b_points[:, 1].reshape(1, -1), len(x_values), axis=0)
         x_points = np.array(x_values).reshape(-1, 1)
-        in_boundary = np.product(a_points * x_points + b_points > 0, axis=0, dtype=bool)
+        in_boundary = numpy.prod(a_points * x_points + b_points > 0, axis=0, dtype=bool)
         return in_boundary
