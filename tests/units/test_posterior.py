@@ -71,9 +71,9 @@ class BasicTests(unittest.TestCase):
 
     def test_1_dim_mean_log_probability_size(self) -> None:
         """
-        Test that Posterior's log_probability is within sane bounds in the 1-dimensional case.
+        Test that Posterior's `log_probability` is within sane bounds in the 1-dimensional case.
 
-        We only check that the log_probability is negative (and hence that the probability is less than 1).
+        We only check that the `log_probability` is negative (and hence that the probability is less than 1).
         """
         covar = torch.diag(self.std**2)
         posterior = Posterior.from_mean_and_covariance(self.mean, covar)
@@ -82,9 +82,9 @@ class BasicTests(unittest.TestCase):
 
     def test_1_dim_mean_log_probability_order(self) -> None:
         """
-        Test that Posterior's log_probability has a maximum at its mean.
+        Test that Posterior's `log_probability` has a maximum at its mean.
 
-        We do this by checking that the log_probability is lower at a number of randomly selected points than at the
+        We do this by checking that the `log_probability` is lower at a number of randomly selected points than at the
         mean.
         """
         covar = torch.diag(self.std**2)
@@ -129,7 +129,7 @@ class BasicTests(unittest.TestCase):
 
     def test_log_probability_2d(self):
         """
-        Test that the log_probability method works as expected when a two-dimensional sample is passed in.
+        Test that the `log_probability` method works as expected when a two-dimensional sample is passed in.
         """
         posterior = Posterior(MultivariateNormal(torch.zeros((2,)), torch.eye(2)))
 
