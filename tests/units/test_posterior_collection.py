@@ -5,7 +5,7 @@ Tests for the MonteCarloPosteriorCollection class.
 import itertools
 import unittest
 from typing import Generator
-from unittest import skip
+from unittest import expectedFailure
 from unittest.mock import Mock, patch
 
 import numpy as np
@@ -104,7 +104,8 @@ class PosteriorCollectionTests(unittest.TestCase):
                 expected_value = distribution.logpdf(point)
                 self.assertAlmostEqual(expected_value, collection.log_probability(point), delta=1e-4)
 
-    @skip("Throws a RuntimeError complaining about mismatched dimensions.")  # TODO: This seems to be a bug.
+    @expectedFailure
+    # Throws a RuntimeError complaining about mismatched dimensions. TODO: This seems to be a bug.
     # https://github.com/gchq/Vanguard/issues/260
 
     def test_log_probability_multidimensional(self):
