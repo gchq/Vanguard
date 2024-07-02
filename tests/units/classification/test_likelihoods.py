@@ -24,7 +24,7 @@ from vanguard.vanilla import GaussianGPController
 
 
 class TestDirichletKernelClassifierLikelihood(TestCase):
-    """Tests for the DirichletKernelClassifierLikelihood class."""
+    """Tests for the `DirichletKernelClassifierLikelihood` class."""
 
     @classmethod
     def setUpClass(cls):
@@ -59,13 +59,13 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
                 )
 
     def test_alpha(self):
-        """Test that when a value for alpha is provided to the initialiser, it's set correctly."""
+        """Test that when a value for `alpha` is provided to the initialiser, it's set correctly."""
         alpha = self.rng.uniform(2, 10)  # ensuring alpha != 1
         likelihood = DirichletKernelClassifierLikelihood(num_classes=self.num_classes, alpha=alpha)
         torch.testing.assert_close(torch.ones(self.num_classes) * alpha, likelihood.alpha)
 
     def test_learn_alpha(self):
-        """Test that when learn_alpha is True, its value is changed during fitting."""
+        """Test that when `learn_alpha` is True, the value of `alpha` is changed during fitting."""
 
         @DirichletKernelMulticlassClassification(num_classes=self.num_classes, ignore_methods=("__init__",))
         class MulticlassGaussianClassifier(GaussianGPController):
@@ -92,7 +92,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
     def test_learn_alpha_constrained(self):
         """
-        Test that when learn_alpha is True, and a constraint is supplied, that constraint is adhered to.
+        Test that when `learn_alpha` is True, and a constraint is supplied, that constraint is adhered to.
         """
 
         @DirichletKernelMulticlassClassification(num_classes=self.num_classes, ignore_methods=("__init__",))
@@ -135,7 +135,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
     def test_log_marginal(self):
         """
-        Test that log_marginal gives the log-probabilities of the marginal distribution.
+        Test that `log_marginal` gives the log-probabilities of the marginal distribution.
 
         That is, we check that `log_marginal(x, dist)` == `marginal(dist).log_prob(x)`.
         """
@@ -151,7 +151,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         """
         Test that when the likelihood is called directly with a tensor, the conditional distribution is returned.
 
-        This is tested by just checking that the parent class (Likelihood) has its __call__ method called.
+        This is tested by just checking that the parent class (`Likelihood`) has its `__call__` method called.
         """
         input_tensor = torch.tensor(self.rng.standard_normal(size=1), dtype=torch.float)
         with patch.object(Likelihood, "__call__") as mock_super_call:
@@ -160,9 +160,9 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
     def test_call_marginal(self):
         """
-        Test that when the likelihood is called with a DummyKernelDistribution, the marginal distribution is returned.
+        Test that when the likelihood is called with a `DummyKernelDistribution`, the marginal distribution is returned.
 
-        This is tested by just checking that marginal() is called.
+        This is tested by just checking that `marginal()` is called.
         """
         kernel = torch.tensor(self.rng.uniform(1, 2, size=(self.num_classes, self.num_classes)), dtype=torch.float)
         distribution = DummyKernelDistribution(lazify(torch.eye(self.num_classes, dtype=torch.float)), lazify(kernel))
@@ -172,7 +172,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
 
 class TestMultitaskBernoulliLikelihood(TestCase):
-    """Tests for the MultitaskBernoulliLikelihood class."""
+    """Tests for the `MultitaskBernoulliLikelihood` class."""
 
     def setUp(self):
         """Set up data shared between tests."""
@@ -183,7 +183,7 @@ class TestMultitaskBernoulliLikelihood(TestCase):
     @expectedFailure
     def test_log_marginal(self):
         """
-        Test that log_marginal gives the log-probabilities of the marginal distribution.
+        Test that `log_marginal` gives the log-probabilities of the marginal distribution.
 
         That is, we check that `log_marginal(x, dist)` == `marginal(dist).log_prob(x)`.
         """

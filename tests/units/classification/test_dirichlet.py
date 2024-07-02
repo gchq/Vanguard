@@ -110,7 +110,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.
 
         In this test, the training and test inputs have the same level of noise applied, and we use
-        GaussianUncertaintyGPController as a base class for the controller to allow us to handle the noise.
+        `GaussianUncertaintyGPController` as a base class for the controller to allow us to handle the noise.
 
         Note that we ignore the `certainties` output here.
         """

@@ -117,7 +117,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.
 
         In this test, the training and test inputs have the same level of noise applied, and we use
-        GaussianUncertaintyGPController as a base class for the controller to allow us to handle the noise.
+        `GaussianUncertaintyGPController` as a base class for the controller to allow us to handle the noise.
 
         Note that we ignore the `certainties` output here.
         """
@@ -203,7 +203,7 @@ class SoftmaxTests(ClassificationTestCase):
     # https://github.com/gchq/Vanguard/issues/290
     @expectedFailure
     def test_fitting_with_batch_shape(self) -> None:
-        """Test that fitting is possible when the kwarg batch_shape is passed to the BatchScaledMean class."""
+        """Test that fitting is possible when the kwarg `batch_shape` is passed to the `BatchScaledMean` class."""
         controller = SoftmaxClassifier(
             self.dataset.train_x,
             self.dataset.train_y,
@@ -218,7 +218,7 @@ class SoftmaxTests(ClassificationTestCase):
         controller.fit(1)
 
     def test_creating_with_invalid_mean_type_errors(self) -> None:
-        """Test that creating a controller with a batch_shape of incorrect type raises an appropriate error message."""
+        """Test that creating a controller with a `batch_shape` of incorrect type raises an appropriate error."""
         with self.assertRaises(TypeError) as ctx:
             SoftmaxClassifier(
                 self.dataset.train_x,
@@ -264,7 +264,7 @@ class SoftmaxTests(ClassificationTestCase):
 
 class MultitaskBernoulliClassifierTests(ClassificationTestCase):
     """
-    Tests for softmax multi-class classification with LMC
+    Tests for softmax multi-class classification with LMC.
     """
 
     def setUp(self) -> None:

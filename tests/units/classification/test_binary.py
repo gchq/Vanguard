@@ -75,7 +75,7 @@ class BinaryTests(ClassificationTestCase):
     # https://github.com/gchq/Vanguard/issues/188
     def test_closed_methods(self):
         """
-        Test that the ClassificationMixin has correctly closed the prediction methods of the underlying controller.
+        Test that the `ClassificationMixin` has correctly closed the prediction methods of the underlying controller.
 
         In particular, we test that we get an appropriate error message directing us towards the corresponding
         classification method instead.
@@ -131,7 +131,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.
 
         In this test, the training and test inputs have the same level of noise applied, and we use
-        GaussianUncertaintyGPController as a base class for the controller to allow us to handle the noise.
+        `GaussianUncertaintyGPController` as a base class for the controller to allow us to handle the noise.
 
         Note that we ignore the `certainties` output here.
         """
