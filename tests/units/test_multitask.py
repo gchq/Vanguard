@@ -4,6 +4,8 @@ Tests for the Multitask decorator.
 
 import unittest
 
+import numpy as np
+
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.multitask import Multitask
@@ -18,7 +20,7 @@ class ErrorTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = SyntheticDataset()
+        self.dataset = SyntheticDataset(rng=np.random.default_rng(1234))
 
     def test_single_task_variational(self) -> None:
         """Should throw an error."""

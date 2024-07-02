@@ -4,6 +4,7 @@ Tests for the Distributed decorator.
 
 import unittest
 
+import numpy as np
 import torch
 from gpytorch.kernels import RBFKernel
 from scipy.spatial import distance_matrix
@@ -42,7 +43,7 @@ class VariationalTests(unittest.TestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5)
+        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=np.random.default_rng(1234))
 
     def test_variational_distribution_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
@@ -88,7 +89,7 @@ class LaplaceTests(unittest.TestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5)
+        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=np.random.default_rng(1234))
 
     def test_posterior_mean_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""

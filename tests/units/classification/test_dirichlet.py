@@ -26,7 +26,9 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=150, num_test_points=100, num_classes=4, seed=1234
+        )
         self.controller = DirichletMulticlassClassifier(
             self.dataset.train_x,
             self.dataset.train_y,

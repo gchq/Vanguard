@@ -30,7 +30,9 @@ class BinaryTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Set up data shared between tests."""
-        self.dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=200)
+        self.dataset = BinaryStripeClassificationDataset(
+            num_train_points=100, num_test_points=200, rng=np.random.default_rng(1234)
+        )
         self.controller = BinaryClassifier(
             self.dataset.train_x,
             self.dataset.train_y,

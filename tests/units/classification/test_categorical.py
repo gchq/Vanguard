@@ -61,7 +61,9 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+        )
         self.controller = MultitaskBernoulliClassifier(
             self.dataset.train_x,
             one_hot(self.dataset.train_y),
@@ -158,7 +160,9 @@ class SoftmaxLMCTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+        )
 
         self.controller = SoftmaxLMCClassifier(
             self.dataset.train_x,
@@ -184,7 +188,9 @@ class SoftmaxTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+        )
 
         self.controller = SoftmaxClassifier(
             self.dataset.train_x,
@@ -273,7 +279,9 @@ class MultitaskBernoulliClassifierTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+        )
 
         self.controller = MultitaskBernoulliClassifier(
             self.dataset.train_x,

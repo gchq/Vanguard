@@ -4,6 +4,7 @@ Tests for ApplyLearningRateScheduler.
 
 import unittest
 
+import numpy as np
 import torch
 
 from vanguard.datasets.synthetic import SyntheticDataset
@@ -19,7 +20,7 @@ class BasicTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = SyntheticDataset()
+        self.dataset = SyntheticDataset(rng=np.random.default_rng(1234))
 
         num_iters = 33
         step_size = 10
