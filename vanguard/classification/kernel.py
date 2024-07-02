@@ -107,6 +107,8 @@ class DirichletKernelMulticlassClassification(Decorator):
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
+            # TODO: throws an error - see linked issue
+            # https://github.com/gchq/Vanguard/issues/288
             def classify_fuzzy_points(
                 self,
                 x: Union[float, numpy.typing.NDArray[np.floating]],

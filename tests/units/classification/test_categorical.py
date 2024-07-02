@@ -2,10 +2,11 @@
 Tests for the CategoricalClassification decorator.
 """
 
-import unittest
+from unittest import expectedFailure
 
 import numpy as np
 import sklearn
+import torch
 from gpytorch.mlls import VariationalELBO
 
 from vanguard.classification import CategoricalClassification
@@ -69,11 +70,11 @@ class MulticlassTests(ClassificationTestCase):
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        self.controller.fit(10)
 
     @flaky
     def test_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
@@ -91,7 +92,13 @@ class MulticlassFuzzyTests(ClassificationTestCase):
     # https://github.com/gchq/Vanguard/issues/128
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training inputs have no noise applied, but the test inputs do.
+
+        Note that we ignore the `certainties` output here.
+        """
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         test_x_std = 0.005
         test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
@@ -110,7 +117,14 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
 
     def test_fuzzy_predictions_uncertainty(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training and test inputs have the same level of noise applied, and we use
+        `GaussianUncertaintyGPController` as a base class for the controller to allow us to handle the noise.
+
+        Note that we ignore the `certainties` output here.
+        """
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         train_x_std = test_x_std = 0.005
         train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
@@ -137,14 +151,14 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
 
 
-class SoftmaxLMCTests(unittest.TestCase):
+class SoftmaxLMCTests(ClassificationTestCase):
     """
-    Tests for softmax multi-class classification with LMC
+    Tests for softmax multi-class classification with LMC.
     """
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         self.controller = SoftmaxLMCClassifier(
             self.dataset.train_x,
@@ -155,19 +169,22 @@ class SoftmaxLMCTests(unittest.TestCase):
             marginal_log_likelihood_class=VariationalELBO,
         )
 
-    def test_fitting(self) -> None:
-        """Test that fitting is possible."""
-        self.controller.fit(1)
+    @flaky
+    def test_predictions(self) -> None:
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
+        predictions, _ = self.controller.classify_points(self.dataset.test_x)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
 
-class SoftmaxTests(unittest.TestCase):
+class SoftmaxTests(ClassificationTestCase):
     """
     Tests for softmax multi-class classification without LMC.
     """
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         self.controller = SoftmaxClassifier(
             self.dataset.train_x,
@@ -178,14 +195,36 @@ class SoftmaxTests(unittest.TestCase):
             marginal_log_likelihood_class=VariationalELBO,
         )
 
-    def test_fitting(self) -> None:
-        """Test that fitting is possible."""
-        self.controller.fit(1)
+    @flaky
+    def test_predictions(self) -> None:
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
+        predictions, _ = self.controller.classify_points(self.dataset.test_x)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
-    def test_fitting_with_mismatch_mean_errors(self) -> None:
-        """Test for error when creating controller with a mean of the wrong shape."""
-        with self.assertRaises(TypeError):
-            self.controller = SoftmaxClassifier(
+    # TODO: fails with the following error:
+    #  RuntimeError: grad can be implicitly created only for scalar outputs
+    # https://github.com/gchq/Vanguard/issues/290
+    @expectedFailure
+    def test_fitting_with_batch_shape(self) -> None:
+        """Test that fitting is possible when the kwarg `batch_shape` is passed to the `BatchScaledMean` class."""
+        controller = SoftmaxClassifier(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            kernel_class=ScaledRBFKernel,
+            mean_class=BatchScaledMean,
+            y_std=0,
+            likelihood_class=SoftmaxLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+            mean_kwargs={"batch_shape": torch.Size([NUM_LATENTS])},
+        )
+
+        controller.fit(1)
+
+    def test_creating_with_invalid_mean_type_errors(self) -> None:
+        """Test that creating a controller with a `batch_shape` of incorrect type raises an appropriate error."""
+        with self.assertRaises(TypeError) as ctx:
+            SoftmaxClassifier(
                 self.dataset.train_x,
                 self.dataset.train_y,
                 kernel_class=ScaledRBFKernel,
@@ -193,18 +232,48 @@ class SoftmaxTests(unittest.TestCase):
                 y_std=0,
                 likelihood_class=SoftmaxLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
-                mean_kwargs={"batch_shape": NUM_LATENTS + 2},
+                mean_kwargs={"batch_shape": NUM_LATENTS},
             )
 
+        self.assertEqual(
+            "Expected mean_kwargs['batch_shape'] to be of type `torch.Size`; got `int` instead",
+            str(ctx.exception),
+        )
 
-class MultitaskBernoulliClassifierTests(unittest.TestCase):
+    # TODO: This fails as there's no code to check for this error. Unsure whether it should be in __init__ or in fit().
+    #  Adding code to check for it is difficult as it doesn't work even when the shape matches. See the linked issue
+    #  which is blocking this.
+    # https://github.com/gchq/Vanguard/issues/290
+    @expectedFailure
+    def test_creating_with_mismatched_mean_shape_errors(self) -> None:
+        """Test that creating controller with a mean of the wrong shape raises an error with an appropriate message."""
+        batch_shape = torch.Size([NUM_LATENTS + 2])
+        with self.assertRaises(ValueError) as ctx:
+            SoftmaxClassifier(
+                self.dataset.train_x,
+                self.dataset.train_y,
+                kernel_class=ScaledRBFKernel,
+                mean_class=BatchScaledMean,
+                y_std=0,
+                likelihood_class=SoftmaxLikelihood,
+                marginal_log_likelihood_class=VariationalELBO,
+                mean_kwargs={"batch_shape": batch_shape},
+            )
+
+        self.assertEqual(
+            f"Expected a batch shape of torch.Size([{NUM_LATENTS}]); got {batch_shape!r}.",
+            str(ctx.exception),
+        )
+
+
+class MultitaskBernoulliClassifierTests(ClassificationTestCase):
     """
-    Tests for softmax multi-class classification with LMC
+    Tests for softmax multi-class classification with LMC.
     """
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=100, num_test_points=500, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         self.controller = MultitaskBernoulliClassifier(
             self.dataset.train_x,
@@ -215,6 +284,9 @@ class MultitaskBernoulliClassifierTests(unittest.TestCase):
             marginal_log_likelihood_class=VariationalELBO,
         )
 
-    def test_fitting(self) -> None:
-        """Test that fitting is possible."""
-        self.controller.fit(1)
+    @flaky
+    def test_predictions(self) -> None:
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
+        self.controller.fit(10)
+        predictions, _ = self.controller.classify_points(self.dataset.test_x)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)

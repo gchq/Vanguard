@@ -42,13 +42,13 @@ class MulticlassTests(ClassificationTestCase):
 
     @flaky
     def test_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(10)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
 
     def test_illegal_likelihood_class(self) -> None:
-        """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
+        """Test that when an incorrect `likelihood_class` is given, an appropriate exception is raised."""
 
         class IllegalLikelihoodClass:
             pass
@@ -71,7 +71,7 @@ class MulticlassTests(ClassificationTestCase):
 
 class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     """
-    Tests for fuzzy dirichlet multiclass classification.
+    Tests for fuzzy Dirichlet multiclass classification.
     """
 
     def setUp(self):
@@ -80,7 +80,13 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training inputs have no noise applied, but the test inputs do.
+
+        Note that we ignore the `certainties` output here.
+        """
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         test_x_std = 0.005
         test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
@@ -104,7 +110,14 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
     @flaky
     def test_fuzzy_predictions_uncertainty(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training and test inputs have the same level of noise applied, and we use
+        `GaussianUncertaintyGPController` as a base class for the controller to allow us to handle the noise.
+
+        Note that we ignore the `certainties` output here.
+        """
         dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
 
         train_x_std = test_x_std = 0.005
