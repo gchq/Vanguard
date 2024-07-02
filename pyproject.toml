@@ -157,10 +157,6 @@ filterwarnings = [
     "ignore:LazyTensor#evaluate has been renamed to LinearOperator#to_dense:DeprecationWarning",
     "ignore:gpytorch.lazy.lazify is deprecated in favor of linear_operator.to_linear_operator:UserWarning",
 
-    # TODO: replace with np.prod
-    # https://github.com/gchq/Vanguard/issues/262
-    "ignore:`product` is deprecated as of NumPy:DeprecationWarning",
-
     # TODO: replace with set_default_dtype/set_default_device
     # https://github.com/gchq/Vanguard/issues/276
     "ignore:torch.set_default_tensor_type\\(\\) is deprecated as of PyTorch 2.1:UserWarning",
