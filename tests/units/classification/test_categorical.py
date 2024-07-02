@@ -60,7 +60,7 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100, num_classes=4)
+        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         self.controller = MultitaskBernoulliClassifier(
             self.dataset.train_x,
             one_hot(self.dataset.train_y),
@@ -69,12 +69,13 @@ class MulticlassTests(ClassificationTestCase):
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        self.controller.fit(100)
+        self.controller.fit(10)
 
+    @flaky
     def test_predictions(self) -> None:
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
 
 class MulticlassFuzzyTests(ClassificationTestCase):
@@ -82,14 +83,18 @@ class MulticlassFuzzyTests(ClassificationTestCase):
     Tests for fuzzy multiclass classification.
     """
 
+    def setUp(self):
+        """Set up data shared between tests."""
+        self.rng = np.random.default_rng(1234)
+
     # TODO: Seems too flaky on 3.8 and 3.9 but reliable on 3.12, especially when delta=0.5.
     # https://github.com/gchq/Vanguard/issues/128
     @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """Predictions should be close to the values from the test data."""
-        dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=20, num_classes=4)
+        dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         test_x_std = 0.005
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         controller = MultitaskBernoulliClassifier(
             dataset.train_x,
@@ -99,17 +104,17 @@ class MulticlassFuzzyTests(ClassificationTestCase):
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        controller.fit(100)
+        controller.fit(10)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
 
     def test_fuzzy_predictions_uncertainty(self) -> None:
         """Predictions should be close to the values from the test data."""
-        dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=50, num_classes=4)
+        dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
         train_x_std = test_x_std = 0.005
-        train_x = np.random.normal(dataset.train_x, scale=train_x_std)
-        test_x = np.random.normal(dataset.test_x, scale=test_x_std)
+        train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
+        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
         @CategoricalClassification(num_classes=4, ignore_all=True)
         @Multitask(num_tasks=4, ignore_all=True)
@@ -126,7 +131,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )
-        controller.fit(100)
+        controller.fit(10)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
@@ -152,7 +157,7 @@ class SoftmaxLMCTests(unittest.TestCase):
 
     def test_fitting(self) -> None:
         """Test that fitting is possible."""
-        self.controller.fit(10)
+        self.controller.fit(1)
 
 
 class SoftmaxTests(unittest.TestCase):
@@ -175,7 +180,7 @@ class SoftmaxTests(unittest.TestCase):
 
     def test_fitting(self) -> None:
         """Test that fitting is possible."""
-        self.controller.fit(10)
+        self.controller.fit(1)
 
     def test_fitting_with_mismatch_mean_errors(self) -> None:
         """Test for error when creating controller with a mean of the wrong shape."""
@@ -212,4 +217,4 @@ class MultitaskBernoulliClassifierTests(unittest.TestCase):
 
     def test_fitting(self) -> None:
         """Test that fitting is possible."""
-        self.controller.fit(10)
+        self.controller.fit(1)

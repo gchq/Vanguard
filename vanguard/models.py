@@ -4,7 +4,7 @@ Vanguard implements a small number of base models which are built on by various 
 They are syntactically similar to the standard model classes used in GPyTorch.
 """
 
-from typing import Any
+from typing import Any, Optional
 
 import gpytorch
 import numpy as np
@@ -70,6 +70,7 @@ class InducingPointKernelGPModel(ExactGPModel):
         mean_module: gpytorch.means.Mean,
         covar_module: gpytorch.kernels.Kernel,
         n_inducing_points: int,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise self.
@@ -82,7 +83,8 @@ class InducingPointKernelGPModel(ExactGPModel):
         :param covar_module: The prior kernel function to use.
         :param n_inducing_points: The number of inducing points in the sparse kernel approximation.
         """
-        inducing_point_indices = np.random.choice(train_x.shape[0], size=n_inducing_points, replace=True)
+        rng = rng if rng is not None else np.random.default_rng()
+        inducing_point_indices = rng.choice(train_x.shape[0], size=n_inducing_points, replace=True)
         inducing_points = train_x[inducing_point_indices, :].clone()
         covar_module = gpytorch.kernels.InducingPointKernel(
             covar_module, inducing_points=inducing_points, likelihood=likelihood

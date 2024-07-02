@@ -11,14 +11,14 @@ from vanguard.distribute import aggregators
 
 class AggregationTests(unittest.TestCase):
     """
-    Test that the results are the same.
+    Test that the results from aggregation are as expected.
 
     Note that these tests are for reproducibility, and assume that the results
     of the functions were originally correct.
     """
 
     def setUp(self) -> None:
-        """Code to run before each test."""
+        """Define data shared across tests."""
         self.means = [torch.tensor([1, 2, 3, 4]), torch.tensor([1, 3, 1, 1]), torch.tensor([-1, -4, 5, 8])]
 
         self.covars = [
@@ -86,7 +86,12 @@ class AggregationTests(unittest.TestCase):
         }
 
     def test_output_types(self) -> None:
-        """Should all be tensors."""
+        """
+        Test that the outputs from aggregation are the expected tensors.
+
+        When predictions from multiple experts are combined, the resulting combinations
+        should be tensors, regardless of the aggregation method used.
+        """
         for aggregator_class in self.expected_means_and_variances:
             with self.subTest(aggregator_class=aggregator_class.__name__):
                 aggregator = aggregator_class(self.means, self.covars, self.prior_var)
@@ -95,10 +100,41 @@ class AggregationTests(unittest.TestCase):
                 self.assertIsInstance(observed_variance, torch.Tensor)
 
     def test_output_values(self) -> None:
-        """Should all be correct."""
+        """
+        Test that the outputs from aggregation match expected values.
+
+        The expected means and variances after aggregation are written in the setup of
+        this class. Here we test that these are indeed produced when the inputs are aggregated.
+        """
         for aggregator_class, (mean, variance) in self.expected_means_and_variances.items():
             with self.subTest(aggregator_class=aggregator_class.__name__):
                 aggregator = aggregator_class(self.means, self.covars, self.prior_var)
                 observed_mean, observed_variance = aggregator.aggregate()
                 torch.testing.assert_allclose(mean, observed_mean)
                 torch.testing.assert_allclose(variance, observed_variance.diagonal())
+
+    def test_invalid_prior_var(self) -> None:
+        """
+        Test that the BaseAggregator rejects an invalid `prior_var` input.
+
+        If the shape of `prior_var` does not match the shape of the provided variances
+        (that is, the diagonal of the provided covariances), there must have been an issue
+        with the input data, so the code should identify this and raise an appropriate error.
+        We check that both an error is raised, and the text matches our expectation.
+        """
+        with self.assertRaises(ValueError) as exc:
+            aggregators.BaseAggregator(self.means, self.covars, torch.tensor([[1, 2, 3], [4, 5, 6]]))
+        self.assertEqual(
+            str(exc.exception), "Prior var shape torch.Size([2, 3]) doesn't match variances shape torch.Size([3, 4])"
+        )
+
+    def test_invalid_aggregation_with_base_class(self) -> None:
+        """
+        Test that if one tries to perform aggregation with the base class, it does not work.
+
+        Aggregation methods are to be specified for each child class of BaseAggregator, so if
+        we try to aggregate with the base class, we should not get any result.
+        """
+        with self.assertRaises(NotImplementedError):
+            aggregator = aggregators.BaseAggregator(self.means, self.covars, self.prior_var)
+            aggregator.aggregate()

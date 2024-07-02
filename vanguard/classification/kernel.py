@@ -11,7 +11,7 @@ import torch
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from .likelihoods import DirichletKernelClassifierLikelihood
-from .mixin import ClassificationMixin
+from .mixin import Classification, ClassificationMixin
 from .models import InertKernelModel
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -22,7 +22,7 @@ class DirichletKernelMulticlassClassification(Decorator):
     """
     Implements multiclass classification using a Dirichlet kernel method.
 
-    Based on the implementation [CITATION NEEDED]_ and the paper :cite:`MacKenzie14`.
+    Based on the paper :cite:`MacKenzie14`.
 
     :Example:
         >>> from gpytorch.kernels import RBFKernel, ScaleKernel
@@ -66,6 +66,7 @@ class DirichletKernelMulticlassClassification(Decorator):
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         num_classes = self.num_classes
 
+        @Classification()
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             gp_model_class = InertKernelModel

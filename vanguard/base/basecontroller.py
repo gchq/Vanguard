@@ -149,6 +149,8 @@ class BaseGPController:
             self.train_x = self.train_x.to(self.device)
             self.train_y = self.train_y.to(self.device)
             self._y_variance = self._y_variance.to(self.device)
+        # TODO: Should we convert train_x, train_y and _y_variance to device when batch_size is not None?
+        # https://github.com/gchq/Vanguard/issues/266
 
         all_likelihood_params_as_kwargs = {
             "noise": self._y_variance,
@@ -339,7 +341,7 @@ class BaseGPController:
         Use gradient based optimiser to tune the hyperparameters.
 
         :param n_iters: The number of gradient updates.
-        :param gradient_every: How often (in iterations) to do HNIGP input gradient steps.
+        :param gradient_every: How often (in iterations) to do HNIGP (heteroskedastic noisy input GP) gradient steps.
         :return: The training loss at the last iteration.
         """
         self.set_to_training_mode()

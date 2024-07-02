@@ -6,26 +6,23 @@ in which the standard prediction methods are unavailable. Instead, controllers
 will have :meth:`~ClassificationMixin.classify_points` and
 :meth:`~ClassificationMixin.classify_fuzzy_points` which should be used.
 When creating new decorators, include the :class:`ClassificationMixin` as a
-mixin for the inner class which will be returned to enable this.
+mixin for the inner class, and then decorate the inner class with :class:`Classification` before returning it.
 """
 
-from typing import NoReturn, Tuple, Union
+import warnings
+from typing import NoReturn, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
 
+from vanguard.base import GPController
+from vanguard.decoratorutils import Decorator, wraps_class
 
-# TODO: Turns this mixin into a decorator. Currently, due to method resolution order, it's not able to "close"
-#  the methods it's intended to close, and so the mixin does nothing.
-# https://github.com/gchq/Vanguard/issues/188
+T = TypeVar("T")
+
+
 class ClassificationMixin:
-    """
-    Converts a decorator class to expect a classification task.
-
-    When used as a mixin for the output of classification decorators, this class
-    automatically 'closes' the standard posterior methods and adds the framework
-    for the :meth:`classify_points` and :meth:`classify_fuzzy_points` methods.
-    """
+    """Mixin that provides the base methods for classification."""
 
     def classify_points(
         self, x: Union[float, numpy.typing.NDArray[np.floating]]
@@ -60,22 +57,64 @@ class ClassificationMixin:
         """
         raise NotImplementedError
 
-    def posterior_over_point(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> NoReturn:
-        """Use :meth:`classify_points` instead."""
-        raise TypeError("The 'classify_points' method should be used instead.")
 
-    def posterior_over_fuzzy_point(
-        self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
-    ) -> NoReturn:
-        """Use :meth:`classify_fuzzy_points` instead."""
-        raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
+class Classification(Decorator):
+    """
+    Converts a decorator class to expect a classification task.
 
-    def predictive_likelihood(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> NoReturn:
-        """Use :meth:`classify_points` instead."""
-        raise TypeError("The 'classify_points' method should be used instead.")
+    When used as a decorator for the output of classification decorators, this decorator automatically 'closes' the
+    standard posterior methods.
+    """
 
-    def fuzzy_predictive_likelihood(
-        self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
-    ) -> NoReturn:
-        """Use :meth:`classify_fuzzy_points` instead."""
-        raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
+    def __init__(self, **kwargs):
+        ignore_methods = list(kwargs.pop("ignore_methods", []))
+        ignore_methods.extend(
+            [
+                "posterior_over_point",
+                "posterior_over_fuzzy_point",
+                "predictive_likelihood",
+                "fuzzy_predictive_likelihood",
+            ]
+        )
+        super().__init__(framework_class=GPController, required_decorators={}, ignore_methods=ignore_methods, **kwargs)
+
+    def _decorate_class(self, cls: Type[T]) -> Type[T]:
+        """Close off the prediction methods on a GP."""
+        if not issubclass(cls, ClassificationMixin):
+            warnings.warn(
+                f"Classification decorator applied to a class that doesn't "
+                f"inherit from {ClassificationMixin.__name__}.",
+                UserWarning,
+                stacklevel=3,
+                # stacklevel 2 is in BaseDecorator.__call__, so we raise this at the call site of BaseDecorator.__call__
+            )
+
+        @wraps_class(cls)
+        class InnerClass(cls):
+            """Class that closes off the prediction methods."""
+
+            def posterior_over_point(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> NoReturn:
+                """Use :meth:`classify_points` instead."""
+                raise TypeError("The 'classify_points' method should be used instead.")
+
+            def posterior_over_fuzzy_point(
+                self,
+                x: Union[float, numpy.typing.NDArray[np.floating]],
+                x_std: Union[float, numpy.typing.NDArray[np.floating]],
+            ) -> NoReturn:
+                """Use :meth:`classify_fuzzy_points` instead."""
+                raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
+
+            def predictive_likelihood(self, x: Union[float, numpy.typing.NDArray[np.floating]]) -> NoReturn:
+                """Use :meth:`classify_points` instead."""
+                raise TypeError("The 'classify_points' method should be used instead.")
+
+            def fuzzy_predictive_likelihood(
+                self,
+                x: Union[float, numpy.typing.NDArray[np.floating]],
+                x_std: Union[float, numpy.typing.NDArray[np.floating]],
+            ) -> NoReturn:
+                """Use :meth:`classify_fuzzy_points` instead."""
+                raise TypeError("The 'classify_fuzzy_points' method should be used instead.")
+
+        return InnerClass

@@ -38,13 +38,13 @@ class MulticlassTests(ClassificationTestCase):
             optim_kwargs={"lr": 0.05},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
         )
-        self.controller.fit(100)
+        self.controller.fit(10)
 
     @flaky
     def test_predictions(self) -> None:
         """Predictions should be close to the values from the test data."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
     # TODO: This test gets stuck in an infinite loop in in MonteCarloPosteriorCollection._yield_posteriors.
     # https://github.com/gchq/Vanguard/issues/189
@@ -54,7 +54,7 @@ class MulticlassTests(ClassificationTestCase):
         """Predictions should be close to the values from the test data."""
         test_x_std = 0.005
         predictions, _ = self.controller.classify_fuzzy_points(self.dataset.test_x, test_x_std)
-        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
+        self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""

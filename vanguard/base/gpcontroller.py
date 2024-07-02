@@ -5,6 +5,7 @@ The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPCon
 import warnings
 from typing import List, Optional, Union
 
+import numpy as np
 import numpy.typing
 import torch
 from torch import Tensor
@@ -79,14 +80,14 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         self._likelihood.noise = value
 
     @property
-    def learning_rate(self) -> float:
+    def learning_rate(self) -> np.floating:
         """Return the learning rate of the parameter optimiser."""
         return self._smart_optimiser.learning_rate
 
     @learning_rate.setter
     def learning_rate(
         self,
-        value: float,
+        value: np.floating,
     ) -> None:
         """Set the learning rate of the parameter optimiser."""
         self._smart_optimiser.learning_rate = value
@@ -135,7 +136,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_point(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
+        x: Union[numpy.typing.NDArray[np.floating], np.floating],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.
@@ -147,8 +148,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_fuzzy_point(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
-        x_std: Union[numpy.typing.NDArray[float], float],
+        x: Union[numpy.typing.NDArray[np.floating], np.floating],
+        x_std: Union[numpy.typing.NDArray[np.floating], np.floating],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a fuzzy point.
@@ -159,8 +160,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         :param x: (n_predictions, n_features) The predictive inputs.
         :param x_std: The input noise standard deviations:
 
-            * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
-            * float: Assume homoskedastic noise.
+            * array_like[np.floating]: (n_features,) The standard deviation per input dimension for the predictions,
+            * np.floating: Assume homoskedastic noise.
 
         :returns: The posterior.
         """
@@ -168,7 +169,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
+        x: Union[numpy.typing.NDArray[np.floating], np.floating],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -180,8 +181,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def fuzzy_predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
-        x_std: Union[numpy.typing.NDArray[float], float],
+        x: Union[numpy.typing.NDArray[np.floating], np.floating],
+        x_std: Union[numpy.typing.NDArray[np.floating], np.floating],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.

@@ -24,7 +24,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.random_seed = 1_989
+        self.rng = np.random.default_rng(1_989)
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 100
@@ -36,7 +36,7 @@ class VanguardTestCase(unittest.TestCase):
         self.y = np.squeeze(self.x * np.sin(self.x))
 
         # Split data into training and testing
-        self.train_indices = np.random.choice(np.arange(self.y.shape[0]), size=self.num_train_points, replace=False)
+        self.train_indices = self.rng.choice(np.arange(self.y.shape[0]), size=self.num_train_points, replace=False)
         self.test_indices = np.setdiff1d(np.arange(self.y.shape[0]), self.train_indices)
 
     def test_gp_laplace_hierarchical(self) -> None:
@@ -47,7 +47,6 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a continuous target `y`, and verify that a
         GP can be fit to this data.
         """
-        np.random.seed(self.random_seed)
 
         # Create a hierarchical controller and a kernel that has Bayesian hyperparameters to estimate
         @LaplaceHierarchicalHyperparameters(num_mc_samples=self.num_mc_samples)
@@ -87,7 +86,6 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a continuous target `y`, and verify that a
         GP can be fit to this data.
         """
-        np.random.seed(self.random_seed)
 
         # Create a hierarchical controller and a kernel that has Bayesian hyperparameters to estimate
         @VariationalHierarchicalHyperparameters(num_mc_samples=self.num_mc_samples)
