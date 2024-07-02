@@ -11,6 +11,7 @@ autofunction
 automodule
 autoreload
 autoupdate
+autouse
 basecontroller
 basedataset
 basedecorator
