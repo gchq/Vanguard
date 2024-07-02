@@ -113,7 +113,7 @@ class StandardiseModuleTests(unittest.TestCase):
     @staticmethod
     def _to_numpy(tensor: torch.Tensor) -> numpy.typing.NDArray[np.floating]:
         try:
-            tensor = tensor.evaluate()
+            tensor = tensor.to_dense()
         except AttributeError:
             pass
         return tensor.detach().cpu().numpy()

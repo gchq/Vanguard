@@ -230,6 +230,6 @@ class KMedoidsPartitioner(BasePartitioner):
         .. warning::
             The affinity matrix takes up O(N^2) memory so can't be used for large ``train_x``.
         """
-        affinity_matrix = self.kernel(torch.from_numpy(self.train_x)).cpu().evaluate().detach().cpu().numpy()
+        affinity_matrix = self.kernel(torch.from_numpy(self.train_x)).cpu().to_dense().detach().cpu().numpy()
         dist_matrix = np.exp(-affinity_matrix)
         return dist_matrix

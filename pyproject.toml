@@ -161,10 +161,6 @@ filterwarnings = [
     # https://github.com/gchq/Vanguard/issues/276
     "ignore:torch.set_default_tensor_type\\(\\) is deprecated as of PyTorch 2.1:UserWarning",
 
-    # TODO: replace with to_dense
-    # https://github.com/gchq/Vanguard/issues/277
-    "ignore:The `evaluate` method is deprecated. Use `to_dense` instead:DeprecationWarning",
-
     # TODO: replace with sparse_coo_tensor
     # https://github.com/gchq/Vanguard/issues/278
     "ignore:torch.sparse.SparseTensor\\(indices, values, shape, \\*, device=\\) is deprecated:UserWarning",

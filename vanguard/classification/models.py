@@ -30,7 +30,7 @@ class DummyKernelDistribution:
         """
         self.labels = labels
         self.kernel = kernel
-        self.mean = self.kernel @ self.labels.evaluate()
+        self.mean = self.kernel @ self.labels.to_dense()
         self.covariance_matrix = torch.zeros_like(self.mean)
 
     # pylint: disable-next=unused-argument
