@@ -55,8 +55,8 @@ class BasicTests(unittest.TestCase):
         internal_mean, internal_covar = posterior._tensor_prediction()
         external_mean, external_covar = posterior.prediction()
 
-        torch.testing.assert_allclose((external_mean - self.train_y_mean) / self.train_y_std, internal_mean)
-        torch.testing.assert_allclose(external_covar / self.train_y_std**2, internal_covar)
+        torch.testing.assert_close(torch.tensor((external_mean - self.train_y_mean) / self.train_y_std), internal_mean)
+        torch.testing.assert_close(torch.tensor(external_covar / self.train_y_std**2), internal_covar)
 
     def test_fuzzy_prediction_scaling(self) -> None:
         """Internal and external fuzzy predictions should be properly scaled."""
@@ -68,8 +68,8 @@ class BasicTests(unittest.TestCase):
         internal_mean, internal_covar = posterior._tensor_prediction()
         external_mean, external_covar = posterior.prediction()
 
-        torch.testing.assert_allclose((external_mean - self.train_y_mean) / self.train_y_std, internal_mean)
-        torch.testing.assert_allclose(external_covar / self.train_y_std**2, internal_covar)
+        torch.testing.assert_close(torch.tensor((external_mean - self.train_y_mean) / self.train_y_std), internal_mean)
+        torch.testing.assert_close(torch.tensor(external_covar / self.train_y_std**2), internal_covar)
 
     def test_confidence_interval_scaling(self) -> None:
         """Internal and external predictions should be properly scaled."""
@@ -80,9 +80,15 @@ class BasicTests(unittest.TestCase):
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         external_median, external_upper, external_lower = posterior.confidence_interval(0.05)
 
-        torch.testing.assert_allclose((external_median - self.train_y_mean) / self.train_y_std, internal_median)
-        torch.testing.assert_allclose((external_upper - self.train_y_mean) / self.train_y_std, internal_upper)
-        torch.testing.assert_allclose((external_lower - self.train_y_mean) / self.train_y_std, internal_lower)
+        torch.testing.assert_close(
+            torch.tensor((external_median - self.train_y_mean) / self.train_y_std), internal_median
+        )
+        torch.testing.assert_close(
+            torch.tensor((external_upper - self.train_y_mean) / self.train_y_std), internal_upper
+        )
+        torch.testing.assert_close(
+            torch.tensor((external_lower - self.train_y_mean) / self.train_y_std), internal_lower
+        )
 
     def test_fuzzy_confidence_interval_scaling(self) -> None:
         """Internal and external predictions should be properly scaled."""
@@ -93,6 +99,12 @@ class BasicTests(unittest.TestCase):
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         external_median, external_upper, external_lower = posterior.confidence_interval(0.05)
 
-        torch.testing.assert_allclose((external_median - self.train_y_mean) / self.train_y_std, internal_median)
-        torch.testing.assert_allclose((external_upper - self.train_y_mean) / self.train_y_std, internal_upper)
-        torch.testing.assert_allclose((external_lower - self.train_y_mean) / self.train_y_std, internal_lower)
+        torch.testing.assert_close(
+            torch.tensor((external_median - self.train_y_mean) / self.train_y_std), internal_median
+        )
+        torch.testing.assert_close(
+            torch.tensor((external_upper - self.train_y_mean) / self.train_y_std), internal_upper
+        )
+        torch.testing.assert_close(
+            torch.tensor((external_lower - self.train_y_mean) / self.train_y_std), internal_lower
+        )

@@ -4,8 +4,8 @@ Contains any warnings that are needed in one place.
 
 import re
 
-from gpytorch.utils.errors import NotPSDError
 from gpytorch.utils.warnings import GPInputWarning, NumericalWarning
+from linear_operator.utils.errors import NotPSDError
 
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
 _CHOLESKY_WARNING = r"Runtime Error when computing Cholesky decomposition: (.*?)\. Using RootDecomposition\."

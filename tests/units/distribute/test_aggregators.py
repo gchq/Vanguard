@@ -110,8 +110,8 @@ class AggregationTests(unittest.TestCase):
             with self.subTest(aggregator_class=aggregator_class.__name__):
                 aggregator = aggregator_class(self.means, self.covars, self.prior_var)
                 observed_mean, observed_variance = aggregator.aggregate()
-                torch.testing.assert_allclose(mean, observed_mean)
-                torch.testing.assert_allclose(variance, observed_variance.diagonal())
+                torch.testing.assert_close(mean, observed_mean)
+                torch.testing.assert_close(variance, observed_variance.diagonal())
 
     def test_invalid_prior_var(self) -> None:
         """
