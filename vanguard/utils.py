@@ -162,6 +162,10 @@ def generator_append_constant(generator: Generator[tuple, None, None], constant:
         yield item + (constant,)
 
 
+class UnseededRandomWarning(UserWarning):
+    """Warning for when unseeded random generators are used."""
+
+
 def optional_random_generator(generator: Optional[np.random.Generator]) -> np.random.Generator:
     """
     Return the generator as-is, or a default one otherwise. Warns if using an unseeded generator in testing.
@@ -175,7 +179,9 @@ def optional_random_generator(generator: Optional[np.random.Generator]) -> np.ra
     if __debug__:
         if os.environ.get("PYTEST_VERSION") is not None:
             warnings.warn(
-                "Using default unseeded RNG. Please seed your generators for consistent results!", stacklevel=4
+                "Using default unseeded RNG. Please seed your generators for consistent results!",
+                stacklevel=4,
+                category=UnseededRandomWarning,
             )
 
     return np.random.default_rng()
