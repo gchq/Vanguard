@@ -89,7 +89,7 @@ class InputTests(VanguardTestCase):
     GP controllers are forgiving about the shape of data arrays, where possible. These tests check this behaviour.
     """
 
-    DATASET = SyntheticDataset()
+    DATASET = SyntheticDataset(rng=np.random.default_rng(1234))
 
     def test_unsqueeze_y(self) -> None:
         """

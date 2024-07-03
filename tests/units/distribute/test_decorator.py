@@ -92,7 +92,7 @@ class SharedDataTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Define data shared across tests."""
-        dataset = SyntheticDataset()
+        dataset = SyntheticDataset(rng=np.random.default_rng(1234))
 
         cls.controller = DistributedGaussianGPController(
             dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std

@@ -89,7 +89,9 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
         Note that we ignore the `certainties` output here.
         """
-        dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
+        dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+        )
         test_x_std = 0.005
         test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
@@ -120,7 +122,9 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
         Note that we ignore the `certainties` output here.
         """
-        dataset = MulticlassGaussianClassificationDataset(num_train_points=60, num_test_points=20, num_classes=4)
+        dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+        )
 
         train_x_std = test_x_std = 0.005
         train_x = self.rng.normal(dataset.train_x, scale=train_x_std)

@@ -9,6 +9,7 @@ from collections.abc import Generator
 from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 from unittest.mock import patch
 
+import numpy as np
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.mlls import VariationalELBO
@@ -54,7 +55,9 @@ DECORATORS = {
             "likelihood_class": DirichletClassificationLikelihood,
             "likelihood_kwargs": {"learn_additional_noise": True},
         },
-        "dataset": MulticlassGaussianClassificationDataset(num_train_points=10, num_test_points=4, num_classes=4),
+        "dataset": MulticlassGaussianClassificationDataset(
+            num_train_points=10, num_test_points=4, num_classes=4, seed=1234
+        ),
     },
     Distributed: {"decorator": {"n_experts": 3}, "controller": {}},
     VariationalHierarchicalHyperparameters: {
@@ -70,7 +73,9 @@ DECORATORS = {
         "controller": {
             "likelihood_class": FixedNoiseMultitaskGaussianLikelihood,
         },
-        "dataset": SyntheticDataset([simple_f, complicated_f], n_train_points=10, n_test_points=1),
+        "dataset": SyntheticDataset(
+            [simple_f, complicated_f], n_train_points=10, n_test_points=1, rng=np.random.default_rng(1234)
+        ),
     },
     SetWarp: {
         "decorator": {"warp_function": warpfunctions.SinhWarpFunction()},
@@ -230,7 +235,11 @@ class CombinationTests(unittest.TestCase):
                     f"{type(lower_decorator).__name__}: two datasets have been passed."
                 )
 
-            dataset = upper_dataset or lower_dataset or SyntheticDataset(n_train_points=20, n_test_points=2)
+            dataset = (
+                upper_dataset
+                or lower_dataset
+                or SyntheticDataset(n_train_points=20, n_test_points=2, rng=np.random.default_rng(1234))
+            )
 
             controller_kwargs = {**upper_controller_kwargs, **lower_controller_kwargs}
             yield upper_decorator, lower_decorator, controller_kwargs, dataset

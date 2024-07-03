@@ -109,7 +109,7 @@ class LaplaceTests(unittest.TestCase):
 
     def test_posterior_covar_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
-        dataset = SyntheticDataset()
+        dataset = SyntheticDataset(rng=np.random.default_rng(1234))
 
         gp = DistributedLaplaceHierarchicalGaussianGPController(
             dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std

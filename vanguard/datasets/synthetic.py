@@ -137,15 +137,21 @@ class MultidimensionalSyntheticDataset(Dataset):
     def __init__(
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f, complicated_f),
+        rng: Optional[np.random.Generator] = None,
         **kwargs: Unpack[_SyntheticDataParams],
     ) -> None:
         """
         Initialise self.
 
         :param functions: The functions used on each input dimension
-                                                (they are combined linearly to make a single output).
+            (they are combined linearly to make a single output).
+        :param rng: Generator instance used to generate random numbers.
         """
-        one_dimensional_datasets = [SyntheticDataset(functions=(function,), **kwargs) for function in functions]
+        rng = rng if rng is not None else np.random.default_rng()
+
+        one_dimensional_datasets = [
+            SyntheticDataset(functions=(function,), rng=rng, **kwargs) for function in functions
+        ]
         train_x = np.stack([dataset.train_x.ravel() for dataset in one_dimensional_datasets], -1)
         train_x_std = np.stack([dataset.train_x_std.ravel() for dataset in one_dimensional_datasets], -1)
         train_y = np.mean(np.stack([dataset.train_y.ravel() for dataset in one_dimensional_datasets], -1), axis=-1)

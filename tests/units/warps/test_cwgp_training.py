@@ -115,7 +115,7 @@ class AssociativityTests(VanguardTestCase):
 
 
 class ParameterTests(VanguardTestCase):
-    DATASET = SyntheticDataset()
+    DATASET = SyntheticDataset(rng=np.random.default_rng(1234))
 
     def test_simple_warp_functions_are_different(self) -> None:
         """Two distinct controller instances should have different warp function."""
@@ -297,7 +297,7 @@ class ConstraintTests(VanguardTestCase):
     Test that warp functions can be constrained.
     """
 
-    DATASET = SyntheticDataset()
+    DATASET = SyntheticDataset(rng=np.random.default_rng(1234))
 
     def test_fitting_with_unconstrained_warp(self) -> None:
         """Should throw a RuntimeError."""

@@ -110,7 +110,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
 
         Note that we ignore the `certainties` output here.
         """
-        dataset = BinaryStripeClassificationDataset(num_train_points=50, num_test_points=20)
+        dataset = BinaryStripeClassificationDataset(num_train_points=50, num_test_points=20, rng=self.rng)
         test_x_std = 0.005
         test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
 
@@ -137,7 +137,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
 
         Note that we ignore the `certainties` output here.
         """
-        dataset = BinaryStripeClassificationDataset(50, 20)
+        dataset = BinaryStripeClassificationDataset(50, 20, rng=np.random.default_rng(1234))
         train_x_std = test_x_std = 0.005
         train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
         test_x = self.rng.normal(dataset.test_x, scale=test_x_std).reshape(-1, 1)
