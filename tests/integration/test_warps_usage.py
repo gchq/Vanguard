@@ -76,6 +76,7 @@ class VanguardTestCase(unittest.TestCase):
                 train_y=y[train_indices],
                 kernel_class=ScaledRBFKernel,
                 y_std=self.small_noise * np.ones_like(y[train_indices]),
+                rng=self.rng,
             )
 
             # Fit the GP
@@ -122,6 +123,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=y[train_indices],
             kernel_class=ScaledRBFKernel,
             y_std=self.small_noise * np.ones_like(y[train_indices]),
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -143,6 +145,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=-100.0 * y[train_indices],
             kernel_class=ScaledRBFKernel,
             y_std=self.small_noise * np.ones_like(y[train_indices]),
+            rng=self.rng,
         )
         with self.assertRaises(Exception):
             gp_invalid.fit(n_sgd_iters=self.n_sgd_iters)
@@ -177,6 +180,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=y[train_indices],
             kernel_class=ScaledRBFKernel,
             y_std=0.1 * self.small_noise * np.ones_like(y[train_indices]),
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -201,6 +205,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=-100.0 * y[train_indices],
             kernel_class=ScaledRBFKernel,
             y_std=self.small_noise * np.ones_like(y[train_indices]),
+            rng=self.rng,
         )
         with self.assertRaises(Exception):
             gp_invalid.fit(n_sgd_iters=self.n_sgd_iters)

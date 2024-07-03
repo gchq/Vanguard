@@ -58,6 +58,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=y[train_indices],
             kernel_class=ScaledRBFKernel,
             y_std=self.small_noise * np.ones_like(y[train_indices]),
+            rng=self.rng,
         )
 
         # Fit the GP

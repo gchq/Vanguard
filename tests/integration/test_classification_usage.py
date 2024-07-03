@@ -71,6 +71,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -120,6 +121,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             kernel_kwargs={"batch_shape": (3,)},
             likelihood_class=DirichletClassificationLikelihood,
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -169,6 +171,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             likelihood_class=DirichletKernelClassifierLikelihood,
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
 
         # Fit the GP

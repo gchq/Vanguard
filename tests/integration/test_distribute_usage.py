@@ -99,6 +99,7 @@ class VanguardTestCase(unittest.TestCase):
                 y_std=0,
                 likelihood_class=BernoulliLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
+                rng=self.rng,
             )
 
             # Fit the GP
@@ -146,6 +147,7 @@ class VanguardTestCase(unittest.TestCase):
                 y_std=0,
                 likelihood_class=BernoulliLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
+                rng=self.rng,
             )
 
             # Fit the GP

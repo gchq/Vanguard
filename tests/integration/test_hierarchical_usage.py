@@ -63,6 +63,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=self.y[self.train_indices],
             kernel_class=BayesianRBFKernel,
             y_std=self.small_noise,
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -102,6 +103,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=self.y[self.train_indices],
             kernel_class=BayesianRBFKernel,
             y_std=self.small_noise,
+            rng=self.rng,
         )
 
         # Fit the GP
