@@ -1,5 +1,5 @@
-Bike Dataset
-============
+Air Passengers Dataset
+======================
 
 .. automodule:: vanguard.datasets.air_passengers
 

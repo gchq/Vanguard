@@ -73,8 +73,8 @@ ipython
 isort
 jumanjihouse
 jupyterlab
-Kats
 KATS
+Kats
 keepdim
 kernelspec
 kmedoids
