@@ -65,7 +65,8 @@ class DoctestMetaClass(type):
                 loop variables within a new function.
                 """
                 suite = self.names_to_suites[self._testMethodName]  # pylint: disable=protected-access
-                with warnings.catch_warnings(category=UnseededRandomWarning, action="ignore"):
+                with warnings.catch_warnings():
+                    warnings.simplefilter(category=UnseededRandomWarning, action="ignore")
                     # Suppress UnseededRandomWarnings - they'd make doctests more verbose than they need to be
                     result = self.test_runner.run(suite)
                 if result.failures or result.errors:
