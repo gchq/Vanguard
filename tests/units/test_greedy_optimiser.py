@@ -29,9 +29,8 @@ class ParameterAgreementTests(unittest.TestCase):
         """Code to run before all tests."""
         # TODO: Fails consistently on Python 3.12 with seed 1234, or 12345
         # https://github.com/gchq/Vanguard/issues/274
-        cls.dataset = SyntheticDataset(
-            functions=(very_complicated_f,), output_noise=0.9, rng=np.random.default_rng(123_456)
-        )
+        rng = np.random.default_rng(123_456)
+        cls.dataset = SyntheticDataset(functions=(very_complicated_f,), output_noise=0.9, rng=rng)
 
         cls.greedy_controller = GaussianGPController(
             cls.dataset.train_x,
@@ -39,6 +38,7 @@ class ParameterAgreementTests(unittest.TestCase):
             ScaledRBFKernel,
             cls.dataset.train_y_std,
             optimiser_kwargs={"lr": 20},
+            rng=rng,
         )
 
         cls.controller = GaussianGPController(
@@ -48,6 +48,7 @@ class ParameterAgreementTests(unittest.TestCase):
             cls.dataset.train_y_std,
             optimiser_kwargs={"lr": 20},
             smart_optimiser_class=SmartOptimiser,
+            rng=rng,
         )
 
         cls.controller2 = GaussianGPController(
@@ -57,6 +58,7 @@ class ParameterAgreementTests(unittest.TestCase):
             cls.dataset.train_y_std,
             optimiser_kwargs={"lr": 20},
             smart_optimiser_class=SmartOptimiser,
+            rng=rng,
         )
 
         cls.controller.fit(100)

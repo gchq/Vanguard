@@ -18,8 +18,11 @@ class BasicTests(unittest.TestCase):
     """
 
     def test_trains_time_feature_only(self) -> None:
-        dataset = SyntheticDataset(rng=np.random.default_rng(1234))
-        controller = GaussianGPController(dataset.train_x, dataset.train_y, TimeSeriesKernel, y_std=dataset.train_y_std)
+        rng = np.random.default_rng(1234)
+        dataset = SyntheticDataset(rng=rng)
+        controller = GaussianGPController(
+            dataset.train_x, dataset.train_y, TimeSeriesKernel, y_std=dataset.train_y_std, rng=rng
+        )
         controller.fit(10)
         mean, _, upper = controller.posterior_over_point(dataset.test_x).confidence_interval()
         assert_array_less(upper - mean, 0.5)

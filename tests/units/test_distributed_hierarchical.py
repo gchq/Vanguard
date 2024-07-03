@@ -43,12 +43,13 @@ class VariationalTests(unittest.TestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=np.random.default_rng(1234))
+        self.rng = np.random.default_rng(1234)
+        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=self.rng)
 
     def test_variational_distribution_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
         gp = DistributedVariationalHierarchicalGaussianGPController(
-            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
         gp.fit(1)
 
@@ -65,7 +66,7 @@ class VariationalTests(unittest.TestCase):
     def test_variational_distribution_from_subset_is_copied(self) -> None:
         """Experts' variation distribution should match the trained subset controller."""
         gp = DistributedVariationalHierarchicalGaussianGPController(
-            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
         gp.fit(1)
 
@@ -89,12 +90,13 @@ class LaplaceTests(unittest.TestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=np.random.default_rng(1234))
+        self.rng = np.random.default_rng(1234)
+        self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=self.rng)
 
     def test_posterior_mean_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
         gp = DistributedLaplaceHierarchicalGaussianGPController(
-            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
         gp.fit(1)
 
@@ -112,7 +114,7 @@ class LaplaceTests(unittest.TestCase):
         dataset = SyntheticDataset(rng=np.random.default_rng(1234))
 
         gp = DistributedLaplaceHierarchicalGaussianGPController(
-            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std
+            dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std, rng=self.rng
         )
         gp.fit(1)
 
@@ -142,7 +144,7 @@ class LaplaceTests(unittest.TestCase):
     def test_posterior_mean_from_subset_is_copied(self) -> None:
         """Experts' posterior mean should match the trained subset controller."""
         gp = DistributedLaplaceHierarchicalGaussianGPController(
-            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
         gp.fit(1)
 
@@ -158,7 +160,7 @@ class LaplaceTests(unittest.TestCase):
     def test_posterior_covariance_from_subset_is_copied(self) -> None:
         """Experts' posterior covariance should match the trained subset controller."""
         gp = DistributedLaplaceHierarchicalGaussianGPController(
-            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std
+            self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
         gp.fit(1)
 

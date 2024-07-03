@@ -20,10 +20,11 @@ class BasicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
-        cls.dataset = SyntheticDataset(rng=np.random.default_rng(1234))
+        rng = np.random.default_rng(1234)
+        cls.dataset = SyntheticDataset(rng=rng)
 
         cls.controller = GaussianGPController(
-            cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std
+            cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std, rng=rng
         )
 
         cls.train_y_mean = cls.dataset.train_y.mean()

@@ -61,8 +61,9 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
+        self.rng = np.random.default_rng(1234)
         self.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+            num_train_points=60, num_test_points=20, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
         self.controller = MultitaskBernoulliClassifier(
             self.dataset.train_x,
@@ -71,6 +72,7 @@ class MulticlassTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
     @flaky
@@ -114,6 +116,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
         controller.fit(10)
 
@@ -150,6 +153,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
         controller.fit(10)
 
@@ -164,8 +168,9 @@ class SoftmaxLMCTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
+        self.rng = np.random.default_rng(1234)
         self.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+            num_train_points=60, num_test_points=20, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
 
         self.controller = SoftmaxLMCClassifier(
@@ -175,6 +180,7 @@ class SoftmaxLMCTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=SoftmaxLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
     @flaky
@@ -192,8 +198,9 @@ class SoftmaxTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
+        self.rng = np.random.default_rng(1234)
         self.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+            num_train_points=60, num_test_points=20, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
 
         self.controller = SoftmaxClassifier(
@@ -203,6 +210,7 @@ class SoftmaxTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=SoftmaxLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
     @flaky
@@ -227,6 +235,7 @@ class SoftmaxTests(ClassificationTestCase):
             likelihood_class=SoftmaxLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
             mean_kwargs={"batch_shape": torch.Size([NUM_LATENTS])},
+            rng=self.rng,
         )
 
         controller.fit(1)
@@ -243,6 +252,7 @@ class SoftmaxTests(ClassificationTestCase):
                 likelihood_class=SoftmaxLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
                 mean_kwargs={"batch_shape": NUM_LATENTS},
+                rng=self.rng,
             )
 
         self.assertEqual(
@@ -268,6 +278,7 @@ class SoftmaxTests(ClassificationTestCase):
                 likelihood_class=SoftmaxLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
                 mean_kwargs={"batch_shape": batch_shape},
+                rng=self.rng,
             )
 
         self.assertEqual(
@@ -283,8 +294,9 @@ class MultitaskBernoulliClassifierTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
+        self.rng = np.random.default_rng(1234)
         self.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+            num_train_points=60, num_test_points=20, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
 
         self.controller = MultitaskBernoulliClassifier(
@@ -294,6 +306,7 @@ class MultitaskBernoulliClassifierTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
     @flaky

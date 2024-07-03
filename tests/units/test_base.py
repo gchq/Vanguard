@@ -150,6 +150,7 @@ class InputTests(VanguardTestCase):
             train_y=self.DATASET.train_y,
             kernel_class=PeriodicRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=rng,
         )
         shape_rx = rf"\({shape[0]}, {shape[1]}, {shape[2]}\)"
         expected_regex = (
@@ -185,6 +186,7 @@ class NLLTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
+        self.rng = np.random.default_rng(RANDOM_SEED)
 
         class UniformSyntheticDataset:
             def __init__(
@@ -193,8 +195,9 @@ class NLLTests(unittest.TestCase):
                 num_train_points: int,
                 num_test_points: int,
                 y_std: Union[float, NDArray[np.floating]],
+                rng: np.random.Generator,
             ) -> None:
-                self.rng = np.random.default_rng(RANDOM_SEED)  # pylint: disable=no-member
+                self.rng = rng
 
                 unscaled_train_x = self.rng.uniform(0, 1, num_train_points).reshape(-1, 1)
                 scaled_train_x = (unscaled_train_x - unscaled_train_x.mean()) / unscaled_train_x.std()
@@ -210,7 +213,7 @@ class NLLTests(unittest.TestCase):
 
         self.y_std = 1
 
-        self.dataset = UniformSyntheticDataset(lambda x: np.sin(10 * x), 100, 100 // 4, self.y_std)
+        self.dataset = UniformSyntheticDataset(lambda x: np.sin(10 * x), 100, 100 // 4, self.y_std, rng=self.rng)
 
         rbf_kernel = 1.0 * RBF(length_scale=1e-1, length_scale_bounds=(1e-2, 1e3))
         white_kernel = WhiteKernel(noise_level=1e-2, noise_level_bounds=(1e-10, 1e1))
@@ -286,7 +289,7 @@ class NLLTests(unittest.TestCase):
     def test_vanguard_nll(self) -> None:
         """Test that the NLL calculated with Vanguard agrees with sklearn."""
         controller = GaussianGPController(
-            train_x=self.dataset.x, train_y=self.dataset.y, kernel_class=ScaledRBFKernel, y_std=self.y_std
+            train_x=self.dataset.x, train_y=self.dataset.y, kernel_class=ScaledRBFKernel, y_std=self.y_std, rng=self.rng
         )
 
         controller.likelihood_noise = torch.ones_like(controller.likelihood_noise) * self.noise_variance

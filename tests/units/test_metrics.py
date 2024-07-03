@@ -117,10 +117,15 @@ class PrintingTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        dataset = SyntheticDataset(rng=np.random.default_rng(1234))
+        self.rng = np.random.default_rng(1234)
+        dataset = SyntheticDataset(rng=self.rng)
 
         self.controller = GaussianGPController(
-            train_x=dataset.train_x, train_y=dataset.train_y, kernel_class=PeriodicRBFKernel, y_std=dataset.train_y_std
+            train_x=dataset.train_x,
+            train_y=dataset.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=dataset.train_y_std,
+            rng=self.rng,
         )
 
         self.new_stdout = StringIO()

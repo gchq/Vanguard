@@ -41,6 +41,7 @@ class MulticlassTests(ClassificationTestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             optim_kwargs={"lr": 0.05},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
         self.controller.fit(10)
 
@@ -81,6 +82,7 @@ class MulticlassTests(ClassificationTestCase):
                 kernel_class=kernels.RBFKernel,
                 y_std=0,
                 likelihood_class=IllegalLikelihoodClass,
+                rng=self.rng,
             )
 
         self.assertEqual(

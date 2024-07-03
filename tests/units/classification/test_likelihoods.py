@@ -80,6 +80,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             likelihood_kwargs={"learn_alpha": True, "alpha": 1},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
 
         starting_alpha = controller.likelihood.alpha.clone()
@@ -109,6 +110,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             likelihood_kwargs={"learn_alpha": True, "alpha": 1, "alpha_constraint": GreaterThan(constraint_value)},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
         unconstrained_controller = MulticlassGaussianClassifier(
             train_x=self.dataset.train_x,
@@ -119,6 +121,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             likelihood_kwargs={"learn_alpha": True, "alpha": 1},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
 
         constrained_controller.fit(10)

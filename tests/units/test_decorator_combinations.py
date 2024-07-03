@@ -144,6 +144,7 @@ class CombinationTests(unittest.TestCase):
                     "train_y": dataset.train_y,
                     "y_std": dataset.train_y_std,
                     "kernel_class": ScaledRBFKernel,
+                    "rng": np.random.default_rng(1234),
                 }
 
                 combination = (type(upper_decorator), type(lower_decorator))

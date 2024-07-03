@@ -26,8 +26,9 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
+        self.rng = np.random.default_rng(1234)
         self.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=150, num_test_points=100, num_classes=4, seed=1234
+            num_train_points=150, num_test_points=100, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
         self.controller = DirichletMulticlassClassifier(
             self.dataset.train_x,
@@ -40,6 +41,7 @@ class MulticlassTests(ClassificationTestCase):
             optim_kwargs={"lr": 0.05},
             kernel_kwargs={"batch_shape": 4},
             mean_kwargs={"batch_shape": 4},
+            rng=self.rng,
         )
 
     @flaky
@@ -62,6 +64,7 @@ class MulticlassTests(ClassificationTestCase):
                 kernel_class=BatchScaledRBFKernel,
                 y_std=0,
                 likelihood_class=IllegalLikelihoodClass,
+                rng=self.rng,
             )
 
         self.assertEqual(
@@ -106,6 +109,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
             optim_kwargs={"lr": 0.05},
             kernel_kwargs={"batch_shape": 4},
             mean_kwargs={"batch_shape": 4},
+            rng=self.rng,
         )
         controller.fit(10)
 
@@ -146,6 +150,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
             optim_kwargs={"lr": 0.05},
             kernel_kwargs={"batch_shape": 4},
             mean_kwargs={"batch_shape": 4},
+            rng=self.rng,
         )
         controller.fit(10)
 

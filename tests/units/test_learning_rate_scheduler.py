@@ -20,7 +20,8 @@ class BasicTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = SyntheticDataset(rng=np.random.default_rng(1234))
+        self.rng = np.random.default_rng(1234)
+        self.dataset = SyntheticDataset(rng=self.rng)
 
         num_iters = 33
         step_size = 10
@@ -40,6 +41,7 @@ class BasicTests(unittest.TestCase):
             self.dataset.train_y_std,
             optimiser_class=StepLRAdam,
             optim_kwargs={"lr": initial_lr},
+            rng=self.rng,
         )
 
         self.train_y_mean = self.dataset.train_y.mean()

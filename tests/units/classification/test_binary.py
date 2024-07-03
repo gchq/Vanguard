@@ -30,9 +30,8 @@ class BinaryTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Set up data shared between tests."""
-        self.dataset = BinaryStripeClassificationDataset(
-            num_train_points=100, num_test_points=200, rng=np.random.default_rng(1234)
-        )
+        self.rng = np.random.default_rng(1234)
+        self.dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=200, rng=self.rng)
         self.controller = BinaryClassifier(
             self.dataset.train_x,
             self.dataset.train_y,
@@ -40,6 +39,7 @@ class BinaryTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
     @flaky
@@ -63,6 +63,7 @@ class BinaryTests(ClassificationTestCase):
                 y_std=0,
                 likelihood_class=IllegalLikelihoodClass,
                 marginal_log_likelihood_class=VariationalELBO,
+                rng=self.rng,
             )
 
         self.assertEqual(
@@ -121,6 +122,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
         controller.fit(20)
 
@@ -155,6 +157,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
             y_std=0,
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
         controller.fit(20)
 

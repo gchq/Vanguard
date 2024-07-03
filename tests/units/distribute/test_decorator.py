@@ -48,6 +48,9 @@ class InitialisationTests(unittest.TestCase):
     Tests for the initialisation of the decorator.
     """
 
+    def setUp(self):
+        self.rng = np.random.default_rng(1234)
+
     def test_cannot_pass_array_as_y_std(self) -> None:
         """
         Test that if `train_y_std` is provided as an array, this input is rejected.
@@ -56,13 +59,15 @@ class InitialisationTests(unittest.TestCase):
         form of an int or float. Here we check that a TypeError is raised if the noise
         is given as an array.
         """
-        dataset = HeteroskedasticSyntheticDataset(rng=np.random.default_rng(1234))
+        dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
 
         if isinstance(dataset.train_y_std, (float, int)):
             self.skipTest(f"The standard deviation should be an array, not '{type(dataset.train_y_std).__name__}'.")
 
         with self.assertRaises(TypeError):
-            DistributedGaussianGPController(dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std)
+            DistributedGaussianGPController(
+                dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std, rng=self.rng
+            )
 
     def test_no_kernel_with_k_medoids(self) -> None:
         """
@@ -72,15 +77,17 @@ class InitialisationTests(unittest.TestCase):
         to fail if this is not provided.
         """
         # Define the data - for the purposes of this test we do not need to know the y_std values
-        dataset = HeteroskedasticSyntheticDataset(rng=np.random.default_rng(1234))
+        dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
 
         # Create the class without specifying a kernel, we expect a key error when trying to access the kernel
         with self.assertRaises(KeyError):
-            DistributedGaussianGPControllerKMedoids(dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01)
+            DistributedGaussianGPControllerKMedoids(
+                dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, rng=self.rng
+            )
 
         # Create the class whilst specifying a kernel - this should create without error
         DistributedGaussianGPControllerKMedoids(
-            dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, kernel=ScaledRBFKernel
+            dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, kernel=ScaledRBFKernel, rng=self.rng
         )
 
 
@@ -92,13 +99,14 @@ class SharedDataTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Define data shared across tests."""
-        dataset = SyntheticDataset(rng=np.random.default_rng(1234))
+        rng = np.random.default_rng(1234)
+        dataset = SyntheticDataset(rng=rng)
 
         cls.controller = DistributedGaussianGPController(
-            dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std
+            dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std, rng=rng
         )
         cls.warp_controller = DistributedWarpedGaussianGPController(
-            dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std
+            dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std, rng=rng
         )
         cls.controller.fit(1)
         cls.warp_controller.fit(1)
@@ -168,7 +176,11 @@ class SharedDataTests(unittest.TestCase):
         """
         # Define a new controller and fit it
         gp = DistributedGaussianGPControllerBCMAggregator(
-            np.arange(20).reshape(-1, 1), 2.5 + 0.5 * np.arange(20), ScaledRBFKernel, 0.0
+            np.arange(20).reshape(-1, 1),
+            2.5 + 0.5 * np.arange(20),
+            ScaledRBFKernel,
+            0.0,
+            rng=np.random.default_rng(1234),
         )
         gp.fit(1)
 

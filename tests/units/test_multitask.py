@@ -20,7 +20,8 @@ class ErrorTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = SyntheticDataset(rng=np.random.default_rng(1234))
+        self.rng = np.random.default_rng(1234)
+        self.dataset = SyntheticDataset(rng=self.rng)
 
     def test_single_task_variational(self) -> None:
         """Should throw an error."""
@@ -31,7 +32,9 @@ class ErrorTests(unittest.TestCase):
             pass
 
         with self.assertRaises(TypeError):
-            MultitaskController(self.dataset.train_x, self.dataset.train_y, ScaledRBFKernel, self.dataset.train_y_std)
+            MultitaskController(
+                self.dataset.train_x, self.dataset.train_y, ScaledRBFKernel, self.dataset.train_y_std, rng=self.rng
+            )
 
     def test_bad_batch_shape(self) -> None:
         """Should throw an error."""
@@ -47,4 +50,5 @@ class ErrorTests(unittest.TestCase):
                 ScaledRBFKernel,
                 self.dataset.train_y_std,
                 kernel_kwargs={"batch_shape": 2},
+                rng=self.rng,
             )

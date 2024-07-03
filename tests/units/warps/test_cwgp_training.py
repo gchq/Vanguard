@@ -117,6 +117,9 @@ class AssociativityTests(VanguardTestCase):
 class ParameterTests(VanguardTestCase):
     DATASET = SyntheticDataset(rng=np.random.default_rng(1234))
 
+    def setUp(self):
+        self.rng = np.random.default_rng(1234)
+
     def test_simple_warp_functions_are_different(self) -> None:
         """Two distinct controller instances should have different warp function."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
@@ -131,6 +134,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp_2 = TestController(
@@ -138,6 +142,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         self.assertIsNot(gp_1.warp, gp_2.warp)
@@ -161,6 +166,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp_2 = TestController(
@@ -168,6 +174,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         for component_1, component_2 in zip(gp_1.warp.components, gp_2.warp.components):
@@ -189,6 +196,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         affine_1, affine_2 = gp.warp.components
@@ -211,6 +219,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp.fit(100)
@@ -232,6 +241,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp.fit(100)
@@ -255,6 +265,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp.fit(100)
@@ -278,6 +289,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp.fit(100)
@@ -299,6 +311,9 @@ class ConstraintTests(VanguardTestCase):
 
     DATASET = SyntheticDataset(rng=np.random.default_rng(1234))
 
+    def setUp(self):
+        self.rng = np.random.default_rng(1234)
+
     def test_fitting_with_unconstrained_warp(self) -> None:
         """Should throw a RuntimeError."""
         box_cox = warpfunctions.BoxCoxWarpFunction(lambda_=0)
@@ -314,6 +329,7 @@ class ConstraintTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         expected_regex = r"cholesky_cpu: \d*? of \d*? elements of the torch\.Size\(\[\d*?, \d*?\]\) tensor are NaN\."
@@ -336,6 +352,7 @@ class ConstraintTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         try:

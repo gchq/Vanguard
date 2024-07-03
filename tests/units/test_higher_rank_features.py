@@ -79,7 +79,8 @@ class BasicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
-        cls.dataset = HigherRankSyntheticDataset(rng=np.random.default_rng(1234))
+        rng = np.random.default_rng(1234)
+        cls.dataset = HigherRankSyntheticDataset(rng=rng)
 
         cls.controller = Rank2Controller(
             cls.dataset.train_x,
@@ -87,6 +88,7 @@ class BasicTests(unittest.TestCase):
             HigherRankKernel,
             cls.dataset.train_y_std,
             mean_class=HigherRankMean,
+            rng=rng,
         )
 
         cls.train_y_mean = cls.dataset.train_y.mean()

@@ -175,7 +175,7 @@ def optional_random_generator(generator: Optional[np.random.Generator]) -> np.ra
     if __debug__:
         if os.environ.get("PYTEST_VERSION") is not None:
             warnings.warn(
-                "Using default unseeded RNG. Please seed your generators for consistent results!", stacklevel=3
+                "Using default unseeded RNG. Please seed your generators for consistent results!", stacklevel=4
             )
 
     return np.random.default_rng()
