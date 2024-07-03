@@ -12,7 +12,7 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.warps import SetWarp, WarpFunction, warpfunctions
 
-from ...cases import VanguardTestCase, flaky
+from ...cases import VanguardTestCase
 
 
 class CompositionTests(VanguardTestCase):
@@ -336,7 +336,6 @@ class ConstraintTests(VanguardTestCase):
         with self.assertRaisesRegex(NanError, expected_regex):
             gp.fit(100)
 
-    @flaky
     def test_fitting_with_constrained_warp(self) -> None:
         """Should NOT throw a RuntimeError."""
         box_cox = warpfunctions.BoxCoxWarpFunction(lambda_=0)

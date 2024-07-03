@@ -18,7 +18,6 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-from ...cases import flaky
 from .case import BatchScaledMean, ClassificationTestCase
 
 one_hot = sklearn.preprocessing.LabelBinarizer().fit_transform
@@ -75,7 +74,6 @@ class MulticlassTests(ClassificationTestCase):
             rng=self.rng,
         )
 
-    @flaky
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(10)
@@ -94,7 +92,6 @@ class MulticlassFuzzyTests(ClassificationTestCase):
 
     # TODO: Seems too flaky on 3.8 and 3.9 but reliable on 3.12, especially when delta=0.5.
     # https://github.com/gchq/Vanguard/issues/128
-    @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.
@@ -183,7 +180,6 @@ class SoftmaxLMCTests(ClassificationTestCase):
             rng=self.rng,
         )
 
-    @flaky
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(10)
@@ -213,7 +209,6 @@ class SoftmaxTests(ClassificationTestCase):
             rng=self.rng,
         )
 
-    @flaky
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(10)
@@ -309,7 +304,6 @@ class MultitaskBernoulliClassifierTests(ClassificationTestCase):
             rng=self.rng,
         )
 
-    @flaky
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(10)

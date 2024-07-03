@@ -10,7 +10,6 @@ from vanguard.datasets.classification import MulticlassGaussianClassificationDat
 from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 
-from ...cases import flaky
 from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase
 
 
@@ -44,7 +43,6 @@ class MulticlassTests(ClassificationTestCase):
             rng=self.rng,
         )
 
-    @flaky
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(10)
@@ -83,7 +81,6 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         """Set up data shared across tests."""
         self.rng = np.random.default_rng(1234)
 
-    @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.
@@ -116,7 +113,6 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.5)
 
-    @flaky
     def test_fuzzy_predictions_uncertainty(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.

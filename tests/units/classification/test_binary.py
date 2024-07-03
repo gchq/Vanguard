@@ -13,7 +13,6 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-from ...cases import flaky
 from .case import ClassificationTestCase
 
 
@@ -42,7 +41,6 @@ class BinaryTests(ClassificationTestCase):
             rng=self.rng,
         )
 
-    @flaky
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(20)
@@ -102,7 +100,6 @@ class BinaryFuzzyTests(ClassificationTestCase):
         """Set up data shared between tests."""
         self.rng = np.random.default_rng(1234)
 
-    @flaky
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.
@@ -129,7 +126,6 @@ class BinaryFuzzyTests(ClassificationTestCase):
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(dataset.test_y, predictions, delta=0.1)
 
-    @flaky
     def test_fuzzy_predictions_uncertainty(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.

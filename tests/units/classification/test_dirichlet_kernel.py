@@ -12,7 +12,6 @@ from vanguard.classification.likelihoods import DirichletKernelClassifierLikelih
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.vanilla import GaussianGPController
 
-from ...cases import flaky
 from .case import ClassificationTestCase
 
 
@@ -45,7 +44,6 @@ class MulticlassTests(ClassificationTestCase):
         )
         self.controller.fit(10)
 
-    @flaky
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
@@ -54,7 +52,6 @@ class MulticlassTests(ClassificationTestCase):
     # TODO: This test gets stuck in an infinite loop in in MonteCarloPosteriorCollection._yield_posteriors.
     # https://github.com/gchq/Vanguard/issues/189
     @skip("Currently hangs - gets stuck in an infinite loop in MonteCarloPosteriorCollection._yield_posteriors")
-    @flaky
     def test_fuzzy_predictions(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.

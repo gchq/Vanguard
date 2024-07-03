@@ -15,8 +15,6 @@ from vanguard.multitask import Multitask
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-from ..cases import flaky
-
 
 class VanguardTestCase(unittest.TestCase):
     """
@@ -37,7 +35,6 @@ class VanguardTestCase(unittest.TestCase):
 
     @unittest.skip  # TODO: Fix test - unacceptably flaky
     # https://github.com/gchq/Vanguard/issues/141
-    @flaky
     def test_gp_multitask_binary_classification(self) -> None:
         """
         Verify Vanguard usage on a multitask binary classification problem.
