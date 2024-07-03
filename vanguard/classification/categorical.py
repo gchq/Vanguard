@@ -9,6 +9,7 @@ import numpy.typing
 
 from vanguard.base.posteriors.posterior import Posterior
 
+from .. import utils
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..multitask import Multitask
@@ -82,12 +83,16 @@ class CategoricalClassification(Decorator):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 likelihood_kwargs = all_parameters_as_kwargs.pop("likelihood_kwargs", dict())
                 likelihood_kwargs["num_classes"] = decorator.num_classes
                 super().__init__(
-                    likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs
+                    likelihood_class=likelihood_class,
+                    likelihood_kwargs=likelihood_kwargs,
+                    rng=self.rng,
+                    **all_parameters_as_kwargs,
                 )
 
             def classify_points(

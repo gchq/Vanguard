@@ -45,6 +45,7 @@ class SVGPModel(ApproximateGP):
         mean_module: Mean,
         covar_module: Kernel,
         n_inducing_points: int,
+        rng: Optional[np.random.Generator] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -56,7 +57,9 @@ class SVGPModel(ApproximateGP):
         :param mean_module: The prior mean function to use.
         :param covar_module:  The prior kernel function to use.
         :param n_inducing_points: The number of inducing points in the variational sparse kernel approximation.
+        :param rng: Generator instance used to generate random numbers.
         """
+        self.rng = utils.optional_random_generator(rng)
         self._check_batch_shape(mean_module, covar_module)
 
         inducing_points = self._init_inducing_points(train_x, n_inducing_points)
@@ -97,9 +100,7 @@ class SVGPModel(ApproximateGP):
         covar_x = self.covar_module(x)
         return MultivariateNormal(mean_x, covar_x)
 
-    def _init_inducing_points(
-        self, train_x: Tensor, n_inducing_points: int, rng: Optional[np.random.Generator] = None
-    ) -> Tensor:
+    def _init_inducing_points(self, train_x: Tensor, n_inducing_points: int) -> Tensor:
         """
         Create the initial inducing points by sampling from the training inputs.
 
@@ -107,8 +108,7 @@ class SVGPModel(ApproximateGP):
         :param n_inducing_points: How many inducing points to select.
         :returns: The inducing points sampled from the training points.
         """
-        rng = utils.optional_random_generator(rng)
-        induce_indices = rng.choice(train_x.shape[0], size=n_inducing_points, replace=True)
+        induce_indices = self.rng.choice(train_x.shape[0], size=n_inducing_points, replace=True)
         inducing_points = train_x[induce_indices]
         return inducing_points.to(self.device)
 

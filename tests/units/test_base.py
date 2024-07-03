@@ -110,6 +110,7 @@ class InputTests(VanguardTestCase):
             marginal_log_likelihood_class=ExactMarginalLogLikelihood,
             optimiser_class=torch.optim.Adam,
             smart_optimiser_class=SmartOptimiser,
+            rng=np.random.default_rng(1234),
         )
         # Convert train_y on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
         gp_train_y = gp.train_y.detach().cpu().numpy()
@@ -133,6 +134,7 @@ class InputTests(VanguardTestCase):
             marginal_log_likelihood_class=ExactMarginalLogLikelihood,
             optimiser_class=torch.optim.Adam,
             smart_optimiser_class=SmartOptimiser,
+            rng=np.random.default_rng(1234),
         )
         # Convert train_x on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
         gp_train_x = gp.train_x.detach().cpu().numpy()

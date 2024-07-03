@@ -8,6 +8,7 @@ import numpy as np
 import numpy.typing
 from gpytorch.likelihoods import BernoulliLikelihood
 
+from .. import utils
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
@@ -85,6 +86,7 @@ class BinaryClassification(Decorator):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 if not issubclass(likelihood_class, BernoulliLikelihood):
@@ -93,7 +95,7 @@ class BinaryClassification(Decorator):
                         f"of {BernoulliLikelihood.__name__} for binary classification."
                     )
 
-                super().__init__(likelihood_class=likelihood_class, **all_parameters_as_kwargs)
+                super().__init__(likelihood_class=likelihood_class, rng=self.rng, **all_parameters_as_kwargs)
 
             def classify_points(
                 self, x: Union[float, numpy.typing.NDArray[np.floating]]

@@ -105,7 +105,9 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             covar_module: Kernel,
             n_inducing_points: int,
             num_tasks: int,
+            rng: Optional[np.random.Generator] = None,
         ) -> None:
+            self.rng = utils.optional_random_generator(rng)
             self.num_tasks = num_tasks
             self.num_latents = self._get_num_latents(mean_module)
             # No suitable base class for ``cls`` to specify this protocol
@@ -117,11 +119,10 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
                 mean_module,
                 covar_module,
                 n_inducing_points,
+                rng=self.rng,
             )
 
-        def _init_inducing_points(
-            self, train_x: Tensor, n_inducing_points: int, rng: Optional[np.random.Generator] = None
-        ) -> Tensor:
+        def _init_inducing_points(self, train_x: Tensor, n_inducing_points: int) -> Tensor:
             """
             Create the initial inducing points by sampling from the training inputs.
 
@@ -129,8 +130,7 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             :param n_inducing_points: How many inducing points to select.
             :returns: The inducing points sampled from the training points.
             """
-            rng = utils.optional_random_generator(rng)
-            induce_indices = rng.choice(train_x.shape[0], size=n_inducing_points * self.num_latents, replace=True)
+            induce_indices = self.rng.choice(train_x.shape[0], size=n_inducing_points * self.num_latents, replace=True)
             inducing_points = train_x[induce_indices]
             inducing_points = torch.stack(
                 [

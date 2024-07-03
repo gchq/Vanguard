@@ -11,6 +11,7 @@ import torch
 from gpytorch.utils.warnings import GPInputWarning
 from numpy.typing import NDArray
 
+from .. import utils
 from ..base import GPController
 from ..base.posteriors import Posterior
 from ..decoratorutils import TopMostDecorator, process_args, wraps_class
@@ -103,6 +104,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 self._full_train_x: NDArray = all_parameters_as_kwargs.pop("train_x")
                 self._full_train_y: NDArray = all_parameters_as_kwargs.pop("train_y")
@@ -141,7 +143,11 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
                 self._expert_init_kwargs = all_parameters_as_kwargs
                 super().__init__(
-                    train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset, **self._expert_init_kwargs
+                    train_x=train_x_subset,
+                    train_y=train_y_subset,
+                    y_std=y_std_subset,
+                    rng=self.rng,
+                    **self._expert_init_kwargs,
                 )
 
             def fit(self, n_sgd_iters: int = 10, gradient_every: int = 10) -> torch.Tensor:

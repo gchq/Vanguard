@@ -192,6 +192,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise self.
@@ -205,7 +206,9 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         :param n_train_points: The total number of training points.
         :param n_test_points: The total number of testing points.
         :param significance: The significance to be used.
+        :param rng: Generator instance used to generate random numbers.
         """
+        rng = utils.optional_random_generator(rng)
         super().__init__(
             functions,
             output_noise,
@@ -214,6 +217,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
             n_train_points,
             n_test_points,
             significance,
+            rng=rng,
         )
         self.train_y_std = self.rng.normal(loc=self.train_y_std, scale=0.01, size=n_train_points)
         self.test_y_std = self.rng.normal(loc=self.test_y_std, scale=0.01, size=n_train_points)

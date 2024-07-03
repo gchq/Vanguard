@@ -56,7 +56,7 @@ class InitialisationTests(unittest.TestCase):
         form of an int or float. Here we check that a TypeError is raised if the noise
         is given as an array.
         """
-        dataset = HeteroskedasticSyntheticDataset()
+        dataset = HeteroskedasticSyntheticDataset(rng=np.random.default_rng(1234))
 
         if isinstance(dataset.train_y_std, (float, int)):
             self.skipTest(f"The standard deviation should be an array, not '{type(dataset.train_y_std).__name__}'.")
@@ -72,7 +72,7 @@ class InitialisationTests(unittest.TestCase):
         to fail if this is not provided.
         """
         # Define the data - for the purposes of this test we do not need to know the y_std values
-        dataset = HeteroskedasticSyntheticDataset()
+        dataset = HeteroskedasticSyntheticDataset(rng=np.random.default_rng(1234))
 
         # Create the class without specifying a kernel, we expect a key error when trying to access the kernel
         with self.assertRaises(KeyError):

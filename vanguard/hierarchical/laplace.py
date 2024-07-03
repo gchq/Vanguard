@@ -9,7 +9,8 @@ import numpy as np
 import torch
 from numpy.typing import NDArray
 
-from ..decoratorutils import wraps_class
+from .. import utils
+from ..decoratorutils import process_args, wraps_class
 from .base import (
     BaseHierarchicalHyperparameters,
     GPController,
@@ -97,7 +98,11 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 for module_name in ("kernel", "mean", "likelihood"):
                     set_batch_shape(kwargs, module_name, torch.Size([]))
 
-                super().__init__(*args, **kwargs)
+                all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
+                kwargs.pop("rng", None)  # to ensure we don't provide duplicate values
+
+                super().__init__(*args, rng=self.rng, **kwargs)
 
                 module_hyperparameter_pairs, _ = extract_bayesian_hyperparameters(self)
 

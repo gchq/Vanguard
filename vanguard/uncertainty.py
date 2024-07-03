@@ -13,6 +13,7 @@ import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
+from . import utils
 from .base import GPController
 from .base.posteriors import Posterior
 from .optimise import NoImprovementError, SmartOptimiser
@@ -41,6 +42,7 @@ class GaussianUncertaintyGPController(GPController):
         marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
         optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
         smart_optimiser_class: Type[SmartOptimiser] = SmartOptimiser,
+        rng: Optional[np.random.Generator] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -86,6 +88,7 @@ class GaussianUncertaintyGPController(GPController):
             marginal_log_likelihood_class=marginal_log_likelihood_class,
             optimiser_class=optimiser_class,
             smart_optimiser_class=smart_optimiser_class,
+            rng=utils.optional_random_generator(rng),
             **kwargs,
         )
 

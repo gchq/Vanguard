@@ -10,6 +10,7 @@ from itertools import islice
 from typing import Callable, Generator, List, Optional, Tuple, Type, Union
 
 import gpytorch
+import numpy as np
 import numpy.typing
 import torch
 from gpytorch import constraints
@@ -18,6 +19,7 @@ from gpytorch.utils.errors import NanError
 from numpy import dtype
 from torch import Tensor
 
+from .. import utils
 from ..decoratorutils import wraps_class
 from ..models import ExactGPModel
 from ..optimise import NoImprovementError, SmartOptimiser
@@ -122,9 +124,12 @@ class BaseGPController:
         marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
         optimiser_class: Type[torch.optim.Optimizer],
         smart_optimiser_class: Type[SmartOptimiser],
+        rng: Optional[np.random.Generator] = None,
         **kwargs,
     ) -> None:
         """Initialise self."""
+        self.rng = utils.optional_random_generator(rng)
+
         if train_x.ndim == 1:
             self.train_x = torch.tensor(train_x, dtype=self.dtype, device="cpu").unsqueeze(1)
         else:
@@ -200,6 +205,7 @@ class BaseGPController:
             (self.train_x, 0),
             (self.train_y, self._y_batch_axis),
             (self._y_variance, self._y_batch_axis),
+            rng=self.rng,
         )
 
         additional_metrics = kwargs.get("additional_metrics", [])

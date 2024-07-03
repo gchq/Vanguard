@@ -6,6 +6,7 @@ import unittest
 from typing import Any, Type
 
 import gpytorch
+import numpy as np
 import torch
 from gpytorch.lazy import LazyEvaluatedKernelTensor
 from gpytorch.means import ConstantMean
@@ -78,7 +79,7 @@ class BasicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
-        cls.dataset = HigherRankSyntheticDataset()
+        cls.dataset = HigherRankSyntheticDataset(rng=np.random.default_rng(1234))
 
         cls.controller = Rank2Controller(
             cls.dataset.train_x,
