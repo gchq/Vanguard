@@ -42,8 +42,9 @@ class BikeDataset(FileDataset):
         :param seed: The seed for the model, defaults to 42.
         """
         data = self._load_data()
-        np.random.seed(seed)
-        np.random.shuffle(data)
+
+        random_generator = np.random.Generator(np.random.PCG64(seed=seed))
+        random_generator.shuffle(data)
 
         n_samples = self._get_n_samples(data, n_samples)
         x = data[:n_samples, :-1]
