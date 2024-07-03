@@ -19,6 +19,7 @@ from gpytorch.variational import (
 )
 from torch import Tensor
 
+from vanguard import utils
 from vanguard.decoratorutils.wrapping import wraps_class
 
 
@@ -106,7 +107,7 @@ class SVGPModel(ApproximateGP):
         :param n_inducing_points: How many inducing points to select.
         :returns: The inducing points sampled from the training points.
         """
-        rng = rng if rng is not None else np.random.default_rng()
+        rng = utils.optional_random_generator(rng)
         induce_indices = rng.choice(train_x.shape[0], size=n_inducing_points, replace=True)
         inducing_points = train_x[induce_indices]
         return inducing_points.to(self.device)

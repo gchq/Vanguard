@@ -20,6 +20,7 @@ from gpytorch.variational import (
 )
 from torch import Tensor
 
+from vanguard import utils
 from vanguard.decoratorutils import wraps_class
 
 GPT = TypeVar("GPT", bound=GP)
@@ -128,7 +129,7 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             :param n_inducing_points: How many inducing points to select.
             :returns: The inducing points sampled from the training points.
             """
-            rng = rng if rng is not None else np.random.default_rng()
+            rng = utils.optional_random_generator(rng)
             induce_indices = rng.choice(train_x.shape[0], size=n_inducing_points * self.num_latents, replace=True)
             inducing_points = train_x[induce_indices]
             inducing_points = torch.stack(

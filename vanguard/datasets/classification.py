@@ -12,6 +12,7 @@ from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 from sklearn.datasets import make_gaussian_quantiles
 
+from .. import utils
 from .basedataset import Dataset
 
 
@@ -35,7 +36,7 @@ class BinaryStripeClassificationDataset(Dataset):
         :param num_train_points: The number of training points.
         :param num_test_points: The number of testing points.
         """
-        self.rng = rng if rng is not None else np.random.default_rng()
+        self.rng = utils.optional_random_generator(rng)
         train_x = np.linspace(0, 1, num_train_points)
         test_x = self.rng.random(num_test_points)
 

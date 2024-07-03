@@ -9,6 +9,7 @@ from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
 from typing_extensions import Unpack
 
+from .. import utils
 from .basedataset import Dataset
 
 
@@ -73,7 +74,7 @@ class SyntheticDataset(Dataset):
         """
         self.functions = list(functions)
 
-        self.rng = rng if rng is not None else np.random.default_rng()
+        self.rng = utils.optional_random_generator(rng)
 
         train_data = self.make_sample_data(n_train_points, train_input_noise_bounds, output_noise)
         test_data = self.make_sample_data(n_test_points, test_input_noise_bounds, 0)
@@ -147,7 +148,7 @@ class MultidimensionalSyntheticDataset(Dataset):
             (they are combined linearly to make a single output).
         :param rng: Generator instance used to generate random numbers.
         """
-        rng = rng if rng is not None else np.random.default_rng()
+        rng = utils.optional_random_generator(rng)
 
         one_dimensional_datasets = [
             SyntheticDataset(functions=(function,), rng=rng, **kwargs) for function in functions
@@ -249,7 +250,7 @@ class HigherRankSyntheticDataset(Dataset):
         """
         self.functions = list(functions)
 
-        self.rng = rng if rng is not None else np.random.default_rng()
+        self.rng = utils.optional_random_generator(rng)
 
         train_data = self.make_sample_data(n_train_points, train_input_noise_bounds, output_noise)
         test_data = self.make_sample_data(n_test_points, test_input_noise_bounds, 0)

@@ -2,6 +2,8 @@
 Contain some small utilities of use in some cases.
 """
 
+import os
+import warnings
 from typing import Any, Generator, Optional, Tuple
 
 import numpy as np
@@ -109,7 +111,7 @@ def infinite_tensor_generator(
         the tensor should be batched. If an axis is out of range, the maximum axis value is used instead.
     :returns: A tensor generator.
     """
-    rng = rng if rng is not None else np.random.default_rng()
+    rng = optional_random_generator(rng)
     first_tensor, first_axis = tensor_axis_pairs[0]
     first_tensor_length = first_tensor.shape[first_axis]
 
@@ -158,3 +160,22 @@ def generator_append_constant(generator: Generator[tuple, None, None], constant:
     """
     for item in generator:
         yield item + (constant,)
+
+
+def optional_random_generator(generator: Optional[np.random.Generator]) -> np.random.Generator:
+    """
+    Return the generator as-is, or a default one otherwise. Warns if using an unseeded generator in testing.
+
+    :param generator: If not None, returned as-is. If this _is_ None, and the code is running in a Pytest session,
+        raise a warning reminding the user to seed their RNGs.
+    """
+    if generator is not None:
+        return generator
+
+    if __debug__:
+        if os.environ.get("PYTEST_VERSION") is not None:
+            warnings.warn(
+                "Using default unseeded RNG. Please seed your generators for consistent results!", stacklevel=3
+            )
+
+    return np.random.default_rng()
