@@ -54,6 +54,7 @@ class InertKernelModel(ExactGPModel):
         mean_module: Optional[gpytorch.means.Mean],
         likelihood: gpytorch.likelihoods.Likelihood,
         num_classes: int,
+        **kwargs: Any,
     ) -> None:
         """
         Initialise self.

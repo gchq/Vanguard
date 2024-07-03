@@ -190,6 +190,7 @@ class BaseGPController:
             covar_module=self.kernel,
             likelihood=self.likelihood,
             mean_module=self.mean,
+            rng=self.rng,
             **gp_kwargs,
         )
 
