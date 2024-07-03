@@ -2,7 +2,7 @@
 Tests for the DirichletKernelMulticlassClassification decorator.
 """
 
-from unittest import skip
+from unittest import expectedFailure
 
 import numpy as np
 from gpytorch import kernels, means
@@ -49,9 +49,9 @@ class MulticlassTests(ClassificationTestCase):
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
-    # TODO: This test gets stuck in an infinite loop in in MonteCarloPosteriorCollection._yield_posteriors.
-    # https://github.com/gchq/Vanguard/issues/189
-    @skip("Currently hangs - gets stuck in an infinite loop in MonteCarloPosteriorCollection._yield_posteriors")
+    # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
+    # https://github.com/gchq/Vanguard/issues/288
+    @expectedFailure
     def test_fuzzy_predictions(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.

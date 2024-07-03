@@ -68,8 +68,8 @@ class StandardiseModuleTests(unittest.TestCase):
         np.testing.assert_array_less(-np.abs(standard_output - plain_output).mean(), -1e-6)
 
     def test_mean_and_scale(self) -> None:
-        torch.testing.assert_allclose(self.standardiser.mean, self.data.mean(dim=0))
-        torch.testing.assert_allclose(self.standardiser.scale, self.data.std(dim=0))
+        torch.testing.assert_close(self.standardiser.mean, self.data.mean(dim=0))
+        torch.testing.assert_close(self.standardiser.scale, self.data.std(dim=0))
 
     def test_standardised_mean_gives_same_results_as_plain_mean_on_different_data(self) -> None:
         self._test_standardised_module_gives_same_results_as_plain_module_on_different_data(
@@ -114,7 +114,7 @@ class StandardiseModuleTests(unittest.TestCase):
     @staticmethod
     def _to_numpy(tensor: torch.Tensor) -> numpy.typing.NDArray[np.floating]:
         try:
-            tensor = tensor.evaluate()
+            tensor = tensor.to_dense()
         except AttributeError:
             pass
         return tensor.detach().cpu().numpy()

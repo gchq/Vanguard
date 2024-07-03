@@ -75,9 +75,9 @@ class BasicTests(unittest.TestCase):
             torch.as_tensor(external_lower, dtype=torch.float32).reshape(-1, 1)
         )
 
-        torch.testing.assert_allclose(warped_external_median, internal_median.reshape(-1, 1))
-        torch.testing.assert_allclose(warped_external_lower, internal_lower.reshape(-1, 1))
-        torch.testing.assert_allclose(warped_external_upper, internal_upper.reshape(-1, 1))
+        torch.testing.assert_close(warped_external_median, internal_median.reshape(-1, 1))
+        torch.testing.assert_close(warped_external_lower, internal_lower.reshape(-1, 1))
+        torch.testing.assert_close(warped_external_upper, internal_upper.reshape(-1, 1))
 
     def test_fuzzy_confidence_interval_scaling(self) -> None:
         """Internal and external predictions should be properly scaled."""
@@ -97,6 +97,6 @@ class BasicTests(unittest.TestCase):
             torch.as_tensor(external_lower, dtype=torch.float32).reshape(-1, 1)
         )
 
-        torch.testing.assert_allclose(warped_external_median, internal_median.reshape(-1, 1))
-        torch.testing.assert_allclose(warped_external_upper, internal_upper.reshape(-1, 1))
-        torch.testing.assert_allclose(warped_external_lower, internal_lower.reshape(-1, 1))
+        torch.testing.assert_close(warped_external_median, internal_median.reshape(-1, 1))
+        torch.testing.assert_close(warped_external_upper, internal_upper.reshape(-1, 1))
+        torch.testing.assert_close(warped_external_lower, internal_lower.reshape(-1, 1))

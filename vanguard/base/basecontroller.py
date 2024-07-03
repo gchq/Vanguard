@@ -15,7 +15,7 @@ import numpy.typing
 import torch
 from gpytorch import constraints
 from gpytorch.models import ApproximateGP, ExactGP
-from gpytorch.utils.errors import NanError
+from linear_operator.utils.errors import NanError
 from numpy import dtype
 from torch import Tensor
 

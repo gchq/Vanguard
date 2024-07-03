@@ -6,7 +6,7 @@ import typing
 
 import matplotlib.pyplot as plt
 import numpy as np
-from gpytorch.utils.errors import NanError
+from linear_operator.utils.errors import NanError
 
 if typing.TYPE_CHECKING:
     from vanguard.base import GPController

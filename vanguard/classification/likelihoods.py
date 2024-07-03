@@ -111,13 +111,13 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
         self.kernel_matrix = kernel_matrix
         self.alpha = alpha
 
-        concentration = (self.kernel_matrix @ self.label_matrix + torch.unsqueeze(self.alpha, 0)).evaluate()
+        concentration = (self.kernel_matrix @ self.label_matrix + torch.unsqueeze(self.alpha, 0)).to_dense()
         super().__init__(concentration)
 
     def log_prob(self, value: torch.Tensor) -> torch.Tensor:
         one_hot_values = DiagLazyTensor(torch.ones(self.label_matrix.shape[1]))[value.long()]
         all_class_grouped_kernel_entries = self.kernel_matrix @ one_hot_values + torch.unsqueeze(self.alpha, 0)
-        relevant_logits = all_class_grouped_kernel_entries.evaluate().log() * one_hot_values.evaluate()
+        relevant_logits = all_class_grouped_kernel_entries.to_dense().log() * one_hot_values.to_dense()
         partition_function = (self.alpha.sum() + self.kernel_matrix.sum(dim=-1)).log()
         return relevant_logits.sum() - partition_function.sum()
 
