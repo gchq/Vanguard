@@ -24,7 +24,7 @@ class BasicTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        """Code to run before all tests."""
+        """Define data shared across tests."""
         cls.dataset = SyntheticDataset()
         cls.controller = WarpedGaussianGPController(
             cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std
@@ -32,7 +32,7 @@ class BasicTests(unittest.TestCase):
         cls.controller.fit(10)
 
     def test_prediction_error(self) -> None:
-        """Should throw a TypeError."""
+        """Test invalid prediction usage throws a TypeError."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
         try:
             # pylint: disable=protected-access
@@ -44,7 +44,7 @@ class BasicTests(unittest.TestCase):
             posterior.prediction()
 
     def test_fuzzy_prediction_error(self) -> None:
-        """Should throw a TypeError."""
+        """Test invalid fuzzy prediction usage throws a TypeError."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
         try:
             # pylint: disable=protected-access
@@ -56,7 +56,11 @@ class BasicTests(unittest.TestCase):
             posterior.prediction()
 
     def test_confidence_interval_scaling(self) -> None:
-        """Internal and external predictions should be properly scaled."""
+        """
+        Test that confidence intervals are warped when using warping.
+
+        Internal and external predictions should be properly scaled.
+        """
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
         # pylint: disable=protected-access
@@ -78,7 +82,11 @@ class BasicTests(unittest.TestCase):
         torch.testing.assert_close(warped_external_upper, internal_upper.reshape(-1, 1))
 
     def test_fuzzy_confidence_interval_scaling(self) -> None:
-        """Internal and external predictions should be properly scaled."""
+        """
+        Test that confidence intervals are warped when using warping and fuzzy predictions.
+
+        Internal and external predictions should be properly scaled.
+        """
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
 
         # pylint: disable=protected-access

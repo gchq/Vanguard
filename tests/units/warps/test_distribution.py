@@ -12,7 +12,14 @@ from vanguard.warps.distribution import WarpedGaussian
 
 
 class DistributionTests(unittest.TestCase):
+    """
+    Tests related to WarpedGaussian distributions.
+    """
+
     def setUp(self) -> None:
+        """
+        Define data shared across tests.
+        """
         self.warp = MultitaskWarpFunction(
             warpfunctions.BoxCoxWarpFunction(lambda_=0) @ warpfunctions.AffineWarpFunction(b=-0.99),
             warpfunctions.AffineWarpFunction(),
@@ -27,22 +34,41 @@ class DistributionTests(unittest.TestCase):
         self.samples = self.distribution.sample((100000,)).detach()
 
     def test_log_prob_error_away_from_support(self) -> None:
+        """
+        Test `log_prob` method with invalid data.
+
+        The data is invalid in the sense that nan values should occur when warping elements of it,
+        which should raise a ValueError when trying to compute with these.
+        """
         with self.assertRaises(ValueError):
             self.distribution.log_prob(self.invalid_data).sum().item()
 
     def test_log_prob_blows_up_at_edge_of_support(self) -> None:
+        """
+        Test `log_prob` method with data at the edge of the valid support.
+
+        Data very near the edge of the support will result in taking logs of problematic numbers,
+        and provide a nan value
+        """
         log_prob = self.distribution.log_prob(self.edge_data).sum().item()
         self.assertTrue(np.isnan(log_prob))
 
     def test_log_prob_finite_in_support(self) -> None:
+        """
+        Test `log_prob` method with typical data.
+
+        This data should not result in any nan values
+        """
         log_prob = self.distribution.log_prob(self.valid_data).sum().item()
         self.assertFalse(np.isnan(log_prob))
 
     def test_sample_shape_is_correct(self) -> None:
+        """Test sampling gives expected shapes."""
         samples = self.distribution.sample((100,))
         self.assertEqual(samples.shape, (100, 3))
 
     def test_gaussian_parameters_can_be_recovered(self) -> None:
+        """Test distribution parameters are correctly recovered."""
         fit_distribution = WarpedGaussian.from_data(self.warp, self.samples, n_iterations=10)
         fit_distribution_loc = fit_distribution.loc.detach().cpu().numpy()
         original_distribution_loc = self.distribution.loc.detach().cpu().numpy()
@@ -50,6 +76,7 @@ class DistributionTests(unittest.TestCase):
         np.testing.assert_array_almost_equal(fit_distribution_loc[1:], original_distribution_loc[1:], decimal=1)
 
     def test_fit_warp_is_close_to_optimal_in_log_prob(self) -> None:
+        """Test model is fit to near optimality."""
         candidate_warp = MultitaskWarpFunction(
             warpfunctions.BoxCoxWarpFunction(lambda_=0) @ warpfunctions.AffineWarpFunction(),
             warpfunctions.AffineWarpFunction().freeze(),
@@ -61,6 +88,7 @@ class DistributionTests(unittest.TestCase):
         self.assertAlmostEqual(fit_log_prob, true_log_prob, places=2)
 
     def test_fit_warp_is_much_better_than_gaussian_approximation(self) -> None:
+        """Test warping model improves upon a baseline."""
         candidate_warp = MultitaskWarpFunction(
             warpfunctions.BoxCoxWarpFunction(lambda_=0) @ warpfunctions.AffineWarpFunction(),
             warpfunctions.AffineWarpFunction().freeze(),
