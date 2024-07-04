@@ -55,15 +55,19 @@ class BayesianHyperparameters:
         """
         Initialise self.
 
-        :param ignored_parameters: Names of module hyperparameters which
-                                                        should not be converted to Bayesian
-                                                        parameters.
-        :param prior_means:
-        :param prior_variances:
+        :param ignored_parameters: Names of module hyperparameters which should not be converted
+            to Bayesian parameters.
+        :param prior_means: Dict of mean values for the prior distributions
+        :param prior_variances: Dict of variances for the prior distributions
         """
         self.ignored_parameters = set(ignored_parameters)
+
+        # Work out each ignored parameter to add, then update the set at once, as looping over it
+        # whilst also changing its size won't work
+        ignored_parameters_to_add = []
         for param in self.ignored_parameters:
-            self.ignored_parameters.add(f"raw_{param}")
+            ignored_parameters_to_add.append(f"raw_{param}")
+        self.ignored_parameters.update(ignored_parameters_to_add)
         self.prior_means = prior_means if prior_means is not None else {}
         self.prior_variances = prior_variances if prior_variances is not None else {}
         self.prior_means.update({f"raw_{param}": value for param, value in self.prior_means.items()})
