@@ -94,6 +94,7 @@ class BaseGPController:
         * **batch_size** *(int,None)*: The batch size to use in SGD. If ``None``, the whole dataset is
           used at each iteration.
         * **additional_metrics** *(List[function])*: A list of additional metrics to track.
+        * **rng** *(Optional[np.random.Generator])*: Generator instance used to generate random numbers.
 
 
     """

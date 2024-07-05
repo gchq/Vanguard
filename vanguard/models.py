@@ -84,6 +84,7 @@ class InducingPointKernelGPModel(ExactGPModel):
         :param mean_module: The prior mean function to use.
         :param covar_module: The prior kernel function to use.
         :param n_inducing_points: The number of inducing points in the sparse kernel approximation.
+        :param rng: Generator instance used to generate random numbers.
         """
         rng = utils.optional_random_generator(rng)
         inducing_point_indices = rng.choice(train_x.shape[0], size=n_inducing_points, replace=True)

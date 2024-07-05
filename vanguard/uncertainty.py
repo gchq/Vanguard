@@ -76,6 +76,7 @@ class GaussianUncertaintyGPController(GPController):
         :param smart_optimiser_class: An uninstantiated subclass of
             :class:`~vanguard.optimise.optimiser.SmartOptimiser`, that wraps around the given ``optimiser_class``
             to enable advanced features, for example early stopping.
+        :param rng: Generator instance used to generate random numbers.
         :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(

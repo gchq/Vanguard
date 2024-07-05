@@ -59,6 +59,7 @@ class GaussianGPController(GPController):
                 :mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
         :param optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
                 gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
+        :param rng: Generator instance used to generate random numbers.
         :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(

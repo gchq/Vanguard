@@ -35,6 +35,7 @@ class BinaryStripeClassificationDataset(Dataset):
 
         :param num_train_points: The number of training points.
         :param num_test_points: The number of testing points.
+        :param rng: Generator instance used to generate random numbers.
         """
         self.rng = utils.optional_random_generator(rng)
         train_x = np.linspace(0, 1, num_train_points)
@@ -80,7 +81,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         :param num_classes: The number of classes.
         :param covariance_scale: The covariance matrix will be this value times the unit matrix.
             Defaults to 1.0.
-        :param seed: Used to seed the quantile creation, defaults to None (not reproducible).
+        :param rng: Generator instance used to generate random numbers.
         """
         self.rng = utils.optional_random_generator(rng)
         self.num_classes = num_classes
@@ -204,7 +205,7 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         :param num_test_points: The number of testing points.
         :param covariance_scale: The covariance matrix will be this value times the unit matrix.
             Defaults to 1.0.
-        :param seed: Used to seed the quantile creation, defaults to None (not reproducible).
+        :param rng: Generator instance used to generate random numbers.
         """
         super().__init__(
             num_train_points,

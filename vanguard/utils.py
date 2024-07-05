@@ -109,6 +109,7 @@ def infinite_tensor_generator(
     :param tensor_axis_pairs: Any number of (tensor, axis) pairs, where each tensor
         is of shape (n, ...), where n is shared between tensors, and ``axis`` denotes the axis along which
         the tensor should be batched. If an axis is out of range, the maximum axis value is used instead.
+    :param rng: Generator instance used to generate random numbers.
     :returns: A tensor generator.
     """
     rng = optional_random_generator(rng)
