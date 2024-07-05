@@ -29,7 +29,7 @@ class MulticlassTests(ClassificationTestCase):
         """Code to run before each test."""
         self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=150, num_test_points=100, num_classes=4, seed=self.rng.integers(2**32 - 1)
+            num_train_points=150, num_test_points=100, num_classes=4, rng=self.rng
         )
         self.controller = MulticlassGaussianClassifier(
             self.dataset.train_x,

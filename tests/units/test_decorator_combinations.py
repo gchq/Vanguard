@@ -56,7 +56,7 @@ DECORATORS = {
             "likelihood_kwargs": {"learn_additional_noise": True},
         },
         "dataset": MulticlassGaussianClassificationDataset(
-            num_train_points=10, num_test_points=4, num_classes=4, seed=1234
+            num_train_points=10, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
     },
     Distributed: {"decorator": {"n_experts": 3}, "controller": {}},

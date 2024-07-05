@@ -35,7 +35,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             num_train_points=cls.num_classes * 3,
             num_test_points=cls.num_classes,
             num_classes=cls.num_classes,
-            seed=1234,
+            rng=get_default_rng(),
         )
         cls.likelihood = DirichletKernelClassifierLikelihood(num_classes=cls.num_classes)
 

@@ -27,7 +27,7 @@ class MulticlassTests(ClassificationTestCase):
         """Code to run before each test."""
         self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=150, num_test_points=100, num_classes=4, seed=self.rng.integers(2**32 - 1)
+            num_train_points=150, num_test_points=100, num_classes=4, rng=self.rng
         )
         self.controller = DirichletMulticlassClassifier(
             self.dataset.train_x,
@@ -90,7 +90,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         Note that we ignore the `certainties` output here.
         """
         dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+            num_train_points=60, num_test_points=20, num_classes=4, rng=self.rng
         )
         test_x_std = 0.005
         test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
@@ -123,7 +123,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         Note that we ignore the `certainties` output here.
         """
         dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=60, num_test_points=20, num_classes=4, seed=1234
+            num_train_points=60, num_test_points=20, num_classes=4, rng=self.rng
         )
 
         train_x_std = test_x_std = 0.005
