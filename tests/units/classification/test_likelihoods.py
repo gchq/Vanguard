@@ -12,6 +12,7 @@ from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import Likelihood
 from gpytorch.means import ZeroMean
 
+from tests.cases import get_default_rng
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import (
     DirichletKernelClassifierLikelihood,
@@ -40,7 +41,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_illegal_input_type(self):
         """Test that we get an appropriate error when an illegal argument type is passed."""
@@ -179,7 +180,7 @@ class TestMultitaskBernoulliLikelihood(TestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     # TODO: Fails with `AttributeError: 'super' object has no attribute 'log_prob'`.
     # https://github.com/gchq/Vanguard/issues/218

@@ -4,8 +4,7 @@ Tests for the Multitask decorator.
 
 import unittest
 
-import numpy as np
-
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.multitask import Multitask
@@ -20,7 +19,7 @@ class ErrorTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = SyntheticDataset(rng=self.rng)
 
     def test_single_task_variational(self) -> None:

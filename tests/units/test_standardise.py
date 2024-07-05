@@ -10,6 +10,7 @@ import torch
 from gpytorch.kernels import RBFKernel
 from gpytorch.means import LinearMean
 
+from tests.cases import get_default_rng
 from vanguard.base.standardise import StandardiseXModule
 from vanguard.standardise import DisableStandardScaling
 from vanguard.vanilla import GaussianGPController
@@ -31,7 +32,7 @@ class StandardiseModuleTests(unittest.TestCase):
         scaled_kernel_class = self.standardiser.apply(RBFKernel)
 
         self.seed = torch.seed()
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.base_mean = BaseMean()
         torch.manual_seed(self.seed)  # reset the seed to reproduce the random parameters
         self.scaled_mean = scaled_mean_class()

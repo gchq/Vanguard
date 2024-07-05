@@ -9,11 +9,11 @@ from collections.abc import Generator
 from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 from unittest.mock import patch
 
-import numpy as np
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.mlls import VariationalELBO
 
+from tests.cases import get_default_rng
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
@@ -74,7 +74,7 @@ DECORATORS = {
             "likelihood_class": FixedNoiseMultitaskGaussianLikelihood,
         },
         "dataset": SyntheticDataset(
-            [simple_f, complicated_f], n_train_points=10, n_test_points=1, rng=np.random.default_rng(1234)
+            [simple_f, complicated_f], n_train_points=10, n_test_points=1, rng=get_default_rng()
         ),
     },
     SetWarp: {
@@ -144,7 +144,7 @@ class CombinationTests(unittest.TestCase):
                     "train_y": dataset.train_y,
                     "y_std": dataset.train_y_std,
                     "kernel_class": ScaledRBFKernel,
-                    "rng": np.random.default_rng(1234),
+                    "rng": get_default_rng(),
                 }
 
                 combination = (type(upper_decorator), type(lower_decorator))
@@ -239,7 +239,7 @@ class CombinationTests(unittest.TestCase):
             dataset = (
                 upper_dataset
                 or lower_dataset
-                or SyntheticDataset(n_train_points=20, n_test_points=2, rng=np.random.default_rng(1234))
+                or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
             )
 
             controller_kwargs = {**upper_controller_kwargs, **lower_controller_kwargs}

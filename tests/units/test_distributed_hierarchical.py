@@ -4,11 +4,11 @@ Tests for the Distributed decorator.
 
 import unittest
 
-import numpy as np
 import torch
 from gpytorch.kernels import RBFKernel
 from scipy.spatial import distance_matrix
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.distribute import Distributed, aggregators
 from vanguard.hierarchical import (
@@ -43,7 +43,7 @@ class VariationalTests(unittest.TestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=self.rng)
 
     def test_variational_distribution_is_same_on_all_experts(self) -> None:
@@ -90,7 +90,7 @@ class LaplaceTests(unittest.TestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=self.rng)
 
     def test_posterior_mean_is_same_on_all_experts(self) -> None:
@@ -111,7 +111,7 @@ class LaplaceTests(unittest.TestCase):
 
     def test_posterior_covar_is_same_on_all_experts(self) -> None:
         """All experts should share variational distribution."""
-        dataset = SyntheticDataset(rng=np.random.default_rng(1234))
+        dataset = SyntheticDataset(rng=self.rng)
 
         gp = DistributedLaplaceHierarchicalGaussianGPController(
             dataset.train_x, dataset.train_y, BayesianKernel, dataset.train_y_std, rng=self.rng

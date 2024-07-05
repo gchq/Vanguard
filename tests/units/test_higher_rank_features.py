@@ -6,12 +6,12 @@ import unittest
 from typing import Any, Type
 
 import gpytorch
-import numpy as np
 import torch
 from gpytorch.lazy import LazyEvaluatedKernelTensor
 from gpytorch.means import ConstantMean
 from typing_extensions import Self
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import HigherRankSyntheticDataset
 from vanguard.features import HigherRankFeatures
 from vanguard.kernels import ScaledRBFKernel
@@ -79,7 +79,7 @@ class BasicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
-        rng = np.random.default_rng(1234)
+        rng = get_default_rng()
         cls.dataset = HigherRankSyntheticDataset(rng=rng)
 
         cls.controller = Rank2Controller(

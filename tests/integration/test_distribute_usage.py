@@ -9,6 +9,7 @@ from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO
 from sklearn.metrics import f1_score
 
+from tests.cases import get_default_rng
 from vanguard.classification import BinaryClassification
 from vanguard.distribute import Distributed
 from vanguard.distribute.aggregators import (
@@ -40,8 +41,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.random_seed = 1_989
-        self.rng = np.random.default_rng(self.random_seed)
+        self.rng = get_default_rng()
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 50

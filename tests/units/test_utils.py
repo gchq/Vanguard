@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 import numpy.typing
 
+from tests.cases import get_default_rng
 from vanguard.utils import add_time_dimension
 
 
@@ -20,7 +21,7 @@ class TimeDimensionTests(unittest.TestCase):
         self.n_timesteps = 11
         self.n_dims = 3
         self.batch_dim = (23, 29)
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_no_batch_shape(self) -> None:
         data = self.rng.standard_normal((self.n_timesteps, self.n_dims))

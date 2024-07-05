@@ -12,7 +12,7 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.warps import SetWarp, WarpFunction, warpfunctions
 
-from ...cases import VanguardTestCase
+from ...cases import VanguardTestCase, get_default_rng
 
 
 class CompositionTests(VanguardTestCase):
@@ -115,10 +115,10 @@ class AssociativityTests(VanguardTestCase):
 
 
 class ParameterTests(VanguardTestCase):
-    DATASET = SyntheticDataset(rng=np.random.default_rng(1234))
+    DATASET = SyntheticDataset(rng=get_default_rng())
 
     def setUp(self):
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_simple_warp_functions_are_different(self) -> None:
         """Two distinct controller instances should have different warp function."""
@@ -309,10 +309,10 @@ class ConstraintTests(VanguardTestCase):
     Test that warp functions can be constrained.
     """
 
-    DATASET = SyntheticDataset(rng=np.random.default_rng(1234))
+    DATASET = SyntheticDataset(rng=get_default_rng())
 
     def setUp(self):
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_fitting_with_unconstrained_warp(self) -> None:
         """Should throw a RuntimeError."""

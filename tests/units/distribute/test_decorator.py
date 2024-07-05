@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import torch
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import HeteroskedasticSyntheticDataset, SyntheticDataset
 from vanguard.distribute import Distributed, aggregators
 from vanguard.distribute.decorator import _create_subset
@@ -49,7 +50,7 @@ class InitialisationTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_cannot_pass_array_as_y_std(self) -> None:
         """
@@ -99,7 +100,7 @@ class SharedDataTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Define data shared across tests."""
-        rng = np.random.default_rng(1234)
+        rng = get_default_rng()
         dataset = SyntheticDataset(rng=rng)
 
         cls.controller = DistributedGaussianGPController(
@@ -180,7 +181,7 @@ class SharedDataTests(unittest.TestCase):
             2.5 + 0.5 * np.arange(20),
             ScaledRBFKernel,
             0.0,
-            rng=np.random.default_rng(1234),
+            rng=get_default_rng(),
         )
         gp.fit(1)
 

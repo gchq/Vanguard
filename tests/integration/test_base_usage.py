@@ -6,6 +6,7 @@ import unittest
 
 import numpy as np
 
+from tests.cases import get_default_rng
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 
@@ -19,7 +20,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.rng = np.random.default_rng(1_989)
+        self.rng = get_default_rng()
         self.num_train_points = 500
         self.num_test_points = 500
         self.n_sgd_iters = 100

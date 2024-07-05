@@ -21,9 +21,7 @@ from vanguard.kernels import PeriodicRBFKernel, ScaledRBFKernel
 from vanguard.optimise import SmartOptimiser
 from vanguard.vanilla import GaussianGPController
 
-from ..cases import VanguardTestCase
-
-RANDOM_SEED = 1234
+from ..cases import VanguardTestCase, get_default_rng
 
 
 class DefaultTensorTypeTests(unittest.TestCase):
@@ -89,7 +87,7 @@ class InputTests(VanguardTestCase):
     GP controllers are forgiving about the shape of data arrays, where possible. These tests check this behaviour.
     """
 
-    DATASET = SyntheticDataset(rng=np.random.default_rng(1234))
+    DATASET = SyntheticDataset(rng=get_default_rng())
 
     def test_unsqueeze_y(self) -> None:
         """
@@ -110,7 +108,7 @@ class InputTests(VanguardTestCase):
             marginal_log_likelihood_class=ExactMarginalLogLikelihood,
             optimiser_class=torch.optim.Adam,
             smart_optimiser_class=SmartOptimiser,
-            rng=np.random.default_rng(1234),
+            rng=get_default_rng(),
         )
         # Convert train_y on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
         gp_train_y = gp.train_y.detach().cpu().numpy()
@@ -134,7 +132,7 @@ class InputTests(VanguardTestCase):
             marginal_log_likelihood_class=ExactMarginalLogLikelihood,
             optimiser_class=torch.optim.Adam,
             smart_optimiser_class=SmartOptimiser,
-            rng=np.random.default_rng(1234),
+            rng=get_default_rng(),
         )
         # Convert train_x on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
         gp_train_x = gp.train_x.detach().cpu().numpy()
@@ -143,7 +141,7 @@ class InputTests(VanguardTestCase):
     def test_error_handling_of_higher_rank_features(self) -> None:
         """Test that shape errors, due to incorrectly treated high-rank features, are caught and explained."""
         shape = (len(self.DATASET.train_y), 31, 4)
-        rng = np.random.default_rng(RANDOM_SEED)
+        rng = get_default_rng()
         random_train_x = rng.standard_normal(shape)
         gp = GaussianGPController(
             train_x=random_train_x,
@@ -186,7 +184,7 @@ class NLLTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(RANDOM_SEED)
+        self.rng = get_default_rng()
 
         class UniformSyntheticDataset:
             def __init__(

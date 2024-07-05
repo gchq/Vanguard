@@ -4,9 +4,9 @@ Test the behaviour of the VariationalInference decorator.
 
 import unittest
 
-import numpy as np
 from gpytorch.mlls import ExactMarginalLogLikelihood as InappropriateMarginalLogLikelihood
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
@@ -27,7 +27,7 @@ class BasicTests(unittest.TestCase):
         """
         Ensure that the underlying TypeError is converted to a ValueError.
         """
-        rng = np.random.default_rng(1234)
+        rng = get_default_rng()
         dataset = SyntheticDataset(rng=rng)
         with self.assertRaises(ValueError):
             VariationalGPController(

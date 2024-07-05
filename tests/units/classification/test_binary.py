@@ -2,7 +2,6 @@
 Tests for the BinaryClassification decorator.
 """
 
-import numpy as np
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO
 
@@ -13,6 +12,7 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
+from ...cases import get_default_rng_override_seed
 from .case import ClassificationTestCase
 
 
@@ -29,7 +29,7 @@ class BinaryTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(123_456)  # fails with 1234, fails on the runner with 12345
+        self.rng = get_default_rng_override_seed(123_456)  # fails with 1234, fails on the runner with 12345
         self.dataset = BinaryStripeClassificationDataset(num_train_points=100, num_test_points=200, rng=self.rng)
         self.controller = BinaryClassifier(
             self.dataset.train_x,
@@ -98,7 +98,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(123_456)  # fails with 1234, fails on the runner with 12345
+        self.rng = get_default_rng_override_seed(123_456)  # fails with 1234, fails on the runner with 12345
 
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """

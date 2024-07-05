@@ -4,9 +4,9 @@ Tests for kernels.
 
 import unittest
 
-import numpy as np
 from numpy.testing import assert_array_less
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import TimeSeriesKernel
 from vanguard.vanilla import GaussianGPController
@@ -18,7 +18,7 @@ class BasicTests(unittest.TestCase):
     """
 
     def test_trains_time_feature_only(self) -> None:
-        rng = np.random.default_rng(1234)
+        rng = get_default_rng()
         dataset = SyntheticDataset(rng=rng)
         controller = GaussianGPController(
             dataset.train_x, dataset.train_y, TimeSeriesKernel, y_std=dataset.train_y_std, rng=rng

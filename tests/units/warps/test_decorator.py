@@ -4,9 +4,9 @@ Tests for the SetWarp decorator.
 
 import unittest
 
-import numpy as np
 import torch
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
@@ -26,7 +26,7 @@ class BasicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
-        rng = np.random.default_rng(1234)
+        rng = get_default_rng()
         cls.dataset = SyntheticDataset(rng=rng)
         cls.controller = WarpedGaussianGPController(
             cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std, rng=rng

@@ -9,6 +9,7 @@ import numpy as np
 import numpy.typing
 import torch
 
+from tests.cases import get_default_rng
 from vanguard.warps import MultitaskWarpFunction, WarpFunction, warpfunctions
 
 
@@ -200,7 +201,7 @@ class PositiveAffineWarpTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.generator = np.random.default_rng(1234)
+        self.generator = get_default_rng()
         self.train_x = (
             self.generator.random(self.NUM_TRAINING_POINTS) * self.TRAINING_POINT_RANGE - self.TRAINING_POINT_RANGE / 2
         )

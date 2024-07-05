@@ -4,7 +4,6 @@ Tests for the CategoricalClassification decorator.
 
 from unittest import expectedFailure
 
-import numpy as np
 import sklearn
 import torch
 from gpytorch.mlls import VariationalELBO
@@ -18,6 +17,7 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
+from ...cases import get_default_rng
 from .case import BatchScaledMean, ClassificationTestCase
 
 one_hot = sklearn.preprocessing.LabelBinarizer().fit_transform
@@ -60,7 +60,7 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
             num_train_points=60, num_test_points=20, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
@@ -88,7 +88,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
 
     def setUp(self):
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     # TODO: Seems too flaky on 3.8 and 3.9 but reliable on 3.12, especially when delta=0.5.
     # https://github.com/gchq/Vanguard/issues/128
@@ -165,7 +165,7 @@ class SoftmaxLMCTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
             num_train_points=60, num_test_points=20, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
@@ -194,7 +194,7 @@ class SoftmaxTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
             num_train_points=60, num_test_points=20, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
@@ -289,7 +289,7 @@ class MultitaskBernoulliClassifierTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
             num_train_points=60, num_test_points=20, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )

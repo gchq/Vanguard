@@ -6,6 +6,7 @@ import unittest
 
 import numpy as np
 
+from tests.cases import get_default_rng_override_seed
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.warps import SetWarp
@@ -31,7 +32,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         # fails on previous seed values of 1_234, 1_989 - TODO: This is a BUG, see linked issue
         # https://github.com/gchq/Vanguard/issues/273
-        self.rng = np.random.default_rng(1_000_000_000)
+        self.rng = get_default_rng_override_seed(1_000_000_000)
         self.num_train_points = 50
         self.num_test_points = 50
         self.n_sgd_iters = 10

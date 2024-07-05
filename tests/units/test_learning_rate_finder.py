@@ -4,8 +4,7 @@ Tests for LearningRateFinder.
 
 import unittest
 
-import numpy as np
-
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.optimise import LearningRateFinder
@@ -20,7 +19,7 @@ class BasicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
-        rng = np.random.default_rng(1234)
+        rng = get_default_rng()
         cls.dataset = SyntheticDataset(rng=rng)
 
         cls.controller = GaussianGPController(

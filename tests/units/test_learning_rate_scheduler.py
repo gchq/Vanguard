@@ -4,9 +4,9 @@ Tests for ApplyLearningRateScheduler.
 
 import unittest
 
-import numpy as np
 import torch
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.optimise import ApplyLearningRateScheduler
@@ -20,7 +20,7 @@ class BasicTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = SyntheticDataset(rng=self.rng)
 
         num_iters = 33

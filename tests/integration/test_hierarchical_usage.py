@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 from gpytorch.kernels import RBFKernel
 
+from tests.cases import get_default_rng
 from vanguard.hierarchical import (
     BayesianHyperparameters,
     LaplaceHierarchicalHyperparameters,
@@ -24,7 +25,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.rng = np.random.default_rng(1_989)
+        self.rng = get_default_rng()
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 100

@@ -2,7 +2,6 @@
 Tests for the DirichletMulticlassClassification decorator.
 """
 
-import numpy as np
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 
 from vanguard.classification import DirichletMulticlassClassification
@@ -10,6 +9,7 @@ from vanguard.datasets.classification import MulticlassGaussianClassificationDat
 from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 
+from ...cases import get_default_rng
 from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase
 
 
@@ -25,7 +25,7 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
             num_train_points=150, num_test_points=100, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
@@ -79,7 +79,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
 
     def setUp(self):
         """Set up data shared across tests."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """

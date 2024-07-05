@@ -11,6 +11,7 @@ import torch
 from gpytorch.constraints import Positive
 from gpytorch.kernels import RBFKernel, ScaleKernel
 
+from tests.cases import get_default_rng
 from vanguard.base import GPController
 from vanguard.datasets.synthetic import MultidimensionalSyntheticDataset, SyntheticDataset
 from vanguard.hierarchical import (
@@ -51,7 +52,7 @@ class BayesianScaledRBFKernel(ScaleKernel):
 
 class KernelConversionTests(unittest.TestCase):
     def setUp(self):
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_kernel_bayesian_hyperparameters_prepared(self) -> None:
         kernel = BayesianRBFKernel()
@@ -67,14 +68,14 @@ class KernelConversionTests(unittest.TestCase):
         self.assertEqual(kernel.bayesian_hyperparameters[0].raw_shape, torch.Size([1, 5]))
 
     def test_kernel_bayesian_hyperparameters_variational_samples(self) -> None:
-        dataset = SyntheticDataset(rng=np.random.default_rng(1234))
+        dataset = SyntheticDataset(rng=self.rng)
         gp = VariationalFullBayesianGPController(
             dataset.train_x, dataset.train_y, BayesianRBFKernel, dataset.train_y_std, rng=self.rng
         )
         self.assertEqual(gp.kernel.raw_lengthscale.shape, torch.Size([N_MC_SAMPLES, 1, 1]))
 
     def test_dimension_of_bayesian_variational_hyperparameters(self) -> None:
-        dataset = SyntheticDataset(rng=np.random.default_rng(1234))
+        dataset = SyntheticDataset(rng=self.rng)
         gp = VariationalFullBayesianGPController(
             dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std, rng=self.rng
         )
@@ -92,7 +93,7 @@ class AbstractTests:
         """
 
         def setUp(self):
-            self.rng = np.random.default_rng(1234)
+            self.rng = get_default_rng()
 
         @property
         @abc.abstractmethod
@@ -174,10 +175,9 @@ class LaplaceTrainingTests(AbstractTests.TrainingTests[LaplaceFullBayesianGPCont
     controller_class = LaplaceFullBayesianGPController
 
     def test_set_temperature(self) -> None:
-        rng = np.random.default_rng(1234)
-        dataset = SyntheticDataset(rng=rng)
+        dataset = SyntheticDataset(rng=self.rng)
         gp = self.controller_class(
-            dataset.train_x, dataset.train_y, BayesianScaledRBFKernel, dataset.train_y_std, rng=rng
+            dataset.train_x, dataset.train_y, BayesianScaledRBFKernel, dataset.train_y_std, rng=self.rng
         )
         gp.fit(10)
         plain_covariance = gp.hyperparameter_posterior.covariance_matrix.detach().cpu().numpy()

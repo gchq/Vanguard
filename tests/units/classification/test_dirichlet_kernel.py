@@ -4,7 +4,6 @@ Tests for the DirichletKernelMulticlassClassification decorator.
 
 from unittest import expectedFailure
 
-import numpy as np
 from gpytorch import kernels, means
 
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
@@ -12,6 +11,7 @@ from vanguard.classification.likelihoods import DirichletKernelClassifierLikelih
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.vanilla import GaussianGPController
 
+from ...cases import get_default_rng
 from .case import ClassificationTestCase
 
 
@@ -27,7 +27,7 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
             num_train_points=150, num_test_points=100, num_classes=4, seed=self.rng.integers(2**32 - 1)
         )
