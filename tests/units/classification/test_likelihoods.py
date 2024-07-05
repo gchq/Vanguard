@@ -39,7 +39,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         )
         cls.likelihood = DirichletKernelClassifierLikelihood(num_classes=cls.num_classes)
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
         self.rng = get_default_rng()
 
@@ -178,7 +178,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 class TestMultitaskBernoulliLikelihood(TestCase):
     """Tests for the `MultitaskBernoulliLikelihood` class."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
         self.rng = get_default_rng()
 

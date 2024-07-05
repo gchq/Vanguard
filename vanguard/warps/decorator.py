@@ -54,7 +54,8 @@ class SetWarp(Decorator):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
-                kwargs.pop("rng", None)  # to ensure we don't provide duplicate values
+                # Pop `rng` from kwargs to ensure we don't provide duplicate values to superclass
+                kwargs.pop("rng", None)
 
                 super().__init__(*args, rng=self.rng, **kwargs)
 

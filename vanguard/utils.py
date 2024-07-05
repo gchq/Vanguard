@@ -168,10 +168,13 @@ class UnseededRandomWarning(UserWarning):
 
 def optional_random_generator(generator: Optional[np.random.Generator]) -> np.random.Generator:
     """
-    Return the generator as-is, or a default one otherwise. Warns if using an unseeded generator in testing.
+    Return the generator as-is, or a default unseeded one if :data:`None` is given.
+
+    Warns a default unseeded generator is used in testing.
 
     :param generator: If not None, returned as-is. If this _is_ None, and the code is running in a Pytest session,
         raise a warning reminding the user to seed their RNGs.
+    :return: Either the given RNG (if not None) or a default unseeded RNG.
     """
     if generator is not None:
         return generator

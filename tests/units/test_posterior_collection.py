@@ -136,7 +136,7 @@ class PosteriorCollectionTests(unittest.TestCase):
 class YieldPosteriorsTests(unittest.TestCase):
     """Tests for the _yield_posteriors method."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
         self.failures_before_raise = 5
 

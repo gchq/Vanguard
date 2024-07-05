@@ -46,10 +46,14 @@ class SVGPModel(ApproximateGP):
         covar_module: Kernel,
         n_inducing_points: int,
         rng: Optional[np.random.Generator] = None,
-        **kwargs: Any,
+        **_: Any,
     ) -> None:
         """
         Initialise self.
+
+        Note that while arbitrary keyword arguments are accepted, they are not inspected or used. This is to allow
+        passing keyword parameters that are required by other GP models (e.g. `rng`) without raising a `TypeError`,
+        which allows more generic code.
 
         :param train_x: (n_samples, n_features) The training inputs (features).
         :param train_y: (n_samples,) The training targets (response).

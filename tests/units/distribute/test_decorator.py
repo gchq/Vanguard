@@ -49,7 +49,7 @@ class InitialisationTests(unittest.TestCase):
     Tests for the initialisation of the decorator.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.rng = get_default_rng()
 
     def test_cannot_pass_array_as_y_std(self) -> None:

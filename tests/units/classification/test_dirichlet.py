@@ -77,7 +77,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
     Tests for fuzzy Dirichlet multiclass classification.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared across tests."""
         self.rng = get_default_rng()
 

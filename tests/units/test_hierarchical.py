@@ -51,7 +51,7 @@ class BayesianScaledRBFKernel(ScaleKernel):
 
 
 class KernelConversionTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.rng = get_default_rng()
 
     def test_kernel_bayesian_hyperparameters_prepared(self) -> None:
@@ -92,7 +92,7 @@ class AbstractTests:
         Basic tests for an hierarchical controller and BayesianHyperparameters decorators.
         """
 
-        def setUp(self):
+        def setUp(self) -> None:
             self.rng = get_default_rng()
 
         @property

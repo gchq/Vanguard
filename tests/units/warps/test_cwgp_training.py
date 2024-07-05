@@ -117,7 +117,7 @@ class AssociativityTests(VanguardTestCase):
 class ParameterTests(VanguardTestCase):
     DATASET = SyntheticDataset(rng=get_default_rng())
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.rng = get_default_rng()
 
     def test_simple_warp_functions_are_different(self) -> None:
@@ -311,7 +311,7 @@ class ConstraintTests(VanguardTestCase):
 
     DATASET = SyntheticDataset(rng=get_default_rng())
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.rng = get_default_rng()
 
     def test_fitting_with_unconstrained_warp(self) -> None:

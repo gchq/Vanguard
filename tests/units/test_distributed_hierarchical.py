@@ -41,7 +41,7 @@ class VariationalTests(unittest.TestCase):
     Some tests.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
         self.rng = get_default_rng()
         self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=self.rng)
@@ -88,7 +88,7 @@ class LaplaceTests(unittest.TestCase):
     Some tests.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
         self.rng = get_default_rng()
         self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=self.rng)

@@ -71,6 +71,7 @@ class SyntheticDataset(Dataset):
         :param n_train_points: The total number of training points.
         :param n_test_points: The total number of testing points.
         :param significance: The significance to be used.
+        :param rng: Generator instance used to generate random numbers.
         """
         self.functions = list(functions)
 
@@ -251,6 +252,7 @@ class HigherRankSyntheticDataset(Dataset):
         :param n_train_points: The total number of training points.
         :param n_test_points: The total number of testing points.
         :param significance: The significance to be used.
+        :param rng: Generator instance used to generate random numbers.
         """
         self.functions = list(functions)
 

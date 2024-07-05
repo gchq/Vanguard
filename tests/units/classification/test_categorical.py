@@ -86,7 +86,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
     Tests for fuzzy multiclass classification.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
         self.rng = get_default_rng()
 
