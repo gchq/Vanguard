@@ -6,6 +6,7 @@ import unittest
 
 from gpytorch.mlls import ExactMarginalLogLikelihood as InappropriateMarginalLogLikelihood
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
@@ -26,7 +27,8 @@ class BasicTests(unittest.TestCase):
         """
         Ensure that the underlying TypeError is converted to a ValueError.
         """
-        dataset = SyntheticDataset()
+        rng = get_default_rng()
+        dataset = SyntheticDataset(rng=rng)
         with self.assertRaises(ValueError):
             VariationalGPController(
                 dataset.train_x,
@@ -34,4 +36,5 @@ class BasicTests(unittest.TestCase):
                 ScaledRBFKernel,
                 dataset.train_y_std,
                 marginal_log_likelihood_class=InappropriateMarginalLogLikelihood,
+                rng=rng,
             )

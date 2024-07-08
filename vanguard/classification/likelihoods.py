@@ -218,7 +218,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         super(ExactMarginalLogLikelihood, self).__init__(likelihood, model)
 
     def forward(
-        self, function_dist: gpytorch.distributions.MultivariateNormal, target: torch.Tensor, *params
+        self, function_dist: gpytorch.distributions.MultivariateNormal, target: torch.Tensor, *params, **kwargs
     ) -> torch.Tensor:
         r"""
         Compute the MLL given :math:`p(\mathbf f)` and :math:`\mathbf y`.
@@ -228,7 +228,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         :param target: :math:`\mathbf y` The target values
         :return: Exact MLL. Output shape corresponds to batch shape of the model/input data.
         """
-        output = self.likelihood(function_dist, *params)
+        output = self.likelihood(function_dist, *params, **kwargs)
         log_prob_of_marginal = output.log_prob(target)
         res = self._add_other_terms(log_prob_of_marginal, params)
 

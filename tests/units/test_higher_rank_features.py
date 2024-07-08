@@ -11,6 +11,7 @@ from gpytorch.lazy import LazyEvaluatedKernelTensor
 from gpytorch.means import ConstantMean
 from typing_extensions import Self
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import HigherRankSyntheticDataset
 from vanguard.features import HigherRankFeatures
 from vanguard.kernels import ScaledRBFKernel
@@ -78,7 +79,8 @@ class BasicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
-        cls.dataset = HigherRankSyntheticDataset()
+        rng = get_default_rng()
+        cls.dataset = HigherRankSyntheticDataset(rng=rng)
 
         cls.controller = Rank2Controller(
             cls.dataset.train_x,
@@ -86,6 +88,7 @@ class BasicTests(unittest.TestCase):
             HigherRankKernel,
             cls.dataset.train_y_std,
             mean_class=HigherRankMean,
+            rng=rng,
         )
 
         cls.train_y_mean = cls.dataset.train_y.mean()

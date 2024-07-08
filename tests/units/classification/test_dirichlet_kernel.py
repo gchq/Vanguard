@@ -4,7 +4,6 @@ Tests for the DirichletKernelMulticlassClassification decorator.
 
 from unittest import expectedFailure
 
-import numpy as np
 from gpytorch import kernels, means
 
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
@@ -12,7 +11,7 @@ from vanguard.classification.likelihoods import DirichletKernelClassifierLikelih
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.vanilla import GaussianGPController
 
-from ...cases import flaky
+from ...cases import get_default_rng
 from .case import ClassificationTestCase
 
 
@@ -28,9 +27,9 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
         self.dataset = MulticlassGaussianClassificationDataset(
-            num_train_points=150, num_test_points=100, num_classes=4, seed=self.rng.integers(2**32 - 1)
+            num_train_points=150, num_test_points=100, num_classes=4, rng=self.rng
         )
         self.controller = MulticlassGaussianClassifier(
             self.dataset.train_x,
@@ -41,10 +40,10 @@ class MulticlassTests(ClassificationTestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             optim_kwargs={"lr": 0.05},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
         self.controller.fit(10)
 
-    @flaky
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
@@ -52,7 +51,6 @@ class MulticlassTests(ClassificationTestCase):
 
     # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
     # https://github.com/gchq/Vanguard/issues/288
-    # @flaky
     @expectedFailure
     def test_fuzzy_predictions(self) -> None:
         """
@@ -81,6 +79,7 @@ class MulticlassTests(ClassificationTestCase):
                 kernel_class=kernels.RBFKernel,
                 y_std=0,
                 likelihood_class=IllegalLikelihoodClass,
+                rng=self.rng,
             )
 
         self.assertEqual(

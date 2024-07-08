@@ -10,6 +10,7 @@ import numpy as np
 import numpy.typing
 import torch
 
+from . import utils
 from .base import GPController
 from .decoratorutils import Decorator, process_args, wraps_class
 
@@ -55,6 +56,7 @@ class LearnYNoise(Decorator):
                     all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
 
                 all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
                 y = all_parameters_as_kwargs["train_y"]
                 y_std = _process_y_std(all_parameters_as_kwargs.pop("y_std", 0), y.shape, super().dtype, super().device)
 
@@ -68,7 +70,11 @@ class LearnYNoise(Decorator):
 
                 try:
                     super().__init__(
-                        train_x=train_x, likelihood_kwargs=likelihood_kwargs, y_std=y_std, **all_parameters_as_kwargs
+                        train_x=train_x,
+                        likelihood_kwargs=likelihood_kwargs,
+                        y_std=y_std,
+                        rng=self.rng,
+                        **all_parameters_as_kwargs,
                     )
                 except TypeError as error:
                     cannot_learn_y_noise = bool(_RE_NOT_LEARN_ERROR.match(str(error)))

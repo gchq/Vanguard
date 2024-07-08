@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from gpytorch import kernels
 
+from . import utils
 from .base import GPController
 from .decoratorutils import Decorator, process_args, wraps_class
 
@@ -44,13 +45,14 @@ class HigherRankFeatures(Decorator):
         class InnerClass(cls):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
                 train_x = all_parameters_as_kwargs["train_x"]
                 all_parameters_as_kwargs.pop("self")
                 self.gp_model_class = _HigherRankFeaturesModel(train_x.shape[-rank:])(self.gp_model_class)
                 kernel_class = all_parameters_as_kwargs.pop("kernel_class")
                 new_kernel_class = _HigherRankFeaturesKernel(train_x.shape[-rank:])(kernel_class)
 
-                super().__init__(kernel_class=new_kernel_class, **all_parameters_as_kwargs)
+                super().__init__(kernel_class=new_kernel_class, rng=self.rng, **all_parameters_as_kwargs)
 
         return InnerClass
 
