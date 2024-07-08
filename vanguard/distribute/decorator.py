@@ -56,8 +56,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
     :param n_experts: The number of partitions in which to split the data. Defaults to 3.
     :param subset_fraction: The proportion of the training data to be used to train the hyperparameters.
         Defaults to 0.1.
-    :param seed: The seed used for creating the subset of the training data used to train the hyperparameters.
-        Defaults to 42.
+    :param rng: Generator instance used to generate random numbers.
     :param aggregator_class: The class to be used for aggregation. Defaults to
         :class:`~vanguard.distribute.aggregators.RBCMAggregator`.
     :param partitioner_class: The class to be used for partitioning. Defaults to
@@ -74,7 +73,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self,
         n_experts: int = 3,
         subset_fraction: float = 0.1,
-        seed: Optional[int] = 42,
+        rng: Optional[np.random.Generator] = None,
         aggregator_class: Type[BaseAggregator] = RBCMAggregator,
         partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
         **kwargs: Any,
@@ -84,7 +83,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         """
         self.n_experts = n_experts
         self.subset_fraction = subset_fraction
-        self.seed = seed
+        self.rng = utils.optional_random_generator(rng)
         self.aggregator_class = aggregator_class
         self.partitioner_class = partitioner_class
         self.partitioner_kwargs = kwargs.pop("partitioner_kwargs", {})
@@ -138,7 +137,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                     self._full_train_y,
                     self._full_y_std,
                     subset_fraction=decorator.subset_fraction,
-                    seed=decorator.seed,
+                    rng=decorator.rng,
                 )
 
                 self._expert_init_kwargs = all_parameters_as_kwargs
@@ -292,14 +291,14 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
 
 def _create_subset(
-    *arrays: Union[NDArray[np.floating], float], subset_fraction: float = 0.1, seed: Optional[int] = None
+    *arrays: Union[NDArray[np.floating], float], subset_fraction: float = 0.1, rng: Optional[np.random.Generator] = None
 ) -> List[Union[NDArray[np.floating], float]]:
     """
     Return subsets of the arrays along the same random indices.
 
     :param arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is
     :param subset_fraction: Fraction of points to include in the subset
-    :param seed: Random seed to use
+    :param rng: Generator instance used to generate random numbers.
     :returns: The array subsets
 
     :Example:
@@ -307,9 +306,9 @@ def _create_subset(
         >>> y = np.array([10, 20, 30, 40, 50])
         >>> z = 25
         >>>
-        >>> _create_subset(x, y, subset_fraction=0.6, seed=1)
+        >>> _create_subset(x, y, subset_fraction=0.6, rng=np.random.default_rng(1))
         [array([3, 2, 4]), array([30, 20, 40])]
-        >>> _create_subset(x, y, z, subset_fraction=0.6, seed=1)
+        >>> _create_subset(x, y, z, subset_fraction=0.6, rng=np.random.default_rng(1))
         [array([3, 2, 4]), array([30, 20, 40]), 25]
     """
     for array in arrays:
@@ -327,7 +326,6 @@ def _create_subset(
         # If the arrays contain no subscriptable arrays, just return them as a list
         return list(arrays)
 
-    rng = np.random.default_rng(seed)
     total_number_of_indices = length_of_first_subscriptable_array
     number_of_indices_in_subset = int(total_number_of_indices * subset_fraction)
     indices = rng.choice(total_number_of_indices, size=number_of_indices_in_subset, replace=False)

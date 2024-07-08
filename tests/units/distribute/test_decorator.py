@@ -211,15 +211,13 @@ class SubsetCreationTests(unittest.TestCase):
         We pass two numpy arrays to _create_subset, and expect the result from _create_subset to return subsets
         of each.
         """
-        random_seed = 1_989
-
         # Define arrays to subset
         first_array = np.array([1, 2, 3, 4])
         second_array = np.array([5, 6, 7, 8])
 
         # Subset the arrays - setting subset_fraction such that we expect 2 points to be
         # taken from each array passed
-        subset_arrays = _create_subset(first_array, second_array, subset_fraction=0.5, seed=random_seed)
+        subset_arrays = _create_subset(first_array, second_array, subset_fraction=0.5, rng=get_default_rng())
 
         # Regardless of random seed, package version and so on, we expect the results to have the following properties:
         # Each of the two resulting subset arrays has exactly 2 elements, both taken from the corresponding input array
@@ -241,7 +239,8 @@ class SubsetCreationTests(unittest.TestCase):
         """
         with self.assertWarns(Warning) as warning_raised:
             self.assertListEqual(
-                [[[1, 2, 3, 4], [5, 6, 7, 8]]], _create_subset([[1, 2, 3, 4], [5, 6, 7, 8]], subset_fraction=0.5)
+                [[[1, 2, 3, 4], [5, 6, 7, 8]]],
+                _create_subset([[1, 2, 3, 4], [5, 6, 7, 8]], subset_fraction=0.5, rng=get_default_rng()),
             )
         # To ensure an unrelated warning is raised, check the warning text is as expected
         self.assertEqual(

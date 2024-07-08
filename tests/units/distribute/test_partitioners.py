@@ -3,7 +3,7 @@ Tests for partitioner classes.
 """
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import kmedoids
 import matplotlib
@@ -11,6 +11,7 @@ import numpy as np
 import sklearn.cluster
 from gpytorch.kernels import RBFKernel
 
+from tests.cases import get_default_rng
 from vanguard.distribute import partitioners
 
 
@@ -28,7 +29,7 @@ class MockedPartitionTests(unittest.TestCase):
         self.train_x = 10.0 * np.arange(10).reshape(-1, 1)
         self.kernel = RBFKernel()
         self.n_experts = 3
-        self.seed = 1_989
+        self.rng = get_default_rng()
 
         # Setup for mocked clustering
         self.example_labels = [0, 0, 1, 0, 1, 1, 2, 1]
@@ -69,9 +70,7 @@ class MockedPartitionTests(unittest.TestCase):
 
         We mock the clustering method used within the code to avoid random-seed dependence.
         """
-        partitioner = partitioners.KMeansPartitioner(train_x=self.train_x, n_experts=self.n_experts, seed=self.seed)
-        rng_copy = np.random.default_rng(self.seed)
-        expected_clustering_seed = rng_copy.integers(0, 2**32 - 1)
+        partitioner = partitioners.KMeansPartitioner(train_x=self.train_x, n_experts=self.n_experts, rng=self.rng)
 
         # When creating a partition, we should create a clustering object, fit it to the training data,
         # then creation partitions based on those cluster labels
@@ -89,8 +88,9 @@ class MockedPartitionTests(unittest.TestCase):
         self.assertListEqual(self.expected_partition, partitioner.create_partition())
 
         # Verify the expected calls were made to the mocked objects - i.e. the clustering was done
-        # as expected
-        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=expected_clustering_seed)
+        # as expected. We use ANY for the random state as it's derived from the RNG but in a way that's
+        # hard to mock out.
+        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=ANY)
         mocked_fit.assert_called_once_with(self.train_x)
 
     @patch.object(sklearn.cluster, "MiniBatchKMeans")
@@ -101,10 +101,8 @@ class MockedPartitionTests(unittest.TestCase):
         We mock the clustering method used within the code to avoid random-seed dependence.
         """
         partitioner = partitioners.MiniBatchKMeansPartitioner(
-            train_x=self.train_x, n_experts=self.n_experts, seed=self.seed
+            train_x=self.train_x, n_experts=self.n_experts, rng=self.rng
         )
-        rng_copy = np.random.default_rng(self.seed)
-        expected_clustering_seed = rng_copy.integers(0, 2**32 - 1)
 
         # When creating a partition, we should create a clustering object, fit it to the training data,
         # then creation partitions based on those cluster labels
@@ -122,8 +120,9 @@ class MockedPartitionTests(unittest.TestCase):
         self.assertListEqual(self.expected_partition, partitioner.create_partition())
 
         # Verify the expected calls were made to the mocked objects - i.e. the clustering was done
-        # as expected
-        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=expected_clustering_seed)
+        # as expected.  We use ANY for the random state as it's derived from the RNG but in a way that's
+        # hard to mock out.
+        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=ANY)
         mocked_fit.assert_called_once_with(self.train_x)
 
     @patch.object(kmedoids, "KMedoids")
@@ -138,10 +137,8 @@ class MockedPartitionTests(unittest.TestCase):
         mocked_kernel = MagicMock()
         actual_distances = np.exp(np.array([0, 0, 1, 1, 0]))
         partitioner = partitioners.KMedoidsPartitioner(
-            train_x=self.train_x, n_experts=self.n_experts, kernel=mocked_kernel, seed=self.seed
+            train_x=self.train_x, n_experts=self.n_experts, kernel=mocked_kernel, rng=self.rng
         )
-        rng_copy = np.random.default_rng(self.seed)
-        expected_clustering_seed = rng_copy.integers(0, 2**32 - 1)
 
         # When creating a partition, we should create a clustering object, fit it to the training data,
         # then creation partitions based on those cluster labels
@@ -160,10 +157,9 @@ class MockedPartitionTests(unittest.TestCase):
         self.assertListEqual(self.expected_partition, partitioner.create_partition())
 
         # Verify the expected calls were made to the mocked objects - i.e. the clustering was done
-        # as expected
-        mock_clustering.assert_called_once_with(
-            n_clusters=self.n_experts, metric="precomputed", random_state=expected_clustering_seed
-        )
+        # as expected. We use ANY for the random state as it's derived from the RNG but in a way that's
+        # hard to mock out.
+        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, metric="precomputed", random_state=ANY)
         mocked_fit.assert_called_once_with(actual_distances)
 
     def test_construct_distance_matrix(self):
@@ -174,7 +170,7 @@ class MockedPartitionTests(unittest.TestCase):
         pair of points.
         """
         partitioner = partitioners.KMedoidsPartitioner(
-            train_x=self.train_x, n_experts=self.n_experts, kernel=RBFKernel(), seed=self.seed
+            train_x=self.train_x, n_experts=self.n_experts, kernel=RBFKernel(), rng=self.rng
         )
 
         # Compute expected distances in the most clear way possible
@@ -200,7 +196,7 @@ class MockedPartitionTests(unittest.TestCase):
         We verify that trying to create a partition with `BasePartitioner` correctly fails, and plotting
         functionality works as intended.
         """
-        partitioner = partitioners.BasePartitioner(train_x=self.train_x, n_experts=self.n_experts, seed=self.seed)
+        partitioner = partitioners.BasePartitioner(train_x=self.train_x, n_experts=self.n_experts, rng=self.rng)
 
         # If we try to partition with this, we should not be able to as the actual partition methods are implemented in
         # child classes
