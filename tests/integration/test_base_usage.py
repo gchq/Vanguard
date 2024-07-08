@@ -35,6 +35,7 @@ class VanguardTestCase(unittest.TestCase):
         # 5% + accepted_confidence_interval_error lie above the upper confidence
         # interval
         self.accepted_confidence_interval_error = 3
+        self.expected_percent_outside_one_sided = (100.0 * (1 - self.confidence_interval_alpha)) / 2
 
     def test_basic_gp(self) -> None:
         """
@@ -96,7 +97,7 @@ class VanguardTestCase(unittest.TestCase):
             pct_below_ci_lower_test,
         ]:
             self.assertLessEqual(
-                pct_check, self.confidence_interval_alpha / 2.0 + self.accepted_confidence_interval_error
+                pct_check, self.expected_percent_outside_one_sided + self.accepted_confidence_interval_error
             )
 
 
