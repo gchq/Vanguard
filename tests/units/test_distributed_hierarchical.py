@@ -19,13 +19,17 @@ from vanguard.hierarchical import (
 from vanguard.vanilla import GaussianGPController
 
 
-@Distributed(n_experts=3, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
+@Distributed(
+    n_experts=3, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",), rng=get_default_rng()
+)
 @VariationalHierarchicalHyperparameters()
 class DistributedVariationalHierarchicalGaussianGPController(GaussianGPController):
     """Test class."""
 
 
-@Distributed(n_experts=3, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
+@Distributed(
+    n_experts=3, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",), rng=get_default_rng()
+)
 @LaplaceHierarchicalHyperparameters()
 class DistributedLaplaceHierarchicalGaussianGPController(GaussianGPController):
     """Test class."""

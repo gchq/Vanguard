@@ -126,6 +126,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                     train_x=self._full_train_x,
                     n_experts=decorator.n_experts,
                     communication=communications_expert,
+                    rng=self.rng,
                     **partitioner_kwargs,
                 )
 

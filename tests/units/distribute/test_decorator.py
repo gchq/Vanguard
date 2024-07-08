@@ -18,12 +18,16 @@ from vanguard.vanilla import GaussianGPController
 from vanguard.warps import SetWarp, warpfunctions
 
 
-@Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
+@Distributed(
+    n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",), rng=get_default_rng()
+)
 class DistributedGaussianGPController(GaussianGPController):
     """Test class."""
 
 
-@Distributed(n_experts=10, aggregator_class=aggregators.BCMAggregator, ignore_methods=("__init__",))
+@Distributed(
+    n_experts=10, aggregator_class=aggregators.BCMAggregator, ignore_methods=("__init__",), rng=get_default_rng()
+)
 class DistributedGaussianGPControllerBCMAggregator(GaussianGPController):
     """Test class."""
 
@@ -33,12 +37,13 @@ class DistributedGaussianGPControllerBCMAggregator(GaussianGPController):
     aggregator_class=aggregators.GRBCMAggregator,
     partitioner_class=KMedoidsPartitioner,
     ignore_methods=("__init__",),
+    rng=get_default_rng(),
 )
 class DistributedGaussianGPControllerKMedoids(GaussianGPController):
     """Test class."""
 
 
-@Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_all=True)
+@Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_all=True, rng=get_default_rng())
 @SetWarp(warpfunctions.AffineWarpFunction(a=3, b=-1) @ warpfunctions.BoxCoxWarpFunction(0.2), ignore_all=True)
 class DistributedWarpedGaussianGPController(GaussianGPController):
     """Test class."""

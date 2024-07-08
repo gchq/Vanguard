@@ -42,8 +42,7 @@ class MockedPartitionTests(unittest.TestCase):
             [6],
         ]
 
-    @patch.object(np.random, "default_rng")
-    def test_random_sample(self, mock_rng_factory) -> None:
+    def test_random_sample(self) -> None:
         """
         Test generation of partitions using the random sample method.
 
@@ -55,9 +54,8 @@ class MockedPartitionTests(unittest.TestCase):
         # num data points / num experts (10 / 3 which rounds to 3) array
         mock_rng = Mock()
         mock_rng.choice = Mock(return_value=np.array([[8, 1, 5], [0, 7, 2], [9, 4, 3]]))
-        mock_rng_factory.return_value = mock_rng
 
-        partitioner = partitioners.RandomPartitioner(train_x=self.train_x, n_experts=self.n_experts)
+        partitioner = partitioners.RandomPartitioner(train_x=self.train_x, n_experts=self.n_experts, rng=mock_rng)
 
         # The partition created should be exactly the random choice result we have specified,
         # no other processing on the data should occur

@@ -59,7 +59,7 @@ DECORATORS = {
             num_train_points=10, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
     },
-    Distributed: {"decorator": {"n_experts": 3}, "controller": {}},
+    Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}, "controller": {}},
     VariationalHierarchicalHyperparameters: {
         "decorator": {"num_mc_samples": 13},
         "controller": {
