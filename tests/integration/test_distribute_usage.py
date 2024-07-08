@@ -85,7 +85,9 @@ class VanguardTestCase(unittest.TestCase):
             POEAggregator,
         ]:
 
-            @Distributed(n_experts=3, aggregator_class=aggregator, partitioner_class=KMeansPartitioner)
+            @Distributed(
+                n_experts=3, aggregator_class=aggregator, partitioner_class=KMeansPartitioner, rng=get_default_rng()
+            )
             @BinaryClassification()
             @VariationalInference()
             class BinaryClassifier(GaussianGPController):
@@ -133,7 +135,9 @@ class VanguardTestCase(unittest.TestCase):
             # KMedoidsPartitioner,
         ]:
 
-            @Distributed(n_experts=3, aggregator_class=EKPOEAggregator, partitioner_class=partitioner)
+            @Distributed(
+                n_experts=3, aggregator_class=EKPOEAggregator, partitioner_class=partitioner, rng=get_default_rng()
+            )
             @BinaryClassification()
             @VariationalInference()
             class BinaryClassifier(GaussianGPController):
