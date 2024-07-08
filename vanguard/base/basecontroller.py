@@ -81,6 +81,9 @@ class BaseGPController:
             :py:mod:`gpytorch.mlls`. The default is :py:class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
     :param optimiser_class: An uninstantiated :py:class:`torch.optim.Optimizer` class used for
             gradient-based learning of hyperparameters. The default is :py:class:`torch.optim.Adam`.
+    :param smart_optimiser_class: An uninstantiated :py:class:SmartOptimiser class used to wrap the
+        `optimiser_class` and enable early stopping.
+    :param rng: Generator instance used to generate random numbers.
 
     :Keyword Arguments:
 
@@ -94,7 +97,6 @@ class BaseGPController:
         * **batch_size** *(int,None)*: The batch size to use in SGD. If ``None``, the whole dataset is
           used at each iteration.
         * **additional_metrics** *(List[function])*: A list of additional metrics to track.
-        * **rng** *(Optional[np.random.Generator])*: Generator instance used to generate random numbers.
 
 
     """

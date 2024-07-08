@@ -54,10 +54,14 @@ class InertKernelModel(ExactGPModel):
         mean_module: Optional[gpytorch.means.Mean],
         likelihood: gpytorch.likelihoods.Likelihood,
         num_classes: int,
-        **kwargs: Any,
+        **_: Any,
     ) -> None:
         """
         Initialise self.
+
+        Note that while arbitrary keyword arguments are accepted, they are not inspected or used. This is to allow
+        passing keyword parameters that are required by other GP models (e.g. `rng`) without raising a `TypeError`,
+        which allows more generic code.
 
         :param train_inputs: (n_samples, n_features) The training inputs (features).
         :param train_targets: (n_samples,) The training targets (response).
