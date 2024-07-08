@@ -171,7 +171,7 @@ def optional_random_generator(generator: Optional[np.random.Generator]) -> np.ra
     """
     Return the generator as-is, or a default unseeded one if :data:`None` is given.
 
-    Warns a default unseeded generator is used in testing.
+    Warns if a default unseeded generator is used in testing.
 
     :param generator: If not None, returned as-is. If this _is_ None, and the code is running in a Pytest session,
         raise a warning reminding the user to seed their RNGs.
