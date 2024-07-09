@@ -293,6 +293,23 @@ Having complete documentation is important to easy usage of Vanguard.
 Please ensure that any new code appears in the documentation, and is rendered correctly.
 You should be warned of any broken internal links during the build process, and these will cause your pull request to be rejected.
 
+## Releases
+
+Releases are made on an ad-hoc basis. When the maintainers decide the codebase is ready for another release:
+
+1. Create an issue for the release.
+2. Create a branch `release/#.#.#` for the target version number.
+3. Tidy `CHANGELOG.md` including:
+   - Move the content under `Unreleased` to a section under the target version number.
+   - Create a new unpopulated `Unreleased` section at the top.
+   - Update the hyperlinks to Git diffs at the bottom of the file so that they compare
+     the relevant versions.
+4. Update the version number in `vanguard/__init.py__`.
+5. Create and review a pull request with target `main`.
+6. Once approved, merge the release branch manually into `develop`.
+7. Merge the pull request into `main`.
+8. Create a release in GitHub pointing at the merge commit on `main`.
+9. Build and publish to PyPI and ReadTheDocs.
 
 ## References
 
