@@ -140,9 +140,9 @@ def _yield_initialised_decorators() -> "Generator[Tuple[Callable, Callable, dict
             )
 
         dataset = (
-                upper_dataset
-                or lower_dataset
-                or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
+            upper_dataset
+            or lower_dataset
+            or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
         )
 
         controller_kwargs = {**upper_controller_kwargs, **lower_controller_kwargs}
@@ -186,8 +186,8 @@ def test_combinations(
         "train_y": dataset.train_y,
         "y_std": dataset.train_y_std,
         "kernel_class": ScaledRBFKernel,
-    "rng": get_default_rng(),
-                }
+        "rng": get_default_rng(),
+    }
 
     combination = (type(upper_decorator), type(lower_decorator))
     combination_controller_kwargs = COMBINATION_CONTROLLER_KWARGS.get(combination, {})
@@ -199,7 +199,10 @@ def test_combinations(
     try:
         controller.fit(1)
     except Exception as error:
-        expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS[combination]
+        try:
+            expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS[combination]
+        except IndexError:
+            raise error from None
 
         # note: we use type() here rather than isinstance() as we do specifically want the given error class and not
         # some subclass
@@ -209,9 +212,9 @@ def test_combinations(
 
     try:
         posterior = controller.posterior_over_point(dataset.test_x)
-    except Exception as error:
+    except Exception:
         if not hasattr(controller, "classify_points"):
-            pytest.fail(f"Could not get posterior: {error}")
+            raise
     else:
         try:
             posterior.prediction()
