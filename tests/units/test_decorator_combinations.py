@@ -129,11 +129,6 @@ def _initialise_decorator_pair(
     upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
     lower_decorator, lower_controller_kwargs, lower_dataset = _create_decorator(lower_decorator_details)
 
-    combination = (type(upper_decorator), type(lower_decorator))
-    reversed_combination = (type(lower_decorator), type(upper_decorator))
-    if combination in EXCLUDED_COMBINATIONS or reversed_combination in EXCLUDED_COMBINATIONS:
-        pass  # TODO: check that we get an error as expected
-
     if upper_dataset and lower_dataset:
         raise RuntimeError(
             f"Cannot combine {type(upper_decorator).__name__} and "
@@ -164,9 +159,11 @@ def _create_decorator(details: Tuple[Callable, Dict[str, Any]]) -> Tuple[Callabl
             id=f"Upper: {upper_details[0].__name__} - Lower: {lower_details[0].__name__}",
         )
         for upper_details, lower_details in itertools.permutations(DECORATORS.items(), r=2)
+        if (upper_details[0], lower_details[0]) not in EXCLUDED_COMBINATIONS
+        and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
     ],
 )
-def test_combinations(upper_details, lower_details) -> None:
+def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tuple[Decorator, Dict]) -> None:
     # pylint: disable=broad-exception-caught
     # If/when these tests are upgraded to use pytest, we can just let the exceptions be raised, rather than
     # explicitly transforming them into test failures.
