@@ -194,27 +194,18 @@ def test_combinations(
     final_kwargs.update(controller_kwargs)
     final_kwargs.update(combination_controller_kwargs)
 
-    try:
-        controller = controller_class(**final_kwargs)
-    except Exception as error:
-        pytest.fail(f"Could not initialise: {error}")
+    controller = controller_class(**final_kwargs)
 
     try:
         controller.fit(1)
     except Exception as error:
-        try:
-            expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS[combination]
-        except KeyError:
-            pytest.fail(f"Could not train: {error}")
+        expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS[combination]
 
-        if type(error) != expected_error_class:  # pylint: disable=unidiomatic-typecheck
-            # using type() here rather than isinstance() as we do specifically want the given error class
-            # and not some subclass
-            pytest.fail(f"Expected {expected_error_class} but got: {error}")
-        elif not re.match(expected_error_message, str(error)):
-            pytest.fail(f"Expected error with the message {expected_error_message!r} but got: {error}")
-        else:
-            return
+        # note: we use type() here rather than isinstance() as we do specifically want the given error class and not
+        # some subclass
+        assert type(error) is expected_error_class  # pylint: disable=unidiomatic-typecheck
+        assert re.match(expected_error_message, str(error))
+        return
 
     try:
         posterior = controller.posterior_over_point(dataset.test_x)
@@ -224,37 +215,31 @@ def test_combinations(
     else:
         try:
             posterior.prediction()
-        except Exception as error:
+        except TypeError as exc:
             if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
-                pass
+                assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
             else:
-                pytest.fail(f"Could not predict: {error}")
+                raise
 
-        try:
-            posterior.confidence_interval(dataset.significance)
-        except Exception as error:
-            pytest.fail(f"Could not predict: {error}")
+        posterior.confidence_interval(dataset.significance)
 
     try:
         # we don't care about any kind of accuracy here, so just pick the minimum number that doesn't
         # cause errors
         with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 4):
             fuzzy_posterior = controller.posterior_over_fuzzy_point(dataset.test_x, dataset.test_x_std)
-    except Exception as error:
+    except Exception:
         if not hasattr(controller, "classify_points"):
-            pytest.fail(f"Could not get posterior: {error}")
+            raise
     else:
         try:
             fuzzy_posterior.prediction()
-        except Exception as error:
+        except Exception:
             if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
                 pass
             else:
-                pytest.fail(f"Could not predict: {error}")
+                raise
 
-        try:
-            # again, we don't care about accuracy, so just pick the minimum number that doesn't cause errors
-            with patch.object(MonteCarloPosteriorCollection, "_decide_mc_num_samples", lambda *_: 4):
-                fuzzy_posterior.confidence_interval(dataset.significance)
-        except Exception as error:
-            pytest.fail(f"Could not predict: {error}")
+        # again, we don't care about accuracy, so just pick the minimum number that doesn't cause errors
+        with patch.object(MonteCarloPosteriorCollection, "_decide_mc_num_samples", lambda *_: 4):
+            fuzzy_posterior.confidence_interval(dataset.significance)
