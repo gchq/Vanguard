@@ -204,7 +204,7 @@ class InverseTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(y.ravel(), self.y)
 
     def test_positive_affine_log_value(self) -> None:
-        """Test BoxCoxWarpFunction composed with AffineWarpFunction with known outputs."""
+        """Test BoxCoxWarpFunction composed with PositiveAffineWarpFunction with known outputs."""
         box_cox = warpfunctions.BoxCoxWarpFunction(lambda_=0)
         affine = warpfunctions.PositiveAffineWarpFunction()
         affine.activate(train_y=self.y)
@@ -264,7 +264,7 @@ class DerivativeTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(x.ravel(), self.x)
 
     def test_positive_affine_log_value(self) -> None:
-        """Test BoxCoxWarpFunction composed with AffineWarpFunction with known outputs."""
+        """Test BoxCoxWarpFunction composed with PositiveAffineWarpFunction with known outputs."""
         box_cox = warpfunctions.BoxCoxWarpFunction(lambda_=0)
         affine = warpfunctions.PositiveAffineWarpFunction()
         affine.activate(train_y=self.y.detach().cpu().numpy())

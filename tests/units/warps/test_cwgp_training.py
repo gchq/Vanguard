@@ -80,7 +80,7 @@ class CompositionTests(VanguardTestCase):
 
     def test_matmul_with_float(self) -> None:
         """
-        Test an invalid composition of a warp function and a negative float.
+        Test an invalid composition of a warp function and a float.
 
         This should raise a TypeError.
         """
