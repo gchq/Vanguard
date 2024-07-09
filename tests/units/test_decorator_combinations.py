@@ -2,8 +2,8 @@
 Tests for the pairwise combinations of decorators.
 """
 
+import contextlib
 import itertools
-import re
 from typing import Any, Callable, Dict, Optional, Tuple, Type, TypeVar
 from unittest.mock import patch
 
@@ -117,15 +117,38 @@ EXCLUDED_COMBINATIONS = {
     ),  # can't aggregate multitask predictions
 }
 
+EXPECTED_COMBINATION_CREATE_ERRORS = {
+    (NormaliseY, DirichletMulticlassClassification): (
+        TypeError,
+        "For classification, train_y must be integer-valued. Got dtype=.*",
+    ),
+}
+
 EXPECTED_COMBINATION_FIT_ERRORS = {
     (VariationalInference, Multitask): (RuntimeError, ".* may not be the correct choice for a variational strategy"),
 }
 
 
+@contextlib.contextmanager
+def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
+    """
+    Do nothing if None is given. Do `pytest.raises()` if an exception type is passed.
+
+    :return: None if no exception type was passed. ExceptionInfo from `pytest.raises()` if an exception type was passed.
+    """
+    if category is None:
+        yield
+        return None
+    else:
+        with pytest.raises(category, match=match) as exc:
+            yield
+        return exc
+
+
 def _initialise_decorator_pair(
     upper_decorator_details: Tuple[Decorator, Dict], lower_decorator_details: Tuple[Decorator, Dict]
 ) -> "Tuple[Callable, Callable, dict[str, Any], Dataset]":
-    """Yield pairs of initialised decorators."""
+    """Initialise a pair of decorators."""
     upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
     lower_decorator, lower_controller_kwargs, lower_dataset = _create_decorator(lower_decorator_details)
 
@@ -164,17 +187,10 @@ def _create_decorator(details: Tuple[Callable, Dict[str, Any]]) -> Tuple[Callabl
     ],
 )
 def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tuple[Decorator, Dict]) -> None:
-    # pylint: disable=broad-exception-caught
-    # If/when these tests are upgraded to use pytest, we can just let the exceptions be raised, rather than
-    # explicitly transforming them into test failures.
     """Shouldn't throw any errors."""
     upper_decorator, lower_decorator, controller_kwargs, dataset = _initialise_decorator_pair(
         upper_details, lower_details
     )
-    try:
-        controller_class = upper_decorator(lower_decorator(GaussianGPController))
-    except (MissingRequirementsError, TopmostDecoratorError):
-        return
 
     final_kwargs = {
         "train_x": dataset.train_x,
@@ -189,28 +205,31 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
     final_kwargs.update(controller_kwargs)
     final_kwargs.update(combination_controller_kwargs)
 
-    controller = controller_class(**final_kwargs)
-
     try:
-        controller.fit(1)
-    except Exception as error:
-        try:
-            expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS[combination]
-        except IndexError:
-            raise error from None
-
-        # note: we use type() here rather than isinstance() as we do specifically want the given error class and not
-        # some subclass
-        assert type(error) is expected_error_class  # pylint: disable=unidiomatic-typecheck
-        assert re.match(expected_error_message, str(error))
+        controller_class = upper_decorator(lower_decorator(GaussianGPController))
+    except (MissingRequirementsError, TopmostDecoratorError):
         return
 
-    try:
-        posterior = controller.posterior_over_point(dataset.test_x)
-    except Exception:
-        if not hasattr(controller, "classify_points"):
-            raise
+    expected_error_class, expected_error_message = EXPECTED_COMBINATION_CREATE_ERRORS.get(combination, (None, None))
+    with maybe_throws(expected_error_class, expected_error_message):
+        controller = controller_class(**final_kwargs)
+    if expected_error_class is not None:
+        return
+
+    expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS.get(combination, (None, None))
+    with maybe_throws(expected_error_class, expected_error_message):
+        controller.fit(1)
+    if expected_error_class is not None:
+        return
+
+    if hasattr(controller, "classify_points"):
+        pass
+        # TODO: check that the classification methods don't throw any unexpected errors
+        # controller.classify_points(dataset.test_x)
+        # controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
     else:
+        # check that the prediction methods don't throw any unexpected errors
+        posterior = controller.posterior_over_point(dataset.test_x)
         try:
             posterior.prediction()
         except TypeError as exc:
@@ -221,20 +240,16 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
 
         posterior.confidence_interval(dataset.significance)
 
-    try:
         # we don't care about any kind of accuracy here, so just pick the minimum number that doesn't
         # cause errors
         with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 4):
             fuzzy_posterior = controller.posterior_over_fuzzy_point(dataset.test_x, dataset.test_x_std)
-    except Exception:
-        if not hasattr(controller, "classify_points"):
-            raise
-    else:
+
         try:
             fuzzy_posterior.prediction()
-        except Exception:
+        except TypeError as exc:
             if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
-                pass
+                assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
             else:
                 raise
 
