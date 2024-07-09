@@ -4,8 +4,7 @@ Tests for the pairwise combinations of decorators.
 
 import itertools
 import re
-from collections.abc import Generator
-from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
+from typing import Any, Callable, Dict, Optional, Tuple, Type, TypeVar
 from unittest.mock import patch
 
 import pytest
@@ -20,6 +19,7 @@ from vanguard.classification import BinaryClassification, DirichletMulticlassCla
 from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_f
+from vanguard.decoratorutils import Decorator
 from vanguard.decoratorutils.errors import MissingRequirementsError, TopmostDecoratorError
 from vanguard.distribute import Distributed
 from vanguard.hierarchical import BayesianHyperparameters, VariationalHierarchicalHyperparameters
@@ -94,7 +94,7 @@ DECORATORS = {
     },
 }
 
-COMBINATION_CONTROLLER_KWARGS = {
+COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dict[str, Any]] = {
     (DirichletMulticlassClassification, VariationalInference): {
         "likelihood_class": DirichletClassificationLikelihood,
     },
@@ -122,31 +122,30 @@ EXPECTED_COMBINATION_FIT_ERRORS = {
 }
 
 
-def _yield_initialised_decorators() -> "Generator[Tuple[Callable, Callable, dict[str, Any], Dataset], None, None]":
+def _initialise_decorator_pair(
+    upper_decorator_details: Tuple[Decorator, Dict], lower_decorator_details: Tuple[Decorator, Dict]
+) -> "Tuple[Callable, Callable, dict[str, Any], Dataset]":
     """Yield pairs of initialised decorators."""
-    for upper_decorator_details, lower_decorator_details in itertools.permutations(DECORATORS.items(), r=2):
-        upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
-        lower_decorator, lower_controller_kwargs, lower_dataset = _create_decorator(lower_decorator_details)
+    upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
+    lower_decorator, lower_controller_kwargs, lower_dataset = _create_decorator(lower_decorator_details)
 
-        combination = (type(upper_decorator), type(lower_decorator))
-        reversed_combination = (type(lower_decorator), type(upper_decorator))
-        if combination in EXCLUDED_COMBINATIONS or reversed_combination in EXCLUDED_COMBINATIONS:
-            continue
+    combination = (type(upper_decorator), type(lower_decorator))
+    reversed_combination = (type(lower_decorator), type(upper_decorator))
+    if combination in EXCLUDED_COMBINATIONS or reversed_combination in EXCLUDED_COMBINATIONS:
+        pass  # TODO: check that we get an error as expected
 
-        if upper_dataset and lower_dataset:
-            raise RuntimeError(
-                f"Cannot combine {type(upper_decorator).__name__} and "
-                f"{type(lower_decorator).__name__}: two datasets have been passed."
-            )
-
-        dataset = (
-            upper_dataset
-            or lower_dataset
-            or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
+    if upper_dataset and lower_dataset:
+        raise RuntimeError(
+            f"Cannot combine {type(upper_decorator).__name__} and "
+            f"{type(lower_decorator).__name__}: two datasets have been passed."
         )
 
-        controller_kwargs = {**upper_controller_kwargs, **lower_controller_kwargs}
-        yield upper_decorator, lower_decorator, controller_kwargs, dataset
+    dataset = (
+        upper_dataset or lower_dataset or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
+    )
+
+    controller_kwargs = {**upper_controller_kwargs, **lower_controller_kwargs}
+    return upper_decorator, lower_decorator, controller_kwargs, dataset
 
 
 def _create_decorator(details: Tuple[Callable, Dict[str, Any]]) -> Tuple[Callable, ControllerT, Optional[Dataset]]:
@@ -157,25 +156,24 @@ def _create_decorator(details: Tuple[Callable, Dict[str, Any]]) -> Tuple[Callabl
 
 
 @pytest.mark.parametrize(
-    "upper_decorator, lower_decorator, controller_kwargs, dataset",
+    "upper_details, lower_details",
     [
         pytest.param(
-            upper_decorator,
-            lower_decorator,
-            controller_kwargs,
-            dataset,
-            id=f"Upper: {type(upper_decorator).__name__} - Lower: {type(lower_decorator).__name__}",
+            upper_details,
+            lower_details,
+            id=f"Upper: {upper_details[0].__name__} - Lower: {lower_details[0].__name__}",
         )
-        for upper_decorator, lower_decorator, controller_kwargs, dataset in _yield_initialised_decorators()
+        for upper_details, lower_details in itertools.permutations(DECORATORS.items(), r=2)
     ],
 )
-def test_combinations(
-    upper_decorator: Callable, lower_decorator: Callable, controller_kwargs: dict[str, Any], dataset: Dataset
-) -> None:
+def test_combinations(upper_details, lower_details) -> None:
     # pylint: disable=broad-exception-caught
     # If/when these tests are upgraded to use pytest, we can just let the exceptions be raised, rather than
     # explicitly transforming them into test failures.
     """Shouldn't throw any errors."""
+    upper_decorator, lower_decorator, controller_kwargs, dataset = _initialise_decorator_pair(
+        upper_details, lower_details
+    )
     try:
         controller_class = upper_decorator(lower_decorator(GaussianGPController))
     except (MissingRequirementsError, TopmostDecoratorError):
