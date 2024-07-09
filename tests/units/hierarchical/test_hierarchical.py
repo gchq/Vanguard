@@ -112,6 +112,7 @@ class KernelConversionTests(unittest.TestCase):
         gp.set_to_evaluation_mode()
         # pylint: disable=protected-access
         posterior = gp._predictive_likelihood(dataset.test_x)
+        # pylint: enable=protected-access
 
         mean, upper, lower = posterior.confidence_interval()
 
@@ -134,6 +135,7 @@ class KernelConversionTests(unittest.TestCase):
         gp.set_to_evaluation_mode()
         # pylint: disable=protected-access
         posterior = gp._fuzzy_predictive_likelihood(dataset.test_x, 0.05)
+        # pylint: enable=protected-access
 
         mean, upper, lower = posterior.confidence_interval()
 
@@ -168,7 +170,7 @@ class AbstractTests:
 
         def test_non_bayesian_hyperparameters_are_point_estimates(self) -> None:
             """
-            Verify the parameters of a Bayesian kernel are point estimates when not given a Hierarchical controller.
+            Verify the parameters of a Bayesian kernel are point estimates when not given a hierarchical controller.
             """
             dataset = SyntheticDataset()
             gp = self.controller_class(dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std)
@@ -193,7 +195,7 @@ class AbstractTests:
 
         def test_2d_non_bayesian_hyperparameters_are_point_estimates(self) -> None:
             """
-            Verify that multidimensional hyperparameters are point estimates when not given a Hierarchical controller.
+            Verify that multidimensional hyperparameters are point estimates when not given a hierarchical controller.
             """
             dataset = MultidimensionalSyntheticDataset()
             gp = self.controller_class(

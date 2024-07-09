@@ -103,7 +103,7 @@ class GeneratorTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """
-        Define objects shared across tests
+        Define objects shared across tests.
         """
         self.synthetic_dataset = SyntheticDataset()
         gp_synthetic_dataset = self.controller_class(
@@ -127,6 +127,7 @@ class GeneratorTests(unittest.TestCase):
         sample_generator = LaplaceHierarchicalHyperparameters()._infinite_fuzzy_posterior_samples(
             self.gp_synthetic_dataset, self.synthetic_dataset.test_x[0, :], 0.1
         )
+        # pylint: enable=protected-access
 
         for _ in range(5):
             current_sample = next(sample_generator)
@@ -147,6 +148,7 @@ class GeneratorTests(unittest.TestCase):
         sample_generator = LaplaceHierarchicalHyperparameters()._infinite_likelihood_samples(
             self.gp_synthetic_dataset, self.synthetic_dataset.test_x[0, :]
         )
+        # pylint: enable=protected-access
 
         for _ in range(5):
             current_sample = next(sample_generator)
@@ -167,6 +169,7 @@ class GeneratorTests(unittest.TestCase):
         sample_generator = LaplaceHierarchicalHyperparameters()._infinite_fuzzy_likelihood_samples(
             self.gp_synthetic_dataset, self.synthetic_dataset.test_x[0, :], 0.1
         )
+        # pylint: enable=protected-access
 
         for _ in range(5):
             current_sample = next(sample_generator)
