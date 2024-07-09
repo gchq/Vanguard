@@ -9,6 +9,7 @@ from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLik
 from gpytorch.mlls import VariationalELBO
 from sklearn.metrics import f1_score
 
+from tests.cases import get_default_rng
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
@@ -26,7 +27,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.rng = np.random.default_rng(1_989)
+        self.rng = get_default_rng()
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 50
@@ -71,6 +72,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -120,6 +122,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             kernel_kwargs={"batch_shape": (3,)},
             likelihood_class=DirichletClassificationLikelihood,
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -169,6 +172,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             likelihood_class=DirichletKernelClassifierLikelihood,
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
 
         # Fit the GP

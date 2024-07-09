@@ -7,7 +7,25 @@ import unittest
 import numpy as np
 import numpy.typing
 
-from vanguard.utils import add_time_dimension
+from tests.cases import get_default_rng
+from vanguard.utils import UnseededRandomWarning, add_time_dimension, optional_random_generator
+
+
+class OptionalRandomGeneratorTests(unittest.TestCase):
+    """Tests for the optional_random_generator() function."""
+
+    def test_passing_none_warns(self):
+        """Test that passing None warns the user and provides a new random generator."""
+        with self.assertWarns(UnseededRandomWarning):
+            rng = optional_random_generator(None)
+
+        self.assertIsInstance(rng, np.random.Generator)
+
+    def test_passing_generator_returns_generator(self):
+        """Test that passing a random generator returns the same generator unaltered."""
+        rng = get_default_rng()
+        rng_from_optional = optional_random_generator(rng)
+        self.assertIs(rng, rng_from_optional)
 
 
 class TimeDimensionTests(unittest.TestCase):
@@ -20,7 +38,7 @@ class TimeDimensionTests(unittest.TestCase):
         self.n_timesteps = 11
         self.n_dims = 3
         self.batch_dim = (23, 29)
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_no_batch_shape(self) -> None:
         data = self.rng.standard_normal((self.n_timesteps, self.n_dims))

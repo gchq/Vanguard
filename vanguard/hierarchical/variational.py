@@ -11,7 +11,8 @@ from gpytorch.lazy import lazify
 from gpytorch.variational import CholeskyVariationalDistribution
 from numpy.typing import NDArray
 
-from ..decoratorutils import wraps_class
+from .. import utils
+from ..decoratorutils import process_args, wraps_class
 from .base import (
     BaseHierarchicalHyperparameters,
     GPController,
@@ -96,7 +97,11 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 for module_name in ("kernel", "mean", "likelihood"):
                     set_batch_shape(kwargs, module_name, sample_shape)
 
-                super().__init__(*args, **kwargs)
+                all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
+                # Pop `rng` from kwargs to ensure we don't provide duplicate values to superclass init
+                kwargs.pop("rng", None)
+                super().__init__(*args, rng=self.rng, **kwargs)
 
                 module_hyperparameter_pairs, point_estimate_kernels = extract_bayesian_hyperparameters(self)
                 _correct_point_estimate_shapes(point_estimate_kernels)

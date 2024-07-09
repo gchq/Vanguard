@@ -13,6 +13,42 @@ import numpy.typing
 from scipy import stats
 from typing_extensions import ParamSpec
 
+DEFAULT_RNG_SEED = 1234
+
+
+def get_default_rng() -> np.random.Generator:
+    """
+    Get a random number generator with a default seed.
+
+    Call this function rather than `np.random.default_rng()` to create RNGs for testing. Having a centralised
+    function for this means that (a) changing the default seed is easy, and (b) we're able to override it to be
+    unseeded to evaluate our tests' sensitivity to the random seed.
+
+    If the default seed doesn't work, use `get_default_rng_override_seed` instead, and check that your test would be
+    expected to be sensitive to random seeding. For example, we would expect an optimisation problem to be sensitive
+    to random seeding (e.g. some of the tests under `classification` are very sensitive), but we would not expect a
+    simpler test to be sensitive, and if it were it may indicate a bug.
+
+    :return: A random number generator.
+    """
+    # TODO: Implement ability to override this (maybe with an environment variable or Pytest flag?) to allow us to
+    #  evaluate sensitivity to random seeds.
+    # https://github.com/gchq/Vanguard/issues/300
+    return get_default_rng_override_seed(DEFAULT_RNG_SEED)
+
+
+def get_default_rng_override_seed(seed: int) -> np.random.Generator:
+    """
+    Get a random number generator with a given seed.
+
+    Call this function rather than `np.random.default_rng()` to create RNGs for testing, but **only if the default seed
+    provided by `get_default_rng()` doesn't work**. Having a centralised function for this means that we're able to
+    override it to be unseeded to evaluate our tests' sensitivity to the random seed.
+
+    :return: A random number generator.
+    """
+    return np.random.default_rng(seed)
+
 
 class VanguardTestCase(unittest.TestCase):
     """

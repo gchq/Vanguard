@@ -6,6 +6,7 @@ import unittest
 
 import torch
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
@@ -25,9 +26,10 @@ class BasicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Code to run before all tests."""
-        cls.dataset = SyntheticDataset()
+        rng = get_default_rng()
+        cls.dataset = SyntheticDataset(rng=rng)
         cls.controller = WarpedGaussianGPController(
-            cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std
+            cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std, rng=rng
         )
         cls.controller.fit(10)
 

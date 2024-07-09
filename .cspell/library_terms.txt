@@ -11,6 +11,7 @@ autofunction
 automodule
 autoreload
 autoupdate
+autouse
 basecontroller
 basedataset
 basedecorator
@@ -116,6 +117,7 @@ pyobjects
 pyproject
 pyroma
 pytest
+PYTHONHASHSEED
 pytorch
 pyupgrade
 qualnames

@@ -9,6 +9,7 @@ from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
 from typing_extensions import Unpack
 
+from .. import utils
 from .basedataset import Dataset
 
 
@@ -70,10 +71,11 @@ class SyntheticDataset(Dataset):
         :param n_train_points: The total number of training points.
         :param n_test_points: The total number of testing points.
         :param significance: The significance to be used.
+        :param rng: Generator instance used to generate random numbers.
         """
         self.functions = list(functions)
 
-        self.rng = rng if rng is not None else np.random.default_rng()
+        self.rng = utils.optional_random_generator(rng)
 
         train_data = self.make_sample_data(n_train_points, train_input_noise_bounds, output_noise)
         test_data = self.make_sample_data(n_test_points, test_input_noise_bounds, 0)
@@ -137,15 +139,21 @@ class MultidimensionalSyntheticDataset(Dataset):
     def __init__(
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f, complicated_f),
+        rng: Optional[np.random.Generator] = None,
         **kwargs: Unpack[_SyntheticDataParams],
     ) -> None:
         """
         Initialise self.
 
         :param functions: The functions used on each input dimension
-                                                (they are combined linearly to make a single output).
+            (they are combined linearly to make a single output).
+        :param rng: Generator instance used to generate random numbers.
         """
-        one_dimensional_datasets = [SyntheticDataset(functions=(function,), **kwargs) for function in functions]
+        rng = utils.optional_random_generator(rng)
+
+        one_dimensional_datasets = [
+            SyntheticDataset(functions=(function,), rng=rng, **kwargs) for function in functions
+        ]
         train_x = np.stack([dataset.train_x.ravel() for dataset in one_dimensional_datasets], -1)
         train_x_std = np.stack([dataset.train_x_std.ravel() for dataset in one_dimensional_datasets], -1)
         train_y = np.mean(np.stack([dataset.train_y.ravel() for dataset in one_dimensional_datasets], -1), axis=-1)
@@ -185,6 +193,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise self.
@@ -198,7 +207,9 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         :param n_train_points: The total number of training points.
         :param n_test_points: The total number of testing points.
         :param significance: The significance to be used.
+        :param rng: Generator instance used to generate random numbers.
         """
+        rng = utils.optional_random_generator(rng)
         super().__init__(
             functions,
             output_noise,
@@ -207,6 +218,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
             n_train_points,
             n_test_points,
             significance,
+            rng=rng,
         )
         self.train_y_std = self.rng.normal(loc=self.train_y_std, scale=0.01, size=n_train_points)
         self.test_y_std = self.rng.normal(loc=self.test_y_std, scale=0.01, size=n_train_points)
@@ -240,10 +252,11 @@ class HigherRankSyntheticDataset(Dataset):
         :param n_train_points: The total number of training points.
         :param n_test_points: The total number of testing points.
         :param significance: The significance to be used.
+        :param rng: Generator instance used to generate random numbers.
         """
         self.functions = list(functions)
 
-        self.rng = rng if rng is not None else np.random.default_rng()
+        self.rng = utils.optional_random_generator(rng)
 
         train_data = self.make_sample_data(n_train_points, train_input_noise_bounds, output_noise)
         test_data = self.make_sample_data(n_test_points, test_input_noise_bounds, 0)

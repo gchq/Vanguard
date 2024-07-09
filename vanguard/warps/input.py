@@ -8,6 +8,7 @@ import torch
 
 from vanguard.warps.basefunction import WarpFunction
 
+from .. import utils
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 
@@ -80,14 +81,15 @@ class SetInputWarp(Decorator):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 module_decorator = _SetModuleInputWarp(warp_function)
                 mean_class = all_parameters_as_kwargs.pop("mean_class")
                 kernel_class = all_parameters_as_kwargs.pop("kernel_class")
-
                 super().__init__(
                     kernel_class=module_decorator(kernel_class),
                     mean_class=module_decorator(mean_class),
+                    rng=self.rng,
                     **all_parameters_as_kwargs,
                 )
                 self.input_warp = warp_function

@@ -6,6 +6,7 @@ import unittest
 
 import numpy as np
 
+from tests.cases import get_default_rng
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 
@@ -19,7 +20,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.rng = np.random.default_rng(1_989)
+        self.rng = get_default_rng()
         self.num_train_points = 500
         self.num_test_points = 500
         self.n_sgd_iters = 100
@@ -34,6 +35,7 @@ class VanguardTestCase(unittest.TestCase):
         # 5% + accepted_confidence_interval_error lie above the upper confidence
         # interval
         self.accepted_confidence_interval_error = 3
+        self.expected_percent_outside_one_sided = (100.0 * (1 - self.confidence_interval_alpha)) / 2
 
     def test_basic_gp(self) -> None:
         """
@@ -58,6 +60,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=y[train_indices],
             kernel_class=ScaledRBFKernel,
             y_std=self.small_noise * np.ones_like(y[train_indices]),
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -94,7 +97,7 @@ class VanguardTestCase(unittest.TestCase):
             pct_below_ci_lower_test,
         ]:
             self.assertLessEqual(
-                pct_check, self.confidence_interval_alpha / 2.0 + self.accepted_confidence_interval_error
+                pct_check, self.expected_percent_outside_one_sided + self.accepted_confidence_interval_error
             )
 
 

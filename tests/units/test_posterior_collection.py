@@ -13,6 +13,7 @@ import torch
 from gpytorch.distributions import Distribution, MultivariateNormal
 from scipy.stats import multivariate_normal
 
+from tests.cases import get_default_rng
 from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior
 
 
@@ -94,7 +95,7 @@ class PosteriorCollectionTests(unittest.TestCase):
                 yield Posterior(MultivariateNormal(torch.zeros((2,)), torch.eye(2)))
 
         collection = MonteCarloPosteriorCollection(infinite_generator())
-        distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=1234)
+        distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=get_default_rng())
 
         # for 10 random points, check that the log-pdf calculated by the collection is the same as that for the
         # single distribution
@@ -121,7 +122,7 @@ class PosteriorCollectionTests(unittest.TestCase):
                 yield Posterior(MultivariateNormal(torch.zeros((2,)), torch.eye(2)))
 
         collection = MonteCarloPosteriorCollection(infinite_generator())
-        distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=1234)
+        distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=get_default_rng())
 
         # for 10 random points, check that the log-pdf calculated by the collection is the same as that for the
         # single distribution
@@ -136,7 +137,7 @@ class PosteriorCollectionTests(unittest.TestCase):
 class YieldPosteriorsTests(unittest.TestCase):
     """Tests for the _yield_posteriors method."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
         self.failures_before_raise = 5
 

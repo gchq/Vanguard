@@ -12,6 +12,7 @@ from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 from sklearn.datasets import make_gaussian_quantiles
 
+from .. import utils
 from .basedataset import Dataset
 
 
@@ -34,8 +35,9 @@ class BinaryStripeClassificationDataset(Dataset):
 
         :param num_train_points: The number of training points.
         :param num_test_points: The number of testing points.
+        :param rng: Generator instance used to generate random numbers.
         """
-        self.rng = rng if rng is not None else np.random.default_rng()
+        self.rng = utils.optional_random_generator(rng)
         train_x = np.linspace(0, 1, num_train_points)
         test_x = self.rng.random(num_test_points)
 
@@ -69,7 +71,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         num_test_points: int,
         num_classes: int,
         covariance_scale: float = 1.0,
-        seed: Optional[int] = None,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise self.
@@ -79,15 +81,24 @@ class MulticlassGaussianClassificationDataset(Dataset):
         :param num_classes: The number of classes.
         :param covariance_scale: The covariance matrix will be this value times the unit matrix.
             Defaults to 1.0.
-        :param seed: Used to seed the quantile creation, defaults to None (not reproducible).
+        :param rng: Generator instance used to generate random numbers.
         """
+        self.rng = utils.optional_random_generator(rng)
         self.num_classes = num_classes
 
         train_x, train_y = make_gaussian_quantiles(
-            cov=covariance_scale, n_samples=num_train_points, n_features=2, n_classes=num_classes, random_state=seed
+            cov=covariance_scale,
+            n_samples=num_train_points,
+            n_features=2,
+            n_classes=num_classes,
+            random_state=self.rng.integers(2**32 - 1),
         )
         test_x, test_y = make_gaussian_quantiles(
-            cov=covariance_scale, n_samples=num_test_points, n_features=2, n_classes=num_classes, random_state=seed
+            cov=covariance_scale,
+            n_samples=num_test_points,
+            n_features=2,
+            n_classes=num_classes,
+            random_state=self.rng.integers(2**32 - 1),
         )
 
         super().__init__(train_x, 0, train_y, 0, test_x, 0, test_y, 0, 0)
@@ -181,7 +192,11 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
     """
 
     def __init__(
-        self, num_train_points: int, num_test_points: int, covariance_scale: float = 1.0, seed: Optional[int] = None
+        self,
+        num_train_points: int,
+        num_test_points: int,
+        covariance_scale: float = 1.0,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise self.
@@ -190,6 +205,12 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         :param num_test_points: The number of testing points.
         :param covariance_scale: The covariance matrix will be this value times the unit matrix.
             Defaults to 1.0.
-        :param seed: Used to seed the quantile creation, defaults to None (not reproducible).
+        :param rng: Generator instance used to generate random numbers.
         """
-        super().__init__(num_train_points, num_test_points, num_classes=2, covariance_scale=covariance_scale, seed=seed)
+        super().__init__(
+            num_train_points,
+            num_test_points,
+            num_classes=2,
+            covariance_scale=covariance_scale,
+            rng=utils.optional_random_generator(rng),
+        )
