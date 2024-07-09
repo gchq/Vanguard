@@ -336,7 +336,7 @@ class MultitaskWarpFunction(WarpFunction):
                 # Operator usage defined in __matmul__
                 new_warp = new_warp @ self  # pyright: ignore [reportOperatorIssue]
         elif n == 0:
-            new_warp = type(self)([_IdentityWarpFunction()] * self.num_tasks)
+            new_warp = type(self)(*[_IdentityWarpFunction()] * self.num_tasks)
         else:
             raise ValueError("'n' cannot be negative.")
         return new_warp

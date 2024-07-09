@@ -71,7 +71,12 @@ class SetWarp(Decorator):
                 def _unwarp_values(
                     *values: numpy.typing.NDArray[np.floating],
                 ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
-                    """Map values back through the warp."""
+                    """
+                    Map values back through the warp.
+
+                    :param values: Values to reverse warping on
+                    :return: Values warped back onto original space
+                    """
                     values_as_tensors = (
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )
@@ -84,7 +89,12 @@ class SetWarp(Decorator):
                 def _warp_values(
                     *values: numpy.typing.NDArray[np.floating],
                 ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
-                    """Map values through the warp."""
+                    """
+                    Map values through the warp.
+
+                    :param values: Values to warp on
+                    :return: Values warp onto new space
+                    """
                     values_as_tensors = (
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )
@@ -97,7 +107,12 @@ class SetWarp(Decorator):
                 def _warp_derivative_values(
                     *values: numpy.typing.NDArray[np.floating],
                 ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
-                    """Map values through the derivative of the warp."""
+                    """
+                    Map values through the derivative of the warp.
+
+                    :param values: Values to compute derivatives of warp for
+                    :return: Derivatives of warp for each input value
+                    """
                     values_as_tensors = (
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )
