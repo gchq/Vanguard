@@ -7,6 +7,7 @@ from typing import Any, Tuple, Type, TypeVar
 import numpy as np
 import torch
 
+from . import utils
 from .base import GPController
 from .base.posteriors import Posterior
 from .decoratorutils import Decorator, process_args, wraps_class
@@ -66,6 +67,7 @@ class NormaliseY(Decorator):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 y_std = all_parameters_as_kwargs.pop("y_std")
                 train_x = all_parameters_as_kwargs.pop("train_x")
@@ -142,7 +144,9 @@ class NormaliseY(Decorator):
                 self.posterior_class = normalise_posterior_class(self.posterior_class)
                 self.posterior_collection_class = normalise_posterior_class(self.posterior_collection_class)
 
-                super().__init__(train_x=train_x, train_y=train_y, y_std=y_std, **all_parameters_as_kwargs)
+                super().__init__(
+                    train_x=train_x, train_y=train_y, y_std=y_std, rng=self.rng, **all_parameters_as_kwargs
+                )
 
             @staticmethod
             def warn_normalise_y():

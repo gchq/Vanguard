@@ -12,6 +12,7 @@ import numpy as np
 import numpy.typing
 from torch import Tensor
 
+from .. import utils
 from ..base import GPController
 from ..base.posteriors import Posterior
 from ..decoratorutils import Decorator, process_args, wraps_class
@@ -133,6 +134,8 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
 
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
+
                 train_x = all_parameters_as_kwargs.pop("train_x")
                 train_y = all_parameters_as_kwargs.pop("train_y")
 
@@ -148,6 +151,7 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                         train_y=train_y,
                         gp_kwargs=gp_kwargs,
                         mll_kwargs=mll_kwargs,
+                        rng=self.rng,
                         **all_parameters_as_kwargs,
                     )
                 except TypeError as error:

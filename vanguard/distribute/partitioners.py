@@ -15,6 +15,8 @@ import torch
 from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 
+from vanguard import utils
+
 
 # TODO: should this be an abstract base class?
 # https://github.com/gchq/Vanguard/issues/198
@@ -27,11 +29,15 @@ class BasePartitioner:
     :param train_x: The mean of the inputs.
     :param n_experts: The number of partitions in which to split the data. Defaults to 3.
     :param communication: If True, A communications expert will be included. Defaults to False.
-    :param seed: The seed for the random state. Defaults to 42.
+    :param rng: Generator instance used to generate random numbers.
     """
 
     def __init__(
-        self, train_x: NDArray[np.floating], n_experts: int = 3, communication: bool = False, seed: Optional[int] = 42
+        self,
+        train_x: NDArray[np.floating],
+        n_experts: int = 3,
+        communication: bool = False,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise the BasePartitioner class.
@@ -39,7 +45,7 @@ class BasePartitioner:
         self.train_x = train_x
         self.n_experts = n_experts
         self.communication = communication
-        self.rng = np.random.default_rng(seed)
+        self.rng = utils.optional_random_generator(rng)
 
         self.n_examples = self.train_x.shape[0]
 
@@ -187,7 +193,7 @@ class KMedoidsPartitioner(BasePartitioner):
             similarity matrix in KMedoids.
     :param n_experts: The number of partitions in which to split the data. Defaults to 2.
     :param communication: If True, A communications expert will be included. Defaults to False.
-    :param seed: The seed for the random state. Defaults to 42.
+    :param rng: Generator instance used to generate random numbers.
 
     :seealso: Clusters are computed using a :class:`kmedoids.KMedoids` object.
     """
@@ -198,12 +204,14 @@ class KMedoidsPartitioner(BasePartitioner):
         kernel: gpytorch.kernels.Kernel,
         n_experts: int = 2,
         communication: bool = False,
-        seed: Optional[int] = 42,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
         Initialise the KMedoidsPartitioner class.
         """
-        super().__init__(train_x=train_x, n_experts=n_experts, communication=communication, seed=seed)
+        super().__init__(
+            train_x=train_x, n_experts=n_experts, communication=communication, rng=utils.optional_random_generator(rng)
+        )
         self.kernel = kernel
 
     def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:

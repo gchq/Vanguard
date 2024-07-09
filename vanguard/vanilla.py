@@ -2,7 +2,7 @@
 The :class:`GaussianGPController` provides the user with a standard GP model with no extra features.
 """
 
-from typing import Any, Type, Union
+from typing import Any, Optional, Type, Union
 
 import gpytorch
 import numpy as np
@@ -12,6 +12,7 @@ from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.means import ConstantMean
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
+from . import utils
 from .base import GPController
 from .optimise import GreedySmartOptimiser
 from .optimise.optimiser import SmartOptimiser
@@ -36,6 +37,7 @@ class GaussianGPController(GPController):
         marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
         optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
         smart_optimiser_class: Type[SmartOptimiser] = GreedySmartOptimiser,
+        rng: Optional[np.random.Generator] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -57,6 +59,7 @@ class GaussianGPController(GPController):
                 :mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
         :param optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
                 gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
+        :param rng: Generator instance used to generate random numbers.
         :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(
@@ -69,5 +72,6 @@ class GaussianGPController(GPController):
             marginal_log_likelihood_class=marginal_log_likelihood_class,
             optimiser_class=optimiser_class,
             smart_optimiser_class=smart_optimiser_class,
+            rng=utils.optional_random_generator(rng),
             **kwargs,
         )

@@ -12,6 +12,7 @@ from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import Likelihood
 from gpytorch.means import ZeroMean
 
+from tests.cases import get_default_rng
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import (
     DirichletKernelClassifierLikelihood,
@@ -34,13 +35,13 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             num_train_points=cls.num_classes * 3,
             num_test_points=cls.num_classes,
             num_classes=cls.num_classes,
-            seed=1234,
+            rng=get_default_rng(),
         )
         cls.likelihood = DirichletKernelClassifierLikelihood(num_classes=cls.num_classes)
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     def test_illegal_input_type(self):
         """Test that we get an appropriate error when an illegal argument type is passed."""
@@ -80,6 +81,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             likelihood_kwargs={"learn_alpha": True, "alpha": 1},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
 
         starting_alpha = controller.likelihood.alpha.clone()
@@ -109,6 +111,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             likelihood_kwargs={"learn_alpha": True, "alpha": 1, "alpha_constraint": GreaterThan(constraint_value)},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
         unconstrained_controller = MulticlassGaussianClassifier(
             train_x=self.dataset.train_x,
@@ -119,6 +122,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             likelihood_kwargs={"learn_alpha": True, "alpha": 1},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
 
         constrained_controller.fit(10)
@@ -174,9 +178,9 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 class TestMultitaskBernoulliLikelihood(TestCase):
     """Tests for the `MultitaskBernoulliLikelihood` class."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up data shared between tests."""
-        self.rng = np.random.default_rng(1234)
+        self.rng = get_default_rng()
 
     # TODO: Fails with `AttributeError: 'super' object has no attribute 'log_prob'`.
     # https://github.com/gchq/Vanguard/issues/218

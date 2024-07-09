@@ -11,6 +11,7 @@ from gpytorch.distributions import MultivariateNormal
 from scipy import stats
 from scipy.stats import multivariate_normal
 
+from tests.cases import get_default_rng
 from vanguard.base.posteriors import Posterior
 
 CONF_INTERVAL_SIZE = 0.05
@@ -133,7 +134,7 @@ class BasicTests(unittest.TestCase):
         """
         posterior = Posterior(MultivariateNormal(torch.zeros((2,)), torch.eye(2)))
 
-        distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=1234)
+        distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=get_default_rng())
 
         for _ in range(10):
             points = distribution.rvs([1, 5])

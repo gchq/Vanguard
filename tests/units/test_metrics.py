@@ -7,6 +7,7 @@ from contextlib import redirect_stdout
 from io import StringIO
 from math import isnan
 
+from tests.cases import get_default_rng
 from vanguard.base import GPController
 from vanguard.base.metrics import MetricsTracker, loss
 from vanguard.datasets.synthetic import SyntheticDataset
@@ -115,10 +116,15 @@ class PrintingTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        dataset = SyntheticDataset()
+        self.rng = get_default_rng()
+        dataset = SyntheticDataset(rng=self.rng)
 
         self.controller = GaussianGPController(
-            train_x=dataset.train_x, train_y=dataset.train_y, kernel_class=PeriodicRBFKernel, y_std=dataset.train_y_std
+            train_x=dataset.train_x,
+            train_y=dataset.train_y,
+            kernel_class=PeriodicRBFKernel,
+            y_std=dataset.train_y_std,
+            rng=self.rng,
         )
 
         self.new_stdout = StringIO()

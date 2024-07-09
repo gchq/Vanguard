@@ -7,10 +7,12 @@ import importlib
 import io
 import os
 import unittest
+import warnings
 from types import ModuleType
 from typing import Any, Generator, Optional, Tuple
 
 import vanguard
+from vanguard.utils import UnseededRandomWarning
 
 
 def yield_all_modules(package: ModuleType) -> Generator[ModuleType, None, None]:
@@ -63,7 +65,10 @@ class DoctestMetaClass(type):
                 loop variables within a new function.
                 """
                 suite = self.names_to_suites[self._testMethodName]  # pylint: disable=protected-access
-                result = self.test_runner.run(suite)
+                with warnings.catch_warnings():
+                    warnings.simplefilter(category=UnseededRandomWarning, action="ignore")
+                    # Suppress UnseededRandomWarnings - they'd make doctests more verbose than they need to be
+                    result = self.test_runner.run(suite)
                 if result.failures or result.errors:
                     for _, result in result.failures:
                         self.fail(result)

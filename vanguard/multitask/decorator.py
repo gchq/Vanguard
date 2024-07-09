@@ -12,6 +12,7 @@ from gpytorch.kernels import Kernel, MultitaskKernel
 from gpytorch.means import ConstantMean, Mean, MultitaskMean
 from torch import Tensor
 
+from .. import utils
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from ..variational import VariationalInference
@@ -70,6 +71,7 @@ class Multitask(Decorator):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 # it's OK to access self.gp_model_class as it's set in super().__init__ above
                 original_gp_model_class = self.gp_model_class  # pylint: disable=access-member-before-definition
@@ -123,6 +125,7 @@ class Multitask(Decorator):
                     mean_class=mean_class,
                     likelihood_kwargs=likelihood_kwargs,
                     gp_kwargs=gp_kwargs,
+                    rng=self.rng,
                     **all_parameters_as_kwargs,
                 )
 

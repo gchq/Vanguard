@@ -13,6 +13,7 @@ from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.mlls import VariationalELBO
 
+from tests.cases import get_default_rng
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
@@ -54,9 +55,11 @@ DECORATORS = {
             "likelihood_class": DirichletClassificationLikelihood,
             "likelihood_kwargs": {"learn_additional_noise": True},
         },
-        "dataset": MulticlassGaussianClassificationDataset(num_train_points=10, num_test_points=4, num_classes=4),
+        "dataset": MulticlassGaussianClassificationDataset(
+            num_train_points=10, num_test_points=4, num_classes=4, rng=get_default_rng()
+        ),
     },
-    Distributed: {"decorator": {"n_experts": 3}, "controller": {}},
+    Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}, "controller": {}},
     VariationalHierarchicalHyperparameters: {
         "decorator": {"num_mc_samples": 13},
         "controller": {
@@ -70,7 +73,9 @@ DECORATORS = {
         "controller": {
             "likelihood_class": FixedNoiseMultitaskGaussianLikelihood,
         },
-        "dataset": SyntheticDataset([simple_f, complicated_f], n_train_points=10, n_test_points=1),
+        "dataset": SyntheticDataset(
+            [simple_f, complicated_f], n_train_points=10, n_test_points=1, rng=get_default_rng()
+        ),
     },
     SetWarp: {
         "decorator": {"warp_function": warpfunctions.SinhWarpFunction()},
@@ -139,6 +144,7 @@ class CombinationTests(unittest.TestCase):
                     "train_y": dataset.train_y,
                     "y_std": dataset.train_y_std,
                     "kernel_class": ScaledRBFKernel,
+                    "rng": get_default_rng(),
                 }
 
                 combination = (type(upper_decorator), type(lower_decorator))
@@ -230,7 +236,11 @@ class CombinationTests(unittest.TestCase):
                     f"{type(lower_decorator).__name__}: two datasets have been passed."
                 )
 
-            dataset = upper_dataset or lower_dataset or SyntheticDataset(n_train_points=20, n_test_points=2)
+            dataset = (
+                upper_dataset
+                or lower_dataset
+                or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
+            )
 
             controller_kwargs = {**upper_controller_kwargs, **lower_controller_kwargs}
             yield upper_decorator, lower_decorator, controller_kwargs, dataset

@@ -11,6 +11,7 @@ import torch
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 from typing_extensions import Self
 
+from .. import utils
 from ..base import GPController
 from ..decoratorutils import Decorator, process_args, wraps_class
 from .mixin import Classification, ClassificationMixin
@@ -75,6 +76,8 @@ class DirichletMulticlassClassification(Decorator):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
+
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 if not issubclass(likelihood_class, DirichletClassificationLikelihood):
@@ -149,6 +152,7 @@ class DirichletMulticlassClassification(Decorator):
                     train_y=transformed_targets.detach().cpu().numpy(),
                     likelihood_class=likelihood_class,
                     likelihood_kwargs=likelihood_kwargs,
+                    rng=self.rng,
                     **all_parameters_as_kwargs,
                 )
 

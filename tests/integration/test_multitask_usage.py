@@ -8,14 +8,13 @@ import numpy as np
 from gpytorch.mlls import VariationalELBO
 from sklearn.metrics import f1_score
 
+from tests.cases import get_default_rng
 from vanguard.classification import BinaryClassification
 from vanguard.classification.likelihoods import MultitaskBernoulliLikelihood
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.multitask import Multitask
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
-
-from ..cases import flaky
 
 
 class VanguardTestCase(unittest.TestCase):
@@ -27,7 +26,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.rng = np.random.default_rng(1_989)
+        self.rng = get_default_rng()
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 500
@@ -35,9 +34,8 @@ class VanguardTestCase(unittest.TestCase):
         # successful?)
         self.required_f1_score = 0.5
 
-    @unittest.skip  # TODO: Fix test - unacceptably flaky
+    @unittest.skip  # TODO: Investigate why this fails for e.g. seed=1234
     # https://github.com/gchq/Vanguard/issues/141
-    @flaky
     def test_gp_multitask_binary_classification(self) -> None:
         """
         Verify Vanguard usage on a multitask binary classification problem.

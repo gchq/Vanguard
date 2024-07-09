@@ -8,6 +8,7 @@ import numpy as np
 import numpy.typing
 import torch
 
+from .. import utils
 from ..base import GPController
 from ..base.posteriors import Posterior
 from ..decoratorutils import Decorator, process_args, wraps_class
@@ -50,10 +51,13 @@ class SetWarp(Decorator):
             """
 
             def __init__(self, *args: Any, **kwargs: Any):
-                super().__init__(*args, **kwargs)
-
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
+                # Pop `rng` from kwargs to ensure we don't provide duplicate values to superclass
+                kwargs.pop("rng", None)
+
+                super().__init__(*args, rng=self.rng, **kwargs)
 
                 for warp_component in warp_function.components:
                     if is_intermediate_warp_function(warp_component):
