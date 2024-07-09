@@ -42,7 +42,7 @@ class BayesianKernel(RBFKernel):
 
 class VariationalTests(unittest.TestCase):
     """
-    Some tests.
+    Tests relating to distributed variational hierarchical controllers.
     """
 
     def setUp(self) -> None:
@@ -51,7 +51,9 @@ class VariationalTests(unittest.TestCase):
         self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=self.rng)
 
     def test_variational_distribution_is_same_on_all_experts(self) -> None:
-        """All experts should share variational distribution."""
+        """
+        Test that all experts share the same variational distribution.
+        """
         gp = DistributedVariationalHierarchicalGaussianGPController(
             self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
@@ -68,7 +70,9 @@ class VariationalTests(unittest.TestCase):
         self.assertTrue((mean_dists == 0).all())
 
     def test_variational_distribution_from_subset_is_copied(self) -> None:
-        """Experts' variation distribution should match the trained subset controller."""
+        """
+        Test that experts' variation distribution matches the trained subset controller.
+        """
         gp = DistributedVariationalHierarchicalGaussianGPController(
             self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
@@ -89,7 +93,7 @@ class VariationalTests(unittest.TestCase):
 
 class LaplaceTests(unittest.TestCase):
     """
-    Some tests.
+    Tests relating to distributed Laplace variational hierarchical controllers.
     """
 
     def setUp(self) -> None:
@@ -98,7 +102,9 @@ class LaplaceTests(unittest.TestCase):
         self.dataset = SyntheticDataset(n_train_points=20, n_test_points=5, rng=self.rng)
 
     def test_posterior_mean_is_same_on_all_experts(self) -> None:
-        """All experts should share variational distribution."""
+        """
+        Test that all experts share the same mean of their variational distributions.
+        """
         gp = DistributedLaplaceHierarchicalGaussianGPController(
             self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
@@ -114,7 +120,9 @@ class LaplaceTests(unittest.TestCase):
         self.assertTrue((mean_dists == 0).all())
 
     def test_posterior_covar_is_same_on_all_experts(self) -> None:
-        """All experts should share variational distribution."""
+        """
+        Test that all experts share the same covariance of their variational distributions.
+        """
         dataset = SyntheticDataset(rng=self.rng)
 
         gp = DistributedLaplaceHierarchicalGaussianGPController(
@@ -146,7 +154,9 @@ class LaplaceTests(unittest.TestCase):
         self.assertTrue((covar_dists == 0).all())
 
     def test_posterior_mean_from_subset_is_copied(self) -> None:
-        """Experts' posterior mean should match the trained subset controller."""
+        """
+        Test that experts' posterior mean matches the trained subset controller.
+        """
         gp = DistributedLaplaceHierarchicalGaussianGPController(
             self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )
@@ -162,7 +172,9 @@ class LaplaceTests(unittest.TestCase):
         self.assertTrue((mean_dists == 0).all())
 
     def test_posterior_covariance_from_subset_is_copied(self) -> None:
-        """Experts' posterior covariance should match the trained subset controller."""
+        """
+        Test that experts' posterior covariance matches the trained subset controller.
+        """
         gp = DistributedLaplaceHierarchicalGaussianGPController(
             self.dataset.train_x, self.dataset.train_y, BayesianKernel, self.dataset.train_y_std, rng=self.rng
         )

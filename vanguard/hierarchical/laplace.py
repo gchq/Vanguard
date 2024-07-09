@@ -224,7 +224,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
         controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
-    ) -> Generator[torch.Tensor, None, None]:
+    ) -> Generator[PosteriorT, None, None]:
         """
         Yield fuzzy posterior samples forever.
 
@@ -234,6 +234,8 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
             * float: Assume homoskedastic noise.
+
+        :return: Generator that provides posterior samples.
         """
         tx = torch.tensor(x, dtype=torch.float32, device=controller.device)
         tx_std = controller._process_x_std(x_std).to(controller.device)  # pylint: disable=protected-access
@@ -249,8 +251,14 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     @staticmethod
     def _infinite_likelihood_samples(
         controller: ControllerT, x: NDArray[np.floating]
-    ) -> Generator[torch.Tensor, None, None]:
-        """Yield likelihood samples forever."""
+    ) -> Generator[PosteriorT, None, None]:
+        """
+        Yield likelihood samples forever.
+
+        :param controller: The controller from which to yield samples.
+        :param x: (n_predictions, n_features) The predictive inputs.
+        :return: Generator that provides likelihood samples.
+        """
         func = _posterior_to_likelihood_samples(LaplaceHierarchicalHyperparameters._infinite_posterior_samples)
         yield from func(controller, x)
 
@@ -258,9 +266,23 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     def _infinite_fuzzy_likelihood_samples(
         controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
     ) -> Generator[torch.Tensor, None, None]:
-        """Yield fuzzy likelihood samples forever."""
+        """
+        Yield fuzzy likelihood samples forever.
+
+        :param controller: The controller from which to yield samples.
+        :param x: (n_predictions, n_features) The predictive inputs.
+        :param x_std: The input noise standard deviations:
+
+            * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
+            * float: Assume homoskedastic noise.
+
+        :return: Generator that provides likelihood samples.
+        """
         func = _posterior_to_likelihood_samples(LaplaceHierarchicalHyperparameters._infinite_fuzzy_posterior_samples)
-        yield from func(controller, x)
+        # TODO: x_std was previously unused, but this function failed when writing unit tests.
+        #  Is passing x_std below the correct behaviour?
+        # https://github.com/gchq/Vanguard/issues/301
+        yield from func(controller, x, x_std)
 
 
 def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -274,6 +296,10 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -
     Taylor expansion behind the Laplace approximation breaks down.
     Along bad directions, we set the Hessian inverse eigenvalues to a fixed
     small jitter value.
+
+    :param hessian: Hessian matrix we wish to invert
+    :param cutoff: Eigenvalues smaller than `cutoff` will be discarded from computations
+    :return: Arrays holding inverse_eigenvalues and eigenvectors
     """
     eigenvalues, eigenvectors = torch.linalg.eigh(hessian)  # pylint: disable=not-callable
     keep_indices = eigenvalues > cutoff
@@ -285,10 +311,21 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -
 def _posterior_to_likelihood_samples(
     posterior_generator: Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]],
 ) -> Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]]:
-    """Convert an infinite posterior sample generator to generate likelihood samples."""
+    """
+    Convert an infinite posterior sample generator to generate likelihood samples.
+
+    :param posterior_generator: Generator objective that provides posterior objects
+    :return: Generator object that provides likelihood samples.
+    """
 
     def generator(controller: ControllerT, x: NDArray[np.floating], *args) -> Generator[torch.Tensor, None, None]:
-        """Yield likelihood samples forever."""
+        """
+        Yield likelihood samples forever.
+
+        :param controller: The controller from which to yield samples.
+        :param x: (n_predictions, n_features) The predictive inputs.
+        :return: Generator that provides likelihood samples.
+        """
         for sample in posterior_generator(controller, x, *args):
             # pylint: disable-next=protected-access
             shape = controller._decide_noise_shape(controller.posterior_class(sample), x)
