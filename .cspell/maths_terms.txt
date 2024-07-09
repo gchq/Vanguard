@@ -9,6 +9,7 @@ jittered
 latents
 logit
 medoids
+nanmean
 nonlinear
 nonparametric
 parsable
