@@ -13,6 +13,7 @@ from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLik
 from gpytorch.mlls import VariationalELBO
 
 from tests.cases import get_default_rng
+from tests.units.classification.case import BatchScaledMean, BatchScaledRBFKernel
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
@@ -54,9 +55,16 @@ DECORATORS = {
         "controller": {
             "likelihood_class": DirichletClassificationLikelihood,
             "likelihood_kwargs": {"learn_additional_noise": True},
+            # TODO: I don't like that we have to import these from another test file. This should have default values
+            #  that just work out of the box.
+            "mean_class": BatchScaledMean,
+            "kernel_class": BatchScaledRBFKernel,
+            "kernel_kwargs": {"batch_shape": 4},
+            "mean_kwargs": {"batch_shape": 4},
         },
+        # This fails with different errors (!) on 12 or 20 training points?
         "dataset": MulticlassGaussianClassificationDataset(
-            num_train_points=10, num_test_points=4, num_classes=4, rng=get_default_rng()
+            num_train_points=40, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
     },
     Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}, "controller": {}},
@@ -119,6 +127,8 @@ EXCLUDED_COMBINATIONS = {
 
 EXPECTED_COMBINATION_CREATE_ERRORS = {
     (NormaliseY, DirichletMulticlassClassification): (
+        # TODO: Introduce some kind of "banned decorator combination" check into the decorators themselves, so they
+        #  raise a more informative error (e.g. "Classification decorators cannot be used with NormaliseY, as...")
         TypeError,
         "For classification, train_y must be integer-valued. Got dtype=.*",
     ),
@@ -192,6 +202,11 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
         upper_details, lower_details
     )
 
+    try:
+        controller_class = upper_decorator(lower_decorator(GaussianGPController))
+    except (MissingRequirementsError, TopmostDecoratorError):
+        return
+
     final_kwargs = {
         "train_x": dataset.train_x,
         "train_y": dataset.train_y,
@@ -204,11 +219,6 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
     combination_controller_kwargs = COMBINATION_CONTROLLER_KWARGS.get(combination, {})
     final_kwargs.update(controller_kwargs)
     final_kwargs.update(combination_controller_kwargs)
-
-    try:
-        controller_class = upper_decorator(lower_decorator(GaussianGPController))
-    except (MissingRequirementsError, TopmostDecoratorError):
-        return
 
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_CREATE_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
@@ -223,10 +233,8 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
         return
 
     if hasattr(controller, "classify_points"):
-        pass
-        # TODO: check that the classification methods don't throw any unexpected errors
-        # controller.classify_points(dataset.test_x)
-        # controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
+        controller.classify_points(dataset.test_x)
+        controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
     else:
         # check that the prediction methods don't throw any unexpected errors
         posterior = controller.posterior_over_point(dataset.test_x)

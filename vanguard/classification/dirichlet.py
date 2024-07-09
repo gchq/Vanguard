@@ -154,7 +154,6 @@ class DirichletMulticlassClassification(Decorator):
 
                 self.posterior_class = TransposedPosterior
                 self.posterior_collection_class = TransposedMonteCarloPosteriorCollection
-
                 super().__init__(
                     train_y=transformed_targets.detach().cpu().numpy(),
                     likelihood_class=likelihood_class,
