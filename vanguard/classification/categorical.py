@@ -56,8 +56,8 @@ class CategoricalClassification(Decorator):
         >>>
         >>> test_x = np.array([0.05, 0.95])
         >>> predictions, probs = gp.classify_points(test_x)
-        >>> predictions
-        array([0, 2])
+        >>> predictions.tolist()
+        [0, 2]
     """
 
     def __init__(self, num_classes: int, **kwargs: Any) -> None:
