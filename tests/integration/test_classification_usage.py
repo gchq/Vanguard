@@ -96,7 +96,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         # Define some data for the test
         x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.zeros_like(x)
+        y = np.zeros_like(x, dtype=np.integer)
         for index, x_val in enumerate(x):
             # Set some non-trivial classification target with 3 classes (0, 1 and 2)
             if 0.25 < x_val < 0.5:
