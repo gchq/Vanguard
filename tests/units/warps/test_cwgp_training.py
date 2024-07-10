@@ -149,7 +149,9 @@ class ParameterTests(VanguardTestCase):
     Tests related to practical warp function usage.
     """
 
-    DATASET = SyntheticDataset()
+    @classmethod
+    def setUpClass(cls):
+        cls.DATASET = SyntheticDataset(rng=get_default_rng())
 
     def setUp(self) -> None:
         self.rng = get_default_rng()

@@ -10,6 +10,7 @@ import numpy as np
 import torch
 from gpytorch.kernels import RBFKernel, ScaleKernel
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.hierarchical import (
     BayesianHyperparameters,
@@ -52,12 +53,13 @@ class LaplaceTrainingTests(unittest.TestCase):
         """
         Define objects shared across tests
         """
-        self.synthetic_dataset = SyntheticDataset()
+        self.synthetic_dataset = SyntheticDataset(rng=get_default_rng())
         gp_synthetic_dataset = self.controller_class(
             self.synthetic_dataset.train_x,
             self.synthetic_dataset.train_y,
             BayesianScaledRBFKernel,
             self.synthetic_dataset.train_y_std,
+            rng=get_default_rng(),
         )
         gp_synthetic_dataset.fit(10)
         self.gp_synthetic_dataset = gp_synthetic_dataset
@@ -105,12 +107,13 @@ class GeneratorTests(unittest.TestCase):
         """
         Define objects shared across tests.
         """
-        self.synthetic_dataset = SyntheticDataset()
+        self.synthetic_dataset = SyntheticDataset(rng=get_default_rng())
         gp_synthetic_dataset = self.controller_class(
             self.synthetic_dataset.train_x,
             self.synthetic_dataset.train_y,
             BayesianScaledRBFKernel,
             self.synthetic_dataset.train_y_std,
+            rng=get_default_rng(),
         )
         gp_synthetic_dataset.fit(10)
         gp_synthetic_dataset.set_to_evaluation_mode()

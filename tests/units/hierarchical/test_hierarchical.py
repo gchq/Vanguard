@@ -12,6 +12,7 @@ import torch
 from gpytorch.constraints import Positive
 from gpytorch.kernels import RBFKernel, ScaleKernel
 
+from tests.cases import get_default_rng
 from vanguard.base import GPController
 from vanguard.datasets.synthetic import MultidimensionalSyntheticDataset, SyntheticDataset
 from vanguard.hierarchical import (
@@ -77,9 +78,13 @@ class KernelConversionTests(unittest.TestCase):
         been defined to use a specific number of MCMC samples. We expect each hyperparameter of the supplied
         kernel to be a distribution with this many MCMC samples.
         """
-        dataset = SyntheticDataset()
+        dataset = SyntheticDataset(rng=get_default_rng())
         gp = VariationalFullBayesianGPController(
-            dataset.train_x, dataset.train_y, BayesianRBFKernel, dataset.train_y_std
+            dataset.train_x,
+            dataset.train_y,
+            BayesianRBFKernel,
+            dataset.train_y_std,
+            rng=get_default_rng(),
         )
         self.assertEqual(gp.kernel.raw_lengthscale.shape, torch.Size([N_MC_SAMPLES, 1, 1]))
 
@@ -91,9 +96,9 @@ class KernelConversionTests(unittest.TestCase):
         been defined to use a specific number of MCMC samples. We expect each hyperparameter of the supplied
         kernel to be a distribution with this many MCMC samples.
         """
-        dataset = SyntheticDataset()
+        dataset = SyntheticDataset(rng=get_default_rng())
         gp = VariationalFullBayesianGPController(
-            dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std
+            dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std, rng=get_default_rng()
         )
         self.assertEqual(gp.hyperparameter_collection.sample_tensor.shape, torch.Size([N_MC_SAMPLES, 1]))
 
@@ -101,9 +106,9 @@ class KernelConversionTests(unittest.TestCase):
         """
         Verify that the predictive likelihood is valid when using Bayesian hyperparameters.
         """
-        dataset = SyntheticDataset()
+        dataset = SyntheticDataset(rng=get_default_rng())
         gp = VariationalFullBayesianGPController(
-            dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std
+            dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std, rng=get_default_rng()
         )
         gp.fit(10)
 
@@ -124,9 +129,9 @@ class KernelConversionTests(unittest.TestCase):
         """
         Verify that the fuzzy predictive likelihood is valid when using Bayesian hyperparameters.
         """
-        dataset = SyntheticDataset()
+        dataset = SyntheticDataset(rng=get_default_rng())
         gp = VariationalFullBayesianGPController(
-            dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std
+            dataset.train_x, dataset.train_y, ScaledBayesianRBFKernel, dataset.train_y_std, rng=get_default_rng()
         )
         gp.fit(10)
 
