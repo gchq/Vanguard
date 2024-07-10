@@ -13,7 +13,6 @@ from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLik
 from gpytorch.mlls import VariationalELBO
 
 from tests.cases import get_default_rng
-from tests.units.classification.case import BatchScaledMean, BatchScaledRBFKernel
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
@@ -55,12 +54,8 @@ DECORATORS = {
         "controller": {
             "likelihood_class": DirichletClassificationLikelihood,
             "likelihood_kwargs": {"learn_additional_noise": True},
-            # TODO: I don't like that we have to import these from another test file. This should have default values
-            #  that just work out of the box.
-            "mean_class": BatchScaledMean,
-            "kernel_class": BatchScaledRBFKernel,
-            "kernel_kwargs": {"batch_shape": 4},
-            "mean_kwargs": {"batch_shape": 4},
+            "kernel_class": ScaledRBFKernel,
+            "kernel_kwargs": {"batch_shape": (4,)},
         },
         # This fails with different errors (!) on 12 or 20 training points?
         "dataset": MulticlassGaussianClassificationDataset(
@@ -128,8 +123,6 @@ EXCLUDED_COMBINATIONS = {
 # Errors we expect to be raised on initialisation of the decorated class.
 EXPECTED_COMBINATION_INIT_ERRORS = {
     (NormaliseY, DirichletMulticlassClassification): (
-        # TODO: Introduce some kind of "banned decorator combination" check into the decorators themselves, so they
-        #  raise a more informative error (e.g. "Classification decorators cannot be used with NormaliseY, as...")
         TypeError,
         "NormaliseY should not be used above classification decorators.",
     ),
