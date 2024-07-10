@@ -263,8 +263,14 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
         return
 
     if hasattr(controller, "classify_points"):
+        # check that classification doesn't throw any errors
         controller.classify_points(dataset.test_x)
-        controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
+
+        # we don't care about any kind of accuracy here, so just pick the minimum number that doesn't
+        # cause errors
+        with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 25):
+            # check that fuzzy classification doesn't throw any errors
+            controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
     else:
         # check that the prediction methods don't throw any unexpected errors
         posterior = controller.posterior_over_point(dataset.test_x)
