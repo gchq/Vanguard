@@ -2,6 +2,7 @@
 The :class:`NormaliseY` decorator will scale the y-inputs to a unit normal distribution.
 """
 
+import warnings
 from typing import Any, Tuple, Type, TypeVar
 
 import numpy as np
@@ -10,7 +11,9 @@ import torch
 from . import utils
 from .base import GPController
 from .base.posteriors import Posterior
+from .classification.mixin import ClassificationMixin
 from .decoratorutils import Decorator, process_args, wraps_class
+from .decoratorutils.errors import BadCombinationWarning
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -58,6 +61,14 @@ class NormaliseY(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+        if issubclass(cls, ClassificationMixin):
+            warnings.warn(
+                "NormaliseY should not be used above classification decorators "
+                "- this may lead to unexpected behaviour.",
+                BadCombinationWarning,
+                stacklevel=3,
+            )
+
         @wraps_class(cls)
         class InnerClass(cls):
             """
@@ -144,9 +155,14 @@ class NormaliseY(Decorator):
                 self.posterior_class = normalise_posterior_class(self.posterior_class)
                 self.posterior_collection_class = normalise_posterior_class(self.posterior_collection_class)
 
-                super().__init__(
-                    train_x=train_x, train_y=train_y, y_std=y_std, rng=self.rng, **all_parameters_as_kwargs
-                )
+                try:
+                    super().__init__(
+                        train_x=train_x, train_y=train_y, y_std=y_std, rng=self.rng, **all_parameters_as_kwargs
+                    )
+                except TypeError as exc:
+                    if issubclass(cls, ClassificationMixin):
+                        msg = "NormaliseY should not be used above classification decorators."
+                        raise TypeError(msg) from exc
 
             @staticmethod
             def warn_normalise_y():

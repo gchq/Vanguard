@@ -21,7 +21,7 @@ from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_f
 from vanguard.decoratorutils import Decorator
-from vanguard.decoratorutils.errors import MissingRequirementsError, TopmostDecoratorError
+from vanguard.decoratorutils.errors import BadCombinationWarning, MissingRequirementsError, TopmostDecoratorError
 from vanguard.distribute import Distributed
 from vanguard.hierarchical import BayesianHyperparameters, VariationalHierarchicalHyperparameters
 from vanguard.kernels import ScaledRBFKernel
@@ -125,15 +125,25 @@ EXCLUDED_COMBINATIONS = {
     ),  # can't aggregate multitask predictions
 }
 
-EXPECTED_COMBINATION_CREATE_ERRORS = {
+# Errors we expect to be raised on initialisation of the decorated class.
+EXPECTED_COMBINATION_INIT_ERRORS = {
     (NormaliseY, DirichletMulticlassClassification): (
         # TODO: Introduce some kind of "banned decorator combination" check into the decorators themselves, so they
         #  raise a more informative error (e.g. "Classification decorators cannot be used with NormaliseY, as...")
         TypeError,
-        "For classification, train_y must be integer-valued. Got dtype=.*",
+        "NormaliseY should not be used above classification decorators.",
     ),
 }
 
+# Warnings we expect to be raised on decorator application.
+EXPECTED_COMBINATION_APPLY_WARNINGS = {
+    (NormaliseY, DirichletMulticlassClassification): (
+        BadCombinationWarning,
+        "NormaliseY should not be used above classification decorators - this may lead to unexpected behaviour.",
+    ),
+}
+
+# Errors we expect to be raised when calling controller.fit().
 EXPECTED_COMBINATION_FIT_ERRORS = {
     (VariationalInference, Multitask): (RuntimeError, ".* may not be the correct choice for a variational strategy"),
 }
@@ -153,6 +163,22 @@ def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = Non
         with pytest.raises(category, match=match) as exc:
             yield
         return exc
+
+
+@contextlib.contextmanager
+def maybe_warns(category: Optional[Type[Warning]], match: Optional[str] = None) -> Optional[pytest.WarningsRecorder]:
+    """
+    Do nothing if None is given. Do `pytest.warns()` if a warning type is passed.
+
+    :return: None if no warning type was passed. ExceptionInfo from `pytest.warns()` if a warning type was passed.
+    """
+    if category is None:
+        yield
+        return None
+    else:
+        with pytest.warns(category, match=match) as warnings:
+            yield
+        return warnings
 
 
 def _initialise_decorator_pair(
@@ -202,10 +228,15 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
         upper_details, lower_details
     )
 
-    try:
-        controller_class = upper_decorator(lower_decorator(GaussianGPController))
-    except (MissingRequirementsError, TopmostDecoratorError):
-        return
+    combination = (type(upper_decorator), type(lower_decorator))
+    expected_warning_class, expected_warning_message = EXPECTED_COMBINATION_APPLY_WARNINGS.get(
+        combination, (None, None)
+    )
+    with maybe_warns(expected_warning_class, expected_warning_message):
+        try:
+            controller_class = upper_decorator(lower_decorator(GaussianGPController))
+        except (MissingRequirementsError, TopmostDecoratorError):
+            return
 
     final_kwargs = {
         "train_x": dataset.train_x,
@@ -215,12 +246,11 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
         "rng": get_default_rng(),
     }
 
-    combination = (type(upper_decorator), type(lower_decorator))
     combination_controller_kwargs = COMBINATION_CONTROLLER_KWARGS.get(combination, {})
     final_kwargs.update(controller_kwargs)
     final_kwargs.update(combination_controller_kwargs)
 
-    expected_error_class, expected_error_message = EXPECTED_COMBINATION_CREATE_ERRORS.get(combination, (None, None))
+    expected_error_class, expected_error_message = EXPECTED_COMBINATION_INIT_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
         controller = controller_class(**final_kwargs)
     if expected_error_class is not None:

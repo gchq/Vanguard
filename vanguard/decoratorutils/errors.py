@@ -37,3 +37,7 @@ class OverwrittenMethodWarning(DecoratorWarning):
 
 class UnexpectedMethodWarning(DecoratorWarning):
     """A new, unexpected method has been implemented."""
+
+
+class BadCombinationWarning(DecoratorWarning):
+    """This combination of decorators may lead to unexpected issues."""
