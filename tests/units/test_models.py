@@ -59,20 +59,17 @@ class TestInducingPointKernelGPModel(unittest.TestCase):
         # Setup for the model
         example_x = torch.tensor([[10.0, 100.0], [20.0, 200.0], [30.0, 300.0], [40.0, 400.0], [50.0, 500.0]])
         example_y = torch.tensor([5.0, 6.0, 7.0, 8.0, 9.0])
-        mocked_rng = MagicMock()
+        n_inducing_points = 3
 
         # Create the model
         kernel = ScaledRBFKernel()
 
-        with patch("vanguard.utils.optional_random_generator") as patched_random, patch(
-            "gpytorch.kernels.InducingPointKernel"
-        ) as patched_kernel:
+        with patch("gpytorch.kernels.InducingPointKernel") as patched_kernel:
             # Mock the random generation to pick some fixed indices
-            mocked_rng_return = MagicMock()
+            mocked_rng = MagicMock()
             mocked_choice = MagicMock()
             mocked_choice.return_value = [1, 2, 4]
-            mocked_rng_return.choice = mocked_choice
-            patched_random.return_value = mocked_rng_return
+            mocked_rng.choice = mocked_choice
 
             # Create the model, which will have our mocked and patch objects manipulate the
             # creation internally
@@ -82,7 +79,7 @@ class TestInducingPointKernelGPModel(unittest.TestCase):
                 likelihood=gpytorch.likelihoods.GaussianLikelihood(),
                 mean_module=gpytorch.means.ConstantMean(),
                 covar_module=kernel,
-                n_inducing_points=3,
+                n_inducing_points=n_inducing_points,
                 rng=mocked_rng,
             )
 
@@ -94,4 +91,4 @@ class TestInducingPointKernelGPModel(unittest.TestCase):
 
             # Check the calls to the patched random choice - arguments should be the number of
             # points in example_x, the number of inducing points desired and sampling with replacement
-            mocked_choice.assert_called_once_with(5, size=3, replace=True)
+            mocked_choice.assert_called_once_with(example_x.shape[0], size=n_inducing_points, replace=True)
