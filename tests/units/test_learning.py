@@ -3,17 +3,103 @@ Tests for learning functionality that is not covered elsewhere.
 """
 
 import unittest
+from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import torch
+from gpytorch.kernels import RBFKernel, ScaleKernel
+from gpytorch.likelihoods import DirichletClassificationLikelihood
+from gpytorch.means import ZeroMean
 
 from tests.cases import get_default_rng
-from vanguard.datasets.classification import BinaryStripeClassificationDataset
+from vanguard.classification import DirichletMulticlassClassification
+from vanguard.datasets.classification import BinaryStripeClassificationDataset, MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.learning import LearnYNoise, _process_y_std
 from vanguard.vanilla import GaussianGPController
+
+
+class BatchScaledRBFKernel(ScaleKernel):
+    """
+    The recommended starting place for a kernel.
+    """
+
+    def __init__(self, batch_shape: torch.Size) -> None:
+        batch_shape = batch_shape if isinstance(batch_shape, torch.Size) else torch.Size([batch_shape])
+        super().__init__(RBFKernel(batch_shape=batch_shape), batch_shape=batch_shape)
+
+
+class BatchScaledMean(ZeroMean):
+    """
+    A basic mean with batch shape to match the above kernel.
+    """
+
+    def __init__(self, batch_shape: torch.Size) -> None:
+        batch_shape = batch_shape if isinstance(batch_shape, torch.Size) else torch.Size([batch_shape])
+        super().__init__(batch_shape=batch_shape)
+
+
+class AlteredDirichletClassificationLikelihoodExpectedError(DirichletClassificationLikelihood):
+    """
+    Define a likelihood class that rejects the argument `learn_additional_noise` for testing.
+    """
+
+    def __init__(
+        self,
+        targets: torch.Tensor,
+        alpha_epsilon: float = 0.01,
+        learn_additional_noise: Optional[bool] = False,
+        batch_shape: torch.Size = torch.Size(),
+        dtype: torch.dtype = torch.float,
+        **kwargs: Any,
+    ):
+        """
+        Initialise self, and raise a sensible `TypeError` if `learn_additional_noise` is passed as True.
+        """
+        if learn_additional_noise:
+            raise TypeError("__init__() got an unexpected keyword argument 'learn_additional_noise'")
+        super().__init__(
+            targets,
+            alpha_epsilon,
+            learn_additional_noise,
+            batch_shape,
+            dtype,
+            **kwargs,
+        )
+
+
+class AlteredDirichletClassificationLikelihoodUnexpectedError(DirichletClassificationLikelihood):
+    """
+    Define a likelihood class that rejects the argument `learn_additional_noise` for testing.
+
+    The rejection in this case is not an expected refusal of learning noise, and hence should be
+    treated differently in the Vanguard internal code.
+    """
+
+    def __init__(
+        self,
+        targets: torch.Tensor,
+        alpha_epsilon: float = 0.01,
+        learn_additional_noise: Optional[bool] = False,
+        batch_shape: torch.Size = torch.Size(),
+        dtype: torch.dtype = torch.float,
+        **kwargs: Any,
+    ):
+        """
+        Initialise self, and raise a `ValueError` if `learn_additional_noise` is passed as True.
+        """
+        if learn_additional_noise:
+            raise ValueError("Argument 'learn_additional_noise' cannot be set to True.")
+        super().__init__(
+            targets,
+            alpha_epsilon,
+            learn_additional_noise,
+            batch_shape,
+            dtype,
+            **kwargs,
+        )
 
 
 class TestLearning(unittest.TestCase):
@@ -70,3 +156,78 @@ class TestLearning(unittest.TestCase):
         # Call the function and verify output
         result = _process_y_std(y_std=y_std, shape=(2, 3), dtype=float, device=device)
         torch.testing.assert_allclose(result, expected_result)
+
+    def test_with_noise_learning(self) -> None:
+        """
+        Test controller creation outcomes with different likelihoods.
+
+        We consider a likelihood that allows training of output noise, one that does not but raises an expected
+        error we can handle, and one that raises an unexpected error that we do not directly handle.
+        """
+
+        # Define a decorator that one might wish to use `LearnYNoise` with in practice
+        @LearnYNoise()
+        @DirichletMulticlassClassification(num_classes=4, ignore_methods=("__init__",))
+        class DirichletMulticlassClassifier(GaussianGPController):
+            """A simple Dirichlet multiclass classifier."""
+
+        # Define a dataset that the above decorator may be used on
+        dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=150, num_test_points=100, num_classes=4, rng=self.rng
+        )
+
+        # Create a controller using `DirichletClassificationLikelihood`, which supports learning the noise in
+        # the dataset (that is accepts the parameter learn_additional_noise as a likelihood keyword argument).
+        # If this decorator can be successfully created, we are happy with the initial usage.
+        DirichletMulticlassClassifier(
+            dataset.train_x,
+            dataset.train_y,
+            y_std=0,
+            mean_class=BatchScaledMean,
+            kernel_class=BatchScaledRBFKernel,
+            likelihood_class=DirichletClassificationLikelihood,
+            likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
+            optim_kwargs={"lr": 0.05},
+            kernel_kwargs={"batch_shape": 4},
+            mean_kwargs={"batch_shape": 4},
+            rng=self.rng,
+        )
+
+        # Now, if we use a likelihood class but don't let it accept the keyword argument learn_additional_noise, then
+        # it should reach a `TypeError` and avoid trying to learn the noise - but not directly fail creation, just
+        # raise a warning
+        with self.assertWarnsRegex(
+            Warning,
+            "Cannot learn additional noise for 'AlteredDirichletClassificationLikelihoodExpectedError'. "
+            "Consider removing the 'LearnYNoise' decorator.",
+        ):
+            DirichletMulticlassClassifier(
+                dataset.train_x,
+                dataset.train_y,
+                y_std=0,
+                mean_class=BatchScaledMean,
+                kernel_class=BatchScaledRBFKernel,
+                likelihood_class=AlteredDirichletClassificationLikelihoodExpectedError,
+                likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
+                optim_kwargs={"lr": 0.05},
+                kernel_kwargs={"batch_shape": 4},
+                mean_kwargs={"batch_shape": 4},
+                rng=self.rng,
+            )
+
+        # Finally, if we create a controller with a likelihood class that does not give a `TypeError` when passed
+        # `learn_additional_noise`, the code should outright fail, not just warn the user.
+        with self.assertRaises(ValueError):
+            DirichletMulticlassClassifier(
+                dataset.train_x,
+                dataset.train_y,
+                y_std=0,
+                mean_class=BatchScaledMean,
+                kernel_class=BatchScaledRBFKernel,
+                likelihood_class=AlteredDirichletClassificationLikelihoodUnexpectedError,
+                likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
+                optim_kwargs={"lr": 0.05},
+                kernel_kwargs={"batch_shape": 4},
+                mean_kwargs={"batch_shape": 4},
+                rng=self.rng,
+            )
