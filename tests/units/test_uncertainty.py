@@ -14,7 +14,7 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 
 
 class TestGaussianUncertaintyGPController(unittest.TestCase):
-    """Tests for the GaussianUncertaintyGPController."""
+    """Tests for the `GaussianUncertaintyGPController`."""
 
     def setUp(self) -> None:
         """Define data shared across tests."""
@@ -30,7 +30,7 @@ class TestGaussianUncertaintyGPController(unittest.TestCase):
         )
 
     def test_infinite_generator(self) -> None:
-        """Test the training data generator created within GaussianUncertaintyGPController."""
+        """Test the training data generator created within `GaussianUncertaintyGPController`."""
         # Verify the first output from the infinite generator is as expected
         generated_data = next(self.controller.train_data_generator)
         self.assertListEqual(list(generated_data[0].shape), list(self.dataset.train_x.shape))
@@ -53,16 +53,16 @@ class TestGaussianUncertaintyGPController(unittest.TestCase):
 
     def test_predict_at_point(self) -> None:
         """
-        Test the predict_at_point method.
+        Test the `predict_at_point` method.
 
         We should not be able to generate predictions at points as we have to account for the
-        uncertainty, so should need to use predict_at_fuzzy_point.
+        uncertainty, so should need to use `predict_at_fuzzy_point`.
         """
         with self.assertRaises(TypeError):
             self.controller.predict_at_point(self.dataset.test_x)
 
     def test_sgd_round_cases(self) -> None:
-        """Test output of _sgd_round when we have no improvement in loss."""
+        """Test output of `_sgd_round` when we have no improvement in loss."""
 
         # Force the single optimisation step to return an error
         def mocked_single_optimisation_step(
@@ -114,8 +114,9 @@ class TestGaussianUncertaintyGPController(unittest.TestCase):
 
         # If we call _set_requires_grad with True, we still should not require gradients because
         # we haven't told the controller to tune the noise
-        # pylint: disable-next=protected-access
+        # pylint: disable=protected-access
         self.controller._set_requires_grad(value=True)
+        # pylint: enable=protected-access
         self.assertFalse(self.controller.train_x_std.requires_grad)
 
         # If we now tell the controller to tune the noise and call _set_requires_grad, we should
@@ -128,8 +129,9 @@ class TestGaussianUncertaintyGPController(unittest.TestCase):
 
     def test_process_x_std(self) -> None:
         """Test the processing of standard deviation on inputs."""
-        # pylint: disable-next=protected-access
+        # pylint: disable=protected-access
         result = self.controller._process_x_std(std=None)
+        # pylint: enable=protected-access
 
         # We expect a tensor with one element per input value given to the controller at creation time,
         # and for there to be a requirement on gradients (since we want to update this). Note the starting
