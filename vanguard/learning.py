@@ -94,6 +94,7 @@ class LearnYNoise(Decorator):
                             train_x=train_x,
                             likelihood_kwargs=likelihood_kwargs,
                             y_std=y_std,
+                            rng=self.rng,
                             **all_parameters_as_kwargs,
                         )
                     else:
