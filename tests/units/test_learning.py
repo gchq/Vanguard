@@ -18,7 +18,7 @@ from vanguard.vanilla import GaussianGPController
 
 class TestLearning(unittest.TestCase):
     """
-    Tests for usage of the LearnYNoise decorator and associated functionality.
+    Tests for usage of the `LearnYNoise` decorator and associated functionality.
     """
 
     def setUp(self) -> None:
@@ -30,7 +30,7 @@ class TestLearning(unittest.TestCase):
         )
 
     def test_no_train_x(self) -> None:
-        """Test how LearnYNoise handles the input train_x being missing upon creation."""
+        """Test how `LearnYNoise` handles the input train_x being missing upon creation."""
 
         @LearnYNoise()
         class LearnNoiseController(GaussianGPController):
@@ -49,16 +49,17 @@ class TestLearning(unittest.TestCase):
             }
 
             with self.assertRaises(RuntimeError):
-                # pylint: disable-next=no-value-for-parameter
+                # pylint: disable=no-value-for-parameter
                 LearnNoiseController(
                     train_y=self.dataset.train_y,
                     kernel_class=ScaledRBFKernel,
                     y_std=self.dataset.train_y_std,
                     rng=self.rng,
                 )
+                # pylint: enable=no-value-for-parameter
 
     def test_process_y_std_multi_dimensional(self) -> None:
-        """Test conversion of y_std with _process_y_std."""
+        """Test conversion of `y_std` with `_process_y_std`."""
         # Setup inputs
         device = torch.device("cpu")
         y_std = np.array([[0.5, 0.6, 0.7], [5.0, 6.0, 7.0]])
