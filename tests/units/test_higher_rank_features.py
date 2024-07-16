@@ -13,16 +13,26 @@ from typing_extensions import Self
 
 from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import HigherRankSyntheticDataset
-from vanguard.features import HigherRankFeatures
+from vanguard.features import HigherRankFeatures, _HigherRankFeaturesKernel
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.standardise import DisableStandardScaling
 from vanguard.vanilla import GaussianGPController
 
 
 class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
+    """
+    Define an example lazy kernel tensor that works in two dimensions.
+    """
+
     # pylint: disable=abstract-method
     @classmethod
     def from_lazy_evaluated_kernel_tensor(cls: Type[Self], lazy_tensor: gpytorch.lazy.LazyTensor) -> Self:
+        """
+        Create an instance of the class from a lazy tensor.
+
+        :param lazy_tensor: The lazy tensor to generate the class from.
+        :return: Instance of `TwoDimensionalLazyEvaluatedKernelTensor`
+        """
         kernel = lazy_tensor.kernel
         x1 = lazy_tensor.x1
         x2 = lazy_tensor.x2
@@ -31,6 +41,9 @@ class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
         return cls(x1, x2, kernel=kernel, last_dim_is_batch=last_dim_is_batch, **params)
 
     def _size(self) -> torch.Size:
+        """
+        Compute the size of the tensors handled by this class.
+        """
         backup_x1 = self.x1.clone()
         backup_x2 = self.x2.clone()
         self.x1 = self.x1[..., 0]
@@ -42,9 +55,22 @@ class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
 
 
 class HigherRankKernel(ScaledRBFKernel):
+    """
+    Define a kernel that applies to more than just vectors.
+    """
+
     def forward(
         self, x1: torch.Tensor, x2: torch.Tensor, last_dim_is_batch: bool = False, diag: bool = False, **params: Any
     ) -> torch.Tensor:
+        """
+        Evaluate the kernel given two tensors.
+
+        :param x1: First tensor to evaluate
+        :param x2: Second tensor to evaluate
+        :param last_dim_is_batch: If true, the final dimension in the input tensors is considered the batch dimension
+        :param diag: If true, we only compute the diagonal of the kernel matrix
+        :return: Torch tensor holding kernel evaluation between inputs
+        """
         return super().forward(
             x1.reshape(x1.shape[0], 4),
             x2.reshape(x2.shape[0], 4),
@@ -54,6 +80,9 @@ class HigherRankKernel(ScaledRBFKernel):
         )
 
     def __call__(self, *args: Any, **kwargs: Any) -> torch.Tensor:
+        """
+        Perform forward pass of the kernel.
+        """
         return_tensor = super().__call__(*args, **kwargs)
         if isinstance(return_tensor, LazyEvaluatedKernelTensor):
             return_tensor = TwoDimensionalLazyEvaluatedKernelTensor.from_lazy_evaluated_kernel_tensor(return_tensor)
@@ -61,7 +90,17 @@ class HigherRankKernel(ScaledRBFKernel):
 
 
 class HigherRankMean(ConstantMean):
+    """
+    Define a high rank mean class.
+    """
+
     def forward(self, input: torch.Tensor) -> torch.Tensor:  # pylint: disable=redefined-builtin
+        """
+        Perform a forward pass of the mean class.
+
+        :param input: Tensor we wish to evaluate the mean class at
+        :return: Mean value given input tensor
+        """
         return super().forward(input.reshape(input.shape[0], 4))
 
 
@@ -78,7 +117,7 @@ class BasicTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        """Code to run before all tests."""
+        """Define data shared across tests."""
         rng = get_default_rng()
         cls.dataset = HigherRankSyntheticDataset(rng=rng)
 
@@ -97,6 +136,21 @@ class BasicTests(unittest.TestCase):
         cls.controller.fit(10)
 
     def test_posterior_shape(self) -> None:
+        """Test that the posterior shape is as expected when using higher rank features."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
         mean, _, _ = posterior.confidence_interval()
         self.assertEqual(mean.shape, self.dataset.test_y.shape)
+
+    def test_kernel_decoration(self) -> None:
+        """Test decoration of a kernel using `_HigherRankFeaturesKernel`."""
+
+        @_HigherRankFeaturesKernel(shape=torch.Size([1, 2, 3]))
+        class HighRankKernel(ScaledRBFKernel):
+            pass
+
+        kernel = HighRankKernel()
+
+        # Evaluate the kernel on some data and verify the output is the correct shape
+        x = torch.ones([1, 2, 3])
+        y = torch.zeros([1, 2, 3])
+        self.assertListEqual(list(kernel(x1=x, x2=y, diag=True).shape), [1, 2])
