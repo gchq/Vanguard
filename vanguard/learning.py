@@ -10,9 +10,11 @@ import numpy as np
 import numpy.typing
 import torch
 
+import vanguard.decoratorutils
+
 from . import utils
 from .base import GPController
-from .decoratorutils import Decorator, process_args, wraps_class
+from .decoratorutils import Decorator, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -51,9 +53,11 @@ class LearnYNoise(Decorator):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 try:
-                    all_parameters_as_kwargs = process_args(super().__init__, *args, y_std=0, **kwargs)
+                    all_parameters_as_kwargs = vanguard.decoratorutils.process_args(
+                        super().__init__, *args, y_std=0, **kwargs
+                    )
                 except TypeError:
-                    all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
+                    all_parameters_as_kwargs = vanguard.decoratorutils.process_args(super().__init__, *args, **kwargs)
 
                 all_parameters_as_kwargs.pop("self")
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
@@ -90,6 +94,7 @@ class LearnYNoise(Decorator):
                             train_x=train_x,
                             likelihood_kwargs=likelihood_kwargs,
                             y_std=y_std,
+                            rng=self.rng,
                             **all_parameters_as_kwargs,
                         )
                     else:
