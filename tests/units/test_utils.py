@@ -6,9 +6,33 @@ import unittest
 
 import numpy as np
 import numpy.typing
+import torch
 
 from tests.cases import get_default_rng
-from vanguard.utils import UnseededRandomWarning, add_time_dimension, optional_random_generator
+from vanguard.utils import (
+    UnseededRandomWarning,
+    add_time_dimension,
+    generator_append_constant,
+    infinite_tensor_generator,
+    instantiate_with_subset_of_kwargs,
+    optional_random_generator,
+)
+
+
+class ExampleClass:
+    """
+    Example class to use with testing validation of input keyword arguments.
+    """
+
+    def __init__(self, a: str, b: int, c: float):
+        """
+        Initialise self.
+        """
+        self.a = a
+        if isinstance(b, float):
+            raise TypeError("__init__() got an unexpected keyword argument 'b'")
+        self.b = b
+        self.c = c
 
 
 class OptionalRandomGeneratorTests(unittest.TestCase):
@@ -128,3 +152,84 @@ class TimeDimensionTests(unittest.TestCase):
         :param array: Array we wish to check is monotonic
         """
         np.testing.assert_array_less(array[:-1], array[1:])
+
+
+class TestClassCreation(unittest.TestCase):
+    """
+    Test creation of classes with keyword arguments.
+    """
+
+    def test_instantiate_with_subset_of_kwargs_all_valid(self) -> None:
+        """Test `instantiate_with_subset_of_kwargs` behaviour with valid inputs."""
+        a_val = "xyz"
+        b_val = 1
+        c_val = 1.0
+
+        # Create the object
+        output = instantiate_with_subset_of_kwargs(ExampleClass, a=a_val, b=b_val, c=c_val)
+
+        # Verify the object is as expected
+        self.assertEqual(output.a, a_val)
+        self.assertEqual(output.b, b_val)
+        self.assertEqual(output.c, c_val)
+
+    def test_instantiate_with_subset_of_kwargs_type_error(self) -> None:
+        """Test `instantiate_with_subset_of_kwargs` when the class raises a `TypeError` upon creation."""
+        a_val = "xyz"
+        b_val = 1.0
+        c_val = 1.0
+
+        # Create the object - we expect a type error to be raised upon failed creation due to b_val not being
+        # a float
+        with self.assertRaises(TypeError):
+            instantiate_with_subset_of_kwargs(ExampleClass, a=a_val, b=b_val, c=c_val)
+
+
+class TestGenerators(unittest.TestCase):
+    """
+    Test generator usage.
+    """
+
+    def test_infinite_tensor_generator_with_batch_size(self) -> None:
+        """Test `infinite_tensor_generator` when a batch size is provided."""
+        batch_size = 2
+        device = torch.device("cpu")
+        rng = get_default_rng()
+        tensor = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+        # Create an infinite tensor generator and sample the first tensor from it
+        result = infinite_tensor_generator(
+            batch_size,
+            device,
+            (tensor, 0),
+            rng=rng,
+        )
+
+        # Verify the output - we have batch_size elements per sample, until we reach the entire tensor provided.
+        # In our case, we expect the first sample to have batch_size (2) rows and the second sample to have the
+        # remaining (1) row from the provided tensor.
+        sample_1 = next(result)
+        sample_2 = next(result)
+        self.assertEqual(len(sample_1), 1)
+        self.assertListEqual(list(sample_1[0].shape), [batch_size, tensor.shape[1]])
+        self.assertListEqual(list(sample_2[0].shape), [tensor.shape[0] - batch_size, tensor.shape[1]])
+
+    def test_generator_append_constant(self) -> None:
+        """Test appending a constant to a generator output."""
+        generator = (i * np.ones([3, 1]) for i in range(3))
+        constant = 22
+
+        # Define expected output
+        expected_output = [
+            np.array([22.0, 22.0, 22.0]).reshape(-1, 1),
+            np.array([23.0, 23.0, 23.0]).reshape(-1, 1),
+            np.array([24.0, 24.0, 24.0]).reshape(-1, 1),
+        ]
+
+        # Call the function, which we expect to append the given constant to each generator output
+        output = [i for i in generator_append_constant(generator=generator, constant=constant)]
+
+        # Verify outputs match
+        self.assertEqual(len(output), 3)
+        for index in range(3):
+            np.testing.assert_array_equal(output[index], expected_output[index])
