@@ -89,10 +89,17 @@ class DirichletMulticlassClassification(Decorator):
                 train_y = all_parameters_as_kwargs.pop("train_y")
 
                 likelihood_kwargs = all_parameters_as_kwargs.pop("likelihood_kwargs", {})
-                targets = torch.as_tensor(train_y, device=self.device, dtype=torch.int64)
+                targets = torch.as_tensor(train_y, device=self.device)
                 likelihood_kwargs["targets"] = targets
 
-                temporary_likelihood = likelihood_class(**likelihood_kwargs)
+                try:
+                    temporary_likelihood = likelihood_class(**likelihood_kwargs)
+                except IndexError as exc:
+                    # No is_integer check available, sadly
+                    if targets.dtype.is_floating_point or targets.dtype.is_complex:
+                        msg = f"For classification, train_y must be integer-valued. Got dtype={targets.dtype}."
+                        raise TypeError(msg) from exc
+                    raise
                 transformed_targets = temporary_likelihood.transformed_targets
 
                 @wraps_class(self.posterior_class)
@@ -147,7 +154,6 @@ class DirichletMulticlassClassification(Decorator):
 
                 self.posterior_class = TransposedPosterior
                 self.posterior_collection_class = TransposedMonteCarloPosteriorCollection
-
                 super().__init__(
                     train_y=transformed_targets.detach().cpu().numpy(),
                     likelihood_class=likelihood_class,
