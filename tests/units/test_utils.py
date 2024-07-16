@@ -214,6 +214,26 @@ class TestGenerators(unittest.TestCase):
         self.assertListEqual(list(sample_1[0].shape), [batch_size, tensor.shape[1]])
         self.assertListEqual(list(sample_2[0].shape), [tensor.shape[0] - batch_size, tensor.shape[1]])
 
+    def test_infinite_tensor_generator_without_batch_size(self) -> None:
+        """Test `infinite_tensor_generator` when a batch size is not provided."""
+        batch_size = None
+        device = torch.device("cpu")
+        rng = get_default_rng()
+        tensor = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+        # Create an infinite tensor generator and sample the first tensor from it
+        result = infinite_tensor_generator(
+            batch_size,
+            device,
+            (tensor, 0),
+            rng=rng,
+        )
+
+        # The generator output should be the same size as the input since we are not using batches
+        sample_1 = next(result)
+        self.assertEqual(len(sample_1), 1)
+        self.assertListEqual(list(sample_1[0].shape), list(tensor.shape))
+
     def test_generator_append_constant(self) -> None:
         """Test appending a constant to a generator output."""
         generator = (i * np.ones([3, 1]) for i in range(3))
