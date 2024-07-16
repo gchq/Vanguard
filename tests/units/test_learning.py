@@ -2,11 +2,13 @@
 Tests for learning functionality that is not covered elsewhere.
 """
 
+import sys
 import unittest
 from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 import torch
 from gpytorch.kernels import RBFKernel, ScaleKernel
 from gpytorch.likelihoods import DirichletClassificationLikelihood
@@ -157,6 +159,7 @@ class TestLearning(unittest.TestCase):
         result = _process_y_std(y_std=y_std, shape=(2, 3), dtype=float, device=device)
         torch.testing.assert_allclose(result, expected_result)
 
+    @pytest.mark.skipif(sys.version_info < (3, 12), reason="requires python3.12 or higher")
     def test_with_noise_learning(self) -> None:
         """
         Test controller creation outcomes with different likelihoods.
