@@ -57,7 +57,8 @@ DECORATORS = {
             "kernel_class": ScaledRBFKernel,
             "kernel_kwargs": {"batch_shape": (4,)},
         },
-        # This fails with different errors (!) on 12 or 20 training points?
+        # TODO: fails with a shape mismatch error for any fewer than 40 points
+        # https://github.com/gchq/Vanguard/issues/322
         "dataset": MulticlassGaussianClassificationDataset(
             num_train_points=40, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
@@ -216,7 +217,27 @@ def _create_decorator(details: Tuple[Callable, Dict[str, Any]]) -> Tuple[Callabl
     ],
 )
 def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tuple[Decorator, Dict]) -> None:
-    """Shouldn't throw any errors."""
+    """
+    For each decorator combination, check that basic usage doesn't throw any unexpected errors.
+
+    In particular, we:
+
+    - Decorate the controller class
+    - Instantiate the controller class
+    - Fit the controller class
+    - For non-classifiers, we then:
+      - Take the posterior over some test points
+      - Generate a prediction from that posterior
+      - Generate a confidence interval from that posterior
+      - Take the fuzzy posterior over some test points
+      - Generate a prediction from that fuzzy posterior
+      - Generate a confidence interval from that fuzzy posterior
+    - For classifiers, we instead:
+      - Classify some test points
+      - Perform fuzzy classification on the test points
+
+    and check that none of the above operations raise any unexpected errors.
+    """
     upper_decorator, lower_decorator, controller_kwargs, dataset = _initialise_decorator_pair(
         upper_details, lower_details
     )
@@ -259,8 +280,8 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
         # check that classification doesn't throw any errors
         controller.classify_points(dataset.test_x)
 
-        # we don't care about any kind of accuracy here, so just pick the minimum number that doesn't
-        # cause errors
+        # Lower the number of MC samples to speed up testing. We don't care about any kind of accuracy here,
+        # so just pick the minimum number that doesn't cause numerical errors.
         with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 25):
             # check that fuzzy classification doesn't throw any errors
             controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
@@ -277,8 +298,8 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
 
         posterior.confidence_interval(dataset.significance)
 
-        # we don't care about any kind of accuracy here, so just pick the minimum number that doesn't
-        # cause errors
+        # Lower the number of MC samples to speed up testing. Again, we don't care about accuracy here, so just pick
+        # the # minimum number that doesn't cause numerical errors.
         with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 4):
             fuzzy_posterior = controller.posterior_over_fuzzy_point(dataset.test_x, dataset.test_x_std)
 
@@ -290,6 +311,7 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
             else:
                 raise
 
-        # again, we don't care about accuracy, so just pick the minimum number that doesn't cause errors
+        # Lower the number of MC samples to speed up testing. Again, we don't care about accuracy here, so just pick
+        # the minimum number that doesn't cause numerical errors.
         with patch.object(MonteCarloPosteriorCollection, "_decide_mc_num_samples", lambda *_: 4):
             fuzzy_posterior.confidence_interval(dataset.significance)
