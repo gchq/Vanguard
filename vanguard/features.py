@@ -7,7 +7,6 @@ from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import torch
-from gpytorch import kernels
 
 from . import utils
 from .base import GPController
@@ -50,9 +49,7 @@ class HigherRankFeatures(Decorator):
                 all_parameters_as_kwargs.pop("self")
                 self.gp_model_class = _HigherRankFeaturesModel(train_x.shape[-rank:])(self.gp_model_class)
                 kernel_class = all_parameters_as_kwargs.pop("kernel_class")
-                new_kernel_class = _HigherRankFeaturesKernel(train_x.shape[-rank:])(kernel_class)
-
-                super().__init__(kernel_class=new_kernel_class, rng=self.rng, **all_parameters_as_kwargs)
+                super().__init__(kernel_class=kernel_class, rng=self.rng, **all_parameters_as_kwargs)
 
         return InnerClass
 
@@ -125,36 +122,3 @@ class _HigherRankFeaturesModel:
         new_shape = tuple(tensor.shape[:-1])
         new_shape = new_shape + item_shape
         return tensor.reshape(new_shape)
-
-
-class _HigherRankFeaturesKernel(_HigherRankFeaturesModel):
-    """
-    A decorator for a kernel, enabling higher rank features.
-
-    GPyTorch assumes that input features are rank-1 (vectors) and a variety of
-    RuntimeErrors are thrown from different places in the code if this is not true.
-    This decorator can be applied to a GPyTorch kernel and deals with the feature
-    shapes to avoid these issues. In particular, kernels only pose an issue when
-    using variational orthogonal features, in which the VOF basis has a forward
-    method. Unlike the kernel forward method itself, which is safely behind calls
-    to the model forward method, this method is exposed directly to the flattened
-    data.
-    """
-
-    def __call__(self, kernel_cls: Type[kernels.Kernel]) -> Type[kernels.Kernel]:
-        shape = self.shape
-        _unflatten = partial(self._unflatten, item_shape=shape)
-
-        @wraps_class(kernel_cls)
-        class InnerClass(kernel_cls):
-            def get_vof_basis(self, *args: Any, **kwargs: Any):
-                basis_type = type(super().get_vof_basis(*args, **kwargs))
-
-                @wraps_class(basis_type)
-                class InnerBasisType(basis_type):
-                    def forward(self, x, *args: Any, **kwargs: Any):
-                        return super().forward(_unflatten(x), *args, **kwargs)
-
-                return InnerBasisType(*args, **kwargs)
-
-        return InnerClass

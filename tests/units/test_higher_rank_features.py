@@ -13,7 +13,7 @@ from typing_extensions import Self
 
 from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import HigherRankSyntheticDataset
-from vanguard.features import HigherRankFeatures, _HigherRankFeaturesKernel
+from vanguard.features import HigherRankFeatures
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.standardise import DisableStandardScaling
 from vanguard.vanilla import GaussianGPController
@@ -140,17 +140,3 @@ class BasicTests(unittest.TestCase):
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
         mean, _, _ = posterior.confidence_interval()
         self.assertEqual(mean.shape, self.dataset.test_y.shape)
-
-    def test_kernel_decoration(self) -> None:
-        """Test decoration of a kernel using `_HigherRankFeaturesKernel`."""
-
-        @_HigherRankFeaturesKernel(shape=torch.Size([1, 2, 3]))
-        class HighRankKernel(ScaledRBFKernel):
-            pass
-
-        kernel = HighRankKernel()
-
-        # Evaluate the kernel on some data and verify the output is the correct shape
-        x = torch.ones([1, 2, 3])
-        y = torch.zeros([1, 2, 3])
-        self.assertListEqual(list(kernel(x1=x, x2=y, diag=True).shape), [1, 2])
