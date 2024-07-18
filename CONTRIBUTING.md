@@ -35,12 +35,14 @@ $ pre-commit install
 
 ## Pull requests
 
-We are using a [Git Flow][git-flow] development approach.
+We are using a [GitHub Flow][github-flow] development approach, where the trunk branch
+is called `develop`.
 
 - To avoid duplicate work, [search existing pull requests][gh-prs].
 - All pull requests should relate to an existing issue.
   - If the pull request addresses something not currently covered by an issue, create a new issue first.
-- Make changes on a [feature branch][git-feature-branch] instead of the main branch.
+- Make changes on a [feature branch][git-feature-branch] instead of the `develop`
+  branch.
 - Branch names should take one of the following forms:
   - `feature/<feature-name>`: for adding, removing or refactoring a feature.
   - `fix/<bug-name>`: for bug fixes.
@@ -263,7 +265,8 @@ Please try running them again before raising an issue.
 
 Before a release is issued on PyPI, all tests for Vanguard will be run on a GPU machine.
 This avoids having to incorporate GPU runners into the CI/CD, but still tests issues that can arise with torch and gpytorch.
-However, note that code pushed to main may not necessarily have been tested on a GPU machine until a release to PyPI is made.
+However, note that code pushed to `develop` may not necessarily have been tested on a
+GPU machine until a release to PyPI is made.
 If you observe any issues on GPU machines using the code, please raise an issue detailing the behaviour, and create a PR with the relevant fix if possible.
 
 ## Examples
@@ -295,23 +298,28 @@ You should be warned of any broken internal links during the build process, and 
 
 ## Releases
 
-Releases are made on an ad-hoc basis. When the maintainers decide the codebase is ready for another release:
+Releases are made on an ad-hoc basis. When the maintainers decide the codebase is ready
+for another release:
 
 1. Create an issue for the release.
-2. Create a branch `release/#.#.#` for the target version number.
-3. Run additional release tests including GPU testing, as described in
+2. Run additional release tests on `develop` including GPU testing, as described in
    [Testing before releases to PyPI](#Testing-before-releases-to-PyPI).
-4. Tidy `CHANGELOG.md` including:
+3. Fix any issues and merge into `develop`, iterating until we have a commit on
+   `develop` that is ready for release, except for housekeeping that does not affect the
+   functionality of the code.
+4. Create a branch `release/#.#.#` off the identified commit, populating with the target
+   version number.
+5. Tidy `CHANGELOG.md` including:
    - Move the content under `Unreleased` to a section under the target version number.
    - Create a new unpopulated `Unreleased` section at the top.
    - Update the hyperlinks to Git diffs at the bottom of the file so that they compare
      the relevant versions.
-5. Update the version number in `vanguard/__init.py__`.
-6. Create and review a pull request with target `main`.
-7. Once approved, merge the release branch manually into `develop`.
-8. Merge the pull request into `main`.
-9. Create a release in GitHub pointing at the merge commit on `main`.
-10. Build and publish to PyPI and ReadTheDocs.
+6. Update the version number in `vanguard/__init.py__`.
+7. Create and review a pull request.
+8. Once approved, create a release in GitHub pointing at the final commit on the release
+   branch.
+9. Build and publish to PyPI and ReadTheDocs.
+10. Merge the release branch into `develop`.
 
 ## References
 
@@ -327,7 +335,7 @@ An entry with the keyword `Doe99` can then be referenced within a docstring anyw
 [gh-feature-request]: https://github.com/gchq/Vanguard/issues/new?assignees=&labels=new%2Cenhancement&projects=gchq%2F16&template=feature_request.yml
 [gh-prs]: https://github.com/gchq/Vanguard/pulls
 [git-feature-branch]: https://www.atlassian.com/git/tutorials/comparing-workflows
-[git-flow]: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
+[github-flow]: https://docs.github.com/en/get-started/quickstart/github-flow
 [github-issues]: https://github.com/gchq/Vanguard/issues?q=
 [pep-8]: https://peps.python.org/pep-0008/
 [pep-257]: https://peps.python.org/pep-0257/
