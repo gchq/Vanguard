@@ -160,12 +160,3 @@ class SVGPModel(ApproximateGP):
                 f"You are using a {SVGPModel.__name__} in a multi-task problem. {SVGPModel.__name__} does"
                 f"not have the correct variational strategy for multi-task."
             )
-
-    @staticmethod
-    def _get_num_tasks(y: Tensor) -> int:
-        """Get the number of tasks implied by the shape of ``y``."""
-        try:
-            num_tasks = y.shape[1]
-        except IndexError:
-            num_tasks = 1
-        return num_tasks
