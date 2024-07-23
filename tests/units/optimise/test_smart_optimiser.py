@@ -59,6 +59,22 @@ class TestSmartOptimiser(unittest.TestCase):
         smart_optimiser.reset()
         torch.testing.assert_allclose(module.weight.data, initial_weights)
 
+    def test_register_module(self):
+        """Test the ability to register additional modules after the optimiser is created."""
+        module1 = torch.nn.Linear(2, 2)
+        module2 = torch.nn.Linear(2, 3)
+        smart_optimiser = SmartOptimiser(torch.optim.Adam, module1)
+
+        # optimiser knows about module1 but not module2
+        assert module1 in smart_optimiser._stored_initial_state_dicts  # pylint: disable=protected-access
+        assert module2 not in smart_optimiser._stored_initial_state_dicts  # pylint: disable=protected-access
+
+        smart_optimiser.register_module(module2)
+
+        # optimiser knows about both module1 and module2
+        assert module1 in smart_optimiser._stored_initial_state_dicts  # pylint: disable=protected-access
+        assert module2 in smart_optimiser._stored_initial_state_dicts  # pylint: disable=protected-access
+
     def test_update_registered_module(self):
         """
         Test the ability to update registered modules in the optimiser.
