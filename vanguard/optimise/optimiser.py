@@ -121,7 +121,7 @@ class SmartOptimiser(Generic[OptimiserT]):
         """Update the parameters of a registered module if the module has been modified."""
         if module not in self._stored_initial_state_dicts:
             raise KeyError(
-                f"{module!r} - Trying to update a module that isn't registered. Use register_module instead."
+                f"{module!r} - Trying to update a module that isn't registered. Use `register_module` instead."
             )
         self._cache_module_parameters(module)
         self._reset_internal_optimiser()

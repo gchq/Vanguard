@@ -1,5 +1,5 @@
 """
-Tests for ApplyLearningRateScheduler.
+Tests for `ApplyLearningRateScheduler`.
 """
 
 import unittest
@@ -15,7 +15,7 @@ from vanguard.vanilla import GaussianGPController
 
 class BasicTests(unittest.TestCase):
     """
-    Basic tests for the LearningRateFinder decorator.
+    Basic tests for the `ApplyLearningRateScheduler` decorator.
     """
 
     def setUp(self):
@@ -57,8 +57,8 @@ class BasicTests(unittest.TestCase):
         """
         Test that the decorator handles schedulers that take the loss as a parameter.
 
-        Some schedulers (e.g. StepLR in the above test) take no parameters in their step() method.
-        Some, like, ReduceLROnPlateau, take a required "metrics" parameter.
+        Some schedulers (e.g. `StepLR` in `test_learning_rate_is_stepped`) take no parameters in their step() method.
+        Some, like, `ReduceLROnPlateau`, take a required "metrics" parameter.
         This test checks that the decorator can handle both cases.
         """
 

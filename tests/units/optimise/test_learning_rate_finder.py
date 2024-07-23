@@ -1,5 +1,5 @@
 """
-Tests for LearningRateFinder.
+Tests for `LearningRateFinder`.
 """
 
 import unittest
@@ -17,7 +17,7 @@ from vanguard.vanilla import GaussianGPController
 
 class BasicTests(unittest.TestCase):
     """
-    Basic tests for the LearningRateFinder class.
+    Basic tests for the `LearningRateFinder` class.
     """
 
     @classmethod
@@ -34,7 +34,7 @@ class BasicTests(unittest.TestCase):
         )
 
     def test_learning_rate_finder(self) -> None:
-        """Test that the learning rate finder finds the minimum learning rate in the given range."""
+        """Test that `LearningRateFinder` finds the minimum learning rate in the given range."""
         lr_finder = LearningRateFinder(self.controller)
 
         min_lr = 1e-5
@@ -74,7 +74,7 @@ class BasicTests(unittest.TestCase):
         assert loss == np.inf
 
     def test_run_learning_rate_parameter_pass_through(self):
-        """Test that _run_learning_rate correctly passes through its parameters to the controller."""
+        """Test that `_run_learning_rate` correctly passes through its parameters to the controller."""
         lr_finder = LearningRateFinder(self.controller)
 
         learning_rate = 1234

@@ -1,5 +1,5 @@
 """
-Tests for the greedy optimisation behaviour in GreedySmartOptimiser.
+Tests for the greedy optimisation behaviour in `GreedySmartOptimiser`.
 """
 
 import unittest
@@ -15,7 +15,7 @@ from vanguard.vanilla import GaussianGPController
 
 class ParameterAgreementTests(unittest.TestCase):
     """
-    Basic tests for the GreedySmartOptimiser class.
+    Basic tests for the `GreedySmartOptimiser` class.
 
     The tests check that using the greedy optimiser gives different hyperparameters
     than when using the simpler optimiser when the learning rate is very large.

@@ -12,10 +12,10 @@ from vanguard.optimise import NoImprovementError, SmartOptimiser
 
 
 class TestSmartOptimiser(unittest.TestCase):
-    """Tests for the SmartOptimiser class."""
+    """Tests for the `SmartOptimiser` class."""
 
     def test_early_stopping(self):
-        """Test that the smart optimiser stops early if there is no improvement across several steps."""
+        """Test that the `SmartOptimiser` stops early if there is no improvement across several steps."""
         patience = 5
         smart_optimiser = SmartOptimiser(torch.optim.Adam, Linear(2, 2), early_stop_patience=patience)
         with patch.object(smart_optimiser, "_step"):
@@ -27,7 +27,7 @@ class TestSmartOptimiser(unittest.TestCase):
                 smart_optimiser.step(1.0)
 
     def test_no_early_stopping(self):
-        """Test that the smart optimiser doesn't stop early if patience is unset."""
+        """Test that the `SmartOptimiser` doesn't stop early if patience is unset."""
         smart_optimiser = SmartOptimiser(torch.optim.Adam, Linear(2, 2), early_stop_patience=None)
         with patch.object(smart_optimiser, "_step"):
             # assertion: we don't hit any NoImprovementError
@@ -35,7 +35,7 @@ class TestSmartOptimiser(unittest.TestCase):
                 smart_optimiser.step(1.0)
 
     def test_reset_resets_last_n_losses(self):
-        """Test that calling reset() resets the last N recorded losses."""
+        """Test that calling `reset()` resets the last N recorded losses."""
         smart_optimiser = SmartOptimiser(torch.optim.Adam, Linear(2, 2))
 
         # Take a step, so there's a non-NaN loss in the last N losses
@@ -47,7 +47,7 @@ class TestSmartOptimiser(unittest.TestCase):
         assert all(np.isnan(x) for x in smart_optimiser.last_n_losses)
 
     def test_reset_resets_all_modules(self):
-        """Test that calling reset() resets all modules under optimisation."""
+        """Test that calling `reset()` resets all modules under optimisation."""
         module = Linear(2, 2)
         initial_weights = module.weight.data.clone()
         smart_optimiser = SmartOptimiser(torch.optim.Adam, module)
@@ -88,7 +88,7 @@ class TestSmartOptimiser(unittest.TestCase):
         )
 
     def test_update_registered_module_keyerror(self):
-        """Test that update_registered_module raises a KeyError if an unrecognised module is passed."""
+        """Test that `update_registered_module` raises a `KeyError` if an unrecognised module is passed."""
         smart_optimiser = SmartOptimiser(torch.optim.Adam, Linear(2, 2))
 
         with pytest.raises(KeyError):

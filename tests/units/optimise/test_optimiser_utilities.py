@@ -13,7 +13,7 @@ from vanguard.optimise.optimiser import MaxLengthHeapQ, Parameters
 
 
 class TestMaxLengthHeapQ(unittest.TestCase):
-    """Test the MaxLengthHeapQ class."""
+    """Test the `MaxLengthHeapQ` class."""
 
     def test_push_within_max_size(self):
         """Test that if we push fewer items than the max size, they all stay in the heap."""
@@ -37,7 +37,7 @@ class TestMaxLengthHeapQ(unittest.TestCase):
             assert x in heap
 
     def test_nlargest(self):
-        """Test that nlargest(n) returns the n largest values."""
+        """Test that `nlargest(n)` returns the n largest values."""
         items = [x for x in range(10)]
         get_default_rng().shuffle(items)
 
@@ -48,7 +48,7 @@ class TestMaxLengthHeapQ(unittest.TestCase):
         assert set(heap.nlargest(3)) == {x for x in range(10 - 3, 10)}
 
     def test_best(self):
-        """Test that best() returns the single largest value."""
+        """Test that `best()` returns the single largest value."""
         items = [x for x in range(10)]
         get_default_rng().shuffle(items)
 
@@ -60,10 +60,10 @@ class TestMaxLengthHeapQ(unittest.TestCase):
 
 
 class TestParameters(unittest.TestCase):
-    """Tests for the Parameters class."""
+    """Tests for the `Parameters` class."""
 
     def test_parameters_unequal(self):
-        """Test the comparison operators on Parameters instances of unequal value."""
+        """Test the comparison operators on `Parameters` instances of unequal value."""
         a = Parameters({}, 1)
         b = Parameters({}, 2)
 
@@ -81,7 +81,7 @@ class TestParameters(unittest.TestCase):
         assert not b < a  # pylint: disable=unnecessary-negation
 
     def test_parameters_equal(self):
-        """Test the comparison operators on Parameters instances of equal value."""
+        """Test the comparison operators on `Parameters` instances of equal value."""
         a = Parameters({}, 1)
         b = Parameters({}, 1)
 
@@ -99,7 +99,7 @@ class TestParameters(unittest.TestCase):
         assert not b > a  # pylint: disable=unnecessary-negation
 
     def test_parameter_type_error_comparison(self):
-        """Test that comparison with something other than a Parameters instance raises a TypeError."""
+        """Test that comparison with something other than a `Parameters` instance raises a `TypeError`."""
         a = Parameters({}, 1)
 
         with pytest.raises(TypeError):
@@ -112,14 +112,14 @@ class TestParameters(unittest.TestCase):
             _ = a >= 1
 
     def test_parameter_not_equal_to_numeric(self):
-        """Test that Parameters instances do not compare equal with numerics of the same value."""
+        """Test that `Parameters` instances do not compare equal with numerics of the same value."""
         a = Parameters({}, 1)
         assert a != 1
         # Ignore the "unnecessary negation" error - it's to check we don't have `a == 1 and a != 1`!
         assert not a == 1  # pylint: disable=unnecessary-negation
 
     def test_clone_state_dict(self):
-        """Test that clone_state_dict creates a copy of the given tensors."""
+        """Test that `clone_state_dict` creates a copy of the given tensors."""
         tensor = Tensor([1, 2, 3])
         original_tensor = tensor.clone()
         state_dict = {"testing": tensor}
@@ -137,7 +137,7 @@ class TestParameters(unittest.TestCase):
         torch.testing.assert_close(state_dict_cloned["testing"], original_tensor)
 
     def test_clone_state_dict_usage(self):
-        """Test that the Parameters class makes immutable clones of the state_dicts passed to it."""
+        """Test that the `Parameters` class makes immutable clones of the state dictionaries passed to it."""
         tensor = Tensor([1, 2, 3])
         original_tensor = tensor.clone()
         state_dict = {"testing": tensor}
