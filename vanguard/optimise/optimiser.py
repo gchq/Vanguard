@@ -286,6 +286,9 @@ class MaxLengthHeapQ(Generic[T]):
         """Get the top element."""
         return self.nlargest(1)[0]
 
+    def __contains__(self, item):
+        return item in self.heap
+
 
 class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
     """
