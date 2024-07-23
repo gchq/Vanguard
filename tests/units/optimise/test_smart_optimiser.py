@@ -35,7 +35,7 @@ class TestSmartOptimiser(unittest.TestCase):
                 smart_optimiser.step(1.0)
 
     def test_reset_resets_last_n_losses(self):
-        """Test that calling reset() also resets the last N recorded losses."""
+        """Test that calling reset() resets the last N recorded losses."""
         smart_optimiser = SmartOptimiser(torch.optim.Adam, Linear(2, 2))
 
         # Take a step, so there's a non-NaN loss in the last N losses
@@ -46,8 +46,26 @@ class TestSmartOptimiser(unittest.TestCase):
         smart_optimiser.reset()
         assert all(np.isnan(x) for x in smart_optimiser.last_n_losses)
 
+    def test_reset_resets_all_modules(self):
+        """Test that calling reset() resets all modules under optimisation."""
+        module = Linear(2, 2)
+        initial_weights = module.weight.data.clone()
+        smart_optimiser = SmartOptimiser(torch.optim.Adam, module)
+
+        # Make a change to the module parameters
+        module.weight.data *= 2
+
+        # Reset, and check we also reset the module
+        smart_optimiser.reset()
+        torch.testing.assert_allclose(module.weight.data, initial_weights)
+
     def test_update_registered_module(self):
-        """Test the ability to update registered modules in the optimiser."""
+        """
+        Test the ability to update registered modules in the optimiser.
+
+        This is really meant to be used when additional parameters are added to a module, but here we test the case
+        where we're just changing the module's initial values.
+        """
         module = torch.nn.Linear(2, 2)
         initial_weights = module.weight.data.clone()
         smart_optimiser = SmartOptimiser(torch.optim.Adam, module)
@@ -55,14 +73,14 @@ class TestSmartOptimiser(unittest.TestCase):
         # Make a change to the module parameters
         module.weight.data *= 2
 
-        # Check it's not reflected in the optimiser yet
+        # Check it's not reflected in the optimiser's cache
         # pylint: disable-next=protected-access
         torch.testing.assert_close(smart_optimiser._stored_initial_state_dicts[module]["weight"].data, initial_weights)
 
         # Update
         smart_optimiser.update_registered_module(module)
 
-        # Check the new weights are reflected in the optimiser
+        # Check the new weights are reflected in the optimiser's cache
         torch.testing.assert_close(
             # pylint: disable-next=protected-access
             smart_optimiser._stored_initial_state_dicts[module]["weight"].data,
