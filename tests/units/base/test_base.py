@@ -15,13 +15,12 @@ from numpy.typing import NDArray
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 
+from tests.cases import VanguardTestCase, get_default_rng
 from vanguard.base import GPController
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import PeriodicRBFKernel, ScaledRBFKernel
 from vanguard.optimise import SmartOptimiser
 from vanguard.vanilla import GaussianGPController
-
-from ..cases import VanguardTestCase, get_default_rng
 
 
 class DefaultTensorTypeTests(unittest.TestCase):
