@@ -1,5 +1,7 @@
 """
 Doctests for Vanguard.
+
+These verify that the return value from code snippets in each docstring matches the value given in the docstring.
 """
 
 import doctest
