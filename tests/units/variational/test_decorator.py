@@ -63,3 +63,25 @@ class TestWrapping:
             controller._gp.variational_strategy._variational_distribution,
             MyMeanFieldVariationalDistribution,
         )
+
+    def test_variational_strategy_error_wrapping(self, dataset: Dataset):
+        """Test that if the given strategy throws a RuntimeError, it is wrapped in an error with a nicer message."""
+
+        class ErrorStrategy(VariationalStrategy):
+            def __call__(self, *args, **kwargs):
+                raise RuntimeError("test error")
+
+        @VariationalInference(variational_strategy_class=ErrorStrategy)
+        class Controller(GaussianGPController):
+            """GP controller for testing."""
+
+        controller = Controller(
+            train_x=dataset.train_x,
+            train_y=dataset.train_y,
+            y_std=dataset.train_y_std,
+            kernel_class=ScaledRBFKernel,
+            marginal_log_likelihood_class=VariationalELBO,
+        )
+
+        with pytest.raises(RuntimeError, match="may not be the correct choice for a variational strategy"):
+            controller.fit()
