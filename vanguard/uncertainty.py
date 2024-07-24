@@ -108,6 +108,7 @@ class GaussianUncertaintyGPController(GPController):
                 (self.train_y, self._y_batch_axis),
                 (self._y_variance, self._y_batch_axis),
                 (self.train_x_std, 0),
+                rng=rng,
             )
         else:
             self.train_data_generator = generator_append_constant(
