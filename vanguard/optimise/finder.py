@@ -49,7 +49,8 @@ class LearningRateFinder:
         self._learning_rates = [start_lr * ratio**index for index in range(num_divisions)]
         self._losses = [self._run_learning_rate(lr, max_iterations) for lr in self._learning_rates]
 
-    def plot(self, **kwargs) -> None:
+    # Plotting functions can remain untested by unit tests.
+    def plot(self, **kwargs) -> None:  # pragma: no cover
         """
         Plot the obtained loss-vs-lr curve.
         """

@@ -92,10 +92,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     @overload
-    def step(self, loss: float, closure: None = ...) -> None: ...
+    def step(self, loss: float, closure: None = ...) -> None: ...  # pragma: no cover
 
     @overload
-    def step(self, loss: float, closure: Callable[[], float]) -> float: ...
+    def step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
 
     def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
@@ -120,7 +120,9 @@ class SmartOptimiser(Generic[OptimiserT]):
     def update_registered_module(self, module: Module) -> None:
         """Update the parameters of a registered module if the module has been modified."""
         if module not in self._stored_initial_state_dicts:
-            raise KeyError("Trying to update a module that isn't registered. Use register_module instead.")
+            raise KeyError(
+                f"{module!r} - Trying to update a module that isn't registered. Use `register_module` instead."
+            )
         self._cache_module_parameters(module)
         self._reset_internal_optimiser()
 
@@ -152,10 +154,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         )
 
     @overload
-    def _step(self, loss: float, closure: None = ...) -> None: ...
+    def _step(self, loss: float, closure: None = ...) -> None: ...  # pragma: no cover
 
     @overload
-    def _step(self, loss: float, closure: Callable[[], float]) -> float: ...
+    def _step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
 
     def _step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
@@ -285,6 +287,9 @@ class MaxLengthHeapQ(Generic[T]):
     def best(self) -> T:
         """Get the top element."""
         return self.nlargest(1)[0]
+
+    def __contains__(self, item):
+        return item in self.heap
 
 
 class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
