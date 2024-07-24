@@ -35,6 +35,7 @@ class TestWrapping:
             y_std=dataset.train_y_std,
             kernel_class=ScaledRBFKernel,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=get_default_rng(),
         )
 
         # pylint: disable-next=protected-access
@@ -56,6 +57,7 @@ class TestWrapping:
             y_std=dataset.train_y_std,
             kernel_class=ScaledRBFKernel,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=get_default_rng(),
         )
 
         assert isinstance(
@@ -81,6 +83,7 @@ class TestWrapping:
             y_std=dataset.train_y_std,
             kernel_class=ScaledRBFKernel,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=get_default_rng(),
         )
 
         with pytest.raises(RuntimeError, match="may not be the correct choice for a variational strategy"):

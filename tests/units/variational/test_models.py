@@ -50,6 +50,7 @@ class TestSVGPModel:
                 y_std=dataset.train_y_std,
                 kernel_class=ScaledRBFKernel,
                 gp_kwargs={"n_inducing_points": 5},
+                rng=get_default_rng(),
             )
 
     def test_multitask_forbidden_direct(self) -> None:
