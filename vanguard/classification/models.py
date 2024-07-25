@@ -8,10 +8,11 @@ from typing import Any, Optional
 import gpytorch
 import torch
 from gpytorch import settings
-from gpytorch.lazy import DiagLazyTensor
 from gpytorch.means import ZeroMean
 from gpytorch.models import ExactGP
 from gpytorch.utils.warnings import GPInputWarning
+from linear_operator import LinearOperator
+from linear_operator.operators import DiagLinearOperator
 
 from vanguard.models import ExactGPModel
 
@@ -21,7 +22,7 @@ class DummyKernelDistribution:
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
 
-    def __init__(self, labels: gpytorch.lazy.LazyTensor, kernel: gpytorch.lazy.LazyTensor) -> None:
+    def __init__(self, labels: LinearOperator, kernel: LinearOperator) -> None:
         """
         Initialise self.
 
@@ -100,7 +101,7 @@ class InertKernelModel(ExactGPModel):
         return super().train(mode)
 
     def _label_tensor(self, targets: torch.Tensor) -> torch.Tensor:
-        return DiagLazyTensor(torch.ones(self.n_classes))[targets.long()]
+        return DiagLinearOperator(torch.ones(self.n_classes))[targets.long()]
 
     def __call__(self, *args: Any, **kwargs: Any) -> DummyKernelDistribution:
         # TODO: Why do we accept variable numbers of arguments here? It seems to throw errors if you provide too many

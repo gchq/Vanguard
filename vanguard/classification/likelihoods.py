@@ -11,12 +11,12 @@ import torch
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.constraints import Interval, Positive
 from gpytorch.distributions import Distribution
-from gpytorch.lazy import DiagLazyTensor
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.likelihoods import SoftmaxLikelihood as _SoftmaxLikelihood
 from gpytorch.likelihoods.likelihood import _OneDimensionalLikelihood
 from gpytorch.likelihoods.noise_models import MultitaskHomoskedasticNoise
 from gpytorch.priors import Prior
+from linear_operator.operators import DiagLinearOperator
 from torch import Tensor
 
 from .models import DummyKernelDistribution
@@ -115,7 +115,7 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
         super().__init__(concentration)
 
     def log_prob(self, value: torch.Tensor) -> torch.Tensor:
-        one_hot_values = DiagLazyTensor(torch.ones(self.label_matrix.shape[1]))[value.long()]
+        one_hot_values = DiagLinearOperator(torch.ones(self.label_matrix.shape[1]))[value.long()]
         all_class_grouped_kernel_entries = self.kernel_matrix @ one_hot_values + torch.unsqueeze(self.alpha, 0)
         relevant_logits = all_class_grouped_kernel_entries.to_dense().log() * one_hot_values.to_dense()
         partition_function = (self.alpha.sum() + self.kernel_matrix.sum(dim=-1)).log()
