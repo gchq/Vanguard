@@ -180,9 +180,16 @@ class SmartOptimiser(Generic[OptimiserT]):
                 return self._internal_optimiser.step(loss, closure=closure)
         else:
 
-            def new_step(_, closure=None):
+            def new_step(loss, closure=None):
                 """Don't pass the loss to the step function."""
-                return self._internal_optimiser.step(closure=closure)
+                try:
+                    return self._internal_optimiser.step(closure=closure)
+                except TypeError as e:
+                    # This is in case the internal step signature is just (*args, **kwargs).
+                    if "missing 1 required positional argument: 'loss'" in str(e):
+                        return self._internal_optimiser.step(loss, closure=closure)
+                    else:
+                        raise
 
         self._step = new_step
 
