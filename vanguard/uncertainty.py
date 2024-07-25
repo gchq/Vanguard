@@ -256,7 +256,7 @@ class GaussianUncertaintyGPController(GPController):
         tx = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         tx_std = self._process_x_std(x_std).to(self.device)
         predictions, covar, additive_grad_noise = self._get_additive_grad_noise(tx, tx_std**2)
-        additional_covar = torch.diag(self._noise_transform(additive_grad_noise).T.reshape(-1))
+        additional_covar = torch.diag(self._noise_transform(additive_grad_noise).t().reshape(-1))
         covar += additional_covar
 
         jitter = torch.eye(covar.shape[0]) * gpytorch.settings.cholesky_jitter.value(covar.dtype)
