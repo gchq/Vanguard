@@ -81,13 +81,13 @@ class BasicTests(unittest.TestCase):
 
     def test_scheduler_handles_only_expected_type_errors(self):
         """
-        Test that if the internal optimiser raises a TypeError other than "missing 'loss' argument", it is not caught.
+        Test that if the internal optimiser raises a `TypeError` other than "missing 'loss' argument", it is not caught.
         """
 
         @ApplyLearningRateScheduler(torch.optim.lr_scheduler.ReduceLROnPlateau)
         class StepLRAdam(torch.optim.Adam):
             def step(self, *args, **kwargs):
-                """Raises a TypeError other than "missing 'loss' argument.", which should not be handled."""
+                """Raises a `TypeError` other than "missing 'loss' argument", which should not be handled."""
                 raise TypeError("Test error")
 
         controller = GaussianGPController(
