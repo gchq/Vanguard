@@ -42,10 +42,10 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
                 self._applied_scheduler = scheduler_class(self, *scheduler_args, **scheduler_kwargs)
 
             @overload
-            def step(self, loss: float, closure: None) -> None: ...
+            def step(self, loss: float, closure: None) -> None: ...  # pragma: no cover
 
             @overload
-            def step(self, loss: float, closure: Callable[[], float]) -> float: ...
+            def step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
 
             def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
                 ret = super().step(closure=closure)
