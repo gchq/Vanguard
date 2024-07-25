@@ -78,3 +78,28 @@ class BasicTests(unittest.TestCase):
 
         # assertion: this doesn't fail due to some "unexpected argument" or "argument missing" error
         controller.fit(10)
+
+    def test_scheduler_handles_only_expected_type_errors(self):
+        """
+        Test that if the internal optimiser raises a TypeError other than "missing 'loss' argument", it is not caught.
+        """
+
+        @ApplyLearningRateScheduler(torch.optim.lr_scheduler.ReduceLROnPlateau)
+        class StepLRAdam(torch.optim.Adam):
+            def step(self, *args, **kwargs):
+                """Raises a TypeError other than "missing 'loss' argument.", which should not be handled."""
+                raise TypeError("Test error")
+
+        controller = GaussianGPController(
+            self.dataset.train_x,
+            self.dataset.train_y,
+            ScaledRBFKernel,
+            self.dataset.train_y_std,
+            optimiser_class=StepLRAdam,
+            optim_kwargs={"lr": 0.2},
+            rng=self.rng,
+        )
+
+        # Check that the error isn't suppressed
+        with self.assertRaisesRegex(TypeError, "Test error"):
+            controller.fit(10)
