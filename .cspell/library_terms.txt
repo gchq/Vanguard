@@ -51,7 +51,6 @@ evals
 evalue
 evecs
 facecolor
-favor
 figsize
 fixsize
 framealpha
