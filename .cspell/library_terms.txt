@@ -69,7 +69,6 @@ jupyterlab
 keepdim
 kernelspec
 kmedoids
-lazify
 lengthscale
 lengthscales
 lexer

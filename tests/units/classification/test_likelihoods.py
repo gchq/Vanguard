@@ -5,12 +5,12 @@ from unittest.mock import patch
 
 import numpy as np
 import torch.testing
-from gpytorch import lazify
 from gpytorch.constraints import GreaterThan
 from gpytorch.distributions import MultivariateNormal
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import Likelihood
 from gpytorch.means import ZeroMean
+from linear_operator import to_linear_operator
 
 from tests.cases import get_default_rng
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
@@ -144,7 +144,9 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         That is, we check that `log_marginal(x, dist)` == `marginal(dist).log_prob(x)`.
         """
         kernel = torch.tensor(self.rng.uniform(1, 2, size=(self.num_classes, self.num_classes)), dtype=torch.float)
-        distribution = DummyKernelDistribution(lazify(torch.eye(self.num_classes, dtype=torch.float)), lazify(kernel))
+        distribution = DummyKernelDistribution(
+            to_linear_operator(torch.eye(self.num_classes, dtype=torch.float)), to_linear_operator(kernel)
+        )
         observations = torch.tensor(self.rng.standard_normal(size=self.num_classes), dtype=torch.float)
 
         log_prob_direct = self.likelihood.log_marginal(observations, distribution)
@@ -169,7 +171,9 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         This is tested by just checking that `marginal()` is called.
         """
         kernel = torch.tensor(self.rng.uniform(1, 2, size=(self.num_classes, self.num_classes)), dtype=torch.float)
-        distribution = DummyKernelDistribution(lazify(torch.eye(self.num_classes, dtype=torch.float)), lazify(kernel))
+        distribution = DummyKernelDistribution(
+            to_linear_operator(torch.eye(self.num_classes, dtype=torch.float)), to_linear_operator(kernel)
+        )
         with patch.object(DirichletKernelClassifierLikelihood, "marginal") as mock_marginal:
             self.likelihood(distribution)
         mock_marginal.assert_called_once_with(distribution)

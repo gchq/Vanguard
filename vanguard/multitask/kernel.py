@@ -5,7 +5,8 @@ Contains a slight adjustment to the standard multitask kernel.
 from typing import Any
 
 from gpytorch.kernels import MultitaskKernel
-from gpytorch.lazy import KroneckerProductLazyTensor, lazify
+from gpytorch.lazy import KroneckerProductLazyTensor
+from linear_operator import to_linear_operator
 from torch import Tensor
 
 
@@ -24,6 +25,6 @@ class BatchCompatibleMultitaskKernel(MultitaskKernel):
         *leading_batch_dimensions, _, _ = x1.shape
         for _ in range(len(leading_batch_dimensions) - 1):
             covar_i = covar_i.unsqueeze(dim=0)
-        covar_x = lazify(self.data_covar_module.forward(x1, x2, **params))
+        covar_x = to_linear_operator(self.data_covar_module.forward(x1, x2, **params))
         res = KroneckerProductLazyTensor(covar_x, covar_i)
         return res.diag() if diag else res

@@ -154,7 +154,6 @@ filterwarnings = [
     # TODO: gpytorch.lazy deprecation
     # https://github.com/gchq/Vanguard/issues/156
     "ignore:GPyTorch will be replacing all LazyTensor functionality with the linear operator package:DeprecationWarning",
-    "ignore:gpytorch.lazy.lazify is deprecated in favor of linear_operator.to_linear_operator:UserWarning",
 
     # TODO: replace with set_default_dtype/set_default_device
     # https://github.com/gchq/Vanguard/issues/276
