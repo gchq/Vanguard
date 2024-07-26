@@ -7,8 +7,8 @@ from typing import Any, Generator, List, Optional, Type, TypeVar, Union
 import gpytorch
 import numpy as np
 import torch
-from gpytorch.lazy import lazify
 from gpytorch.variational import CholeskyVariationalDistribution
+from linear_operator import to_linear_operator
 from numpy.typing import NDArray
 
 from .. import utils
@@ -249,6 +249,7 @@ def _safe_index_batched_multivariate_normal(
     matrix is larger than an obscure threshold). Hopefully this will change, but for now, we will work
     around it. This function delazifies the batched covariance matrix and yields recreated non-batch
     normals using then relazified individual covariance matrices.
+
     Delazifying the batch covariance matrix doesn't cause any inefficiencies because the individual
     covariance matrices would be delazified later anyway. Relazifying the individual matrices just
     delays any Cholesky issues, which is good because we have handling for them downstream.
@@ -256,4 +257,4 @@ def _safe_index_batched_multivariate_normal(
     distribution_type = type(distribution)
     non_lazy_covariance_matrix = distribution.covariance_matrix
     for sub_mean, sub_covariance_matrix in zip(distribution.mean, non_lazy_covariance_matrix):
-        yield distribution_type(sub_mean, lazify(sub_covariance_matrix))
+        yield distribution_type(sub_mean, to_linear_operator(sub_covariance_matrix))
