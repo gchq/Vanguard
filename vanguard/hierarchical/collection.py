@@ -83,7 +83,7 @@ class HyperparameterCollection:
         sigma_0_inv = self._inverse_prior_covariance_matrix
         trace_term = torch.trace(sigma_0_inv @ sigma)
         mean_diff = mu_0 - mu
-        mean_term = mean_diff.T @ sigma_0_inv @ mean_diff
+        mean_term = mean_diff.t() @ sigma_0_inv @ mean_diff
         det_term = torch.log(torch.linalg.det(sigma_0) / torch.linalg.det(sigma))  # pylint: disable=not-callable
 
         return (trace_term + mean_term + det_term - mu.shape[0]) / 2

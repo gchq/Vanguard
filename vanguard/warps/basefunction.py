@@ -261,7 +261,7 @@ class MultitaskWarpFunction(WarpFunction):
         :param y: A stack of input tensors.
         :returns: A stack of tensors in the same shape as stack_of_y.
         """
-        return torch.stack([warp.forward(task_y).squeeze() for warp, task_y in zip(self.warps, y.T)], -1)
+        return torch.stack([warp.forward(task_y).squeeze() for warp, task_y in zip(self.warps, y.t())], -1)
 
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         """
