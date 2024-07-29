@@ -25,7 +25,7 @@ class BasicTests(unittest.TestCase):
 
     def test_bad_marginal_log_likelihood(self) -> None:
         """
-        Ensure that the underlying TypeError is converted to a ValueError.
+        Test that when an inappropriate MLL class is passed, the resulting `TypeError` is converted to a `ValueError`.
         """
         rng = get_default_rng()
         dataset = SyntheticDataset(rng=rng)
@@ -36,5 +36,19 @@ class BasicTests(unittest.TestCase):
                 ScaledRBFKernel,
                 dataset.train_y_std,
                 marginal_log_likelihood_class=InappropriateMarginalLogLikelihood,
+                rng=rng,
+            )
+
+    def test_other_type_error_unaffected(self):
+        """Test that any other `TypeError` is raised as-is and is not converted to a `ValueError`."""
+        rng = get_default_rng()
+        dataset = SyntheticDataset(rng=rng)
+        with self.assertRaises(TypeError):
+            VariationalGPController(
+                dataset.train_x,
+                dataset.train_y,
+                ScaledRBFKernel,
+                dataset.train_y_std,
+                marginal_log_likelihood_class="incorrect type",
                 rng=rng,
             )

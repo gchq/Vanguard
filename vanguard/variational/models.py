@@ -2,7 +2,7 @@
 Contains base models for approximate inference.
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import numpy as np
 import torch
@@ -17,6 +17,7 @@ from gpytorch.variational import (
     _VariationalDistribution,
     _VariationalStrategy,
 )
+from numpy.typing import NDArray
 from torch import Tensor
 
 from vanguard import utils
@@ -38,9 +39,9 @@ class SVGPModel(ApproximateGP):
         device = torch.device("cpu")
 
     def __init__(
-        self,  # pylint: disable=unused-argument
-        train_x: Tensor,
-        train_y: Tensor,  # pylint: disable=unused-argument
+        self,
+        train_x: Union[Tensor, NDArray[np.floating]],
+        train_y: Union[Tensor, NDArray[np.floating]],  # pylint: disable=unused-argument
         likelihood: GaussianLikelihood,
         mean_module: Mean,
         covar_module: Kernel,
@@ -56,7 +57,8 @@ class SVGPModel(ApproximateGP):
         which allows more generic code.
 
         :param train_x: (n_samples, n_features) The training inputs (features).
-        :param train_y: (n_samples,) The training targets (response).
+        :param train_y: (n_samples,) The training targets (response). Note that these are not used for this method!
+            They are only passed here to match the `__init__()` signature of the other Vanguard GP models.
         :param likelihood:  Likelihood to use with model. Included only for signature consistency.
         :param mean_module: The prior mean function to use.
         :param covar_module:  The prior kernel function to use.
@@ -65,6 +67,8 @@ class SVGPModel(ApproximateGP):
         """
         self.rng = utils.optional_random_generator(rng)
         self._check_batch_shape(mean_module, covar_module)
+
+        train_x = torch.as_tensor(train_x)
 
         inducing_points = self._init_inducing_points(train_x, n_inducing_points)
         variational_distribution = self._build_variational_distribution(n_inducing_points)
@@ -160,12 +164,3 @@ class SVGPModel(ApproximateGP):
                 f"You are using a {SVGPModel.__name__} in a multi-task problem. {SVGPModel.__name__} does"
                 f"not have the correct variational strategy for multi-task."
             )
-
-    @staticmethod
-    def _get_num_tasks(y: Tensor) -> int:
-        """Get the number of tasks implied by the shape of ``y``."""
-        try:
-            num_tasks = y.shape[1]
-        except IndexError:
-            num_tasks = 1
-        return num_tasks
