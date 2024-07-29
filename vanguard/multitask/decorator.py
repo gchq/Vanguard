@@ -12,12 +12,16 @@ from gpytorch.kernels import Kernel, MultitaskKernel
 from gpytorch.means import ConstantMean, Mean, MultitaskMean
 from torch import Tensor
 
-from .. import utils
-from ..base import GPController
-from ..decoratorutils import Decorator, process_args, wraps_class
-from ..variational import VariationalInference
-from .kernel import BatchCompatibleMultitaskKernel
-from .models import independent_variational_multitask_model, lmc_variational_multitask_model, multitask_model
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.multitask.kernel import BatchCompatibleMultitaskKernel
+from vanguard.multitask.models import (
+    independent_variational_multitask_model,
+    lmc_variational_multitask_model,
+    multitask_model,
+)
+from vanguard.variational import VariationalInference
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 T = TypeVar("T")

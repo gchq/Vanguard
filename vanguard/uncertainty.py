@@ -13,12 +13,12 @@ import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
-from . import utils
-from .base import GPController
-from .base.posteriors import Posterior
-from .optimise import NoImprovementError, SmartOptimiser
-from .utils import generator_append_constant, infinite_tensor_generator
-from .warnings import _INPUT_WARNING, GPInputWarning
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.optimise import NoImprovementError, SmartOptimiser
+from vanguard.utils import generator_append_constant, infinite_tensor_generator
+from vanguard.warnings import _INPUT_WARNING, GPInputWarning
 
 
 class GaussianUncertaintyGPController(GPController):

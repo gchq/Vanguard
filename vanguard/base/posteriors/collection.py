@@ -7,7 +7,7 @@ from typing import Generator, NoReturn, Tuple
 import numpy.typing
 import torch
 
-from .posterior import Posterior
+from vanguard.base.posteriors.posterior import Posterior
 
 
 class MonteCarloPosteriorCollection(Posterior):

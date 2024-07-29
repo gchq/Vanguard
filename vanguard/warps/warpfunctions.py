@@ -8,8 +8,8 @@ import numpy as np
 import torch
 import torch.nn.functional
 
-from .basefunction import WarpFunction
-from .intermediate import require_controller_input
+from vanguard.warps.basefunction import WarpFunction
+from vanguard.warps.intermediate import require_controller_input
 
 
 class AffineWarpFunction(WarpFunction):

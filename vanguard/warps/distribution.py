@@ -10,9 +10,8 @@ import torch
 from torch.distributions import Normal
 from typing_extensions import Self
 
+from vanguard.base.basecontroller import BaseGPController
 from vanguard.warps.basefunction import WarpFunction
-
-from ..base.basecontroller import BaseGPController
 
 
 class WarpedGaussian(Normal):

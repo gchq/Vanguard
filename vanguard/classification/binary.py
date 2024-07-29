@@ -8,11 +8,11 @@ import numpy as np
 import numpy.typing
 from gpytorch.likelihoods import BernoulliLikelihood
 
-from .. import utils
-from ..base import GPController
-from ..decoratorutils import Decorator, process_args, wraps_class
-from ..variational import VariationalInference
-from .mixin import Classification, ClassificationMixin
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.classification.mixin import Classification, ClassificationMixin
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.variational import VariationalInference
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

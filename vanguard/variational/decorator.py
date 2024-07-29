@@ -12,11 +12,11 @@ import numpy as np
 import numpy.typing
 from torch import Tensor
 
-from .. import utils
-from ..base import GPController
-from ..base.posteriors import Posterior
-from ..decoratorutils import Decorator, process_args, wraps_class
-from .models import SVGPModel
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.variational.models import SVGPModel
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 # pylint: disable-next=protected-access

@@ -19,15 +19,15 @@ from linear_operator.utils.errors import NanError
 from numpy import dtype
 from torch import Tensor
 
-from .. import utils
-from ..decoratorutils import wraps_class
-from ..models import ExactGPModel
-from ..optimise import NoImprovementError, SmartOptimiser
-from ..utils import infinite_tensor_generator, instantiate_with_subset_of_kwargs
-from ..warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
-from . import metrics
-from .posteriors import MonteCarloPosteriorCollection, Posterior
-from .standardise import StandardiseXModule
+from vanguard import utils
+from vanguard.base import metrics
+from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior
+from vanguard.base.standardise import StandardiseXModule
+from vanguard.decoratorutils import wraps_class
+from vanguard.models import ExactGPModel
+from vanguard.optimise import NoImprovementError, SmartOptimiser
+from vanguard.utils import infinite_tensor_generator, instantiate_with_subset_of_kwargs
+from vanguard.warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
 
 NOISE_LOWER_BOUND = 1e-3
 # pylint: disable-next=invalid-name

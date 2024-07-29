@@ -11,11 +11,11 @@ import torch
 from gpytorch.utils.warnings import GPInputWarning
 from numpy.typing import NDArray
 
-from .. import utils
-from ..base import GPController
-from ..base.posteriors import Posterior
-from ..decoratorutils import TopMostDecorator, process_args, wraps_class
-from .aggregators import (
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.decoratorutils import TopMostDecorator, process_args, wraps_class
+from vanguard.distribute.aggregators import (
     BadPriorVarShapeError,
     BaseAggregator,
     BCMAggregator,
@@ -24,7 +24,7 @@ from .aggregators import (
     XBCMAggregator,
     XGRBCMAggregator,
 )
-from .partitioners import BasePartitioner, KMeansPartitioner, KMedoidsPartitioner
+from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner, KMedoidsPartitioner
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"

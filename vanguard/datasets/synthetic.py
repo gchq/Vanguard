@@ -9,8 +9,8 @@ from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
 from typing_extensions import Unpack
 
-from .. import utils
-from .basedataset import Dataset
+from vanguard import utils
+from vanguard.datasets.basedataset import Dataset
 
 
 def simple_f(x: NDArray[np.floating]) -> NDArray[np.floating]:

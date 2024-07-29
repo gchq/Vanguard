@@ -9,17 +9,17 @@ import numpy as np
 import torch
 from numpy.typing import NDArray
 
-from .. import utils
-from ..decoratorutils import process_args, wraps_class
-from .base import (
+from vanguard import utils
+from vanguard.decoratorutils import process_args, wraps_class
+from vanguard.hierarchical.base import (
     BaseHierarchicalHyperparameters,
     GPController,
     Posterior,
     extract_bayesian_hyperparameters,
     set_batch_shape,
 )
-from .collection import OnePointHyperparameterCollection
-from .distributions import SpectralRegularisedMultivariateNormal
+from vanguard.hierarchical.collection import OnePointHyperparameterCollection
+from vanguard.hierarchical.distributions import SpectralRegularisedMultivariateNormal
 
 HESSIAN_JITTER = 1e-5
 

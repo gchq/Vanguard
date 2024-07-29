@@ -11,7 +11,7 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Callable, Optional
 
 if TYPE_CHECKING:
-    from .basecontroller import BaseGPController
+    from vanguard.base.basecontroller import BaseGPController
 
 
 class MetricsTracker:

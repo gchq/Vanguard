@@ -13,7 +13,7 @@ import gpytorch
 import torch
 from gpytorch import constraints
 
-from .hyperparameter import BayesianHyperparameter
+from vanguard.hierarchical.hyperparameter import BayesianHyperparameter
 
 HALF_INTERVAL_PRIOR = (8.0, 6.0**2)
 DEFAULT_PRIORS = {

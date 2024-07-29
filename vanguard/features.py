@@ -8,9 +8,9 @@ from typing import Any, Tuple, Type, TypeVar, Union
 import numpy as np
 import torch
 
-from . import utils
-from .base import GPController
-from .decoratorutils import Decorator, process_args, wraps_class
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

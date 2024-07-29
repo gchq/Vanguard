@@ -19,7 +19,7 @@ from gpytorch.priors import Prior
 from linear_operator.operators import DiagLinearOperator
 from torch import Tensor
 
-from .models import DummyKernelDistribution
+from vanguard.classification.models import DummyKernelDistribution
 
 
 class DummyNoise:

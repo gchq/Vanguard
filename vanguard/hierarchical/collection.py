@@ -8,7 +8,7 @@ import gpytorch
 import torch
 from gpytorch.distributions import MultivariateNormal
 
-from ..hierarchical.base import BaseHierarchicalHyperparameters
+from vanguard.hierarchical.base import BaseHierarchicalHyperparameters
 
 HyperparameterT = TypeVar("HyperparameterT", bound=BaseHierarchicalHyperparameters)
 ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)

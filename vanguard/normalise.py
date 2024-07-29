@@ -8,12 +8,12 @@ from typing import Any, Tuple, Type, TypeVar
 import numpy as np
 import torch
 
-from . import utils
-from .base import GPController
-from .base.posteriors import Posterior
-from .classification.mixin import ClassificationMixin
-from .decoratorutils import Decorator, process_args, wraps_class
-from .decoratorutils.errors import BadCombinationWarning
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.classification.mixin import ClassificationMixin
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.decoratorutils.errors import BadCombinationWarning
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
