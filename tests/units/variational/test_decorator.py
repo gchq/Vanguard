@@ -23,7 +23,7 @@ class TestWrapping:
         """Test that when a variational strategy class is passed, it is used."""
 
         class MyVariationalStrategy(VariationalStrategy):
-            """Test class identical to VariationalStrategy in all but name."""
+            """Test class identical to `VariationalStrategy` in all but name."""
 
         @VariationalInference(variational_strategy_class=MyVariationalStrategy)
         class Controller(GaussianGPController):
@@ -45,7 +45,7 @@ class TestWrapping:
         """Test that when a variational distribution class is passed, it is used."""
 
         class MyMeanFieldVariationalDistribution(MeanFieldVariationalDistribution):
-            """Test class identical to MeanFieldVariationalDistribution in all but name."""
+            """Test class identical to `MeanFieldVariationalDistribution` in all but name."""
 
         @VariationalInference(variational_distribution_class=MyMeanFieldVariationalDistribution)
         class Controller(GaussianGPController):
@@ -67,7 +67,7 @@ class TestWrapping:
         )
 
     def test_variational_strategy_error_wrapping(self, dataset: Dataset):
-        """Test that if the given strategy throws a RuntimeError, it is wrapped in an error with a nicer message."""
+        """Test that if the given strategy throws a `RuntimeError`, it is wrapped in an error with a nicer message."""
 
         class ErrorStrategy(VariationalStrategy):
             def __call__(self, *args, **kwargs):

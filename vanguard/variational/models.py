@@ -57,7 +57,8 @@ class SVGPModel(ApproximateGP):
         which allows more generic code.
 
         :param train_x: (n_samples, n_features) The training inputs (features).
-        :param train_y: (n_samples,) The training targets (response). Note that these are not used!
+        :param train_y: (n_samples,) The training targets (response). Note that these are not used for this method!
+            They are only passed here to match the `__init__()` signature of the other Vanguard GP models.
         :param likelihood:  Likelihood to use with model. Included only for signature consistency.
         :param mean_module: The prior mean function to use.
         :param covar_module:  The prior kernel function to use.

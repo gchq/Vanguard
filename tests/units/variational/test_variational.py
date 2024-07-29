@@ -25,7 +25,7 @@ class BasicTests(unittest.TestCase):
 
     def test_bad_marginal_log_likelihood(self) -> None:
         """
-        Test that when an inappropriate MLL class is passed, the resulting TypeError is converted to a ValueError.
+        Test that when an inappropriate MLL class is passed, the resulting `TypeError` is converted to a `ValueError`.
         """
         rng = get_default_rng()
         dataset = SyntheticDataset(rng=rng)
@@ -40,7 +40,7 @@ class BasicTests(unittest.TestCase):
             )
 
     def test_other_type_error_unaffected(self):
-        """Test that any other TypeError is raised as-is and is not converted to a ValueError."""
+        """Test that any other `TypeError` is raised as-is and is not converted to a `ValueError`."""
         rng = get_default_rng()
         dataset = SyntheticDataset(rng=rng)
         with self.assertRaises(TypeError):
