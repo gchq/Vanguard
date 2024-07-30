@@ -136,11 +136,11 @@ class EmptyDataset(Dataset):
         super().__init__(
             np.zeros((0, num_features)),
             np.zeros((0,)),
-            np.zeros((0, num_features)),
+            np.zeros((0,)),
             np.zeros((0,)),
             np.zeros((0, num_features)),
             np.zeros((0,)),
-            np.zeros((0, num_features)),
+            np.zeros((0,)),
             np.zeros((0,)),
             significance=significance,
         )
