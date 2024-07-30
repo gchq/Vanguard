@@ -1,9 +1,9 @@
 """Tests for `vanguard.datasets.classification`."""
 
-from typing import override
 from unittest import TestCase
 
 import numpy as np
+from typing_extensions import override
 
 from tests.cases import get_default_rng
 from vanguard.datasets.classification import (
