@@ -106,7 +106,7 @@ class TestHeteroskedasticSyntheticDataset(TestCase):
 
         This is tested by setting `output_noise_mean` quite low, and `output_noise_std` high.
         """
-        dataset = HeteroskedasticSyntheticDataset(output_noise_mean=0.1, output_noise_std=1)
+        dataset = HeteroskedasticSyntheticDataset(output_noise_mean=0.1, output_noise_std=1, rng=get_default_rng())
         assert np.all(dataset.train_y_std >= 0)
         assert np.all(dataset.test_y_std >= 0)
 
@@ -116,7 +116,7 @@ class TestHigherRankSyntheticDataset(TestCase):
         """Test that the x values are 2x2 matrices."""
         num_train = 20
         num_test = 10
-        dataset = HigherRankSyntheticDataset(n_train_points=num_train, n_test_points=num_test)
+        dataset = HigherRankSyntheticDataset(n_train_points=num_train, n_test_points=num_test, rng=get_default_rng())
 
         assert dataset.train_x.shape == (num_train, 2, 2)
         assert dataset.test_x.shape == (num_test, 2, 2)
