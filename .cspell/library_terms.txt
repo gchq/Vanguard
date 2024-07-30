@@ -51,7 +51,6 @@ evals
 evalue
 evecs
 facecolor
-favor
 figsize
 fixsize
 framealpha
@@ -69,7 +68,6 @@ jupyterlab
 keepdim
 kernelspec
 kmedoids
-lazify
 lengthscale
 lengthscales
 lexer

@@ -5,13 +5,11 @@ Contains test cases for Vanguard testing.
 import contextlib
 import unittest
 import warnings
-from functools import wraps
-from typing import Callable, Tuple, Type, TypeVar, Union
+from typing import Tuple, Type, Union
 
 import numpy as np
 import numpy.typing
 from scipy import stats
-from typing_extensions import ParamSpec
 
 DEFAULT_RNG_SEED = 1234
 
@@ -114,41 +112,3 @@ class VanguardTestCase(unittest.TestCase):
 
         if len(ws) > 0:
             self.fail(f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}")
-
-
-class FlakyTestError(AssertionError):
-    """Raised when a flaky test fails repeatedly."""
-
-
-P = ParamSpec("P")
-T = TypeVar("T")
-
-
-def flaky(test_method: Callable[P, T]) -> Callable[P, T]:
-    """
-    Mark a test as flaky - flaky tests are rerun up to 5 times, and pass as soon as they pass at least once.
-    """
-    max_attempts = 5  # TODO: make this a parameter
-    # https://github.com/gchq/Vanguard/issues/195
-
-    @wraps(test_method)
-    def repeated_test(self: unittest.TestCase, *args: P.args, **kwargs: P.kwargs) -> T:
-        last_attempt = max_attempts - 1
-        for attempt_number in range(max_attempts):
-            if attempt_number > 0:
-                # skip the first setUp as unittest does it for us
-                self.setUp()
-
-            try:
-                return test_method(self, *args, **kwargs)
-            except AssertionError as ex:
-                if attempt_number == last_attempt:
-                    raise FlakyTestError(
-                        f"Flaky test failed {max_attempts} separate times. Last failure is given above."
-                    ) from ex
-
-            if attempt_number != last_attempt:
-                # skip the last tearDown as unittest does it for us
-                self.tearDown()
-
-    return repeated_test
