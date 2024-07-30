@@ -18,7 +18,7 @@ from .basedataset import Dataset
 
 class BinaryStripeClassificationDataset(Dataset):
     """
-    Dataset comprised of one-dimensional input values, and binary output values.
+    Dataset comprised of one-dimensional input values, and binary output values (0 or 1).
 
     .. plot::
 
@@ -38,8 +38,8 @@ class BinaryStripeClassificationDataset(Dataset):
         :param rng: Generator instance used to generate random numbers.
         """
         self.rng = utils.optional_random_generator(rng)
-        train_x = np.linspace(0, 1, num_train_points)
-        test_x = self.rng.random(num_test_points)
+        train_x = np.linspace(0, 1, num_train_points).reshape((-1, 1))
+        test_x = self.rng.random(num_test_points).reshape((-1, 1))
 
         train_y = self.even_split(train_x)
         test_y = self.even_split(test_x)
@@ -70,7 +70,9 @@ class MulticlassGaussianClassificationDataset(Dataset):
         num_train_points: int,
         num_test_points: int,
         num_classes: int,
+        *,
         covariance_scale: float = 1.0,
+        num_features: int = 2,
         rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
@@ -79,6 +81,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         :param num_train_points: The number of training points.
         :param num_test_points: The number of testing points.
         :param num_classes: The number of classes.
+        :param num_features: The number of features to generate for the input data.
         :param covariance_scale: The covariance matrix will be this value times the unit matrix.
             Defaults to 1.0.
         :param rng: Generator instance used to generate random numbers.
@@ -89,14 +92,14 @@ class MulticlassGaussianClassificationDataset(Dataset):
         train_x, train_y = make_gaussian_quantiles(
             cov=covariance_scale,
             n_samples=num_train_points,
-            n_features=2,
+            n_features=num_features,
             n_classes=num_classes,
             random_state=self.rng.integers(2**32 - 1),
         )
         test_x, test_y = make_gaussian_quantiles(
             cov=covariance_scale,
             n_samples=num_test_points,
-            n_features=2,
+            n_features=num_features,
             n_classes=num_classes,
             random_state=self.rng.integers(2**32 - 1),
         )
@@ -105,10 +108,14 @@ class MulticlassGaussianClassificationDataset(Dataset):
 
     @property
     def one_hot_train_y(self) -> NDArray[int]:
-        """Return the training data as a one-hot encoded array."""
+        """
+        Return the training data as a one-hot encoded array.
+
+        Note that if there are exactly two classes, this returns `train_y.reshape((-1, 1))` instead.
+        """
         return sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y)
 
-    def plot(self, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5) -> None:
+    def plot(self, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5) -> None:  # pragma: no cover
         """
         Plot the data.
 
@@ -121,7 +128,9 @@ class MulticlassGaussianClassificationDataset(Dataset):
         legend = ax.legend(*scatter.legend_elements(), title="Classes")
         ax.add_artist(legend)
 
-    def plot_prediction(self, prediction: NDArray, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5) -> None:
+    def plot_prediction(
+        self, prediction: NDArray, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5
+    ) -> None:  # pragma: no cover
         """
         Plot a prediction.
 
@@ -156,7 +165,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
 
     def plot_confusion_matrix(
         self, prediction: NDArray, cmap: Union[str, Colormap] = "OrRd", text_size: str = "xx-large"
-    ) -> None:
+    ) -> None:  # pragma: no cover
         """
         Plot a confusion matrix based on a specific prediction.
 
@@ -195,7 +204,9 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         self,
         num_train_points: int,
         num_test_points: int,
+        *,
         covariance_scale: float = 1.0,
+        num_features: int = 2,
         rng: Optional[np.random.Generator] = None,
     ) -> None:
         """
@@ -205,6 +216,7 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         :param num_test_points: The number of testing points.
         :param covariance_scale: The covariance matrix will be this value times the unit matrix.
             Defaults to 1.0.
+        :param num_features: The number of features to generate for the input data.
         :param rng: Generator instance used to generate random numbers.
         """
         super().__init__(
@@ -212,5 +224,6 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
             num_test_points,
             num_classes=2,
             covariance_scale=covariance_scale,
+            num_features=num_features,
             rng=utils.optional_random_generator(rng),
         )
