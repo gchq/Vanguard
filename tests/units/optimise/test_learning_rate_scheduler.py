@@ -2,10 +2,8 @@
 Tests for `ApplyLearningRateScheduler`.
 """
 
-import sys
 import unittest
 
-import pytest
 import torch
 
 from tests.cases import get_default_rng
@@ -25,9 +23,6 @@ class BasicTests(unittest.TestCase):
         self.rng = get_default_rng()
         self.dataset = SyntheticDataset(rng=self.rng)
 
-    @pytest.mark.xfail(sys.platform == "linux", reason="Missing positional argument `loss` in step()")
-    # TODO: Fix failure of missing positional argument
-    # https://github.com/gchq/Vanguard/issues/336
     def test_learning_rate_is_stepped(self) -> None:
         """Test that the learning rate is modified by the scheduler."""
         num_iters = 33
