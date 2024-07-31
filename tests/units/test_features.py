@@ -1,5 +1,8 @@
 """
 Tests for the HigherRankFeatures decorator.
+
+.. note::
+    ``features.py`` or this test module should be refactored if another feature is added.
 """
 
 import unittest
