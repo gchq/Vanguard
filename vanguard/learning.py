@@ -11,10 +11,9 @@ import numpy.typing
 import torch
 
 import vanguard.decoratorutils
-
-from . import utils
-from .base import GPController
-from .decoratorutils import Decorator, wraps_class
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.decoratorutils import Decorator, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

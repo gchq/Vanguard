@@ -11,10 +11,10 @@ import torch
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 from typing_extensions import Self
 
-from .. import utils
-from ..base import GPController
-from ..decoratorutils import Decorator, process_args, wraps_class
-from .mixin import Classification, ClassificationMixin
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.classification.mixin import Classification, ClassificationMixin
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2

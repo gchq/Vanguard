@@ -6,11 +6,10 @@ from typing import Any, Type, TypeVar
 
 import torch
 
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
 from vanguard.warps.basefunction import WarpFunction
-
-from .. import utils
-from ..base import GPController
-from ..decoratorutils import Decorator, process_args, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 ModuleT = TypeVar("ModuleT", bound=torch.nn.Module)

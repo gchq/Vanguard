@@ -7,9 +7,9 @@ as seen in :cite:`Lalchand20`, as well as Laplace approximation
 treatment.
 """
 
-from .laplace import LaplaceHierarchicalHyperparameters
-from .module import BayesianHyperparameters
-from .variational import VariationalHierarchicalHyperparameters
+from vanguard.hierarchical.laplace import LaplaceHierarchicalHyperparameters
+from vanguard.hierarchical.module import BayesianHyperparameters
+from vanguard.hierarchical.variational import VariationalHierarchicalHyperparameters
 
 __all__ = [
     "LaplaceHierarchicalHyperparameters",

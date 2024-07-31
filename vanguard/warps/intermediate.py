@@ -9,8 +9,8 @@ initialised lazily, only becoming a full warp function upon activation.
 
 from typing import Any, Callable, Type, TypeVar
 
-from ..decoratorutils import process_args, wraps_class
-from .basefunction import WarpFunction
+from vanguard.decoratorutils import process_args, wraps_class
+from vanguard.warps.basefunction import WarpFunction
 
 WarpFunctionT = TypeVar("WarpFunctionT", bound=WarpFunction)
 

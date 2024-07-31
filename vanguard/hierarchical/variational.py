@@ -11,16 +11,16 @@ from gpytorch.variational import CholeskyVariationalDistribution
 from linear_operator import to_linear_operator
 from numpy.typing import NDArray
 
-from .. import utils
-from ..decoratorutils import process_args, wraps_class
-from .base import (
+from vanguard import utils
+from vanguard.decoratorutils import process_args, wraps_class
+from vanguard.hierarchical.base import (
     BaseHierarchicalHyperparameters,
     GPController,
     Posterior,
     extract_bayesian_hyperparameters,
     set_batch_shape,
 )
-from .collection import HyperparameterCollection
+from vanguard.hierarchical.collection import HyperparameterCollection
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 KernelT = TypeVar("KernelT", bound=gpytorch.kernels.Kernel)

@@ -11,10 +11,10 @@ import torch
 from gpytorch.kernels import ScaleKernel
 from numpy.typing import NDArray
 
-from ..base import GPController
-from ..base.posteriors import MonteCarloPosteriorCollection, Posterior
-from ..decoratorutils import Decorator, wraps_class
-from ..warnings import _JITTER_WARNING, NumericalWarning
+from vanguard.base import GPController
+from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior
+from vanguard.decoratorutils import Decorator, wraps_class
+from vanguard.warnings import _JITTER_WARNING, NumericalWarning
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 DistributionT = TypeVar("DistributionT", bound=gpytorch.distributions.Distribution)

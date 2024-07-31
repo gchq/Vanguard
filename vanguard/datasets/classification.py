@@ -12,8 +12,8 @@ from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 from sklearn.datasets import make_gaussian_quantiles
 
-from .. import utils
-from .basedataset import Dataset
+from vanguard import utils
+from vanguard.datasets.basedataset import Dataset
 
 
 class BinaryStripeClassificationDataset(Dataset):

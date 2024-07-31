@@ -6,7 +6,7 @@ import warnings
 from inspect import getmembers, isfunction
 from typing import Iterable, Set, Type, TypeVar
 
-from . import errors
+from vanguard.decoratorutils import errors
 
 T = TypeVar("T")
 DecoratorT = TypeVar("DecoratorT", bound="Decorator")

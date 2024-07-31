@@ -12,10 +12,10 @@ from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.means import ConstantMean
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
-from . import utils
-from .base import GPController
-from .optimise import GreedySmartOptimiser
-from .optimise.optimiser import SmartOptimiser
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.optimise import GreedySmartOptimiser
+from vanguard.optimise.optimiser import SmartOptimiser
 
 
 class GaussianGPController(GPController):

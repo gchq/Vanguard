@@ -8,12 +8,12 @@ import numpy as np
 import numpy.typing
 import torch
 
-from .. import utils
-from ..base import GPController
-from ..decoratorutils import Decorator, process_args, wraps_class
-from .likelihoods import DirichletKernelClassifierLikelihood
-from .mixin import Classification, ClassificationMixin
-from .models import InertKernelModel
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood
+from vanguard.classification.mixin import Classification, ClassificationMixin
+from vanguard.classification.models import InertKernelModel
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2

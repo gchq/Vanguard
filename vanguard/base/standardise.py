@@ -8,7 +8,7 @@ import numpy.typing
 import torch
 from typing_extensions import Self
 
-from ..decoratorutils import wraps_class
+from vanguard.decoratorutils import wraps_class
 
 
 class StandardiseXModule:

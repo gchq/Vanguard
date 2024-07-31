@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing
 import torch
 
-from .warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
+from vanguard.warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
 
 def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.typing.NDArray:

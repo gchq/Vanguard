@@ -10,11 +10,11 @@ import numpy.typing
 import torch
 from torch import Tensor
 
-from ..decoratorutils import Decorator
-from .basecontroller import BaseGPController
-from .metaclass import _StoreInitValues
-from .metrics import MetricsTracker
-from .posteriors.posterior import Posterior
+from vanguard.base.basecontroller import BaseGPController
+from vanguard.base.metaclass import _StoreInitValues
+from vanguard.base.metrics import MetricsTracker
+from vanguard.base.posteriors.posterior import Posterior
+from vanguard.decoratorutils import Decorator
 
 
 class GPController(BaseGPController, metaclass=_StoreInitValues):

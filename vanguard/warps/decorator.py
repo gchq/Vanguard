@@ -8,12 +8,12 @@ import numpy as np
 import numpy.typing
 import torch
 
-from .. import utils
-from ..base import GPController
-from ..base.posteriors import Posterior
-from ..decoratorutils import Decorator, process_args, wraps_class
-from .basefunction import WarpFunction
-from .intermediate import is_intermediate_warp_function
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.warps.basefunction import WarpFunction
+from vanguard.warps.intermediate import is_intermediate_warp_function
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 

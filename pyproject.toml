@@ -103,10 +103,17 @@ extend-select = [
     "I",     # isort rules
     "UP",    # pyupgrade rules
     "NPY",   # numpy linting rules
+    "TID252",# ban relative imports
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**.py" = [ "TID252" ]  # allow relative imports within tests
 
 [tool.ruff.lint.isort]
 known-local-folder = ["confutils","refstyle"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
 
 [tool.coverage.run]
 command_line = "-m pytest tests/units --cov"
