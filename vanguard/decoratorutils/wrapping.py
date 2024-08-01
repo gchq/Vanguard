@@ -9,20 +9,42 @@ to a function into a dictionary for straightforward access.
 
 import inspect
 from functools import WRAPPER_ASSIGNMENTS, wraps
-from typing import Any, Callable, Type, TypeVar
+from typing import Any, Callable, Dict, Type, TypeVar
 
 T = TypeVar("T")
 
 
-def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
+def process_args(func: Callable, *args: Any, **kwargs: Any) -> Dict[str, Any]:
     """
     Process the arguments for a function.
 
-    Similar to :func:`inspect.getcallargs`, except it
-    will repeatedly follow the ``__wrapped__`` attribute to
-    get the correct function.  If func is passed as a bound
-    function, then it will be converted into a bound function
-    before :func:`inspect.getcallargs` is called.
+    This is just a wrapper on :func:`inspect.Signature.bind` that also applies any default arguments and folds any
+    additional `kwargs` into the returned dictionary.
+
+    Note that when passed a bound method, ``"self"`` will not be a key in the returned dictionary, and should not be
+    passed as an argument (as a TypeError will be raised).
+
+    Conversely, when passed an unbound method, ``"self"`` _must_ be passed as an argument if it's an instance method,
+    and will be included in the returned dictionary.
+
+    As such, if you need to use the result of applying this function on an unbound method as an argument list to a
+    bound method, or vice versa, you'll have to handle the "self" parameter specially.
+
+    :Example:
+        >>> class MyClass:
+        ...     def __init__(self, x: int):
+        ...         self.x = x
+        ...     def multiply(self, y: int) -> int:
+        ...         return self.x * y
+        >>> my_instance = MyClass(2)
+        >>> process_args(my_instance.multiply, y=3)
+        {'y': 3}
+        >>> process_args(MyClass.multiply, y=3)
+        Traceback (most recent call last):
+        ...
+        TypeError: missing a required argument: 'self'
+        >>> process_args(MyClass.multiply, my_instance, y=3)  # doctest: +ELLIPSIS
+        {'self': <...MyClass object at 0x...>, 'y': 3}
 
     :param func: The function for which to process the arguments.
     :param args: Arguments to be passed to the function. Must be passed as args,
