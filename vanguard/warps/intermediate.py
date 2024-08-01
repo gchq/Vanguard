@@ -100,6 +100,8 @@ def _only_cache_init_values(init_method: Callable) -> Callable:
     def inner_func(self: WarpFunction, *args: Any, **kwargs: Any) -> None:
         """Cache the input parameters."""
         all_parameters_as_kwargs = process_args(init_method, self, *args, **kwargs)
+        # we have to explicitly remove "self" here, else we'll get the error "multiple values for 'self' passed" when
+        # we go to actually initialise
         all_parameters_as_kwargs.pop("self")
         self.CACHED_PARAMS_AS_KWARGS.update(all_parameters_as_kwargs)
 

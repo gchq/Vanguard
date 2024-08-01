@@ -74,7 +74,6 @@ class Multitask(Decorator):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 # it's OK to access self.gp_model_class as it's set in super().__init__ above

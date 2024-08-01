@@ -49,18 +49,12 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
         ...
         TypeError: missing a required argument: 'b'
     """
-    func_self = getattr(func, "__self__", None)
-
     signature = inspect.signature(func)
     bound_args = signature.bind(*args, **kwargs)
     bound_args.apply_defaults()
     parameters_as_kwargs = bound_args.arguments
     inner_kwargs = parameters_as_kwargs.pop("kwargs", {})
     parameters_as_kwargs.update(inner_kwargs)
-
-    # add on "self" keyword argument for backwards compatibility
-    if func_self is not None:
-        parameters_as_kwargs["self"] = func_self
 
     return parameters_as_kwargs
 
