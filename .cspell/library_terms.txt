@@ -62,6 +62,7 @@ inproceedings
 intersphinx
 ipynb
 ipython
+isin
 isort
 jumanjihouse
 jupyterlab

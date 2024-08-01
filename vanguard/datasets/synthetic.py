@@ -76,8 +76,11 @@ class SyntheticDataset(Dataset):
         """
         Initialise self.
 
-        :param functions: The functions to be used to generate the synthetic data.
-        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
+        :param functions: The functions to be used to generate the synthetic data. If multiple functions are given,
+            a multidimensional output is generated.
+        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1. Only applied
+            to the training data; the testing data has no output noise actually applied, but we still set
+            `test_y_std = output_noise`.
         :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
             for the training input. Defaults to (0.01, 0.05).
         :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
@@ -116,7 +119,7 @@ class SyntheticDataset(Dataset):
 
         :param n_points: The number of points to create.
         :param input_noise_bounds: The lower, upper bounds for the resulting input noise.
-        :param output_noise_level: The amount of noise applied to the inputs.
+        :param output_noise_level: The amount of noise applied to the outputs.
         :param interval_length: Use to scale the exact image of the function, defaults to 1.
         :return: The output and the mean and standard deviation of the input, in the form ``(x_mean, x_std), y``.
         """
@@ -201,7 +204,8 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
     def __init__(
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
-        output_noise: float = 0.1,
+        output_noise_mean: float = 0.1,
+        output_noise_std: float = 0.01,
         train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
         test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
         n_train_points: int = 30,
@@ -213,7 +217,8 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         Initialise self.
 
         :param functions: The functions to be used to generate the synthetic data.
-        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
+        :param output_noise_mean: The mean for the output standard deviation, defaults to 0.1.
+        :param output_noise_std: The standard deviation for the output standard deviation, defaults to 0.01.
         :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
             for the training input. Defaults to (0.01, 0.05).
         :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
@@ -226,7 +231,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         rng = utils.optional_random_generator(rng)
         super().__init__(
             functions,
-            output_noise,
+            output_noise_mean,
             train_input_noise_bounds,
             test_input_noise_bounds,
             n_train_points,
@@ -234,8 +239,12 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
             significance,
             rng=rng,
         )
-        self.train_y_std = self.rng.normal(loc=self.train_y_std, scale=0.01, size=n_train_points)
-        self.test_y_std = self.rng.normal(loc=self.test_y_std, scale=0.01, size=n_train_points)
+        self.train_y_std = self.rng.normal(loc=self.train_y_std, scale=output_noise_std, size=n_train_points).clip(
+            0, None
+        )
+        self.test_y_std = self.rng.normal(loc=self.test_y_std, scale=output_noise_std, size=n_train_points).clip(
+            0, None
+        )
 
 
 class HigherRankSyntheticDataset(Dataset):
