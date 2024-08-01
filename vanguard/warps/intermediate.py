@@ -77,7 +77,10 @@ def require_controller_input(cache_name: str) -> Callable[[Type[WarpFunctionT]],
 
             CACHED_PARAMS_AS_KWARGS = {}
             setattr(cls, cache_name, {})
-            __init__ = _only_cache_init_values(cls.__init__)
+
+            def __init__(self, *args, **kwargs):
+                all_parameters_as_kwargs = process_args(self.__init__, *args, **kwargs)
+                self.CACHED_PARAMS_AS_KWARGS.update(all_parameters_as_kwargs)
 
             def activate(self, **controller_input_as_kwargs: Any):
                 """Activate the intermediate warp function."""
@@ -92,17 +95,3 @@ def require_controller_input(cache_name: str) -> Callable[[Type[WarpFunctionT]],
         return IntermediateClass
 
     return decorator
-
-
-def _only_cache_init_values(init_method: Callable) -> Callable:
-    """Wrap an __init__ method to only cache the input parameters."""
-
-    def inner_func(self: WarpFunction, *args: Any, **kwargs: Any) -> None:
-        """Cache the input parameters."""
-        all_parameters_as_kwargs = process_args(init_method, self, *args, **kwargs)
-        # we have to explicitly remove "self" here, else we'll get the error "multiple values for 'self' passed" when
-        # we go to actually initialise
-        all_parameters_as_kwargs.pop("self")
-        self.CACHED_PARAMS_AS_KWARGS.update(all_parameters_as_kwargs)
-
-    return inner_func
