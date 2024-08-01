@@ -66,6 +66,7 @@ isort
 jumanjihouse
 jupyterlab
 keepdim
+keepends
 kernelspec
 kmedoids
 lengthscale
