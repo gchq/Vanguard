@@ -36,7 +36,7 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         ...         self.x = x
         ...     def multiply(self, y: int) -> int:
         ...         return self.x * y
-        >>> my_instance = MyClass(2)
+        >>> my_instance = MyClass(x=2)
         >>> process_args(my_instance.multiply, y=3)
         {'y': 3}
         >>> process_args(MyClass.multiply, y=3)
@@ -78,7 +78,10 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> Dict[str, Any]:
     inner_kwargs = parameters_as_kwargs.pop("kwargs", {})
     parameters_as_kwargs.update(inner_kwargs)
 
-    return parameters_as_kwargs
+    # TODO: remove this dict() conversion when we drop support for 3.8 - it's only required to make the doctests pass
+    #  on 3.8, since in 3.8 Signature.bind() returns OrderedDict rather than a normal dictionary
+    # https://github.com/gchq/Vanguard/issues/65
+    return dict(parameters_as_kwargs)
 
 
 def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
