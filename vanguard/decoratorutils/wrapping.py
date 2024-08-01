@@ -8,7 +8,6 @@ to a function into a dictionary for straightforward access.
 """
 
 import inspect
-import types
 from functools import WRAPPER_ASSIGNMENTS, wraps
 from typing import Any, Callable, Type, TypeVar
 
@@ -48,28 +47,20 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict:
         >>> process_args(f, 1)
         Traceback (most recent call last):
         ...
-        TypeError: f() missing 1 required positional argument: 'b'
+        TypeError: missing a required argument: 'b'
     """
     func_self = getattr(func, "__self__", None)
 
-    while True:
-        try:
-            func = func.__wrapped__
-        except AttributeError:
-            break
-
-    try:
-        func = types.MethodType(func, func_self)
-    except TypeError:
-        pass
-
-    # TODO: This function is deprecated since python 3.5 - replace with inspect.Signature.bind() asap and remove
-    #  this Pylint disable!
-    # https://github.com/gchq/Vanguard/issues/203
-    # pylint: disable=deprecated-method
-    parameters_as_kwargs = inspect.getcallargs(func, *args, **kwargs)
+    signature = inspect.signature(func)
+    bound_args = signature.bind(*args, **kwargs)
+    bound_args.apply_defaults()
+    parameters_as_kwargs = bound_args.arguments
     inner_kwargs = parameters_as_kwargs.pop("kwargs", {})
     parameters_as_kwargs.update(inner_kwargs)
+
+    # add on "self" keyword argument for backwards compatibility
+    if func_self is not None:
+        parameters_as_kwargs["self"] = func_self
 
     return parameters_as_kwargs
 
