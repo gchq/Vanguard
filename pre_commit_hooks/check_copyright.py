@@ -69,7 +69,7 @@ def main() -> None:
             test_content = content
 
         if not test_content.startswith(copyright_template):
-            print(f"{filename} does not have a valid notice", file=sys.stderr)
+            print(f"{filename}:0 - no matching copyright notice", file=sys.stderr)
             failed = True
 
             if args.unsafe_fix:
