@@ -191,7 +191,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
         output_noise_mean: float = 0.1,
-        output_noise_std=0.01,
+        output_noise_std: float = 0.01,
         train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
         test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
         n_train_points: int = 30,
