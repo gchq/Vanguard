@@ -118,9 +118,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self.aggregator_class = decorator.aggregator_class
 
                 partitioner_class = decorator.partitioner_class
-                partitioner_kwargs = decorator.partitioner_kwargs | all_parameters_as_kwargs.pop(
-                    "partitioner_kwargs", {}
-                )
+                partitioner_kwargs = dict(decorator.partitioner_kwargs)  # copy
+                partitioner_kwargs.update(all_parameters_as_kwargs.pop("partitioner_kwargs", {}))
                 communications_expert = issubclass(self.aggregator_class, (GRBCMAggregator, XGRBCMAggregator))
                 self.partitioner = partitioner_class(
                     train_x=self._full_train_x,
