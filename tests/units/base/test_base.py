@@ -159,8 +159,6 @@ class InputTests(VanguardTestCase):
         with self.assertRaisesRegex(ValueError, expected_regex):
             gp.fit()
 
-    @unittest.skip  # TODO: fix test; underlying issues in batch mode
-    # https://github.com/gchq/Vanguard/issues/265
     def test_error_handling_of_batch_size(self) -> None:
         """Test that a UserWarning is raised when both batch_size and gradient_every are not None."""
         gp = GaussianGPController(

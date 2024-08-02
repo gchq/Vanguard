@@ -125,8 +125,6 @@ def infinite_tensor_generator(
 
         def shuffle(array: numpy.typing.NDArray) -> None:
             """Random shuffle function."""
-            # TODO: Shuffling when batch_size is not None raises RuntimeError("You must train on the training inputs!")
-            # https://github.com/gchq/Vanguard/issues/265
             rng.shuffle(array)
 
     index = 0
