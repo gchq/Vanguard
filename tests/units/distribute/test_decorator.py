@@ -85,15 +85,24 @@ class InitialisationTests(unittest.TestCase):
         # Define the data - for the purposes of this test we do not need to know the y_std values
         dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
 
-        # Create the class without specifying a kernel, we expect a key error when trying to access the kernel
-        with self.assertRaises(KeyError):
+        # Create the class without specifying a kernel; we expect an error telling us we need to specify one
+        with self.assertRaisesRegex(TypeError, "missing 1 required positional argument: 'kernel'"):
             DistributedGaussianGPControllerKMedoids(
                 dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, rng=self.rng
             )
 
+    def test_correct_initialisation(self):
+        """Test that when the class is initialised correctly, no errors are thrown."""
+        dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
+
         # Create the class whilst specifying a kernel - this should create without error
         DistributedGaussianGPControllerKMedoids(
-            dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, kernel=ScaledRBFKernel, rng=self.rng
+            dataset.train_x,
+            dataset.train_y,
+            ScaledRBFKernel,
+            0.01,
+            partitioner_kwargs={"kernel": ScaledRBFKernel()},
+            rng=self.rng,
         )
 
 

@@ -3,7 +3,7 @@ Contains the Distributed decorator.
 """
 
 import warnings
-from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -24,7 +24,7 @@ from vanguard.distribute.aggregators import (
     XBCMAggregator,
     XGRBCMAggregator,
 )
-from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner, KMedoidsPartitioner
+from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
@@ -61,10 +61,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         :class:`~vanguard.distribute.aggregators.RBCMAggregator`.
     :param partitioner_class: The class to be used for partitioning. Defaults to
         :class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
+    :param partitioner_kwargs: Additional parameters passed to the partitioner initialisation.
 
     :Keyword Arguments:
-
-        * **partitioner_args** *dict*: Additional parameters passed to the partitioner initialisation.
         * For other possible keyword arguments, see the
           :class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
     """
@@ -76,6 +75,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         rng: Optional[np.random.Generator] = None,
         aggregator_class: Type[BaseAggregator] = RBCMAggregator,
         partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
+        partitioner_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -86,7 +86,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self.rng = utils.optional_random_generator(rng)
         self.aggregator_class = aggregator_class
         self.partitioner_class = partitioner_class
-        self.partitioner_kwargs = kwargs.pop("partitioner_kwargs", {})
+        self.partitioner_kwargs = partitioner_kwargs if partitioner_kwargs is not None else {}
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -118,9 +118,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self.aggregator_class = decorator.aggregator_class
 
                 partitioner_class = decorator.partitioner_class
-                partitioner_kwargs = decorator.partitioner_kwargs
-                if issubclass(partitioner_class, KMedoidsPartitioner):
-                    partitioner_kwargs["kernel"] = all_parameters_as_kwargs["kernel"]
+                partitioner_kwargs = decorator.partitioner_kwargs | all_parameters_as_kwargs.pop(
+                    "partitioner_kwargs", {}
+                )
                 communications_expert = issubclass(self.aggregator_class, (GRBCMAggregator, XGRBCMAggregator))
                 self.partitioner = partitioner_class(
                     train_x=self._full_train_x,

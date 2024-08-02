@@ -143,10 +143,10 @@ class VanguardTestCase(unittest.TestCase):
                 pass
 
             if partitioner is KMedoidsPartitioner:
-                # KMedoids requires a kernel to be passed to the classifier
-                extra_kwargs = {"kernel": ScaledRBFKernel()}
+                # KMedoids requires a kernel to be passed to the partitioner
+                partitioner_kwargs = {"kernel": ScaledRBFKernel()}
             else:
-                extra_kwargs = {}
+                partitioner_kwargs = {}
 
             # Define the controller object
             gp = BinaryClassifier(
@@ -156,8 +156,8 @@ class VanguardTestCase(unittest.TestCase):
                 y_std=0,
                 likelihood_class=BernoulliLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
+                partitioner_kwargs=partitioner_kwargs,
                 rng=self.rng,
-                **extra_kwargs,
             )
 
             # Fit the GP
