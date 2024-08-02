@@ -167,6 +167,7 @@ class InputTests(VanguardTestCase):
             kernel_class=PeriodicRBFKernel,
             y_std=self.DATASET.train_y_std,
             batch_size=20,
+            rng=get_default_rng(),
         )
         gradient_every = 2
         gp.fit()
