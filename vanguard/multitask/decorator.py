@@ -135,7 +135,13 @@ class Multitask(Decorator):
             @property
             def likelihood_noise(self) -> Tensor:
                 """Return the fixed noise of the likelihood."""
-                return self._likelihood.fixed_noise
+                try:
+                    return self._likelihood.fixed_noise
+                except AttributeError as exc:
+                    raise AttributeError(
+                        "'fixed_noise' appears to have not been set yet. This can be set "
+                        "with the `likelihood_noise` method"
+                    ) from exc
 
             @likelihood_noise.setter
             def likelihood_noise(self, value: Tensor) -> None:

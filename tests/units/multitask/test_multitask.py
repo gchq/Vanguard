@@ -3,7 +3,6 @@ Tests for the Multitask decorator.
 """
 
 import unittest
-from typing import Type
 from unittest.mock import MagicMock
 
 import gpytorch
@@ -35,7 +34,7 @@ class ApproxGPModel(ApproximateGP):
         self,
         mean_module: gpytorch.means.Mean,
         covar_module: gpytorch.kernels.Kernel,
-        variational_strategy: Type[VariationalStrategy],
+        variational_strategy: VariationalStrategy,
     ) -> None:
         """Initialise self."""
         super().__init__(variational_strategy)
@@ -64,7 +63,7 @@ class ErrorTests(unittest.TestCase):
         class MultitaskController(GaussianGPController):
             pass
 
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, "You are using a multitask variational model in a single-task problem."):
             MultitaskController(
                 self.dataset.train_x, self.dataset.train_y, ScaledRBFKernel, self.dataset.train_y_std, rng=self.rng
             )
@@ -81,7 +80,7 @@ class ErrorTests(unittest.TestCase):
         class MultitaskController(GaussianGPController):
             pass
 
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, "must be an iterable, not int"):
             MultitaskController(
                 self.dataset.train_x,
                 self.dataset.train_y,
@@ -126,7 +125,7 @@ class TestMulticlassModels(unittest.TestCase):
         )
 
         # Pass data forward, and verify the type and shape of the output
-        result = model.forward(self.train_x)
+        result = model(self.train_x)
 
         # We expect a MultitaskMultivariateNormal distribution out - since we are using a multitask model and
         # an exact GP
@@ -142,12 +141,11 @@ class TestMulticlassModels(unittest.TestCase):
             pass
 
         # pylint: enable=abstract-method
-
         # Create the model
         model = MultitaskModel(
             mean_module=gpytorch.means.MultitaskMean(num_tasks=self.num_tasks, base_means=self.mean_module),
             covar_module=self.covar_module,
-            variational_strategy=VariationalStrategy,
+            variational_strategy=MagicMock(),
         )
 
         # Pass data forward, and verify the type and shape of the output
@@ -161,17 +159,13 @@ class TestMulticlassModels(unittest.TestCase):
     def test_multitask_model_invalid_gp_model(self) -> None:
         """Test construction of a multitask model when using an invalid GP model."""
         # Create the model - should raise a type error since it's not a child of an exact or approximate GP
-        with self.assertRaises(TypeError):
-
+        with self.assertRaisesRegex(TypeError, "Must be applied to a subclass of 'ExactGP' or 'ApproximateGP'."):
+            # pylint: disable=unused-variable
             @multitask_model
             class MultitaskModel(MagicMock):
                 pass
 
-            MultitaskModel(
-                mean_module=gpytorch.means.MultitaskMean(num_tasks=self.num_tasks, base_means=self.mean_module),
-                covar_module=self.covar_module,
-                variational_strategy=VariationalStrategy,
-            )
+            # pylint: enable=unused-variable
 
     def test_independent_variational_multitask_model(self) -> None:
         """Test decoration using independent_variational_multitask_model with a valid and invalid mean module."""
@@ -195,7 +189,9 @@ class TestMulticlassModels(unittest.TestCase):
 
         # If batch shape is just an integer, we should get a type error when trying to index the integer
         mean_module.batch_shape = 3
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(
+            TypeError, "'mean_module.batch_shape' must be subscriptable, cannot index given value."
+        ):
             # pylint: disable=protected-access
             MultitaskModel._get_num_latents(mean_module)
             # pylint: enable=protected-access
@@ -203,7 +199,7 @@ class TestMulticlassModels(unittest.TestCase):
         # if batch shape is empty, we should get an index error, but this should then be transformed into a type
         # error inside the code detailing to the user the issue
         mean_module.batch_shape = []
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(TypeError, "a one-dimensional, non-zero length batch shape is required"):
             # pylint: disable=protected-access
             MultitaskModel._get_num_latents(mean_module)
             # pylint: enable=protected-access
@@ -266,10 +262,11 @@ class TestMulticlassDecorator(unittest.TestCase):
         )
 
         # Try and get the noise - if we've not set it yet, we should get an attribute error
-        with self.assertRaises(AttributeError):
-            # pylint: disable=pointless-statement
-            gp.likelihood_noise
-            # pylint: enable=pointless-statement
+        with self.assertRaisesRegex(
+            AttributeError,
+            "'fixed_noise' appears to have not been set yet. This can be set with the `likelihood_noise` method",
+        ):
+            _ = gp.likelihood_noise
 
         # Set the noise, then ensure it's been set as expected
         noise = torch.tensor([1989.0, 22.0, 15.0])

@@ -182,8 +182,10 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             except IndexError as exc:
                 raise TypeError(
                     f"You are using a multitask variational model but have passed a mean with batch shape"
-                    f"{mean_module.batch_shape}, but a one-dimensional batch shape is required."
+                    f"{mean_module.batch_shape}, but a one-dimensional, non-zero length batch shape is required."
                 ) from exc
+            except TypeError as exc:
+                raise TypeError("'mean_module.batch_shape' must be subscriptable, cannot index given value.") from exc
             return num_latents
 
     # Pyright does not detect that wraps_class renames InnerClass

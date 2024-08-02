@@ -4,6 +4,7 @@ Tests for the Multitask kernel class.
 
 import unittest
 
+import gpytorch
 import torch
 from linear_operator.operators import KroneckerProductLinearOperator
 
@@ -27,13 +28,14 @@ class KernelTests(unittest.TestCase):
 
     def test_last_batch_dim(self) -> None:
         """Test how BatchCompatibleMultitaskKernel handles the last dimension being the batch dimension."""
-        with self.assertRaises(RuntimeError):
-            self.kernel.forward(x1=torch.zeros([3, 2, 4]), x2=torch.ones([3, 2, 4]), last_dim_is_batch=True)
+        with self.assertRaisesRegex(RuntimeError, "MultitaskKernel does not accept the last_dim_is_batch argument."):
+            self.kernel(x1=torch.zeros([3, 2, 4]), x2=torch.ones([3, 2, 4]), last_dim_is_batch=True).to_dense()
 
     def test_batched_data(self) -> None:
         """Test how batched data is handled."""
         x = torch.ones([5, 4, 3, 2])
-        result = self.kernel.forward(x1=x, x2=x)
+        with gpytorch.settings.lazily_evaluate_kernels(False):
+            result = self.kernel(x1=x, x2=x)
         self.assertIsInstance(result, KroneckerProductLinearOperator)
 
     def test_kernel_conversion_null(self) -> None:
