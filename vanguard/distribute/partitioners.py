@@ -189,11 +189,10 @@ class KMedoidsPartitioner(BasePartitioner):
     Create a partition using KMedoids with similarity defined by the kernel.
 
     :param train_x: The mean of the inputs.
-    :param kernel: The kernel to use for constructing the
-            similarity matrix in KMedoids.
     :param n_experts: The number of partitions in which to split the data. Defaults to 2.
     :param communication: If True, A communications expert will be included. Defaults to False.
     :param rng: Generator instance used to generate random numbers.
+    :param kernel: The kernel to use for constructing the similarity matrix in KMedoids.
 
     :seealso: Clusters are computed using a :class:`kmedoids.KMedoids` object.
     """
@@ -201,10 +200,11 @@ class KMedoidsPartitioner(BasePartitioner):
     def __init__(
         self,
         train_x: NDArray[np.floating],
-        kernel: gpytorch.kernels.Kernel,
         n_experts: int = 2,
         communication: bool = False,
         rng: Optional[np.random.Generator] = None,
+        *,
+        kernel: gpytorch.kernels.Kernel,
     ) -> None:
         """
         Initialise the KMedoidsPartitioner class.

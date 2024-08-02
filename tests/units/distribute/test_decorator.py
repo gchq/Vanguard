@@ -86,7 +86,7 @@ class InitialisationTests(unittest.TestCase):
         dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
 
         # Create the class without specifying a kernel; we expect an error telling us we need to specify one
-        with self.assertRaisesRegex(TypeError, "missing 1 required positional argument: 'kernel'"):
+        with self.assertRaisesRegex(TypeError, "missing 1 required keyword-only argument: 'kernel'"):
             DistributedGaussianGPControllerKMedoids(
                 dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, rng=self.rng
             )
