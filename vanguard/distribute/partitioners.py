@@ -225,8 +225,8 @@ class KMedoidsPartitioner(BasePartitioner):
         clusterer = kmedoids.KMedoids(
             n_clusters=n_clusters, metric="precomputed", random_state=self.rng.integers(0, (2**32 - 1))
         )
-        labels = clusterer.fit(dist_matrix).labels_
-        partition = self._group_indices_by_label(labels)
+        labels: NDArray = clusterer.fit(dist_matrix).labels_
+        partition = self._group_indices_by_label(labels.astype(int))
         return partition
 
     def _construct_distance_matrix(self) -> NDArray[np.floating]:
