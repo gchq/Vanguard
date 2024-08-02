@@ -133,6 +133,7 @@ class MockedPartitionTests(unittest.TestCase):
         """
         # Setup a mocked kernel that returns trivial distances to check
         mocked_kernel = MagicMock()
+        mocked_kernel.__class__ = RBFKernel
         actual_distances = np.exp(np.array([0, 0, 1, 1, 0]))
         partitioner = partitioners.KMedoidsPartitioner(
             train_x=self.train_x, n_experts=self.n_experts, kernel=mocked_kernel, rng=self.rng

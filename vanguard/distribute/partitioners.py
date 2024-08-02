@@ -209,6 +209,13 @@ class KMedoidsPartitioner(BasePartitioner):
         """
         Initialise the KMedoidsPartitioner class.
         """
+        if not isinstance(kernel, gpytorch.kernels.Kernel):
+            msg = (
+                f"Invalid kernel type - expected {gpytorch.kernels.Kernel.__qualname__}, "
+                f"got {type(kernel).__qualname__}"
+            )
+            raise TypeError(msg)
+
         super().__init__(
             train_x=train_x, n_experts=n_experts, communication=communication, rng=utils.optional_random_generator(rng)
         )
