@@ -97,6 +97,7 @@ nbgallery
 nbqa
 nbsphinx
 nbstripout
+ndarray
 ndim
 ndimension
 notebooknode
