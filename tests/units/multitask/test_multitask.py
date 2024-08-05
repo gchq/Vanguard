@@ -77,9 +77,9 @@ class ErrorTests(unittest.TestCase):
                 self.dataset.train_x, self.dataset.train_y, ScaledRBFKernel, self.dataset.train_y_std, rng=self.rng
             )
 
-    def test_bad_batch_shape(self) -> None:
+    def test_bad_batch_shape_on_kernel(self) -> None:
         """
-        Test how the multitask decorator handles an invalid batch shape.
+        Test how the multitask decorator handles an invalid batch shape in the kernel keyword arguments.
 
         The batch shape passed here is not an iterable, but will internally be passed after a * line in a method input,
         suggesting it should be an iterable.
@@ -377,6 +377,20 @@ class TestMulticlassDecorator(unittest.TestCase):
                 rng=self.rng,
             )
         # pylint: enable=anomalous-backslash-in-string
+
+        # As a sense check, verify that if we pass an expected batch shape we do not get an error and it
+        # is set as expected
+        gp = VariationalInferenceMultitaskController(
+            train_x=self.train_x,
+            train_y=self.train_y,
+            kernel_class=ScaledRBFKernel,
+            y_std=0.0,
+            likelihood_class=gpytorch.likelihoods.FixedNoiseGaussianLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+            mean_kwargs={"batch_shape": torch.Size([22])},
+            rng=self.rng,
+        )
+        self.assertListEqual(list(gp.mean.batch_shape), [22, self.train_y.shape[1]])
 
     def test_match_mean_shape_to_multitask_kernel(self) -> None:
         """Test usage of _match_mean_shape_to_kernel when provided a multitask kernel."""
