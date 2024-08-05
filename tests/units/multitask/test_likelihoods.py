@@ -68,15 +68,13 @@ class LikelihoodTests(unittest.TestCase):
         expected_output = torch.tensor([0.1, 1.0, 0.2, 2.0, 0.3, 3.0])
 
         # Check output matches expected
-        # pylint: disable=protected-access
+        # pylint: disable-next=protected-access
         torch.testing.assert_close(self.model._flatten_noise(noise_to_flatten), expected_output)
-        # pylint: enable=protected-access
 
     def test_shaped_noise_covar(self) -> None:
         """Test the method _shaped_noise_covar functions as expected."""
-        # pylint: disable=protected-access
+        # pylint: disable-next=protected-access
         result = self.model._shaped_noise_covar(base_shape=self.default_batch_shape)
-        # pylint: enable=protected-access
         self.assertIsInstance(result, DiagLinearOperator)
         torch.testing.assert_close(result.diagonal(), self.noise_tensor)
 
@@ -93,9 +91,8 @@ class LikelihoodTests(unittest.TestCase):
             batch_shape=torch.Size([]),
             num_tasks=self.num_tasks,
         )
-        # pylint: disable=protected-access
+        # pylint: disable-next=protected-access
         result = model._shaped_noise_covar(base_shape=self.default_batch_shape)
-        # pylint: enable=protected-access
 
         # Check the type of the output is as expected
         self.assertIsInstance(result, DiagLinearOperator)

@@ -125,9 +125,8 @@ class ErrorTests(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError, "You are using a multitask variational model which requires that num_tasks==num_latents"
         ):
-            # pylint: disable=protected-access
+            # pylint: disable-next=protected-access
             MultitaskModel._check_batch_shape(mocked_self, mean_module=mean_module, covar_module=covar_module)
-            # pylint: enable=protected-access
 
 
 class TestMulticlassModels(unittest.TestCase):
@@ -222,26 +221,23 @@ class TestMulticlassModels(unittest.TestCase):
 
         # Get the number of latent variables for a valid and invalid mean module. In the valid case, we expect
         # the last element of the batch shape on the mean module
-        # pylint: disable=protected-access
+        # pylint: disable-next=protected-access
         self.assertEqual(MultitaskModel._get_num_latents(mean_module), mean_module.batch_shape[-1])
-        # pylint: enable=protected-access
 
         # If batch shape is just an integer, we should get a type error when trying to index the integer
         mean_module.batch_shape = 3
         with self.assertRaisesRegex(
             TypeError, "'mean_module.batch_shape' must be subscriptable, cannot index given value."
         ):
-            # pylint: disable=protected-access
+            # pylint: disable-next=protected-access
             MultitaskModel._get_num_latents(mean_module)
-            # pylint: enable=protected-access
 
         # if batch shape is empty, we should get an index error, but this should then be transformed into a type
         # error inside the code detailing to the user the issue
         mean_module.batch_shape = []
         with self.assertRaisesRegex(TypeError, "a one-dimensional, non-zero length batch shape is required"):
-            # pylint: disable=protected-access
+            # pylint: disable-next=protected-access
             MultitaskModel._get_num_latents(mean_module)
-            # pylint: enable=protected-access
 
 
 class TestMulticlassMeans(unittest.TestCase):
@@ -362,9 +358,8 @@ class TestMulticlassDecorator(unittest.TestCase):
         If we pass batch shape as a keyword argument, it must be as a torch.Size() object. If not, it
         should raise a relevant error.
         """
-        # pylint: disable=anomalous-backslash-in-string
         with self.assertRaisesRegex(
-            TypeError, "Expected mean_kwargs\['batch_shape'\] to be of type `torch.Size`; got `list` instead"
+            TypeError, r"Expected mean_kwargs\['batch_shape'\] to be of type `torch.Size`; got `list` instead"
         ):
             VariationalInferenceMultitaskController(
                 train_x=self.train_x,
@@ -376,7 +371,6 @@ class TestMulticlassDecorator(unittest.TestCase):
                 mean_kwargs={"batch_shape": [22]},
                 rng=self.rng,
             )
-        # pylint: enable=anomalous-backslash-in-string
 
         # As a sense check, verify that if we pass an expected batch shape we do not get an error and it
         # is set as expected
@@ -396,16 +390,13 @@ class TestMulticlassDecorator(unittest.TestCase):
         """Test usage of _match_mean_shape_to_kernel when provided a multitask kernel."""
         # Call the method, which should output an uninstantiated multiclass mean object, which we
         # then instantiate and verify is in fact a multiclass mean object.
-        # pylint: disable=protected-access
-        # pylint: disable=no-member
+        # pylint: disable-next=protected-access, no-member
         result = VariationalInferenceMultitaskController._match_mean_shape_to_kernel(
             mean_class=gpytorch.means.ConstantMean,
             kernel_class=BatchCompatibleMultitaskKernel,
             mean_kwargs={},
             kernel_kwargs={"data_covar_module": ScaledRBFKernel(), "num_tasks": self.num_tasks},
         )()
-        # pylint: enable=no-member
-        # pylint: enable=protected-access
 
         # We should have a multitask mean object, and we should have the correct number of
         # tasks represented
@@ -419,20 +410,15 @@ class TestMulticlassDecorator(unittest.TestCase):
         In this test, we specify a different batch size for the mean and the kernel - which does
         not make sense and should raise an error informing the user.
         """
-        # pylint: disable=anomalous-backslash-in-string)
         with self.assertRaisesRegex(
             TypeError,
-            "The provided mean has batch_shape \[3, 4\] but the provided kernel has batch_shape "
-            "torch.Size\(\[2, 3\]\). They must match.",
+            r"The provided mean has batch_shape \[3, 4\] but the provided kernel has batch_shape "
+            r"torch.Size\(\[2, 3\]\). They must match.",
         ):
-            # pylint: disable=protected-access
-            # pylint: disable=no-member
+            # pylint: disable-next=protected-access, no-member
             VariationalInferenceMultitaskController._match_mean_shape_to_kernel(
                 mean_class=gpytorch.means.ConstantMean,
                 kernel_class=ScaledRBFKernel,
                 mean_kwargs={"batch_shape": [3, 4]},
                 kernel_kwargs={"batch_shape": [2, 3]},
             )
-            # pylint: enable=protected-access
-            # pylint: enable=no-member
-        # pylint: enable=anomalous-backslash-in-string)
