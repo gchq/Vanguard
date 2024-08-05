@@ -36,20 +36,14 @@ class LikelihoodTests(unittest.TestCase):
 
     def test_setting_fixed_noise(self) -> None:
         """Test that the fixed noise attribute can be set manually."""
-        model = FixedNoiseMultitaskGaussianLikelihood(
-            noise=self.noise_tensor,
-            learn_additional_noise=False,
-            batch_shape=self.default_batch_shape,
-            num_tasks=self.num_tasks,
-        )
-        model.fixed_noise = torch.tensor([0.0])
-        torch.testing.assert_close(self.model.fixed_noise, self.noise_tensor)
+        self.model.fixed_noise = torch.tensor([0.0])
+        torch.testing.assert_close(self.model.fixed_noise, torch.tensor([0.0]))
 
     def test_marginal(self) -> None:
         """Test creation of a marginal distribution using a likelihood object."""
         # Define some test specific data
         mean = torch.tensor([[5.0, 6.0, 7.0]])
-        covariance_matrix = torch.tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+        covariance_matrix = torch.eye(3)
         function_dist = MultitaskMultivariateNormal(mean, covariance_matrix)
         marginal = self.model.marginal(function_dist)
 
