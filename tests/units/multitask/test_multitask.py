@@ -21,6 +21,7 @@ from vanguard.multitask.decorator import _multitaskify_mean
 from vanguard.multitask.kernel import BatchCompatibleMultitaskKernel
 from vanguard.multitask.models import (
     independent_variational_multitask_model,
+    lmc_variational_multitask_model,
     multitask_model,
 )
 from vanguard.vanilla import GaussianGPController
@@ -127,6 +128,33 @@ class ErrorTests(unittest.TestCase):
         ):
             # pylint: disable-next=protected-access
             MultitaskModel._check_batch_shape(mocked_self, mean_module=mean_module, covar_module=covar_module)
+
+    def test_lmc_variational_multitask_model_task_latent_mismatch(self) -> None:
+        """Test lmc_variational_multitask_model when the number of latent dims and tasks do not agree."""
+        # Minimal example to only define the data necessary for this test
+        mean_module = gpytorch.means.ConstantMean()
+        covar_module = BatchCompatibleMultitaskKernel(
+            data_covar_module=ScaledRBFKernel(),
+            num_tasks=2,
+        )
+        covar_module.batch_shape = [5, 3]
+
+        # pylint: disable=abstract-method
+        @lmc_variational_multitask_model
+        class MultitaskModel(ApproxGPModel):
+            pass
+
+        # pylint: enable=abstract-method
+
+        mocked_self = MagicMock(spec=MultitaskModel)
+        mocked_self.num_tasks = 2
+        mocked_self.num_latents = 3
+
+        # Check that we don't get any errors from the batch shape check - even though the number of
+        # tasks and the number of latent dimensions are different, this should be allowed when using
+        # lmc_variational_multitask_model
+        # pylint: disable-next=protected-access
+        MultitaskModel._check_batch_shape(mocked_self, mean_module=mean_module, covar_module=covar_module)
 
 
 class TestMulticlassModels(unittest.TestCase):
