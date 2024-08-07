@@ -45,12 +45,11 @@ class Multitask(Decorator):
 
         :param num_tasks: The number of tasks (i.e. y-value dimension).
         :param lmc_dimension: If using LMC (linear model of co-regionalisation), how many latent dimensions
-                                        to use. Bigger means a more complicated model. Should probably be at least
-                                        as big as the number of tasks, unless you want to specifically make low-rank
-                                        assumptions about the relationship between tasks.
-                                        Default (None) means LMC is not used at all.
-        :param rank: The rank of the task-task covar matrix in a Kronecker product multitask kernel.
-                            Only relevant for exact GP inference.
+            to use. Bigger means a more complicated model. Should probably be at least as big as the number of
+            tasks, unless you want to specifically make low-rank assumptions about the relationship between tasks.
+            Default (None) means LMC is not used at all.
+        :param rank: The rank of the task-task covar matrix in a Kronecker product multitask kernel. Only relevant
+            for exact GP inference.
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.num_tasks = num_tasks
@@ -136,7 +135,13 @@ class Multitask(Decorator):
             @property
             def likelihood_noise(self) -> Tensor:
                 """Return the fixed noise of the likelihood."""
-                return self._likelihood.fixed_noise
+                try:
+                    return self._likelihood.fixed_noise
+                except AttributeError as exc:
+                    raise AttributeError(
+                        "'fixed_noise' appears to have not been set yet. This can be set "
+                        "with the `likelihood_noise` method"
+                    ) from exc
 
             @likelihood_noise.setter
             def likelihood_noise(self, value: Tensor) -> None:
@@ -158,10 +163,10 @@ class Multitask(Decorator):
                 :param mean_kwargs: Keyword arguments to be passed to the mean_class constructor.
                 :param kernel_kwargs: Keyword arguments to be passed to the kernel_class constructor.
                 :returns: An uninstantiated :class:`gpytorch.means.Mean` like mean_class but modified to have the
-                          same form/shape as kernel_class, if possible.
+                    same form/shape as kernel_class, if possible.
                 :raises TypeError: If the supplied mean_class has a batch_shape and it doesn't match the batch_shape of
-                                    the kernel_class, or is a :class:`gpytorch.kernels.MultitaskKernel` and has
-                                    num_tasks which doesn't match that of the kernel_class.
+                    the kernel_class, or is a :class:`gpytorch.kernels.MultitaskKernel` and has num_tasks which doesn't
+                    match that of the kernel_class.
                 """
                 example_kernel = kernel_class(**kernel_kwargs)
                 example_mean = mean_class(**mean_kwargs)
