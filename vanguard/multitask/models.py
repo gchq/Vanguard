@@ -19,6 +19,7 @@ from gpytorch.variational import (
     VariationalStrategy,
 )
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.decoratorutils import wraps_class
@@ -166,13 +167,20 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
                     f"{covar_module.batch_shape}, but a one-dimensional batch shape is required."
                 )
 
+            # Checking that num_tasks == num_latents is done in a separate method, so that that check can be
+            # overridden for LMC models.
+            self._check_num_tasks_num_latents(mean_module)
+
+        def _check_num_tasks_num_latents(self, mean_module: Mean):
+            """Check that `num_tasks == num_latents`, and raise an appropriate error if not."""
             if self.num_tasks != self.num_latents:
-                raise ValueError(
+                msg = (
                     "You are using a multitask variational model which requires that "
                     "num_tasks==num_latents, but you have supplied mean and kernel with "
                     f"batch_shape {mean_module.batch_shape} whereas num_tasks == {self.num_tasks}."
                     " Possibly you meant to use multitask with LMC?."
                 )
+                raise ValueError(msg)
 
         @staticmethod
         def _get_num_latents(mean_module: Mean) -> int:
@@ -208,13 +216,9 @@ def lmc_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
                 base_variational_strategy, num_tasks=self.num_tasks, num_latents=self.num_latents, latent_dim=-1
             )
 
-        def _check_batch_shape(self, mean_module: Mean, covar_module: Kernel) -> None:
-            try:
-                # No way to tell Pyright that cls must have been appropriately decorated
-                # first
-                super()._check_batch_shape(mean_module, covar_module)  # pyright: ignore [reportAttributeAccessIssue]
-            except ValueError:
-                pass  # num_tasks can differ from num_latents for LMC.
+        @override
+        def _check_num_tasks_num_latents(self, _):
+            """LMC models can have the number of tasks not equal to the number of latents, so don't raise any error."""
 
     # Pyright does not detect that wraps_class renames InnerClass
     return InnerClass  # pyright: ignore [reportReturnType]
