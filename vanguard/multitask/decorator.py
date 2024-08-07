@@ -176,11 +176,12 @@ class Multitask(Decorator):
                 if isinstance(example_kernel, MultitaskKernel):
                     return _multitaskify_mean(mean_class, decorator.num_tasks)
                 if len(example_kernel.batch_shape) > 0 and example_mean.batch_shape != example_kernel.batch_shape:
-                    raise TypeError(
+                    msg = (
                         f"The provided mean has batch_shape {example_mean.batch_shape} but the "
                         f"provided kernel has batch_shape {example_kernel.batch_shape}. "
                         f"They must match."
                     )
+                    raise ValueError(msg)
                 return mean_class
 
         # Pyright does not detect that wraps_class renames InnerClass
