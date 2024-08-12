@@ -3,7 +3,7 @@ Tests for the Multitask decorator.
 """
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import gpytorch
 import torch
@@ -379,12 +379,12 @@ class TestMulticlassDecorator(unittest.TestCase):
         # an LMCVariationalStrategy - check this is indeed true
         self.assertIsInstance(sub_gp.variational_strategy, gpytorch.variational.LMCVariationalStrategy)
 
-    def test_passing_batch_shape(self) -> None:
+    def test_invalid_batch_shape_type(self) -> None:
         """
-        Test construction of a multitask model when passing an invalid batch shape as a keyword.
+        Test construction of a multitask model when passing an invalid batch shape (wrong type) as a keyword.
 
-        If we pass batch shape as a keyword argument, it must be as a torch.Size() object. If not, it
-        should raise a relevant error.
+        If we pass batch shape as a keyword argument, it must be as a torch.Size() object, and match the batch shape
+        for the kernel. If not, it should raise a relevant error.
         """
         with self.assertRaisesRegex(
             TypeError, r"Expected mean_kwargs\['batch_shape'\] to be of type `torch.Size`; got `list` instead"
@@ -400,6 +400,35 @@ class TestMulticlassDecorator(unittest.TestCase):
                 rng=self.rng,
             )
 
+    def test_unexpected_match_mean_shape_type_error_reraised(self) -> None:
+        """
+        Test that if `_match_mean_shape_to_kernel` raises an unexpected `TypeError`, it is reraised.
+
+        See #357 - previously, this would have been silently suppressed within `__init__`.
+        """
+        with self.assertRaisesRegex(TypeError, "Testing error"), patch.object(
+            VariationalInferenceMultitaskController,
+            "_match_mean_shape_to_kernel",
+            Mock(side_effect=TypeError("Testing error")),
+        ):
+            VariationalInferenceMultitaskController(
+                train_x=self.train_x,
+                train_y=self.train_y,
+                kernel_class=ScaledRBFKernel,
+                y_std=0.0,
+                likelihood_class=gpytorch.likelihoods.FixedNoiseGaussianLikelihood,
+                marginal_log_likelihood_class=VariationalELBO,
+                mean_kwargs={"batch_shape": torch.Size([22])},
+                kernel_kwargs={"batch_shape": torch.Size([22])},
+                rng=self.rng,
+            )
+
+    def test_valid_batch_shape(self) -> None:
+        """
+        Test construction of a multitask model when passing a valid batch shape as a keyword.
+
+        The batch shape must be a :py:class:`torch.Size` instance, and must match the batch shape for the kernel.
+        """
         # As a sense check, verify that if we pass an expected batch shape we do not get an error and it
         # is set as expected
         gp = VariationalInferenceMultitaskController(
@@ -410,6 +439,7 @@ class TestMulticlassDecorator(unittest.TestCase):
             likelihood_class=gpytorch.likelihoods.FixedNoiseGaussianLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
             mean_kwargs={"batch_shape": torch.Size([22])},
+            kernel_kwargs={"batch_shape": torch.Size([22])},
             rng=self.rng,
         )
         self.assertListEqual(list(gp.mean.batch_shape), [22, self.train_y.shape[1]])
@@ -439,7 +469,7 @@ class TestMulticlassDecorator(unittest.TestCase):
         not make sense and should raise an error informing the user.
         """
         with self.assertRaisesRegex(
-            TypeError,
+            ValueError,
             r"The provided mean has batch_shape \[3, 4\] but the provided kernel has batch_shape "
             r"torch.Size\(\[2, 3\]\). They must match.",
         ):
