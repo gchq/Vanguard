@@ -427,7 +427,7 @@ class TestMulticlassDecorator(unittest.TestCase):
         """
         Test construction of a multitask model when passing a valid batch shape as a keyword.
 
-        The batch shape must be a torch.Size instance, and must match the batch shape for the kernel.
+        The batch shape must be a :py:class:`torch.Size` instance, and must match the batch shape for the kernel.
         """
         # As a sense check, verify that if we pass an expected batch shape we do not get an error and it
         # is set as expected
