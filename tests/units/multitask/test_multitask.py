@@ -4,7 +4,7 @@ Tests for the Multitask decorator.
 
 import unittest
 from typing import Callable, Optional, Type
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import gpytorch
 import pytest
