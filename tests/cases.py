@@ -52,9 +52,10 @@ def get_default_rng_override_seed(seed: int) -> np.random.Generator:
 @contextlib.contextmanager
 def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
     """
-    Do nothing if None is given. Do `pytest.raises()` if an exception type is passed.
+    Do nothing if :data:`None` is given. Do :py:func:`pytest.raises()` if an exception type is passed.
 
-    :return: None if no exception type was passed. ExceptionInfo from `pytest.raises()` if an exception type was passed.
+    :return: :data:`None` if no exception type was passed. ExceptionInfo from :py:func:`pytest.raises()` if an
+        exception type was passed.
     """
     if category is None:
         yield
@@ -68,9 +69,10 @@ def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = Non
 @contextlib.contextmanager
 def maybe_warns(category: Optional[Type[Warning]], match: Optional[str] = None) -> Optional[pytest.WarningsRecorder]:
     """
-    Do nothing if None is given. Do `pytest.warns()` if a warning type is passed.
+    Do nothing if :data:`None` is given. Do :py:func:`pytest.warns()` if a warning type is passed.
 
-    :return: None if no warning type was passed. ExceptionInfo from `pytest.warns()` if a warning type was passed.
+    :return: :data:`None` if no warning type was passed. ExceptionInfo from :py:func:`pytest.warns()` if a warning
+        type was passed.
     """
     if category is None:
         yield

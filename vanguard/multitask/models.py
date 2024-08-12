@@ -176,9 +176,9 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             if self.num_tasks != self.num_latents:
                 msg = (
                     "You are using a multitask variational model which requires that "
-                    "num_tasks==num_latents, but you have supplied mean and kernel with "
+                    "`num_tasks==num_latents`, but you have supplied mean and kernel with "
                     f"batch_shape {mean_module.batch_shape} whereas num_tasks == {self.num_tasks}."
-                    " Possibly you meant to use multitask with LMC?."
+                    " Possibly you meant to use an `lmc_variational_multitask_model` instead?."
                 )
                 raise ValueError(msg)
 

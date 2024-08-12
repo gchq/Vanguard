@@ -109,7 +109,7 @@ class ErrorTests(unittest.TestCase):
         (
             independent_variational_multitask_model,
             ValueError,
-            "You are using a multitask variational model which requires that num_tasks==num_latents",
+            "You are using a multitask variational model which requires that `num_tasks==num_latents`",
         ),
         (lmc_variational_multitask_model, None, None),
     ],
