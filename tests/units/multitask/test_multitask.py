@@ -3,16 +3,18 @@ Tests for the Multitask decorator.
 """
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from typing import Callable, Optional, Type
+from unittest.mock import MagicMock
 
 import gpytorch
+import pytest
 import torch
 from gpytorch.distributions import MultitaskMultivariateNormal, MultivariateNormal
 from gpytorch.mlls import VariationalELBO
 from gpytorch.models import ApproximateGP
 from gpytorch.variational.variational_strategy import VariationalStrategy
 
-from tests.cases import get_default_rng
+from tests.cases import get_default_rng, maybe_throws
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.models import ExactGPModel
@@ -100,61 +102,59 @@ class ErrorTests(unittest.TestCase):
                 rng=self.rng,
             )
 
-    def test_independent_variational_multitask_model_task_latent_mismatch(self) -> None:
-        """Test independent_variational_multitask_model when the number of latent dims and tasks do not agree."""
 
-        # pylint: disable=abstract-method
-        @independent_variational_multitask_model
-        class MultitaskModel(ApproxGPModel):
-            pass
+@pytest.mark.parametrize(
+    ["model_decorator", "expected_exc_type", "expected_exc_message"],
+    [
+        (
+            independent_variational_multitask_model,
+            ValueError,
+            "You are using a multitask variational model which requires that `num_tasks==num_latents`",
+        ),
+        (lmc_variational_multitask_model, None, None),
+    ],
+)
+def test_variational_multitask_model_task_latent_mismatch(
+    model_decorator: Callable[[Type], Type],
+    expected_exc_type: Optional[Type[Exception]],
+    expected_exc_message: Optional[str],
+) -> None:
+    """
+    Test what happens when the number of latent dims and tasks do not agree.
 
-        # pylint: enable=abstract-method
+    For an `independent_variational_multitask_model`, an error should be thrown, as this is invalid.
 
-        # Minimal example to only define the data necessary for this test
-        mocked_self = MagicMock()
-        mocked_self.num_tasks = 2
-        mocked_self.num_latents = 3
-        mean_module = gpytorch.means.ConstantMean()
-        covar_module = BatchCompatibleMultitaskKernel(
-            data_covar_module=ScaledRBFKernel(),
-            num_tasks=2,
-        )
-        covar_module.batch_shape = [5, 3]
+    For an `lmc_variational_multitask_model`, no error should be thrown.
+    """
 
-        # Note above that mocked_self.num_tasks does not equal mocked_self.num_latents, which is
-        # invalid for a variational model. The user should be informed via a relevant error.
-        with self.assertRaisesRegex(
-            ValueError, "You are using a multitask variational model which requires that num_tasks==num_latents"
-        ):
-            # pylint: disable-next=protected-access
-            MultitaskModel._check_batch_shape(mocked_self, mean_module=mean_module, covar_module=covar_module)
+    # pylint: disable=abstract-method
+    @model_decorator
+    class MultitaskModel(ApproxGPModel):
+        pass
 
-    def test_lmc_variational_multitask_model_task_latent_mismatch(self) -> None:
-        """Test lmc_variational_multitask_model when the number of latent dims and tasks do not agree."""
-        # Minimal example to only define the data necessary for this test
-        mean_module = gpytorch.means.ConstantMean()
-        covar_module = BatchCompatibleMultitaskKernel(
-            data_covar_module=ScaledRBFKernel(),
-            num_tasks=2,
-        )
-        covar_module.batch_shape = [5, 3]
+    class MockMultitaskModel(MultitaskModel):
+        # pylint: disable-next=super-init-not-called
+        def __init__(self):
+            # We explicitly *don't* call super().__init__() here, so we skip all the checks that would otherwise be
+            # there and can look only at the one check being tested.
+            self.num_tasks = 2
+            self.num_latents = 3
+            # We define the number of tasks and the number of latents to be different.
 
-        # pylint: disable=abstract-method
-        @lmc_variational_multitask_model
-        class MultitaskModel(ApproxGPModel):
-            pass
+    # pylint: enable=abstract-method
 
-        # pylint: enable=abstract-method
+    # Minimal example to only define the data necessary for this test
+    mock_model = MockMultitaskModel()
+    mean_module = gpytorch.means.ConstantMean()
+    covar_module = BatchCompatibleMultitaskKernel(data_covar_module=ScaledRBFKernel(), num_tasks=2)
+    covar_module.batch_shape = [5, 3]
 
-        mocked_self = MagicMock(spec=MultitaskModel)
-        mocked_self.num_tasks = 2
-        mocked_self.num_latents = 3
-
-        # Check that we don't get any errors from the batch shape check - even though the number of
-        # tasks and the number of latent dimensions are different, this should be allowed when using
-        # lmc_variational_multitask_model
+    # Note above that mock_model.num_tasks does not equal mock_model.num_latents, which is invalid for an independent
+    # variational model, but valid for an LMC model. The user should be informed via a relevant error if it's
+    # invalid, and if it's valid no error should be thrown.
+    with maybe_throws(expected_exc_type, match=expected_exc_message):
         # pylint: disable-next=protected-access
-        MultitaskModel._check_batch_shape(mocked_self, mean_module=mean_module, covar_module=covar_module)
+        mock_model._check_batch_shape(mean_module=mean_module, covar_module=covar_module)
 
 
 class TestMulticlassModels(unittest.TestCase):

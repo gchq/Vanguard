@@ -2,7 +2,6 @@
 Tests for the pairwise combinations of decorators.
 """
 
-import contextlib
 import itertools
 from typing import Any, Callable, Dict, Optional, Tuple, Type, TypeVar
 from unittest.mock import patch
@@ -12,7 +11,7 @@ from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.mlls import VariationalELBO
 
-from tests.cases import get_default_rng
+from tests.cases import get_default_rng, maybe_throws, maybe_warns
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
@@ -141,38 +140,6 @@ EXPECTED_COMBINATION_APPLY_WARNINGS = {
 EXPECTED_COMBINATION_FIT_ERRORS = {
     (VariationalInference, Multitask): (RuntimeError, ".* may not be the correct choice for a variational strategy"),
 }
-
-
-@contextlib.contextmanager
-def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
-    """
-    Do nothing if None is given. Do `pytest.raises()` if an exception type is passed.
-
-    :return: None if no exception type was passed. ExceptionInfo from `pytest.raises()` if an exception type was passed.
-    """
-    if category is None:
-        yield
-        return None
-    else:
-        with pytest.raises(category, match=match) as exc:
-            yield
-        return exc
-
-
-@contextlib.contextmanager
-def maybe_warns(category: Optional[Type[Warning]], match: Optional[str] = None) -> Optional[pytest.WarningsRecorder]:
-    """
-    Do nothing if None is given. Do `pytest.warns()` if a warning type is passed.
-
-    :return: None if no warning type was passed. ExceptionInfo from `pytest.warns()` if a warning type was passed.
-    """
-    if category is None:
-        yield
-        return None
-    else:
-        with pytest.warns(category, match=match) as warnings:
-            yield
-        return warnings
 
 
 def _initialise_decorator_pair(
