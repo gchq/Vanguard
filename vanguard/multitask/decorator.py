@@ -109,6 +109,7 @@ class Multitask(Decorator):
                 try:
                     mean_class = self._match_mean_shape_to_kernel(mean_class, kernel_class, mean_kwargs, kernel_kwargs)
                 except TypeError as exc:
+                    # Check for batch shape mismatches and reraise with a more informative message.
                     if "batch_shape" in mean_kwargs:
                         batch_shape = mean_kwargs["batch_shape"]
                         if not isinstance(batch_shape, torch.Size):
@@ -117,7 +118,8 @@ class Multitask(Decorator):
                                 f"got `{batch_shape.__class__.__name__}` instead"
                             )
                             raise TypeError(msg) from exc
-
+                    # If it's some other TypeError, just re-raise it.
+                    raise
                 likelihood_kwargs = all_parameters_as_kwargs.pop("likelihood_kwargs", {})
                 likelihood_kwargs["num_tasks"] = decorator.num_tasks
                 gp_kwargs = all_parameters_as_kwargs.pop("gp_kwargs", {})
@@ -174,11 +176,12 @@ class Multitask(Decorator):
                 if isinstance(example_kernel, MultitaskKernel):
                     return _multitaskify_mean(mean_class, decorator.num_tasks)
                 if len(example_kernel.batch_shape) > 0 and example_mean.batch_shape != example_kernel.batch_shape:
-                    raise TypeError(
+                    msg = (
                         f"The provided mean has batch_shape {example_mean.batch_shape} but the "
                         f"provided kernel has batch_shape {example_kernel.batch_shape}. "
                         f"They must match."
                     )
+                    raise ValueError(msg)
                 return mean_class
 
         # Pyright does not detect that wraps_class renames InnerClass

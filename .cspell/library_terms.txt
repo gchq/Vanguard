@@ -129,6 +129,7 @@ refs
 refstyle
 relazified
 relazifying
+reraised
 rpds
 rsample
 rtype
