@@ -102,8 +102,7 @@ plot_rcparams = {
 autodoc_mock_imports = ["pandas", "sklearn_extra"]
 
 intersphinx_mapping = {
-    "gpytorch": ("https://docs.gpytorch.ai/en/v1.8.1/", None),  # TODO: Bump this when updating gpytorch
-    # https://github.com/gchq/Vanguard/issues/197
+    "gpytorch": ("https://docs.gpytorch.ai/en/stable/", None),
     "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
