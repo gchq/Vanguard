@@ -16,8 +16,6 @@ import torch
 from gpytorch import constraints
 from gpytorch.models import ApproximateGP, ExactGP
 from linear_operator.utils.errors import NanError
-from numpy import dtype
-from torch import Tensor
 
 from vanguard import utils
 from vanguard.base import metrics
@@ -30,36 +28,6 @@ from vanguard.utils import infinite_tensor_generator, instantiate_with_subset_of
 from vanguard.warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
 
 NOISE_LOWER_BOUND = 1e-3
-# pylint: disable-next=invalid-name
-ttypes = Type[
-    Union[
-        torch.FloatTensor,
-        torch.DoubleTensor,
-        torch.IntTensor,
-        torch.BoolTensor,
-        torch.HalfTensor,
-        torch.BFloat16Tensor,
-        torch.ByteTensor,
-        torch.CharTensor,
-        torch.ShortTensor,
-        torch.LongTensor,
-    ]
-]
-# pylint: disable-next=invalid-name
-ttypes_cuda = Type[
-    Union[
-        torch.cuda.FloatTensor,  # pylint: disable=no-member
-        torch.cuda.DoubleTensor,  # pylint: disable=no-member
-        torch.cuda.IntTensor,  # pylint: disable=no-member
-        torch.cuda.BoolTensor,  # pylint: disable=no-member
-        torch.cuda.HalfTensor,  # pylint: disable=no-member
-        torch.cuda.BFloat16Tensor,  # pylint: disable=no-member
-        torch.cuda.ByteTensor,  # pylint: disable=no-member
-        torch.cuda.CharTensor,  # pylint: disable=no-member
-        torch.cuda.ShortTensor,  # pylint: disable=no-member
-        torch.cuda.LongTensor,  # pylint: disable=no-member
-    ]
-]
 
 
 class BaseGPController:
@@ -101,13 +69,14 @@ class BaseGPController:
 
     """
 
+    _default_tensor_dtype = torch.float
     if torch.cuda.is_available():
-        # pylint: disable-next=no-member
-        _default_tensor_type: ttypes_cuda = torch.cuda.FloatTensor
+        _default_tensor_device = torch.device("cuda")
     else:
-        _default_tensor_type: ttypes = torch.FloatTensor
+        _default_tensor_device = torch.device("cpu")
 
-    torch.set_default_tensor_type(_default_tensor_type)
+    torch.set_default_device(_default_tensor_device)
+    torch.set_default_dtype(_default_tensor_dtype)
 
     gp_model_class: Type[Union[ExactGP, ApproximateGP]] = ExactGPModel
     posterior_class = Posterior
@@ -220,17 +189,14 @@ class BaseGPController:
         self.warn_normalise_y()
 
     @property
-    def dtype(self) -> Optional[dtype]:
+    def dtype(self) -> Optional[torch.dtype]:
         """Return the default dtype of the controller."""
-        return self._default_tensor_type.dtype
+        return self._default_tensor_dtype
 
     @property
     def device(self) -> torch.device:
         """Return the default device of the controller."""
-        if self._default_tensor_type.is_cuda:
-            return torch.device("cuda:0")
-        else:
-            return torch.device("cpu")
+        return self._default_tensor_device
 
     @property
     def _likelihood(self) -> gpytorch.likelihoods.Likelihood:
@@ -248,9 +214,14 @@ class BaseGPController:
         self._set_requires_grad(False)
 
     @classmethod
-    def get_default_tensor_type(cls) -> Type[Tensor]:
+    def get_default_tensor_dtype(cls) -> torch.dtype:
         """Get the default tensor type for this controller class."""
-        return cls._default_tensor_type
+        return cls._default_tensor_dtype
+
+    @classmethod
+    def get_default_tensor_device(cls) -> torch.dtype:
+        """Get the default tensor device for this controller class."""
+        return cls._default_tensor_device
 
     def _predictive_likelihood(
         self,
@@ -503,18 +474,24 @@ class BaseGPController:
         return scaled_modules
 
     @classmethod
-    def set_default_tensor_type(
-        cls,
-        tensor_type: Union[ttypes, ttypes_cuda],
-    ) -> None:
+    def set_default_tensor_dtype(cls, dtype: torch.dtype) -> None:
         """
-        Set the default tensor type for the class, subsequent subclasses, and external tensors.
+        Set the default tensor dtype for the class, subsequent subclasses, and external tensors.
 
-        :param tensor_type: The tensor type to apply as the default. See the list of
-                            :ref:`available data types <tensors:data types>`.
+        :param dtype: The tensor dtype to use as the default.
         """
-        cls._default_tensor_type = tensor_type
-        torch.set_default_tensor_type(tensor_type)
+        cls._default_tensor_dtype = dtype
+        torch.set_default_dtype(dtype)
+
+    @classmethod
+    def set_default_tensor_device(cls, device: torch.device) -> None:
+        """
+        Set the default tensor device for the class, subsequent subclasses, and external tensors.
+
+        :param device: The device to use as the default.
+        """
+        cls._default_tensor_device = device
+        torch.set_default_device(device)
 
     @staticmethod
     def _decide_noise_shape(

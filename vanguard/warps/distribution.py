@@ -69,7 +69,7 @@ class WarpedGaussian(Normal):
         :param lr: The learning rate for optimisation.
         :returns: A fit distribution.
         """
-        t_samples = torch.as_tensor(samples, dtype=BaseGPController.get_default_tensor_type().dtype)
+        t_samples = torch.as_tensor(samples, dtype=BaseGPController.get_default_tensor_dtype())
         optim = optimiser(params=[{"params": warp.parameters(), "lr": lr}])  # pyright: ignore [reportCallIssue]
 
         for i in range(n_iterations):
