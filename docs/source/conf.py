@@ -115,10 +115,6 @@ nitpicky = True
 nitpicky_ignore_mapping: Dict[str, List[str]] = {
     "py:class": [
         "torch.Size",
-        "gpytorch.distributions.multivariate_normal.MultivariateNormal",  # TODO: Remove when bumping gpytorch
-        # https://github.com/gchq/Vanguard/issues/197
-        "gpytorch.likelihoods.likelihood.Likelihood",  # TODO: Remove when bumping gpytorch
-        # https://github.com/gchq/Vanguard/issues/197
     ],
     "py:meth": [
         "activate",
@@ -164,29 +160,6 @@ autodoc_custom_types: dict[TypeAlias, str] = {
     gpytorch.mlls.MarginalLogLikelihood: f":mod:`{gpytorch.mlls.MarginalLogLikelihood.__name__} <gpytorch.mlls>`",
     Union[ttypes, ttypes_cuda]: str(default_format_annotation(Type[torch.Tensor], sphinx.config.Config())),
 }
-
-
-# TODO: Remove these when gpytorch is sufficiently bumped:
-# https://github.com/gchq/Vanguard/issues/197
-autodoc_custom_types.update(
-    {
-        gpytorch.means.Mean: ":class:`~gpytorch.means.Mean`",
-        gpytorch.kernels.Kernel: ":class:`~gpytorch.kernels.Kernel`",
-        gpytorch.likelihoods.Likelihood: ":class:`~gpytorch.likelihoods.Likelihood`",
-        gpytorch.likelihoods.GaussianLikelihood: ":class:`~gpytorch.likelihoods.GaussianLikelihood`",
-        gpytorch.distributions.Distribution: ":class:`~gpytorch.distributions.Distribution`",
-        gpytorch.distributions.MultivariateNormal: ":class:`~gpytorch.distributions.MultivariateNormal`",
-        gpytorch.distributions.MultitaskMultivariateNormal: (
-            ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`"
-        ),
-        gpytorch.models.ExactGP: ":class:`~gpytorch.models.ExactGP`",
-        gpytorch.module.Module: ":class:`~gpytorch.Module",
-        gpytorch.constraints.Interval: ":class:`~gpytorch.constraints.Interval`",
-        # pylint: disable=protected-access
-        gpytorch.variational._VariationalStrategy: ":class:`~gpytorch.variational._VariationalStrategy`",
-        gpytorch.variational._VariationalDistribution: ":class:`~gpytorch.variational._VariationalDistribution`",
-    }
-)
 
 
 def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Optional[str]:
