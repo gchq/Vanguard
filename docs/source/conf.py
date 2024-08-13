@@ -102,13 +102,14 @@ plot_rcparams = {
 autodoc_mock_imports = ["pandas", "sklearn_extra"]
 
 intersphinx_mapping = {
-    "gpytorch": ("https://docs.gpytorch.ai/en/stable/", None),
-    "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
+    "gpytorch": ("https://docs.gpytorch.ai/en/stable", None),
+    "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable", None),
+    "linear_operator": ("https://linear-operator.readthedocs.io/en/latest", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
     "python3": ("https://docs.python.org/3", None),
-    "sklearn": ("https://scikit-learn.org/stable/", None),
-    "torch": ("https://pytorch.org/docs/stable/", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
+    "torch": ("https://pytorch.org/docs/stable", None),
 }
 
 nitpicky = True
@@ -178,7 +179,7 @@ def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Option
         If so, return that.
     2. Check if the annotation is a TypeVar. If so, replace it with its "bound" type
         for clarity in the docs. If not, then replace it with typing.Any.
-    3. If not, then return None, which uses thee default formatter.
+    3. If not, then return None, which uses the default formatter.
 
     See https://github.com/tox-dev/sphinx-autodoc-typehints?tab=readme-ov-file#options
     for specification.
