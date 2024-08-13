@@ -29,7 +29,7 @@ class BasicTests(unittest.TestCase):
         """
         rng = get_default_rng()
         dataset = SyntheticDataset(rng=rng)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError) as ctx:
             VariationalGPController(
                 dataset.train_x,
                 dataset.train_y,
@@ -38,6 +38,11 @@ class BasicTests(unittest.TestCase):
                 marginal_log_likelihood_class=InappropriateMarginalLogLikelihood,
                 rng=rng,
             )
+
+        assert str(ctx.exception) == (
+            "The class passed to ``marginal_log_likelihood_class`` must take a "
+            "``num_data`` :class:`int` argument since we run variational inference with SGD."
+        )
 
     def test_other_type_error_unaffected(self):
         """Test that any other `TypeError` is raised as-is and is not converted to a `ValueError`."""
