@@ -66,7 +66,7 @@ class BaseGPController:
     """
     Contains the base machinery for the :class:`~vanguard.base.gpcontroller.GPController` class.
 
-    :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values)
+    :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values).
     :param train_y: (n_samples,) or (n_samples, 1) The responsive values.
     :param kernel_class: An uninstantiated subclass of :py:class:`gpytorch.kernels.Kernel`.
     :param mean_class: An uninstantiated subclass of :py:class:`gpytorch.means.Mean` to use in the prior GP.
@@ -339,7 +339,7 @@ class BaseGPController:
         """
         Set the required grad flag of all trainable params.
 
-        :param value: value to set for requires_grad attribute
+        :param value: The value to set for requires_grad attribute.
         """
         for param in self._smart_optimiser.parameters():
             param.requires_grad = value
@@ -474,10 +474,10 @@ class BaseGPController:
         """
         Parse supplied std dev for input noise for different cases.
 
-        :param array_like[float],float,None std: The standard deviation:
+        :param std: The standard deviation. This can be:
 
-            * array_like[float]: (n_point, self.dim) heteroskedastic input noise across feature dimensions,
-            * float: homoskedastic input noise across feature dimensions,
+            * array_like[float]: (n_point, self.dim) heteroskedastic input noise across feature dimensions, or
+            * float: homoskedastic input noise across feature dimensions.
 
         :return: The parsed standard deviation of shape (self.dim,) or (std.shape[0], self.dim) depending on
                     the shape of ``std``. If ``std`` is ``None`` then trainable values are returned.

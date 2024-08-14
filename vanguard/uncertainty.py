@@ -48,7 +48,7 @@ class GaussianUncertaintyGPController(GPController):
         """
         Initialise self.
 
-        :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values)
+        :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values).
         :param train_x_std: The standard deviation of input noise:
 
             * *array_like[float]* (n_features,): observation std dev per input feature,

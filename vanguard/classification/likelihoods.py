@@ -213,7 +213,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         Initialise self.
 
         :param likelihood: The Gaussian likelihood for the model.
-        :param model: The exact GP .
+        :param model: The exact GP.
         """
         super(ExactMarginalLogLikelihood, self).__init__(likelihood, model)
 
@@ -224,8 +224,8 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         Compute the MLL given :math:`p(\mathbf f)` and :math:`\mathbf y`.
 
         :param function_dist: :math:`p(\mathbf f)` the outputs of the latent function
-            (the :obj:`gpytorch.models.ExactGP`)
-        :param target: :math:`\mathbf y` The target values
+            (the :obj:`gpytorch.models.ExactGP`).
+        :param target: :math:`\mathbf y` The target values.
         :return: Exact MLL. Output shape corresponds to batch shape of the model/input data.
         """
         output = self.likelihood(function_dist, *params, **kwargs)

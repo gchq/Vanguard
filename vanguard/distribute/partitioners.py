@@ -68,8 +68,8 @@ class BasePartitioner:
         """
         Plot a partition on a T-SNE graph.
 
-        :param partition: List of data partitions to plot
-        :param cmap: Colormap to use for plotting
+        :param partition: List of data partitions to plot.
+        :param cmap: Colormap to use for plotting.
         """
         embedding = sklearn.manifold.TSNE().fit_transform(self.train_x)
 
