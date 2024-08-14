@@ -4,10 +4,13 @@ Configuration file for the Sphinx documentation builder.
 This file only contains a selection of the most common options.
 For a full list see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html.
 """
+
+import logging
+
 # a bunch of pylint disables as this file is uniquely weird:
 # pylint: disable=import-error,invalid-name,wrong-import-order,wrong-import-position
-
 import os
+import re
 import shutil
 import sys
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
@@ -22,6 +25,7 @@ import gpytorch.models
 import gpytorch.module
 import gpytorch.variational
 import sphinx.config
+import sphinx_autodoc_typehints
 import torch
 import torch.optim
 from PIL import Image
@@ -229,6 +233,61 @@ def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Option
     return None
 
 
+# ignore unused-argument here - the signature needs to be exactly this as it's an
+# event handler
+def require_full_stops_on_params(
+    app: sphinx.config.Sphinx,  # pylint: disable=unused-argument
+    what: str,  # pylint: disable=unused-argument
+    name: str,
+    obj: object,  # pylint: disable=unused-argument
+    options: sphinx_autodoc_typehints.Options,  # pylint: disable=unused-argument
+    lines: List[str],
+):
+    """Require full stops on `param` directives in docstrings."""
+    current_param = None  # The parameter we're currently processing
+    current_param_lines = []  # The docstring lines for the parameter we're currently processing
+
+    # We need to use the Sphinx logger to ensure warnings are counted and can fail the build
+    logger = logging.getLogger("sphinx")
+
+    # add an extra empty string onto the front of "lines" to ensure we don't miss param
+    # directives on the first line
+    for line in ["%%START_LINE%%"] + lines + ["%%END_LINE%%"]:
+        # check for start/end of params
+        if line.startswith(":") or line == "%%END_LINE%%":
+            if current_param is not None and not "".join(current_param_lines).strip().endswith("."):
+                # then the previous :param: directive has ended - if it doesn't have a full stop at the end,
+                # log a warning.
+                logger.warning(
+                    "%s: docstring for parameter `%s` missing full stop",
+                    name,
+                    current_param,
+                )
+
+            # clear out the current param lines
+            current_param_lines = []
+
+            # check for start of new :param: directive
+            if line.strip().startswith(":param "):
+                match = re.match(r"^:param ([^:]+):(.*)$", line.strip())
+                if match is None:
+                    logger.warning("%s: Line did not match regex:\n\t%s", name, line.strip())
+                    current_param = None
+                else:
+                    if not match.group(2).strip():
+                        # empty param docstring - this obviously won't end in a full stop, so ignore it
+                        current_param = None
+                    else:
+                        # then there is actually a docstring here
+                        current_param = match.group(1)
+            else:
+                current_param = None
+
+        if current_param is not None:
+            # if we're in a :param: directive, add the current line to the current :param: directive's lines
+            current_param_lines.append(line)
+
+
 def skip(app, what, name, obj, would_skip, options):  # pylint: disable=unused-argument
     """Ensure that __init__ files are NOT skipped."""
     if name == "__init__":
@@ -237,8 +296,9 @@ def skip(app, what, name, obj, would_skip, options):  # pylint: disable=unused-a
 
 
 def setup(app):
-    """Ensure that our new skip function is called."""
+    """Set up Sphinx and connect handlers to events."""
     app.connect("autodoc-skip-member", skip)
+    app.connect("autodoc-process-docstring", require_full_stops_on_params)
 
 
 # -- FILE PRE-PROCESSING -----------------------------------------------------
