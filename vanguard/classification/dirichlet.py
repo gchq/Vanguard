@@ -30,7 +30,7 @@ class DirichletMulticlassClassification(Decorator):
     Note that in the decorated class, the `classify_points` and `classify_fuzzy_points` methods both take a
     ``num_samples`` keyword argument - we don't get a closed-form estimate for class probabilities, but instead
     approximate them with a sampling step. The ``num_samples`` parameter represents a trade-off between speed and
-    accuracy, but the default value should be good enough for most purposes.
+    accuracy, but the default value (taken from :cite:`Maddox21`) should be good enough for most purposes.
 
     :Example:
         >>> from gpytorch.kernels import RBFKernel, ScaleKernel
@@ -174,7 +174,8 @@ class DirichletMulticlassClassification(Decorator):
                 Classify points.
 
                 :param n_posterior_samples: The number of samples to take from the posterior when approximating the
-                    predicted class probabilities. The default value should be good enough for most purposes.
+                    predicted class probabilities. The default value (taken from :cite:`Maddox21`) should be good
+                    enough for most purposes.
 
                 .. note::
                     The predictions are generated from the
