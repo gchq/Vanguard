@@ -38,6 +38,7 @@ from vanguard.distribute.aggregators import (
 )
 from vanguard.distribute.partitioners import (
     KMeansPartitioner,
+    KMedoidsPartitioner,
     MiniBatchKMeansPartitioner,
     RandomPartitioner,
 )
@@ -144,9 +145,7 @@ class VanguardTestCase(unittest.TestCase):
             RandomPartitioner,
             KMeansPartitioner,
             MiniBatchKMeansPartitioner,
-            # TODO: Do we have an example of this working?
-            # https://github.com/gchq/Vanguard/issues/233
-            # KMedoidsPartitioner,
+            KMedoidsPartitioner,
         ]:
 
             @Distributed(
@@ -157,6 +156,12 @@ class VanguardTestCase(unittest.TestCase):
             class BinaryClassifier(GaussianGPController):
                 pass
 
+            if partitioner is KMedoidsPartitioner:
+                # KMedoids requires a kernel to be passed to the partitioner
+                partitioner_kwargs = {"kernel": ScaledRBFKernel()}
+            else:
+                partitioner_kwargs = {}
+
             # Define the controller object
             gp = BinaryClassifier(
                 train_x=self.x[self.train_indices],
@@ -165,6 +170,7 @@ class VanguardTestCase(unittest.TestCase):
                 y_std=0,
                 likelihood_class=BernoulliLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
+                partitioner_kwargs=partitioner_kwargs,
                 rng=self.rng,
             )
 
