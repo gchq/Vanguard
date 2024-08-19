@@ -91,7 +91,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                                     predictive posterior.
         :param temperature: The (inverse) scale for tempering the posterior, for balancing
                                     exploration and exploitation of the target distribution.
-                                    If None, it's set automatically using a trace rescaling heuristic
+                                    If :data:`None`, it's set automatically using a trace rescaling heuristic.
         :param uv_cutoff: The cutoff for eigenvalues in computing the eigenbasis and spectrum
                                     of the Hessian. For eigenvalues below this cutoff, the Hessian
                                     inverse eigenvalues are set to a fixed small jitter value.

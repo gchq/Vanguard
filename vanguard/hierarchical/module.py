@@ -71,8 +71,8 @@ class BayesianHyperparameters:
 
         :param ignored_parameters: Names of module hyperparameters which should not be converted
             to Bayesian parameters.
-        :param prior_means: Dict of mean values for the prior distributions
-        :param prior_variances: Dict of variances for the prior distributions
+        :param prior_means: Dict of mean values for the prior distributions.
+        :param prior_variances: Dict of variances for the prior distributions.
         """
         self.ignored_parameters = set(ignored_parameters)
 
