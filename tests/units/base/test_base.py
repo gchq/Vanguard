@@ -66,12 +66,13 @@ class DefaultTensorTypeTests(unittest.TestCase):
         """
         Test that the properties of a newly-created tensor are as expected.
 
-        This test fails unless the tensor's dtype is `double`. By default, PyTorch creates tensors with dtype `float32`.
-        This test checks that the default tensor dtype is successfully set to `torch.double` in `setUp()` above. Note,
-        in `BaseGPController`, we set `_default_tensor_dtype = torch.float`.
+        This test fails unless the tensor's dtype is :class:`torch.double`. By default, PyTorch creates tensors with
+        dtype :class:`torch.float32`. This test checks that the default tensor dtype is successfully set to
+        :class:`torch.double` in `setUp()` above. Note, in :class:`~vanguard.BaseGPController`,
+        we set `_default_tensor_dtype` to :class:`torch.float`.
 
-        This test expects the new tensor to be on the CPU if the CUDA device (i.e., GPU) is not available. The `is_cuda`
-        property returns `True` if the tensor is stored on the GPU, and `False` otherwise.
+        This test expects the new tensor to be on the CPU if the CUDA device (i.e., GPU) is not available. The
+        `is_cuda` property returns :data:`True` if the tensor is stored on the GPU, and :data:`False` otherwise.
         """
         new_tensor = torch.tensor([])
         self.assertEqual(new_tensor.dtype, torch.double)
