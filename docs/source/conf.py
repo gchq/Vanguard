@@ -27,7 +27,7 @@ import os
 import re
 import shutil
 import sys
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar
 
 import gpytorch.constraints
 import gpytorch.distributions
@@ -58,7 +58,6 @@ sys.path.extend([DOCS_FOLDER_FILE_PATH, SOURCE_FOLDER_FILE_PATH, VANGUARD_FOLDER
 # ignore Ruff's E402 "Module level import not at top of file" here - this must come after the sys.path manipulation
 # first party module imports
 import vanguard  # noqa: E402
-from vanguard.base.basecontroller import ttypes, ttypes_cuda  # noqa: E402
 from vanguard.hierarchical.collection import ModuleT  # noqa: E402
 
 # local folder imports
@@ -177,7 +176,6 @@ autodoc_custom_types: dict[TypeAlias, str] = {
     ModuleT: ":class:`~gpytorch.Module`",
     Self: ":data:`~typing.Self`",
     gpytorch.mlls.MarginalLogLikelihood: f":mod:`{gpytorch.mlls.MarginalLogLikelihood.__name__} <gpytorch.mlls>`",
-    Union[ttypes, ttypes_cuda]: str(default_format_annotation(Type[torch.Tensor], sphinx.config.Config())),
 }
 
 
