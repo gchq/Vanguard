@@ -27,6 +27,11 @@ class DirichletMulticlassClassification(Decorator):
     This decorator allows multiclass classification with exact gaussian processes.
     The implementation is based on a GPyTorch example notebook :cite:`Maddox21` and the paper :cite:`Milios18`.
 
+    Note that in the decorated class, the `classify_points` and `classify_fuzzy_points` methods both take a
+    ``num_samples`` keyword argument - we don't get a closed-form estimate for class probabilities, but instead
+    approximate them with a sampling step. The ``num_samples`` parameter represents a trade-off between speed and
+    accuracy, but the default value (taken from :cite:`Maddox21`) should be good enough for most purposes.
+
     :Example:
         >>> from gpytorch.kernels import RBFKernel, ScaleKernel
         >>> from gpytorch.likelihoods import DirichletClassificationLikelihood
@@ -162,10 +167,14 @@ class DirichletMulticlassClassification(Decorator):
                 )
 
             def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating]]
+                self, x: Union[float, numpy.typing.NDArray[np.floating]], *, n_posterior_samples: int = 256
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify points.
+
+                :param n_posterior_samples: The number of samples to take from the posterior when approximating the
+                    predicted class probabilities. The default value (taken from :cite:`Maddox21`) should be good
+                    enough for most purposes.
 
                 .. note::
                     The predictions are generated from the
@@ -173,9 +182,7 @@ class DirichletMulticlassClassification(Decorator):
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_point(x)
-                # TODO: why is this 256 hardcoded?
-                # https://github.com/gchq/Vanguard/issues/202
-                samples = posterior._tensor_sample(torch.Size((256,)))  # pylint: disable=protected-access
+                samples = posterior._tensor_sample(torch.Size((n_posterior_samples,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)
                 detached_probs = probs.detach().cpu().numpy()
@@ -186,9 +193,14 @@ class DirichletMulticlassClassification(Decorator):
                 self,
                 x: Union[float, numpy.typing.NDArray[np.floating]],
                 x_std: Union[float, numpy.typing.NDArray[np.floating]],
+                *,
+                n_posterior_samples: int = 256,
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """
                 Classify fuzzy points.
+
+                :param n_posterior_samples: The number of samples to take from the posterior when approximating the
+                    predicted class probabilities. The default value should be good enough for most purposes.
 
                 .. note::
                     The predictions are generated from the
@@ -196,9 +208,7 @@ class DirichletMulticlassClassification(Decorator):
                     in order to be consistent across collections.
                 """
                 posterior = super().posterior_over_fuzzy_point(x, x_std)
-                # TODO: why is this 256 hardcoded?
-                # https://github.com/gchq/Vanguard/issues/202
-                samples = posterior._tensor_sample_condensed(torch.Size((256,)))  # pylint: disable=protected-access
+                samples = posterior._tensor_sample_condensed(torch.Size((n_posterior_samples,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)
                 detached_probs = probs.detach().cpu().numpy()
