@@ -60,7 +60,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
     :param aggregator_class: The class to be used for aggregation. Defaults to
         :class:`~vanguard.distribute.aggregators.RBCMAggregator`.
     :param partitioner_class: The class to be used for partitioning. Defaults to
-        :class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
+        :class:`~vanguard.distribute.partitioners.KMeansPartitioner`. See
+        :mod:`vanguard.distribute.partitioners` for alternative partitioners.
     :param partitioner_kwargs: Additional parameters passed to the partitioner initialisation.
 
     :Keyword Arguments:
