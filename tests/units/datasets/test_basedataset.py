@@ -52,14 +52,14 @@ class TestEmptyDataset:
     def test_members(self):
         """Test that all the data members of `EmptyDataset` are in fact empty."""
         dataset = EmptyDataset()
-        assert not dataset.train_x
-        assert not dataset.train_x_std
-        assert not dataset.train_y
-        assert not dataset.train_y_std
-        assert not dataset.test_x
-        assert not dataset.test_x_std
-        assert not dataset.test_y
-        assert not dataset.test_y_std
+        assert dataset.train_x.size == 0
+        assert dataset.train_x_std.size == 0
+        assert dataset.train_y.size == 0
+        assert dataset.train_y_std.size == 0
+        assert dataset.test_x.size == 0
+        assert dataset.test_x_std.size == 0
+        assert dataset.test_y.size == 0
+        assert dataset.test_y_std.size == 0
 
     def test_properties(self):
         """Test that the number-of-points properties correctly report that the dataset has zero points."""
