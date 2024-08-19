@@ -14,6 +14,20 @@
 
 """
 Pre-commit hook to check for a copyright notice at the start of each file.
+
+The copyright notice must start on the first line of the file (or the second line, if the first line is a shebang),
+and must exactly match the template file specified.
+
+Exits with code 1 if any checked file does not have the copyright notice, printing the names of offending files to
+standard error. Exits silently with code 0 if all checked files have the notice.
+
+Optionally, with the `--unsafe-fix` argument, this script can attempt to automatically insert the copyright notice at
+the top of files that are missing it. The method that this script tries is naive, though, and may cause unexpected
+issues, so be sure to check on any changes it makes! Using this argument when using this script as a pre-commit hook
+is not recommended.
+
+If you want to change the copyright notice template, a multi-file find-and-replace tool is likely your best bet,
+rather than trying to use `--unsafe-fix`.
 """
 
 import argparse
@@ -24,10 +38,22 @@ SHEBANG = "#!"
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("filenames", nargs="*")
-    parser.add_argument("--template", default=".copyright-template")
-    parser.add_argument("--unsafe-fix", action="store_true")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("filenames", nargs="*", help="Filenames to check.")
+    parser.add_argument(
+        "--template",
+        default=".copyright-template",
+        help="File containing the copyright notice that must be present at the top of each file checked.",
+    )
+    parser.add_argument(
+        "--unsafe-fix",
+        action="store_true",
+        help=(
+            "If set, attempt to insert the copyright notice at the top of files that are missing one. Respects "
+            "shebangs, but is otherwise naive and may cause issues such as duplicated copyright notices. "
+            "Use at your own peril."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -45,7 +71,11 @@ def guess_newline_type(filename: str):
 
 
 def main() -> None:
-    """Run the script."""
+    """
+    Run the script.
+
+    For more information, see the module docstring and `parse_args()` above, or run `python check_copyright.py --help`.
+    """
     failed = False
 
     args = parse_args()
