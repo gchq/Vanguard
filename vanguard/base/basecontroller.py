@@ -339,7 +339,7 @@ class BaseGPController:
         """
         Set the required grad flag of all trainable params.
 
-        :param value: The value to set for requires_grad attribute.
+        :param value: The value to set for the `requires_grad` attribute.
         """
         for param in self._smart_optimiser.parameters():
             param.requires_grad = value
