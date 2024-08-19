@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPController` class.
 """
@@ -10,11 +24,11 @@ import numpy.typing
 import torch
 from torch import Tensor
 
-from ..decoratorutils import Decorator
-from .basecontroller import BaseGPController
-from .metaclass import _StoreInitValues
-from .metrics import MetricsTracker
-from .posteriors.posterior import Posterior
+from vanguard.base.basecontroller import BaseGPController
+from vanguard.base.metaclass import _StoreInitValues
+from vanguard.base.metrics import MetricsTracker
+from vanguard.base.posteriors.posterior import Posterior
+from vanguard.decoratorutils import Decorator
 
 
 class GPController(BaseGPController, metaclass=_StoreInitValues):
@@ -136,7 +150,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_point(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], np.floating],
+        x: Union[numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.
@@ -148,8 +162,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_fuzzy_point(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], np.floating],
-        x_std: Union[numpy.typing.NDArray[np.floating], np.floating],
+        x: Union[numpy.typing.NDArray[np.floating], float],
+        x_std: Union[numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a fuzzy point.
@@ -169,7 +183,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], np.floating],
+        x: Union[numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -181,8 +195,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def fuzzy_predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], np.floating],
-        x_std: Union[numpy.typing.NDArray[np.floating], np.floating],
+        x: Union[numpy.typing.NDArray[np.floating], float],
+        x_std: Union[numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.

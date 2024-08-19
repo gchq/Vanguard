@@ -35,12 +35,14 @@ $ pre-commit install
 
 ## Pull requests
 
-We are using a [Git Flow][git-flow] development approach.
+We are using a [GitHub Flow][github-flow] development approach, where the trunk branch
+is called `develop`.
 
 - To avoid duplicate work, [search existing pull requests][gh-prs].
 - All pull requests should relate to an existing issue.
   - If the pull request addresses something not currently covered by an issue, create a new issue first.
-- Make changes on a [feature branch][git-feature-branch] instead of the main branch.
+- Make changes on a [feature branch][git-feature-branch] instead of the `develop`
+  branch.
 - Branch names should take one of the following forms:
   - `feature/<feature-name>`: for adding, removing or refactoring a feature.
   - `fix/<bug-name>`: for bug fixes.
@@ -78,6 +80,43 @@ multiplication within the code.
 BREAKING CHANGE: numpy 1.0.2 no longer supported
 
 Refs: #123
+```
+
+### Breaking changes and deprecation
+
+Since we are still pre-1.0, [SemVer] states that any release may contain breaking
+changes. However, breaking changes should not be made without warning.
+
+Any breaking changes must have a deprecation period of at least **one minor release,
+or one month (whichever is longer),** before the breaking change is made. If the change
+is one that may require significant changes to client code, such as removing a function
+or class entirely, the deprecation period must instead be at least **two minor releases,
+or two months (whichever is longer).**
+
+Ensure that during the deprecation period, the old behaviour still works, but raises a
+`DeprecationWarning` with an appropriate message. If at all possible, ensure that there
+is straightforward signposting for how users should change their code to use
+non-deprecated parts of the codebase instead.
+
+As an example, this is what the deprecation period for renaming `my_old_function` to
+`my_new_function` would look like:
+
+```python
+# v0.1.0:
+def my_old_function(x: int) -> int:
+    return x + x + x + x
+
+# v0.2.0:
+def my_new_function(x: int) -> int:
+    return x*4
+
+@deprecated("Renamed to my_new_function; will be removed in v0.3.0")
+def my_old_function(x: int) -> int:
+    return my_new_function(x)
+
+# v0.3.0:
+def my_new_function(x: int) -> int:
+    return x*4
 ```
 
 ## Code
@@ -263,7 +302,8 @@ Please try running them again before raising an issue.
 
 Before a release is issued on PyPI, all tests for Vanguard will be run on a GPU machine.
 This avoids having to incorporate GPU runners into the CI/CD, but still tests issues that can arise with torch and gpytorch.
-However, note that code pushed to main may not necessarily have been tested on a GPU machine until a release to PyPI is made.
+However, note that code pushed to `develop` may not necessarily have been tested on a
+GPU machine until a release to PyPI is made.
 If you observe any issues on GPU machines using the code, please raise an issue detailing the behaviour, and create a PR with the relevant fix if possible.
 
 ## Examples
@@ -293,6 +333,30 @@ Having complete documentation is important to easy usage of Vanguard.
 Please ensure that any new code appears in the documentation, and is rendered correctly.
 You should be warned of any broken internal links during the build process, and these will cause your pull request to be rejected.
 
+## Releases
+
+Releases are made on an ad-hoc basis. When the maintainers decide the codebase is ready
+for another release:
+
+1. Create an issue for the release.
+2. Run additional release tests on `develop` including GPU testing, as described in
+   [Testing before releases to PyPI](#Testing-before-releases-to-PyPI).
+3. Fix any issues and merge into `develop`, iterating until we have a commit on
+   `develop` that is ready for release, except for housekeeping that does not affect the
+   functionality of the code.
+4. Create a branch `release/#.#.#` off the identified commit, populating with the target
+   version number.
+5. Tidy `CHANGELOG.md` including:
+   - Move the content under `Unreleased` to a section under the target version number.
+   - Create a new unpopulated `Unreleased` section at the top.
+   - Update the hyperlinks to Git diffs at the bottom of the file so that they compare
+     the relevant versions.
+6. Update the version number in `vanguard/__init.py__`.
+7. Create and review a pull request.
+8. Once approved, create a release in GitHub pointing at the final commit on the release
+   branch.
+9. Build and publish to PyPI and ReadTheDocs.
+10. Merge the release branch into `develop`.
 
 ## References
 
@@ -308,7 +372,7 @@ An entry with the keyword `Doe99` can then be referenced within a docstring anyw
 [gh-feature-request]: https://github.com/gchq/Vanguard/issues/new?assignees=&labels=new%2Cenhancement&projects=gchq%2F16&template=feature_request.yml
 [gh-prs]: https://github.com/gchq/Vanguard/pulls
 [git-feature-branch]: https://www.atlassian.com/git/tutorials/comparing-workflows
-[git-flow]: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
+[github-flow]: https://docs.github.com/en/get-started/quickstart/github-flow
 [github-issues]: https://github.com/gchq/Vanguard/issues?q=
 [pep-8]: https://peps.python.org/pep-0008/
 [pep-257]: https://peps.python.org/pep-0257/
@@ -318,6 +382,7 @@ An entry with the keyword `Doe99` can then be referenced within a docstring anyw
 [pytest]: https://docs.pytest.org/
 [ruff]: https://docs.astral.sh/ruff/
 [run-tests]: https://github.com/gchq/Vanguard/actions/workflows/unittests.yml
+[semver]: https://semver.org/
 [sphinx]: https://www.sphinx-doc.org/en/master/index.html
 [sphinx-format]: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html
 [sphinx-rst]: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html

@@ -12,6 +12,7 @@ autofunction
 automodule
 autoreload
 autoupdate
+autouse
 basecontroller
 basedataset
 basedecorator
@@ -70,14 +71,15 @@ inproceedings
 intersphinx
 ipynb
 ipython
+isin
 isort
 jumanjihouse
 jupyterlab
 kats
 keepdim
+keepends
 kernelspec
 kmedoids
-lazify
 lengthscale
 lengthscales
 lexer
@@ -86,6 +88,7 @@ linestyle
 linestyles
 linkcheck
 linspace
+logpdf
 logspace
 logsumexp
 mapsto
@@ -109,6 +112,7 @@ nbgallery
 nbqa
 nbsphinx
 nbstripout
+ndarray
 ndim
 ndimension
 notebooknode
@@ -130,6 +134,7 @@ pyobjects
 pyproject
 pyroma
 pytest
+PYTHONHASHSEED
 pytorch
 pyupgrade
 qualnames
@@ -141,6 +146,7 @@ refs
 refstyle
 relazified
 relazifying
+reraised
 rpds
 rsample
 rtype

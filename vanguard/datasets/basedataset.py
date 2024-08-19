@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Base datasets for Vanguard.
 
@@ -122,20 +136,27 @@ class EmptyDataset(Dataset):
     Represents an empty dataset.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, num_features: int = 1, significance: float = 0.1) -> None:
         """
-        Initialise self.
+        Initialise an empty dataset.
+
+        :param num_features: The number of features to give the dataset. (The dataset does not contain any points,
+            but the arrays `train_x`, `test_y` etc. will have shape `(0, num_features)` to enable code that expects a
+            sensible `num_features` to work.
+        :param significance: The recommended significance value to be used for confidence intervals.
+            Note that this value has no bearing on the data, as there is no data - this parameter is only provided
+            for compatibility with code that requires a certain significance level.
         """
         super().__init__(
-            np.array([]),
-            np.array([]),
-            np.array([]),
-            np.array([]),
-            np.array([]),
-            np.array([]),
-            np.array([]),
-            np.array([]),
-            significance=0,
+            np.zeros((0, num_features)),
+            np.zeros((0,)),
+            np.zeros((0,)),
+            np.zeros((0,)),
+            np.zeros((0, num_features)),
+            np.zeros((0,)),
+            np.zeros((0,)),
+            np.zeros((0,)),
+            significance=significance,
         )
 
     @classmethod

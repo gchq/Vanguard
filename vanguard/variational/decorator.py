@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Enable variational inference in a controller.
 
@@ -12,10 +26,11 @@ import numpy as np
 import numpy.typing
 from torch import Tensor
 
-from ..base import GPController
-from ..base.posteriors import Posterior
-from ..decoratorutils import Decorator, process_args, wraps_class
-from .models import SVGPModel
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.variational.models import SVGPModel
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 # pylint: disable-next=protected-access
@@ -131,7 +146,8 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
+
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 train_x = all_parameters_as_kwargs.pop("train_x")
                 train_y = all_parameters_as_kwargs.pop("train_y")
@@ -148,14 +164,14 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                         train_y=train_y,
                         gp_kwargs=gp_kwargs,
                         mll_kwargs=mll_kwargs,
+                        rng=self.rng,
                         **all_parameters_as_kwargs,
                     )
                 except TypeError as error:
                     if "__init__() got an unexpected keyword argument 'num_data'" in str(error):
-                        raise ValueError(
-                            "The class passed to ``marginal_log_likelihood_class`` must take a "
-                            "``num_data`` :class:`int` argument since we run "
-                            "variational inference with SGD."
+                        raise TypeError(
+                            "The class passed to `marginal_log_likelihood_class` must take a "
+                            "`num_data: int` argument, since we run variational inference with SGD."
                         ) from error
                     else:
                         raise

@@ -1,8 +1,22 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 The :class:`GaussianGPController` provides the user with a standard GP model with no extra features.
 """
 
-from typing import Any, Type, Union
+from typing import Any, Optional, Type, Union
 
 import gpytorch
 import numpy as np
@@ -12,9 +26,10 @@ from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.means import ConstantMean
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
-from .base import GPController
-from .optimise import GreedySmartOptimiser
-from .optimise.optimiser import SmartOptimiser
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.optimise import GreedySmartOptimiser
+from vanguard.optimise.optimiser import SmartOptimiser
 
 
 class GaussianGPController(GPController):
@@ -23,6 +38,28 @@ class GaussianGPController(GPController):
 
     This is the best starting point for users, containing many sensible default values.
     The standard reference is :cite:`Rasmussen06`.
+
+    :param train_x: (n_samples, n_features) The inputs (or the observed values).
+    :param train_y: (n_samples,) or (n_samples, 1) The responsive values.
+    :param kernel_class: An uninstantiated subclass of :class:`gpytorch.kernels.Kernel`.
+    :param y_std: The observation noise standard deviation, one of:
+
+        * :class:`~numpy.ndarray` (n_samples,): known heteroskedastic noise.
+        * :class:`float`: known homoskedastic noise assumed.
+
+    :param mean_class: An uninstantiated subclass of :class:`gpytorch.means.Mean` to use in the prior GP.
+        Defaults to :class:`gpytorch.means.ConstantMean`.
+    :param likelihood_class: An uninstantiated subclass of :class:`gpytorch.likelihoods.Likelihood`.
+        The default is :class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
+    :param marginal_log_likelihood_class: An uninstantiated subclass of of an MLL from
+        :mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
+    :param optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
+        gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
+    :param smart_optimiser_class: An uninstantiated
+        :class:`~vanguard.optimise.optimiser.SmartOptimiser` class used to wrap the
+        ``optimiser_class`` and enable early stopping.
+    :param rng: Generator instance used to generate random numbers.
+    :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
     """
 
     def __init__(
@@ -36,28 +73,11 @@ class GaussianGPController(GPController):
         marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
         optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
         smart_optimiser_class: Type[SmartOptimiser] = GreedySmartOptimiser,
+        rng: Optional[np.random.Generator] = None,
         **kwargs: Any,
     ) -> None:
         """
         Initialise self.
-
-        :param train_x: (n_samples, n_features) The inputs (or the observed values)
-        :param train_y: (n_samples,) or (n_samples, 1) The responsive values.
-        :param kernel_class: An uninstantiated subclass of :class:`gpytorch.kernels.Kernel`.
-        :param mean_class: An uninstantiated subclass of :class:`gpytorch.means.Mean` to use in the prior GP.
-                Defaults to :class:`gpytorch.means.ConstantMean`.
-        :param y_std: The observation noise standard deviation:
-
-            * *array_like[float]* (n_samples,): known heteroskedastic noise,
-            * *float*: known homoskedastic noise assumed.
-
-        :param likelihood_class: An uninstantiated subclass of :class:`gpytorch.likelihoods.Likelihood`.
-                The default is :class:`gpytorch.likelihoods.FixedNoiseGaussianLikelihood`.
-        :param marginal_log_likelihood_class: An uninstantiated subclass of of an MLL from
-                :mod:`gpytorch.mlls`. The default is :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
-        :param optimiser_class: An uninstantiated :class:`torch.optim.Optimizer` class used for
-                gradient-based learning of hyperparameters. The default is :class:`torch.optim.Adam`.
-        :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(
             train_x=train_x,
@@ -69,5 +89,6 @@ class GaussianGPController(GPController):
             marginal_log_likelihood_class=marginal_log_likelihood_class,
             optimiser_class=optimiser_class,
             smart_optimiser_class=smart_optimiser_class,
+            rng=utils.optional_random_generator(rng),
             **kwargs,
         )

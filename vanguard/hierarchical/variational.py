@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the VariationalHierarchicalHyperparameters decorator.
 """
@@ -7,19 +21,20 @@ from typing import Any, Generator, List, Optional, Type, TypeVar, Union
 import gpytorch
 import numpy as np
 import torch
-from gpytorch.lazy import lazify
 from gpytorch.variational import CholeskyVariationalDistribution
+from linear_operator import to_linear_operator
 from numpy.typing import NDArray
 
-from ..decoratorutils import wraps_class
-from .base import (
+from vanguard import utils
+from vanguard.decoratorutils import process_args, wraps_class
+from vanguard.hierarchical.base import (
     BaseHierarchicalHyperparameters,
     GPController,
     Posterior,
     extract_bayesian_hyperparameters,
     set_batch_shape,
 )
-from .collection import HyperparameterCollection
+from vanguard.hierarchical.collection import HyperparameterCollection
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 KernelT = TypeVar("KernelT", bound=gpytorch.kernels.Kernel)
@@ -96,7 +111,11 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 for module_name in ("kernel", "mean", "likelihood"):
                     set_batch_shape(kwargs, module_name, sample_shape)
 
-                super().__init__(*args, **kwargs)
+                all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
+                # Pop `rng` from kwargs to ensure we don't provide duplicate values to superclass init
+                kwargs.pop("rng", None)
+                super().__init__(*args, rng=self.rng, **kwargs)
 
                 module_hyperparameter_pairs, point_estimate_kernels = extract_bayesian_hyperparameters(self)
                 _correct_point_estimate_shapes(point_estimate_kernels)
@@ -244,6 +263,7 @@ def _safe_index_batched_multivariate_normal(
     matrix is larger than an obscure threshold). Hopefully this will change, but for now, we will work
     around it. This function delazifies the batched covariance matrix and yields recreated non-batch
     normals using then relazified individual covariance matrices.
+
     Delazifying the batch covariance matrix doesn't cause any inefficiencies because the individual
     covariance matrices would be delazified later anyway. Relazifying the individual matrices just
     delays any Cholesky issues, which is good because we have handling for them downstream.
@@ -251,4 +271,4 @@ def _safe_index_batched_multivariate_normal(
     distribution_type = type(distribution)
     non_lazy_covariance_matrix = distribution.covariance_matrix
     for sub_mean, sub_covariance_matrix in zip(distribution.mean, non_lazy_covariance_matrix):
-        yield distribution_type(sub_mean, lazify(sub_covariance_matrix))
+        yield distribution_type(sub_mean, to_linear_operator(sub_covariance_matrix))

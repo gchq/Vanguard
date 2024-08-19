@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains decorators to deal with input features that aren't vectors.
 """
@@ -7,10 +21,10 @@ from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import torch
-from gpytorch import kernels
 
-from .base import GPController
-from .decoratorutils import Decorator, process_args, wraps_class
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -44,13 +58,11 @@ class HigherRankFeatures(Decorator):
         class InnerClass(cls):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
                 train_x = all_parameters_as_kwargs["train_x"]
-                all_parameters_as_kwargs.pop("self")
                 self.gp_model_class = _HigherRankFeaturesModel(train_x.shape[-rank:])(self.gp_model_class)
                 kernel_class = all_parameters_as_kwargs.pop("kernel_class")
-                new_kernel_class = _HigherRankFeaturesKernel(train_x.shape[-rank:])(kernel_class)
-
-                super().__init__(kernel_class=new_kernel_class, **all_parameters_as_kwargs)
+                super().__init__(kernel_class=kernel_class, rng=self.rng, **all_parameters_as_kwargs)
 
         return InnerClass
 
@@ -123,36 +135,3 @@ class _HigherRankFeaturesModel:
         new_shape = tuple(tensor.shape[:-1])
         new_shape = new_shape + item_shape
         return tensor.reshape(new_shape)
-
-
-class _HigherRankFeaturesKernel(_HigherRankFeaturesModel):
-    """
-    A decorator for a kernel, enabling higher rank features.
-
-    GPyTorch assumes that input features are rank-1 (vectors) and a variety of
-    RuntimeErrors are thrown from different places in the code if this is not true.
-    This decorator can be applied to a GPyTorch kernel and deals with the feature
-    shapes to avoid these issues. In particular, kernels only pose an issue when
-    using variational orthogonal features, in which the VOF basis has a forward
-    method. Unlike the kernel forward method itself, which is safely behind calls
-    to the model forward method, this method is exposed directly to the flattened
-    data.
-    """
-
-    def __call__(self, kernel_cls: Type[kernels.Kernel]) -> Type[kernels.Kernel]:
-        shape = self.shape
-        _unflatten = partial(self._unflatten, item_shape=shape)
-
-        @wraps_class(kernel_cls)
-        class InnerClass(kernel_cls):
-            def get_vof_basis(self, *args: Any, **kwargs: Any):
-                basis_type = type(super().get_vof_basis(*args, **kwargs))
-
-                @wraps_class(basis_type)
-                class InnerBasisType(basis_type):
-                    def forward(self, x, *args: Any, **kwargs: Any):
-                        return super().forward(_unflatten(x), *args, **kwargs)
-
-                return InnerBasisType(*args, **kwargs)
-
-        return InnerClass

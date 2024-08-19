@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the DirichletKernelMulticlassClassification decorator.
 """
@@ -8,11 +22,12 @@ import numpy as np
 import numpy.typing
 import torch
 
-from ..base import GPController
-from ..decoratorutils import Decorator, process_args, wraps_class
-from .likelihoods import DirichletKernelClassifierLikelihood
-from .mixin import Classification, ClassificationMixin
-from .models import InertKernelModel
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood
+from vanguard.classification.mixin import Classification, ClassificationMixin
+from vanguard.classification.models import InertKernelModel
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
@@ -49,8 +64,8 @@ class DirichletKernelMulticlassClassification(Decorator):
         >>>
         >>> test_x = np.array([0.05, 0.5, 0.95])
         >>> predictions, probs = gp.classify_points(test_x)
-        >>> predictions
-        array([0, 1, 2])
+        >>> predictions.tolist()
+        [0, 1, 2]
     """
 
     def __init__(self, num_classes: int, **kwargs: Any) -> None:
@@ -73,7 +88,7 @@ class DirichletKernelMulticlassClassification(Decorator):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 if not issubclass(likelihood_class, DirichletKernelClassifierLikelihood):
@@ -97,6 +112,7 @@ class DirichletKernelMulticlassClassification(Decorator):
                     likelihood_class=likelihood_class,
                     likelihood_kwargs=likelihood_kwargs,
                     gp_kwargs=model_kwargs,
+                    rng=self.rng,
                     **all_parameters_as_kwargs,
                 )
 
@@ -107,6 +123,8 @@ class DirichletKernelMulticlassClassification(Decorator):
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
+            # TODO: throws an error - see linked issue
+            # https://github.com/gchq/Vanguard/issues/288
             def classify_fuzzy_points(
                 self,
                 x: Union[float, numpy.typing.NDArray[np.floating]],

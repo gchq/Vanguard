@@ -1,15 +1,33 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 The :class:`NormaliseY` decorator will scale the y-inputs to a unit normal distribution.
 """
 
+import warnings
 from typing import Any, Tuple, Type, TypeVar
 
 import numpy as np
 import torch
 
-from .base import GPController
-from .base.posteriors import Posterior
-from .decoratorutils import Decorator, process_args, wraps_class
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.classification.mixin import ClassificationMixin
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.decoratorutils.errors import BadCombinationWarning
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -57,6 +75,14 @@ class NormaliseY(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+        if issubclass(cls, ClassificationMixin):
+            warnings.warn(
+                "NormaliseY should not be used above classification decorators "
+                "- this may lead to unexpected behaviour.",
+                BadCombinationWarning,
+                stacklevel=3,
+            )
+
         @wraps_class(cls)
         class InnerClass(cls):
             """
@@ -65,7 +91,7 @@ class NormaliseY(Decorator):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 y_std = all_parameters_as_kwargs.pop("y_std")
                 train_x = all_parameters_as_kwargs.pop("train_x")
@@ -142,7 +168,14 @@ class NormaliseY(Decorator):
                 self.posterior_class = normalise_posterior_class(self.posterior_class)
                 self.posterior_collection_class = normalise_posterior_class(self.posterior_collection_class)
 
-                super().__init__(train_x=train_x, train_y=train_y, y_std=y_std, **all_parameters_as_kwargs)
+                try:
+                    super().__init__(
+                        train_x=train_x, train_y=train_y, y_std=y_std, rng=self.rng, **all_parameters_as_kwargs
+                    )
+                except TypeError as exc:
+                    if issubclass(cls, ClassificationMixin):
+                        msg = "NormaliseY should not be used above classification decorators."
+                        raise TypeError(msg) from exc
 
             @staticmethod
             def warn_normalise_y():

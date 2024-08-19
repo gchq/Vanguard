@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Vanguard defines its own optimiser wrapper to enable additional features.
 """
@@ -92,10 +106,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     @overload
-    def step(self, loss: float, closure: None = ...) -> None: ...
+    def step(self, loss: float, closure: None = ...) -> None: ...  # pragma: no cover
 
     @overload
-    def step(self, loss: float, closure: Callable[[], float]) -> float: ...
+    def step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
 
     def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
@@ -120,7 +134,9 @@ class SmartOptimiser(Generic[OptimiserT]):
     def update_registered_module(self, module: Module) -> None:
         """Update the parameters of a registered module if the module has been modified."""
         if module not in self._stored_initial_state_dicts:
-            raise KeyError("Trying to update a module that isn't registered. Use register_module instead.")
+            raise KeyError(
+                f"{module!r} - Trying to update a module that isn't registered. Use `register_module` instead."
+            )
         self._cache_module_parameters(module)
         self._reset_internal_optimiser()
 
@@ -152,10 +168,10 @@ class SmartOptimiser(Generic[OptimiserT]):
         )
 
     @overload
-    def _step(self, loss: float, closure: None = ...) -> None: ...
+    def _step(self, loss: float, closure: None = ...) -> None: ...  # pragma: no cover
 
     @overload
-    def _step(self, loss: float, closure: Callable[[], float]) -> float: ...
+    def _step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
 
     def _step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
@@ -171,18 +187,30 @@ class SmartOptimiser(Generic[OptimiserT]):
     def _set_step_method(self) -> None:
         """Create and set the :meth:`_step` method according to the internal optimiser."""
         internal_step_signature = inspect.signature(self._internal_optimiser.step)
-        if "loss" in internal_step_signature.parameters:
 
-            def new_step(loss, closure=None):
-                """Pass the loss to the step function."""
-                return self._internal_optimiser.step(loss, closure=closure)
-        else:
+        def new_step_with_loss(loss, closure=None):
+            """Pass the loss to the step function."""
+            return self._internal_optimiser.step(loss, closure=closure)
 
-            def new_step(_, closure=None):
-                """Don't pass the loss to the step function."""
+        def new_step_without_loss(loss, closure=None):
+            """Don't pass the loss to the step function."""
+            try:
                 return self._internal_optimiser.step(closure=closure)
+            except TypeError as e:
+                # This is in case the internal step signature is just (*args, **kwargs).
+                if "missing 1 required positional argument: 'loss'" in str(e):
+                    result = self._internal_optimiser.step(loss, closure=closure)
+                    # If we got here, the above still worked, so set the step method to the one that uses the loss
+                    # by default to avoid the expensive exception catching on each step
+                    self._step = new_step_with_loss
+                    return result
+                else:
+                    raise
 
-        self._step = new_step
+        if "loss" in internal_step_signature.parameters:
+            self._step = new_step_with_loss
+        else:
+            self._step = new_step_without_loss
 
     @staticmethod
     def _get_last_n_losses_structure(n: Optional[int]) -> Deque[float]:
@@ -285,6 +313,9 @@ class MaxLengthHeapQ(Generic[T]):
     def best(self) -> T:
         """Get the top element."""
         return self.nlargest(1)[0]
+
+    def __contains__(self, item):
+        return item in self.heap
 
 
 class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):

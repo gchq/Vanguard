@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains some multitask classification likelihoods.
 """
@@ -9,14 +23,17 @@ import numpy as np
 import numpy.typing
 import torch
 from gpytorch import ExactMarginalLogLikelihood
-from gpytorch.constraints import Positive
-from gpytorch.lazy import DiagLazyTensor
+from gpytorch.constraints import Interval, Positive
+from gpytorch.distributions import Distribution
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.likelihoods import SoftmaxLikelihood as _SoftmaxLikelihood
 from gpytorch.likelihoods.likelihood import _OneDimensionalLikelihood
 from gpytorch.likelihoods.noise_models import MultitaskHomoskedasticNoise
+from gpytorch.priors import Prior
+from linear_operator.operators import DiagLinearOperator
+from torch import Tensor
 
-from .models import DummyKernelDistribution
+from vanguard.classification.models import DummyKernelDistribution
 
 
 class DummyNoise:
@@ -24,7 +41,7 @@ class DummyNoise:
     Provides a dummy wrapper around a tensor so that the tensor can be accessed as the noise property of the class.
     """
 
-    def __init__(self, value: Union[float, numpy.typing.NDArray[np.floating]]) -> None:
+    def __init__(self, value: Union[float, numpy.typing.NDArray[np.floating], Tensor]) -> None:
         """
         Initialise self.
 
@@ -33,7 +50,7 @@ class DummyNoise:
         self.value = value
 
     @property
-    def noise(self) -> Union[float, numpy.typing.NDArray[np.floating]]:
+    def noise(self) -> Union[float, numpy.typing.NDArray[np.floating], Tensor]:
         return self.value
 
 
@@ -108,13 +125,13 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
         self.kernel_matrix = kernel_matrix
         self.alpha = alpha
 
-        concentration = (self.kernel_matrix @ self.label_matrix + torch.unsqueeze(self.alpha, 0)).evaluate()
+        concentration = (self.kernel_matrix @ self.label_matrix + torch.unsqueeze(self.alpha, 0)).to_dense()
         super().__init__(concentration)
 
     def log_prob(self, value: torch.Tensor) -> torch.Tensor:
-        one_hot_values = DiagLazyTensor(torch.ones(self.label_matrix.shape[1]))[value.long()]
+        one_hot_values = DiagLinearOperator(torch.ones(self.label_matrix.shape[1]))[value.long()]
         all_class_grouped_kernel_entries = self.kernel_matrix @ one_hot_values + torch.unsqueeze(self.alpha, 0)
-        relevant_logits = all_class_grouped_kernel_entries.evaluate().log() * one_hot_values.evaluate()
+        relevant_logits = all_class_grouped_kernel_entries.to_dense().log() * one_hot_values.to_dense()
         partition_function = (self.alpha.sum() + self.kernel_matrix.sum(dim=-1)).log()
         return relevant_logits.sum() - partition_function.sum()
 
@@ -129,15 +146,20 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         num_classes: int,
         alpha: Optional[Union[float, numpy.typing.NDArray[np.floating]]] = None,
         learn_alpha: bool = False,
-        **kwargs: Any,
+        alpha_prior: Optional[Prior] = None,
+        alpha_constraint: Optional[Interval] = Positive(),
     ) -> None:
         """
         Initialise self.
 
         :param num_classes: The number of classes in the data.
         :param alpha: The Dirichlet prior concentration. If a float will be assumed
-                                                    homogenous.
+            homogenous.
         :param learn_alpha: If to learn the Dirichlet prior concentration as a parameter.
+        :param alpha_prior: Only used if :param:learn_alpha = True. The noise prior to use when learning the Dirichlet
+            prior concentration.
+        :param alpha_constraint: Only used if :param:learn_alpha = True. The constraint to apply to the learned value
+            of `alpha` for the Dirichlet prior concentration.
         """
         super().__init__()
         self.n_classes = num_classes
@@ -147,8 +169,6 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             self._alpha_var = torch.as_tensor(alpha) * torch.ones(self.n_classes)
 
         if learn_alpha:
-            alpha_prior = kwargs.get("alpha_prior", None)
-            alpha_constraint = kwargs.get("alpha_constraint", Positive())
             alpha_val = self._alpha_var.clone()
             self._alpha_var = MultitaskHomoskedasticNoise(
                 num_classes, noise_constraint=alpha_constraint, noise_prior=alpha_prior
@@ -158,23 +178,22 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             self._alpha_var = DummyNoise(self._alpha_var)
 
     @property
-    def alpha(self) -> Optional[Union[float, numpy.typing.NDArray[np.floating]]]:
+    def alpha(self) -> Optional[Union[float, numpy.typing.NDArray[np.floating], Tensor]]:
         return self._alpha_var.noise
 
     # pylint: disable=arguments-differ
-    def forward(self, function_samples: torch.Tensor, **kwargs) -> None:
-        return None
+    def forward(self, function_samples: torch.Tensor, **kwargs) -> Distribution:
+        """Not implemented, but a concrete implementation is required by the abstract base class."""
+        raise NotImplementedError
 
     # pylint: disable=arguments-differ
     def log_marginal(
-        self, observations: torch.Tensor, function_dist: gpytorch.distributions.Distribution, **kwargs
+        self, observations: torch.Tensor, function_dist: DummyKernelDistribution, **kwargs
     ) -> torch.Tensor:
         marginal = self.marginal(function_dist, **kwargs)
         return marginal.log_prob(observations)
 
-    def marginal(
-        self, function_dist: gpytorch.distributions.Distribution, *args, **kwargs
-    ) -> DirichletKernelDistribution:
+    def marginal(self, function_dist: DummyKernelDistribution, *args, **kwargs) -> DirichletKernelDistribution:
         return DirichletKernelDistribution(function_dist.labels, function_dist.kernel, self.alpha)
 
     # The parameter `input` is taken from superclass method, so we can't rename it here.
@@ -208,22 +227,22 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         Initialise self.
 
         :param likelihood: The Gaussian likelihood for the model.
-        :param model: The exact GP .
+        :param model: The exact GP.
         """
         super(ExactMarginalLogLikelihood, self).__init__(likelihood, model)
 
     def forward(
-        self, function_dist: gpytorch.distributions.MultivariateNormal, target: torch.Tensor, *params
+        self, function_dist: gpytorch.distributions.MultivariateNormal, target: torch.Tensor, *params, **kwargs
     ) -> torch.Tensor:
         r"""
         Compute the MLL given :math:`p(\mathbf f)` and :math:`\mathbf y`.
 
         :param function_dist: :math:`p(\mathbf f)` the outputs of the latent function
-            (the :obj:`gpytorch.models.ExactGP`)
-        :param target: :math:`\mathbf y` The target values
+            (the :obj:`gpytorch.models.ExactGP`).
+        :param target: :math:`\mathbf y` The target values.
         :return: Exact MLL. Output shape corresponds to batch shape of the model/input data.
         """
-        output = self.likelihood(function_dist, *params)
+        output = self.likelihood(function_dist, *params, **kwargs)
         log_prob_of_marginal = output.log_prob(target)
         res = self._add_other_terms(log_prob_of_marginal, params)
 

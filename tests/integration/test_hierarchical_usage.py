@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Basic end to end functionality test for hierarchical code in Vanguard.
 """
@@ -7,6 +21,7 @@ import unittest
 import numpy as np
 from gpytorch.kernels import RBFKernel
 
+from tests.cases import get_default_rng
 from vanguard.hierarchical import (
     BayesianHyperparameters,
     LaplaceHierarchicalHyperparameters,
@@ -24,7 +39,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.rng = np.random.default_rng(1_989)
+        self.rng = get_default_rng()
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 100
@@ -63,6 +78,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=self.y[self.train_indices],
             kernel_class=BayesianRBFKernel,
             y_std=self.small_noise,
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -102,6 +118,7 @@ class VanguardTestCase(unittest.TestCase):
             train_y=self.y[self.train_indices],
             kernel_class=BayesianRBFKernel,
             y_std=self.small_noise,
+            rng=self.rng,
         )
 
         # Fit the GP

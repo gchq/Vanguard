@@ -26,7 +26,7 @@ authors = [
 ]
 dependencies = [
     "bibtexparser",
-    "gpytorch>=1.5.1",
+    "gpytorch>=1.11",
     "kmedoids",
     "matplotlib",
     "numpy>=1.20,<2",
@@ -104,10 +104,17 @@ extend-select = [
     "I",     # isort rules
     "UP",    # pyupgrade rules
     "NPY",   # numpy linting rules
+    "TID252",# ban relative imports
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**.py" = [ "TID252" ]  # allow relative imports within tests
 
 [tool.ruff.lint.isort]
 known-local-folder = ["confutils","refstyle"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
 
 [tool.coverage.run]
 command_line = "-m pytest tests/units --cov"
@@ -123,4 +130,35 @@ exclude_also = [
     "raise NotImplementedError",
     "if TYPE_CHECKING:",
     "raise$",
+]
+
+[tool.pytest.ini_options]
+# TODO: fix as many of these as possible, and for those we can't fix, suppress as many as possible at the point that
+#  they're emitted using the catch_warnings context manager. Suppress globally here only as a last resort.
+# https://github.com/gchq/Vanguard/issues/281
+filterwarnings = [
+    # Numerical error warnings
+    "ignore::linear_operator.utils.warnings.NumericalWarning",
+    "ignore:Hit a numerical error:UserWarning",
+    "ignore:A regression problem with no warping",
+
+    # Other warnings
+    "ignore::pytest.PytestCollectionWarning",
+    "ignore:The input matches the stored training data. Did you forget to call model.train\\(\\)\\?:gpytorch.utils.warnings.GPInputWarning",
+    "ignore:To copy construct from a tensor, it is recommended to use sourceTensor.clone\\(\\).detach\\(\\):UserWarning",
+    "ignore:Pass auto_restart=True to the controller to automatically restart training up to the last stable iterations:UserWarning",
+    "ignore:std\\(\\). degrees of freedom is <= 0:UserWarning",
+    "ignore:You have passed data through a FixedNoiseGaussianLikelihood that did not match the size of the fixed noise:gpytorch.utils.warnings.GPInputWarning",
+    "ignore:To get the last learning rate computed by the scheduler, please use `get_last_lr\\(\\)`:UserWarning",
+
+    # Vanguard being pedantic errors
+    # TODO: add ignore_methods to fix these
+    # https://github.com/gchq/Vanguard/issues/283
+    "ignore::vanguard.decoratorutils.errors.OverwrittenMethodWarning",
+    "ignore::vanguard.decoratorutils.errors.UnexpectedMethodWarning",
+
+    # -- Deprecations --
+    # TODO: replace with sparse_coo_tensor
+    # https://github.com/gchq/Vanguard/issues/278
+    "ignore:torch.sparse.SparseTensor\\(indices, values, shape, \\*, device=\\) is deprecated:UserWarning",
 ]

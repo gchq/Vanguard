@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Tests for the Distributed decorator.
 """
@@ -8,6 +22,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import torch
 
+from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import HeteroskedasticSyntheticDataset, SyntheticDataset
 from vanguard.distribute import Distributed, aggregators
 from vanguard.distribute.decorator import _create_subset
@@ -17,12 +32,16 @@ from vanguard.vanilla import GaussianGPController
 from vanguard.warps import SetWarp, warpfunctions
 
 
-@Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",))
+@Distributed(
+    n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_methods=("__init__",), rng=get_default_rng()
+)
 class DistributedGaussianGPController(GaussianGPController):
     """Test class."""
 
 
-@Distributed(n_experts=10, aggregator_class=aggregators.BCMAggregator, ignore_methods=("__init__",))
+@Distributed(
+    n_experts=10, aggregator_class=aggregators.BCMAggregator, ignore_methods=("__init__",), rng=get_default_rng()
+)
 class DistributedGaussianGPControllerBCMAggregator(GaussianGPController):
     """Test class."""
 
@@ -32,12 +51,13 @@ class DistributedGaussianGPControllerBCMAggregator(GaussianGPController):
     aggregator_class=aggregators.GRBCMAggregator,
     partitioner_class=KMedoidsPartitioner,
     ignore_methods=("__init__",),
+    rng=get_default_rng(),
 )
 class DistributedGaussianGPControllerKMedoids(GaussianGPController):
     """Test class."""
 
 
-@Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_all=True)
+@Distributed(n_experts=10, aggregator_class=aggregators.GRBCMAggregator, ignore_all=True, rng=get_default_rng())
 @SetWarp(warpfunctions.AffineWarpFunction(a=3, b=-1) @ warpfunctions.BoxCoxWarpFunction(0.2), ignore_all=True)
 class DistributedWarpedGaussianGPController(GaussianGPController):
     """Test class."""
@@ -48,6 +68,9 @@ class InitialisationTests(unittest.TestCase):
     Tests for the initialisation of the decorator.
     """
 
+    def setUp(self) -> None:
+        self.rng = get_default_rng()
+
     def test_cannot_pass_array_as_y_std(self) -> None:
         """
         Test that if `train_y_std` is provided as an array, this input is rejected.
@@ -56,31 +79,64 @@ class InitialisationTests(unittest.TestCase):
         form of an int or float. Here we check that a TypeError is raised if the noise
         is given as an array.
         """
-        dataset = HeteroskedasticSyntheticDataset()
+        dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
 
         if isinstance(dataset.train_y_std, (float, int)):
             self.skipTest(f"The standard deviation should be an array, not '{type(dataset.train_y_std).__name__}'.")
 
         with self.assertRaises(TypeError):
-            DistributedGaussianGPController(dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std)
+            DistributedGaussianGPController(
+                dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std, rng=self.rng
+            )
 
     def test_no_kernel_with_k_medoids(self) -> None:
         """
-        Test initialisation of the distributed decorator when using the KMedoidsPartitioner.
+        Test incorrect initialisation of the distributed decorator when using the KMedoidsPartitioner.
 
         The KMedoidsPartitioner requires passing a kernel to the object, so we expect initialisation
         to fail if this is not provided.
         """
         # Define the data - for the purposes of this test we do not need to know the y_std values
-        dataset = HeteroskedasticSyntheticDataset()
+        dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
 
-        # Create the class without specifying a kernel, we expect a key error when trying to access the kernel
-        with self.assertRaises(KeyError):
-            DistributedGaussianGPControllerKMedoids(dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01)
+        # Create the class without specifying a kernel; we expect an error telling us we need to specify one
+        with self.assertRaisesRegex(TypeError, "missing 1 required keyword-only argument: 'kernel'"):
+            DistributedGaussianGPControllerKMedoids(
+                dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, rng=self.rng
+            )
+
+    def test_uninitialised_kernel_with_k_medoids(self) -> None:
+        """
+        Test incorrect initialisation of the distributed decorator when using the KMedoidsPartitioner.
+
+        One issue that users might run into is erroneously passing a kernel _class_ (e.g. `ScaledRBFKernel`) to the
+        initialiser, rather than a kernel _instance_ (e.g. `ScaledRBFKernel()`). We specifically check for this type
+        of error, and raise a helpful error early.
+        """
+        dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
+
+        with self.assertRaisesRegex(TypeError, "Invalid kernel type"):
+            DistributedGaussianGPControllerKMedoids(
+                dataset.train_x,
+                dataset.train_y,
+                ScaledRBFKernel,
+                0.01,
+                partitioner_kwargs={"kernel": ScaledRBFKernel},
+                rng=self.rng,
+            )
+
+    def test_correct_initialisation_with_k_medoids(self) -> None:
+        """Test correct initialisation of the distributed decorator when using the KMedoidsPartitioner."""
+        dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
 
         # Create the class whilst specifying a kernel - this should create without error
         DistributedGaussianGPControllerKMedoids(
-            dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, kernel=ScaledRBFKernel
+            dataset.train_x,
+            dataset.train_y,
+            ScaledRBFKernel,
+            0.01,
+            partitioner_kwargs={"kernel": ScaledRBFKernel()},
+            rng=self.rng,
         )
 
 
@@ -92,13 +148,14 @@ class SharedDataTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Define data shared across tests."""
-        dataset = SyntheticDataset()
+        rng = get_default_rng()
+        dataset = SyntheticDataset(rng=rng)
 
         cls.controller = DistributedGaussianGPController(
-            dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std
+            dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std, rng=rng
         )
         cls.warp_controller = DistributedWarpedGaussianGPController(
-            dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std
+            dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std, rng=rng
         )
         cls.controller.fit(1)
         cls.warp_controller.fit(1)
@@ -168,7 +225,11 @@ class SharedDataTests(unittest.TestCase):
         """
         # Define a new controller and fit it
         gp = DistributedGaussianGPControllerBCMAggregator(
-            np.arange(20).reshape(-1, 1), 2.5 + 0.5 * np.arange(20), ScaledRBFKernel, 0.0
+            np.arange(20).reshape(-1, 1),
+            2.5 + 0.5 * np.arange(20),
+            ScaledRBFKernel,
+            0.0,
+            rng=get_default_rng(),
         )
         gp.fit(1)
 
@@ -198,15 +259,13 @@ class SubsetCreationTests(unittest.TestCase):
         We pass two numpy arrays to _create_subset, and expect the result from _create_subset to return subsets
         of each.
         """
-        random_seed = 1_989
-
         # Define arrays to subset
         first_array = np.array([1, 2, 3, 4])
         second_array = np.array([5, 6, 7, 8])
 
         # Subset the arrays - setting subset_fraction such that we expect 2 points to be
         # taken from each array passed
-        subset_arrays = _create_subset(first_array, second_array, subset_fraction=0.5, seed=random_seed)
+        subset_arrays = _create_subset(first_array, second_array, subset_fraction=0.5, rng=get_default_rng())
 
         # Regardless of random seed, package version and so on, we expect the results to have the following properties:
         # Each of the two resulting subset arrays has exactly 2 elements, both taken from the corresponding input array
@@ -228,7 +287,8 @@ class SubsetCreationTests(unittest.TestCase):
         """
         with self.assertWarns(Warning) as warning_raised:
             self.assertListEqual(
-                [[[1, 2, 3, 4], [5, 6, 7, 8]]], _create_subset([[1, 2, 3, 4], [5, 6, 7, 8]], subset_fraction=0.5)
+                [[[1, 2, 3, 4], [5, 6, 7, 8]]],
+                _create_subset([[1, 2, 3, 4], [5, 6, 7, 8]], subset_fraction=0.5, rng=get_default_rng()),
             )
         # To ensure an unrelated warning is raised, check the warning text is as expected
         self.assertEqual(

@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the LearningRateFinder class to aid with choosing the largest possible learning rate.
 """
@@ -6,7 +20,7 @@ import typing
 
 import matplotlib.pyplot as plt
 import numpy as np
-from gpytorch.utils.errors import NanError
+from linear_operator.utils.errors import NanError
 
 if typing.TYPE_CHECKING:
     from vanguard.base import GPController
@@ -49,7 +63,8 @@ class LearningRateFinder:
         self._learning_rates = [start_lr * ratio**index for index in range(num_divisions)]
         self._losses = [self._run_learning_rate(lr, max_iterations) for lr in self._learning_rates]
 
-    def plot(self, **kwargs) -> None:
+    # Plotting functions can remain untested by unit tests.
+    def plot(self, **kwargs) -> None:  # pragma: no cover
         """
         Plot the obtained loss-vs-lr curve.
         """

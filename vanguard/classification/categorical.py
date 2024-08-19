@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the CategoricalClassification decorator.
 """
@@ -7,13 +21,13 @@ from typing import Any, Tuple, Type, TypeVar, Union
 import numpy as np
 import numpy.typing
 
+from vanguard import utils
+from vanguard.base import GPController
 from vanguard.base.posteriors.posterior import Posterior
-
-from ..base import GPController
-from ..decoratorutils import Decorator, process_args, wraps_class
-from ..multitask import Multitask
-from ..variational import VariationalInference
-from .mixin import Classification, ClassificationMixin
+from vanguard.classification.mixin import Classification, ClassificationMixin
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.multitask import Multitask
+from vanguard.variational import VariationalInference
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -55,8 +69,8 @@ class CategoricalClassification(Decorator):
         >>>
         >>> test_x = np.array([0.05, 0.95])
         >>> predictions, probs = gp.classify_points(test_x)
-        >>> predictions
-        array([0, 2])
+        >>> predictions.tolist()
+        [0, 2]
     """
 
     def __init__(self, num_classes: int, **kwargs: Any) -> None:
@@ -81,13 +95,16 @@ class CategoricalClassification(Decorator):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 likelihood_class = all_parameters_as_kwargs.pop("likelihood_class")
                 likelihood_kwargs = all_parameters_as_kwargs.pop("likelihood_kwargs", dict())
                 likelihood_kwargs["num_classes"] = decorator.num_classes
                 super().__init__(
-                    likelihood_class=likelihood_class, likelihood_kwargs=likelihood_kwargs, **all_parameters_as_kwargs
+                    likelihood_class=likelihood_class,
+                    likelihood_kwargs=likelihood_kwargs,
+                    rng=self.rng,
+                    **all_parameters_as_kwargs,
                 )
 
             def classify_points(
@@ -118,7 +135,7 @@ class CategoricalClassification(Decorator):
                 """
                 probs: numpy.typing.NDArray = posterior.distribution.probs.detach().cpu().numpy()
                 if probs.ndim == 3:
-                    # TODO: unsure why this is here? Document this
+                    # TODO: unsure why this is here? Document this, and then test it if it's intentional
                     # https://github.com/gchq/Vanguard/issues/234
                     probs = probs.mean(0)
                 normalised_probs = probs / probs.sum(axis=-1).reshape((-1, 1))

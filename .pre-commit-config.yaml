@@ -42,6 +42,7 @@ repos:
         args:
           - --ignore-case
           - --unique
+        fail_fast: true
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
@@ -63,6 +64,7 @@ repos:
       # Run the formatter.
       - id: ruff-format
         types_or: [ python, jupyter ]
+        fail_fast: true
       # Run the linter.
       - id: ruff
         types_or: [ python, jupyter ]
@@ -111,6 +113,17 @@ repos:
         exclude:
           (?x)^(
             docs/source/_static/.+.png
+          )$
+      - id: check-copyright
+        name: Check for copyright notice
+        description: Ensure a copyright notice is present at the top of each Python file
+        entry: python pre_commit_hooks/check_copyright.py
+        types: [ python ]
+        language: python
+        # require_ascii is excluded as it's licensed under the Apache license, so has a different header
+        exclude: |
+          (?x)^(
+            pre_commit_hooks/require_ascii.py
           )$
       - id: markdown-cells
         name: forbid markdown cells

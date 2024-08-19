@@ -1,14 +1,30 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contain some small utilities of use in some cases.
 """
 
+import os
+import warnings
 from typing import Any, Generator, Optional, Tuple
 
 import numpy as np
 import numpy.typing
 import torch
 
-from .warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
+from vanguard.warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
 
 def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.typing.NDArray:
@@ -96,7 +112,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
 
 
 def infinite_tensor_generator(
-    batch_size: int,
+    batch_size: Optional[int],
     device: torch.DeviceObjType,
     *tensor_axis_pairs: Tuple[torch.Tensor, int],
     rng: Optional[np.random.Generator] = None,
@@ -107,9 +123,10 @@ def infinite_tensor_generator(
     :param tensor_axis_pairs: Any number of (tensor, axis) pairs, where each tensor
         is of shape (n, ...), where n is shared between tensors, and ``axis`` denotes the axis along which
         the tensor should be batched. If an axis is out of range, the maximum axis value is used instead.
+    :param rng: Generator instance used to generate random numbers.
     :returns: A tensor generator.
     """
-    rng = rng if rng is not None else np.random.default_rng()
+    rng = optional_random_generator(rng)
     first_tensor, first_axis = tensor_axis_pairs[0]
     first_tensor_length = first_tensor.shape[first_axis]
 
@@ -122,8 +139,6 @@ def infinite_tensor_generator(
 
         def shuffle(array: numpy.typing.NDArray) -> None:
             """Random shuffle function."""
-            # TODO: Shuffling when batch_size is not None raises RuntimeError("You must train on the training inputs!")
-            # https://github.com/gchq/Vanguard/issues/265
             rng.shuffle(array)
 
     index = 0
@@ -158,3 +173,31 @@ def generator_append_constant(generator: Generator[tuple, None, None], constant:
     """
     for item in generator:
         yield item + (constant,)
+
+
+class UnseededRandomWarning(UserWarning):
+    """Warning for when unseeded random generators are used."""
+
+
+def optional_random_generator(generator: Optional[np.random.Generator]) -> np.random.Generator:
+    """
+    Return the generator as-is, or a default unseeded one if :data:`None` is given.
+
+    Warns if a default unseeded generator is used in testing.
+
+    :param generator: If not None, returned as-is. If this _is_ None, and the code is running in a Pytest session,
+        raise a warning reminding the user to seed their RNGs.
+    :return: Either the given RNG (if not None) or a default unseeded RNG.
+    """
+    if generator is not None:
+        return generator
+
+    if __debug__:
+        if os.environ.get("PYTEST_VERSION") is not None:
+            warnings.warn(
+                "Using default unseeded RNG. Please seed your generators for consistent results!",
+                stacklevel=4,
+                category=UnseededRandomWarning,
+            )
+
+    return np.random.default_rng()

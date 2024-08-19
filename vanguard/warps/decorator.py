@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the SetWarp decorator.
 """
@@ -8,11 +22,12 @@ import numpy as np
 import numpy.typing
 import torch
 
-from ..base import GPController
-from ..base.posteriors import Posterior
-from ..decoratorutils import Decorator, process_args, wraps_class
-from .basefunction import WarpFunction
-from .intermediate import is_intermediate_warp_function
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.warps.basefunction import WarpFunction
+from vanguard.warps.intermediate import is_intermediate_warp_function
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -50,10 +65,12 @@ class SetWarp(Decorator):
             """
 
             def __init__(self, *args: Any, **kwargs: Any):
-                super().__init__(*args, **kwargs)
-
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
+                # Pop `rng` from kwargs to ensure we don't provide duplicate values to superclass
+                kwargs.pop("rng", None)
+
+                super().__init__(*args, rng=self.rng, **kwargs)
 
                 for warp_component in warp_function.components:
                     if is_intermediate_warp_function(warp_component):
@@ -67,7 +84,12 @@ class SetWarp(Decorator):
                 def _unwarp_values(
                     *values: numpy.typing.NDArray[np.floating],
                 ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
-                    """Map values back through the warp."""
+                    """
+                    Map values back through the warp.
+
+                    :param values: Values to reverse warping on
+                    :return: Values warped back onto original space
+                    """
                     values_as_tensors = (
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )
@@ -80,7 +102,12 @@ class SetWarp(Decorator):
                 def _warp_values(
                     *values: numpy.typing.NDArray[np.floating],
                 ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
-                    """Map values through the warp."""
+                    """
+                    Map values through the warp.
+
+                    :param values: Values to warp on
+                    :return: Values warp onto new space
+                    """
                     values_as_tensors = (
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )
@@ -93,7 +120,12 @@ class SetWarp(Decorator):
                 def _warp_derivative_values(
                     *values: numpy.typing.NDArray[np.floating],
                 ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
-                    """Map values through the derivative of the warp."""
+                    """
+                    Map values through the derivative of the warp.
+
+                    :param values: Values to compute derivatives of warp for
+                    :return: Derivatives of warp for each input value
+                    """
                     values_as_tensors = (
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )

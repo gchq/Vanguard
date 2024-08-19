@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the Python decorators for applying input warping.
 """
@@ -6,10 +20,10 @@ from typing import Any, Type, TypeVar
 
 import torch
 
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.decoratorutils import Decorator, process_args, wraps_class
 from vanguard.warps.basefunction import WarpFunction
-
-from ..base import GPController
-from ..decoratorutils import Decorator, process_args, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 ModuleT = TypeVar("ModuleT", bound=torch.nn.Module)
@@ -79,15 +93,15 @@ class SetInputWarp(Decorator):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 module_decorator = _SetModuleInputWarp(warp_function)
                 mean_class = all_parameters_as_kwargs.pop("mean_class")
                 kernel_class = all_parameters_as_kwargs.pop("kernel_class")
-
                 super().__init__(
                     kernel_class=module_decorator(kernel_class),
                     mean_class=module_decorator(mean_class),
+                    rng=self.rng,
                     **all_parameters_as_kwargs,
                 )
                 self.input_warp = warp_function

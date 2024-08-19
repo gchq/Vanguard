@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the HyperparameterCollection class.
 """
@@ -8,7 +22,7 @@ import gpytorch
 import torch
 from gpytorch.distributions import MultivariateNormal
 
-from ..hierarchical.base import BaseHierarchicalHyperparameters
+from vanguard.hierarchical.base import BaseHierarchicalHyperparameters
 
 HyperparameterT = TypeVar("HyperparameterT", bound=BaseHierarchicalHyperparameters)
 ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)
@@ -83,7 +97,7 @@ class HyperparameterCollection:
         sigma_0_inv = self._inverse_prior_covariance_matrix
         trace_term = torch.trace(sigma_0_inv @ sigma)
         mean_diff = mu_0 - mu
-        mean_term = mean_diff.T @ sigma_0_inv @ mean_diff
+        mean_term = mean_diff.t() @ sigma_0_inv @ mean_diff
         det_term = torch.log(torch.linalg.det(sigma_0) / torch.linalg.det(sigma))  # pylint: disable=not-callable
 
         return (trace_term + mean_term + det_term - mu.shape[0]) / 2

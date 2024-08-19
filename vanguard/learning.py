@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the LearnYNoise decorator.
 """
@@ -10,8 +24,10 @@ import numpy as np
 import numpy.typing
 import torch
 
-from .base import GPController
-from .decoratorutils import Decorator, process_args, wraps_class
+import vanguard.decoratorutils
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.decoratorutils import Decorator, wraps_class
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -50,11 +66,13 @@ class LearnYNoise(Decorator):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 try:
-                    all_parameters_as_kwargs = process_args(super().__init__, *args, y_std=0, **kwargs)
+                    all_parameters_as_kwargs = vanguard.decoratorutils.process_args(
+                        super().__init__, *args, y_std=0, **kwargs
+                    )
                 except TypeError:
-                    all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
+                    all_parameters_as_kwargs = vanguard.decoratorutils.process_args(super().__init__, *args, **kwargs)
 
-                all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
                 y = all_parameters_as_kwargs["train_y"]
                 y_std = _process_y_std(all_parameters_as_kwargs.pop("y_std", 0), y.shape, super().dtype, super().device)
 
@@ -68,7 +86,11 @@ class LearnYNoise(Decorator):
 
                 try:
                     super().__init__(
-                        train_x=train_x, likelihood_kwargs=likelihood_kwargs, y_std=y_std, **all_parameters_as_kwargs
+                        train_x=train_x,
+                        likelihood_kwargs=likelihood_kwargs,
+                        y_std=y_std,
+                        rng=self.rng,
+                        **all_parameters_as_kwargs,
                     )
                 except TypeError as error:
                     cannot_learn_y_noise = bool(_RE_NOT_LEARN_ERROR.match(str(error)))
@@ -84,6 +106,7 @@ class LearnYNoise(Decorator):
                             train_x=train_x,
                             likelihood_kwargs=likelihood_kwargs,
                             y_std=y_std,
+                            rng=self.rng,
                             **all_parameters_as_kwargs,
                         )
                     else:

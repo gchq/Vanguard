@@ -1,8 +1,22 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Tests for the DirichletKernelMulticlassClassification decorator.
 """
 
-from unittest import skip
+from unittest import expectedFailure
 
 from gpytorch import kernels, means
 
@@ -11,7 +25,7 @@ from vanguard.classification.likelihoods import DirichletKernelClassifierLikelih
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.vanilla import GaussianGPController
 
-from ...cases import flaky
+from ...cases import get_default_rng
 from .case import ClassificationTestCase
 
 
@@ -27,7 +41,10 @@ class MulticlassTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.dataset = MulticlassGaussianClassificationDataset(num_train_points=150, num_test_points=100, num_classes=4)
+        self.rng = get_default_rng()
+        self.dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=150, num_test_points=100, num_classes=4, rng=self.rng
+        )
         self.controller = MulticlassGaussianClassifier(
             self.dataset.train_x,
             self.dataset.train_y,
@@ -37,23 +54,29 @@ class MulticlassTests(ClassificationTestCase):
             likelihood_class=DirichletKernelClassifierLikelihood,
             optim_kwargs={"lr": 0.05},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
         self.controller.fit(10)
 
-    @flaky
     def test_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """Predict on a test dataset, and check the predictions are reasonably accurate."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
-    # TODO: This test gets stuck in an infinite loop in in MonteCarloPosteriorCollection._yield_posteriors.
-    # https://github.com/gchq/Vanguard/issues/189
-    @skip("Currently hangs - gets stuck in an infinite loop in MonteCarloPosteriorCollection._yield_posteriors")
-    @flaky
+    # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
+    # https://github.com/gchq/Vanguard/issues/288
+    @expectedFailure
     def test_fuzzy_predictions(self) -> None:
-        """Predictions should be close to the values from the test data."""
+        """
+        Predict on a noisy test dataset, and check the predictions are reasonably accurate.
+
+        In this test, the training inputs have no noise applied, but the test inputs do.
+
+        Note that we ignore the `certainties` output here.
+        """
         test_x_std = 0.005
-        predictions, _ = self.controller.classify_fuzzy_points(self.dataset.test_x, test_x_std)
+        test_x = self.rng.normal(self.dataset.test_x, test_x_std)
+        predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
     def test_illegal_likelihood_class(self) -> None:
@@ -70,6 +93,7 @@ class MulticlassTests(ClassificationTestCase):
                 kernel_class=kernels.RBFKernel,
                 y_std=0,
                 likelihood_class=IllegalLikelihoodClass,
+                rng=self.rng,
             )
 
         self.assertEqual(

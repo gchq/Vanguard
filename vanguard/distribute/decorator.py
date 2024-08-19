@@ -1,9 +1,23 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the Distributed decorator.
 """
 
 import warnings
-from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -11,10 +25,11 @@ import torch
 from gpytorch.utils.warnings import GPInputWarning
 from numpy.typing import NDArray
 
-from ..base import GPController
-from ..base.posteriors import Posterior
-from ..decoratorutils import TopMostDecorator, process_args, wraps_class
-from .aggregators import (
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.decoratorutils import TopMostDecorator, process_args, wraps_class
+from vanguard.distribute.aggregators import (
     BadPriorVarShapeError,
     BaseAggregator,
     BCMAggregator,
@@ -23,7 +38,7 @@ from .aggregators import (
     XBCMAggregator,
     XGRBCMAggregator,
 )
-from .partitioners import BasePartitioner, KMeansPartitioner, KMedoidsPartitioner
+from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
@@ -55,16 +70,15 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
     :param n_experts: The number of partitions in which to split the data. Defaults to 3.
     :param subset_fraction: The proportion of the training data to be used to train the hyperparameters.
         Defaults to 0.1.
-    :param seed: The seed used for creating the subset of the training data used to train the hyperparameters.
-        Defaults to 42.
+    :param rng: Generator instance used to generate random numbers.
     :param aggregator_class: The class to be used for aggregation. Defaults to
         :class:`~vanguard.distribute.aggregators.RBCMAggregator`.
     :param partitioner_class: The class to be used for partitioning. Defaults to
-        :class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
+        :class:`~vanguard.distribute.partitioners.KMeansPartitioner`. See
+        :mod:`vanguard.distribute.partitioners` for alternative partitioners.
+    :param partitioner_kwargs: Additional parameters passed to the partitioner initialisation.
 
     :Keyword Arguments:
-
-        * **partitioner_args** *dict*: Additional parameters passed to the partitioner initialisation.
         * For other possible keyword arguments, see the
           :class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
     """
@@ -73,9 +87,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self,
         n_experts: int = 3,
         subset_fraction: float = 0.1,
-        seed: Optional[int] = 42,
+        rng: Optional[np.random.Generator] = None,
         aggregator_class: Type[BaseAggregator] = RBCMAggregator,
         partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
+        partitioner_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -83,10 +98,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         """
         self.n_experts = n_experts
         self.subset_fraction = subset_fraction
-        self.seed = seed
+        self.rng = utils.optional_random_generator(rng)
         self.aggregator_class = aggregator_class
         self.partitioner_class = partitioner_class
-        self.partitioner_kwargs = kwargs.pop("partitioner_kwargs", {})
+        self.partitioner_kwargs = partitioner_kwargs if partitioner_kwargs is not None else {}
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
@@ -102,7 +117,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 self._full_train_x: NDArray = all_parameters_as_kwargs.pop("train_x")
                 self._full_train_y: NDArray = all_parameters_as_kwargs.pop("train_y")
@@ -117,14 +132,14 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self.aggregator_class = decorator.aggregator_class
 
                 partitioner_class = decorator.partitioner_class
-                partitioner_kwargs = decorator.partitioner_kwargs
-                if issubclass(partitioner_class, KMedoidsPartitioner):
-                    partitioner_kwargs["kernel"] = all_parameters_as_kwargs["kernel"]
+                partitioner_kwargs = dict(decorator.partitioner_kwargs)  # copy
+                partitioner_kwargs.update(all_parameters_as_kwargs.pop("partitioner_kwargs", {}))
                 communications_expert = issubclass(self.aggregator_class, (GRBCMAggregator, XGRBCMAggregator))
                 self.partitioner = partitioner_class(
                     train_x=self._full_train_x,
                     n_experts=decorator.n_experts,
                     communication=communications_expert,
+                    rng=self.rng,
                     **partitioner_kwargs,
                 )
 
@@ -136,12 +151,16 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                     self._full_train_y,
                     self._full_y_std,
                     subset_fraction=decorator.subset_fraction,
-                    seed=decorator.seed,
+                    rng=decorator.rng,
                 )
 
                 self._expert_init_kwargs = all_parameters_as_kwargs
                 super().__init__(
-                    train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset, **self._expert_init_kwargs
+                    train_x=train_x_subset,
+                    train_y=train_y_subset,
+                    y_std=y_std_subset,
+                    rng=self.rng,
+                    **self._expert_init_kwargs,
                 )
 
             def fit(self, n_sgd_iters: int = 10, gradient_every: int = 10) -> torch.Tensor:
@@ -239,7 +258,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 except (TypeError, IndexError):
                     y_std_subset = self._full_y_std
 
-                expect_controller = cls.new(self, train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset)
+                expect_controller = cls.new(
+                    self, train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset, **self._expert_init_kwargs
+                )
                 expect_controller.kernel.load_state_dict(self.kernel.state_dict())
                 expect_controller.mean.load_state_dict(self.mean.state_dict())
 
@@ -286,14 +307,14 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
 
 def _create_subset(
-    *arrays: Union[NDArray[np.floating], float], subset_fraction: float = 0.1, seed: Optional[int] = None
+    *arrays: Union[NDArray[np.floating], float], subset_fraction: float = 0.1, rng: Optional[np.random.Generator] = None
 ) -> List[Union[NDArray[np.floating], float]]:
     """
     Return subsets of the arrays along the same random indices.
 
     :param arrays: Subscriptable arrays. If an entry is not subscriptable it is returned as is
     :param subset_fraction: Fraction of points to include in the subset
-    :param seed: Random seed to use
+    :param rng: Generator instance used to generate random numbers.
     :returns: The array subsets
 
     :Example:
@@ -301,9 +322,9 @@ def _create_subset(
         >>> y = np.array([10, 20, 30, 40, 50])
         >>> z = 25
         >>>
-        >>> _create_subset(x, y, subset_fraction=0.6, seed=1)
+        >>> _create_subset(x, y, subset_fraction=0.6, rng=np.random.default_rng(1))
         [array([3, 2, 4]), array([30, 20, 40])]
-        >>> _create_subset(x, y, z, subset_fraction=0.6, seed=1)
+        >>> _create_subset(x, y, z, subset_fraction=0.6, rng=np.random.default_rng(1))
         [array([3, 2, 4]), array([30, 20, 40]), 25]
     """
     for array in arrays:
@@ -321,7 +342,6 @@ def _create_subset(
         # If the arrays contain no subscriptable arrays, just return them as a list
         return list(arrays)
 
-    rng = np.random.default_rng(seed)
     total_number_of_indices = length_of_first_subscriptable_array
     number_of_indices_in_subset = int(total_number_of_indices * subset_fraction)
     indices = rng.choice(total_number_of_indices, size=number_of_indices_in_subset, replace=False)

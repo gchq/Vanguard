@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains GPyTorch likelihoods required in Vanguard but not implemented in GPyTorch.
 """
@@ -5,8 +19,8 @@ Contains GPyTorch likelihoods required in Vanguard but not implemented in GPyTor
 from typing import Any, Optional
 
 from gpytorch.distributions import MultitaskMultivariateNormal
-from gpytorch.lazy import DiagLazyTensor
 from gpytorch.likelihoods import MultitaskGaussianLikelihood
+from linear_operator.operators import DiagLinearOperator
 from torch import Size, Tensor
 
 
@@ -62,9 +76,9 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         :class:`gpytorch.distributions.MultitaskMultivariateNormal`. Otherwise, adds a rank ``rank``
         covariance matrix to it.
 
-        To accomplish this, we form a new :class:`gpytorch.lazy.KroneckerProductLazyTensor` between :math:`I_{n}`,
-        an identity matrix with size equal to the data and a (not necessarily diagonal) matrix containing the task
-        noises :math:`D_{t}`.
+        To accomplish this, we form a new :class:`linear_operator.operators.KroneckerProductLinearOperator` between
+        :math:`I_{n}`, an identity matrix with size equal to the data and a (not necessarily diagonal) matrix
+        containing the task noises :math:`D_{t}`.
 
         We also incorporate a shared ``noise`` parameter from the base
         :class:`gpytorch.likelihoods.GaussianLikelihood` that we extend.
@@ -77,10 +91,10 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         :math:`K + D_{t} \otimes I_{n} + \sigma^{2}I_{nt} + diag(\sigma^*)`.
 
         :param function_dist: Random variable whose covariance
-            matrix is a :class:`gpytorch.lazy.LazyTensor` we intend to augment.
+            matrix is a :class:`linear_operator.LinearOperator` we intend to augment.
         :param noise: The noise (standard deviation) to use in the likelihood, None, to use the
             likelihoods's own fixed noise.
-        :returns: A new random variable whose covariance matrix is a :class:`gpytorch.lazy.LazyTensor` with
+        :returns: A new random variable whose covariance matrix is a :class:`linear_operator.LinearOperator` with
             :math:`D_{t} \otimes I_{n}`, :math:`\sigma^{2}I_{nt}` and :math:`diag(\sigma^*)` added.
         """
         mean, covar = function_dist.mean, function_dist.lazy_covariance_matrix
@@ -96,7 +110,7 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         add_noise: bool = True,
         noise: Optional[Tensor] = None,
         *params: Any,
-    ) -> DiagLazyTensor:
+    ) -> DiagLinearOperator:
         """
         Format likelihood noise (i.e. pointwise standard-deviations) as a covariance matrix.
 
@@ -110,7 +124,7 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         :param noise: Specified noise for the likelihood, or use its own noise if None.
         :returns: Formatted likelihood noise.
         """
-        result = DiagLazyTensor(self._flatten_noise(noise if noise is not None else self.fixed_noise))
+        result = DiagLinearOperator(self._flatten_noise(noise if noise is not None else self.fixed_noise))
         if self.learn_additional_noise:
             additional_learned_noise = super()._shaped_noise_covar(base_shape, add_noise=add_noise, *params)
             result += additional_learned_noise

@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains decorators for torch optimisers to apply LR schedulers as part of the optimisation step.
 """
@@ -42,10 +56,10 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
                 self._applied_scheduler = scheduler_class(self, *scheduler_args, **scheduler_kwargs)
 
             @overload
-            def step(self, loss: float, closure: None) -> None: ...
+            def step(self, loss: float, closure: None) -> None: ...  # pragma: no cover
 
             @overload
-            def step(self, loss: float, closure: Callable[[], float]) -> float: ...
+            def step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
 
             def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
                 ret = super().step(closure=closure)

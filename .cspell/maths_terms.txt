@@ -13,6 +13,7 @@ logits
 lognormal
 Matern
 medoids
+nanmean
 nonlinear
 nonparametric
 Nystrom

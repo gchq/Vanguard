@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Basic end to end functionality test for classification problems in Vanguard.
 """
@@ -9,6 +23,7 @@ from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLik
 from gpytorch.mlls import VariationalELBO
 from sklearn.metrics import f1_score
 
+from tests.cases import get_default_rng
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
@@ -26,7 +41,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         Define data shared across tests.
         """
-        self.rng = np.random.default_rng(1_989)
+        self.rng = get_default_rng()
         self.num_train_points = 100
         self.num_test_points = 100
         self.n_sgd_iters = 50
@@ -71,6 +86,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -94,7 +110,7 @@ class VanguardTestCase(unittest.TestCase):
         """
         # Define some data for the test
         x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.zeros_like(x)
+        y = np.zeros_like(x, dtype=np.integer)
         for index, x_val in enumerate(x):
             # Set some non-trivial classification target with 3 classes (0, 1 and 2)
             if 0.25 < x_val < 0.5:
@@ -120,6 +136,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             kernel_kwargs={"batch_shape": (3,)},
             likelihood_class=DirichletClassificationLikelihood,
+            rng=self.rng,
         )
 
         # Fit the GP
@@ -169,6 +186,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0,
             likelihood_class=DirichletKernelClassifierLikelihood,
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            rng=self.rng,
         )
 
         # Fit the GP

@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 All warp functions should subclass this :class:`WarpFunction` class.
 """
@@ -261,7 +275,7 @@ class MultitaskWarpFunction(WarpFunction):
         :param y: A stack of input tensors.
         :returns: A stack of tensors in the same shape as stack_of_y.
         """
-        return torch.stack([warp.forward(task_y).squeeze() for warp, task_y in zip(self.warps, y.T)], -1)
+        return torch.stack([warp.forward(task_y).squeeze() for warp, task_y in zip(self.warps, y.t())], -1)
 
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         """
@@ -336,7 +350,7 @@ class MultitaskWarpFunction(WarpFunction):
                 # Operator usage defined in __matmul__
                 new_warp = new_warp @ self  # pyright: ignore [reportOperatorIssue]
         elif n == 0:
-            new_warp = type(self)([_IdentityWarpFunction()] * self.num_tasks)
+            new_warp = type(self)(*[_IdentityWarpFunction()] * self.num_tasks)
         else:
             raise ValueError("'n' cannot be negative.")
         return new_warp

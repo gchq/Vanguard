@@ -1,8 +1,22 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains base models for approximate inference.
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import numpy as np
 import torch
@@ -17,8 +31,10 @@ from gpytorch.variational import (
     _VariationalDistribution,
     _VariationalStrategy,
 )
+from numpy.typing import NDArray
 from torch import Tensor
 
+from vanguard import utils
 from vanguard.decoratorutils.wrapping import wraps_class
 
 
@@ -37,26 +53,36 @@ class SVGPModel(ApproximateGP):
         device = torch.device("cpu")
 
     def __init__(
-        self,  # pylint: disable=unused-argument
-        train_x: Tensor,
-        train_y: Tensor,  # pylint: disable=unused-argument
+        self,
+        train_x: Union[Tensor, NDArray[np.floating]],
+        train_y: Union[Tensor, NDArray[np.floating]],  # pylint: disable=unused-argument
         likelihood: GaussianLikelihood,
         mean_module: Mean,
         covar_module: Kernel,
         n_inducing_points: int,
-        **kwargs: Any,
+        rng: Optional[np.random.Generator] = None,
+        **_: Any,
     ) -> None:
         """
         Initialise self.
 
+        Note that while arbitrary keyword arguments are accepted, they are not inspected or used. This is to allow
+        passing keyword parameters that are required by other GP models (e.g. `rng`) without raising a `TypeError`,
+        which allows more generic code.
+
         :param train_x: (n_samples, n_features) The training inputs (features).
-        :param train_y: (n_samples,) The training targets (response).
+        :param train_y: (n_samples,) The training targets (response). Note that these are not used for this method!
+            They are only passed here to match the `__init__()` signature of the other Vanguard GP models.
         :param likelihood:  Likelihood to use with model. Included only for signature consistency.
         :param mean_module: The prior mean function to use.
         :param covar_module:  The prior kernel function to use.
         :param n_inducing_points: The number of inducing points in the variational sparse kernel approximation.
+        :param rng: Generator instance used to generate random numbers.
         """
+        self.rng = utils.optional_random_generator(rng)
         self._check_batch_shape(mean_module, covar_module)
+
+        train_x = torch.as_tensor(train_x)
 
         inducing_points = self._init_inducing_points(train_x, n_inducing_points)
         variational_distribution = self._build_variational_distribution(n_inducing_points)
@@ -96,9 +122,7 @@ class SVGPModel(ApproximateGP):
         covar_x = self.covar_module(x)
         return MultivariateNormal(mean_x, covar_x)
 
-    def _init_inducing_points(
-        self, train_x: Tensor, n_inducing_points: int, rng: Optional[np.random.Generator] = None
-    ) -> Tensor:
+    def _init_inducing_points(self, train_x: Tensor, n_inducing_points: int) -> Tensor:
         """
         Create the initial inducing points by sampling from the training inputs.
 
@@ -106,8 +130,7 @@ class SVGPModel(ApproximateGP):
         :param n_inducing_points: How many inducing points to select.
         :returns: The inducing points sampled from the training points.
         """
-        rng = rng if rng is not None else np.random.default_rng()
-        induce_indices = rng.choice(train_x.shape[0], size=n_inducing_points, replace=True)
+        induce_indices = self.rng.choice(train_x.shape[0], size=n_inducing_points, replace=True)
         inducing_points = train_x[induce_indices]
         return inducing_points.to(self.device)
 
@@ -155,12 +178,3 @@ class SVGPModel(ApproximateGP):
                 f"You are using a {SVGPModel.__name__} in a multi-task problem. {SVGPModel.__name__} does"
                 f"not have the correct variational strategy for multi-task."
             )
-
-    @staticmethod
-    def _get_num_tasks(y: Tensor) -> int:
-        """Get the number of tasks implied by the shape of ``y``."""
-        try:
-            num_tasks = y.shape[1]
-        except IndexError:
-            num_tasks = 1
-        return num_tasks

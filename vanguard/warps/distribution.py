@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains a torch distribution implementing a warped Gaussian.
 """
@@ -10,9 +24,8 @@ import torch
 from torch.distributions import Normal
 from typing_extensions import Self
 
+from vanguard.base.basecontroller import BaseGPController
 from vanguard.warps.basefunction import WarpFunction
-
-from ..base.basecontroller import BaseGPController
 
 
 class WarpedGaussian(Normal):
@@ -70,7 +83,7 @@ class WarpedGaussian(Normal):
         :param lr: The learning rate for optimisation.
         :returns: A fit distribution.
         """
-        t_samples = torch.as_tensor(samples, dtype=BaseGPController.get_default_tensor_type().dtype)
+        t_samples = torch.as_tensor(samples, dtype=BaseGPController.get_default_tensor_dtype())
         optim = optimiser(params=[{"params": warp.parameters(), "lr": lr}])  # pyright: ignore [reportCallIssue]
 
         for i in range(n_iterations):

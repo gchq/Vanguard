@@ -1,10 +1,24 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Test that the posterior predictions of CWGP models are sensible in various ways.
 """
 
 import numpy as np
 import torch
-from gpytorch.utils.errors import NanError
+from linear_operator.utils.errors import NanError
 from sklearn.preprocessing import StandardScaler
 
 from vanguard.datasets.synthetic import SyntheticDataset
@@ -12,7 +26,7 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.warps import SetWarp, WarpFunction, warpfunctions
 
-from ...cases import VanguardTestCase, flaky
+from ...cases import VanguardTestCase, get_default_rng
 
 
 class CompositionTests(VanguardTestCase):
@@ -21,48 +35,78 @@ class CompositionTests(VanguardTestCase):
     """
 
     def setUp(self) -> None:
-        """Code to run before each test."""
+        """Define data shared across tests."""
         self.affine = warpfunctions.AffineWarpFunction(1, 2)
         self.sinh = warpfunctions.SinhWarpFunction()
 
     def test_components(self) -> None:
-        """Check the components property."""
+        """
+        Test the components are correctly defined under composition of warp functions.
+        """
         box_cox = warpfunctions.BoxCoxWarpFunction(3)
         composed = self.affine @ self.sinh @ box_cox
         self.assertListEqual([self.affine, self.sinh, box_cox], composed.components)
 
     def test_bad_compose(self) -> None:
-        """Should throw a TypeError."""
+        """
+        Test an invalid composition of a warp function fails.
+
+        We expect a TypeError to be raised as a string should not be a valid warp function.
+        """
         with self.assertRaises(TypeError):
             self.affine.compose("bad")
 
     def test_warp_compose_with_function(self) -> None:
-        """Should still be a warp function."""
+        """
+        Test a valid composition of a warp function with a python function.
+
+        We should still have a valid warp function.
+        """
         composed = self.affine.compose(self.sinh)
         self.assertIsInstance(composed, WarpFunction)
 
     def test_matmul_with_function(self) -> None:
-        """Should still be a warp function."""
+        """
+        Test a valid composition of two warp functions.
+
+        This should result in a warp function.
+        """
         composed = self.affine @ self.sinh
         self.assertIsInstance(composed, WarpFunction)
 
     def test_matmul_with_int(self) -> None:
-        """Should still be a warp function."""
+        """
+        Test a valid composition of a warp function and an integer.
+
+        This should result in a warp function.
+        """
         composed = self.affine @ 3
         self.assertIsInstance(composed, WarpFunction)
 
     def test_matmul_with_negative_int(self) -> None:
-        """Should raise a TypeError."""
+        """
+        Test an invalid composition of a warp function and a negative integer.
+
+        This should raise a TypeError.
+        """
         with self.assertRaises(TypeError):
             _ = self.affine @ -3
 
     def test_matmul_with_float(self) -> None:
-        """Should raise a TypeError."""
+        """
+        Test an invalid composition of a warp function and a float.
+
+        This should raise a TypeError.
+        """
         with self.assertRaises(TypeError):
             _ = self.affine @ 2.3
 
     def test_matmul_with_zero(self) -> None:
-        """Should be the identity."""
+        """
+        Test a valid composition of a warp function and zero.
+
+        This should result in the identity.
+        """
         composed = self.affine @ 0
         self.assertIsInstance(composed, WarpFunction)
         self.assertEqual("_IdentityWarpFunction", type(composed).__name__)
@@ -74,7 +118,7 @@ class AssociativityTests(VanguardTestCase):
     """
 
     def setUp(self) -> None:
-        """Code to run before each test."""
+        """Define data shared across tests."""
         affine = warpfunctions.AffineWarpFunction(1, 2)
         sinh = warpfunctions.SinhWarpFunction()
         box_cox = warpfunctions.BoxCoxWarpFunction(3)
@@ -115,10 +159,19 @@ class AssociativityTests(VanguardTestCase):
 
 
 class ParameterTests(VanguardTestCase):
-    DATASET = SyntheticDataset()
+    """
+    Tests related to practical warp function usage.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.DATASET = SyntheticDataset(rng=get_default_rng())
+
+    def setUp(self) -> None:
+        self.rng = get_default_rng()
 
     def test_simple_warp_functions_are_different(self) -> None:
-        """Two distinct controller instances should have different warp function."""
+        """Test distinct controller instances have different warp functions."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
 
         @SetWarp(affine, ignore_methods=("__init__",))
@@ -131,6 +184,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp_2 = TestController(
@@ -138,6 +192,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         self.assertIsNot(gp_1.warp, gp_2.warp)
@@ -145,7 +200,7 @@ class ParameterTests(VanguardTestCase):
         self.assertIsNot(gp_1.warp.b, gp_2.warp.b)
 
     def test_complicated_warp_functions_are_different(self) -> None:
-        """Two distinct, composed controller instances should have different warp function."""
+        """Test distinct, composed controller instances have different warp functions."""
         affine_1 = warpfunctions.AffineWarpFunction(a=1, b=2)
         sinh = warpfunctions.SinhWarpFunction()
         box_cox = warpfunctions.BoxCoxWarpFunction(3)
@@ -161,6 +216,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp_2 = TestController(
@@ -168,6 +224,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         for component_1, component_2 in zip(gp_1.warp.components, gp_2.warp.components):
@@ -176,7 +233,7 @@ class ParameterTests(VanguardTestCase):
                 self.assertIsNot(param_1, param_2)
 
     def test_repeated_warp_functions_are_different(self) -> None:
-        """The components of a repeated warp function should be different."""
+        """Test that the components of a repeated warp function are different."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
 
         @SetWarp(affine @ 2, ignore_methods=("__init__",))
@@ -189,6 +246,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         affine_1, affine_2 = gp.warp.components
@@ -197,7 +255,7 @@ class ParameterTests(VanguardTestCase):
             self.assertIsNot(param_1, param_2)
 
     def test_frozen_warp_parameters_do_not_change(self) -> None:
-        """Parameters of a frozen warp should not be altered by fitting."""
+        """Test that parameters of a frozen warp are not altered by fitting."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2).freeze()
         box_cox = warpfunctions.SinhWarpFunction()
 
@@ -211,6 +269,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp.fit(100)
@@ -219,7 +278,7 @@ class ParameterTests(VanguardTestCase):
         self.assertEqual(2, fitted_affine.b.item())
 
     def test_simple_warp_parameters_do_change(self) -> None:
-        """Parameters should change after fitting."""
+        """Test that parameters change after fitting in a simple case."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
 
         @SetWarp(affine, ignore_methods=("__init__",))
@@ -232,6 +291,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp.fit(100)
@@ -239,7 +299,7 @@ class ParameterTests(VanguardTestCase):
         self.assertNotEqual(0, gp.warp.b.item())
 
     def test_complicated_warp_parameters_do_change(self) -> None:
-        """Parameters should change after fitting."""
+        """Parameters should change after fitting in a complex case."""
         arcsinh = warpfunctions.ArcSinhWarpFunction()
         affine_1 = warpfunctions.AffineWarpFunction(a=1, b=2)
         sinh = warpfunctions.SinhWarpFunction()
@@ -255,6 +315,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp.fit(100)
@@ -265,7 +326,7 @@ class ParameterTests(VanguardTestCase):
         self.assertNotEqual(-1, fitted_affine_2.b.item())
 
     def test_repeated_warp_parameters_do_change(self) -> None:
-        """Parameters should change after fitting."""
+        """Parameters should change after fitting in a repeated warp case."""
         affine = warpfunctions.AffineWarpFunction(a=1, b=2)
 
         @SetWarp(affine @ 2, ignore_methods=("__init__",))
@@ -278,6 +339,7 @@ class ParameterTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         gp.fit(100)
@@ -297,10 +359,18 @@ class ConstraintTests(VanguardTestCase):
     Test that warp functions can be constrained.
     """
 
-    DATASET = SyntheticDataset()
+    DATASET = SyntheticDataset(rng=get_default_rng())
+
+    def setUp(self) -> None:
+        self.rng = get_default_rng()
 
     def test_fitting_with_unconstrained_warp(self) -> None:
-        """Should throw a RuntimeError."""
+        """
+        Test fitting with an unconstrained warp.
+
+        When using the specified warp, we should hit numerical issues when computing a
+        decomposition of the data and hence raise a RuntimeError.
+        """
         box_cox = warpfunctions.BoxCoxWarpFunction(lambda_=0)
         affine = warpfunctions.AffineWarpFunction()
 
@@ -314,15 +384,20 @@ class ConstraintTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         expected_regex = r"cholesky_cpu: \d*? of \d*? elements of the torch\.Size\(\[\d*?, \d*?\]\) tensor are NaN\."
         with self.assertRaisesRegex(NanError, expected_regex):
             gp.fit(100)
 
-    @flaky
     def test_fitting_with_constrained_warp(self) -> None:
-        """Should NOT throw a RuntimeError."""
+        """
+        Test fitting with an unconstrained warp.
+
+        The choice of PositiveAffineWarpFunction with a=1 and b=2 should avoid numerical issues encountered
+        in `test_fitting_with_unconstrained_warp`.
+        """
         box_cox = warpfunctions.BoxCoxWarpFunction(lambda_=0)
         affine = warpfunctions.PositiveAffineWarpFunction(a=1, b=2)
 
@@ -336,6 +411,7 @@ class ConstraintTests(VanguardTestCase):
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=self.rng,
         )
 
         try:

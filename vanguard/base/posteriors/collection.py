@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the MonteCarloPosteriorCollection class.
 """
@@ -7,7 +21,7 @@ from typing import Generator, NoReturn, Tuple
 import numpy.typing
 import torch
 
-from .posterior import Posterior
+from vanguard.base.posteriors.posterior import Posterior
 
 
 class MonteCarloPosteriorCollection(Posterior):
@@ -27,6 +41,8 @@ class MonteCarloPosteriorCollection(Posterior):
     """
 
     INITIAL_NUMBER_OF_SAMPLES: int = 100
+    MAX_POSTERIOR_ERRORS_BEFORE_RAISE: int = 100
+    """The maximum number of RuntimeErrors that _yield_posteriors will suppress before raising."""
 
     def __init__(self, posterior_generator: Generator[Posterior, None, None]) -> None:
         """Initialise self."""
@@ -68,7 +84,7 @@ class MonteCarloPosteriorCollection(Posterior):
                   shape of the args.
         """
         raise NotImplementedError(
-            "Constructed a MonteCarloPosteriorCollection from a single mean and covariance of a"
+            "Constructing a MonteCarloPosteriorCollection from a single mean and covariance of a"
             "Gaussian is not supported."
         )
 
@@ -92,7 +108,7 @@ class MonteCarloPosteriorCollection(Posterior):
     def _tensor_confidence_interval(
         self,
         alpha: float,
-    ) -> Tuple[torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
@@ -172,15 +188,31 @@ class MonteCarloPosteriorCollection(Posterior):
         :param num_posteriors: The number of posteriors to yield.
         """
         num_yielded = 0
+        posteriors_skipped_in_a_row = 0
         while num_yielded < num_posteriors:
-            posterior = next(self._posterior_generator)
+            try:
+                posterior = next(self._posterior_generator)
+            except StopIteration:
+                msg = (
+                    "ran out of samples from the generator! "
+                    "MonteCarloPosteriorCollection must be given an infinite generator."
+                )
+                raise RuntimeError(msg) from None
             try:
                 # pylint false positive
                 torch.linalg.cholesky(posterior.distribution.covariance_matrix)  # pylint: disable=not-callable
-            except RuntimeError:
+            except RuntimeError as exc:
                 self._posteriors_skipped += 1
+                posteriors_skipped_in_a_row += 1
+                if posteriors_skipped_in_a_row >= self.MAX_POSTERIOR_ERRORS_BEFORE_RAISE:
+                    msg = (
+                        f"{posteriors_skipped_in_a_row} errors in a row were caught "
+                        f"while generating posteriors - aborting"
+                    )
+                    raise RuntimeError(msg) from exc
             else:
                 yield posterior
+                posteriors_skipped_in_a_row = 0
                 num_yielded += 1
 
     def _tensor_log_probability(

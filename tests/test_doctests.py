@@ -1,5 +1,21 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Doctests for Vanguard.
+
+These verify that the return value from code snippets in each docstring matches the value given in the docstring.
 """
 
 import doctest
@@ -7,10 +23,12 @@ import importlib
 import io
 import os
 import unittest
+import warnings
 from types import ModuleType
 from typing import Any, Generator, Optional, Tuple
 
 import vanguard
+from vanguard.utils import UnseededRandomWarning
 
 
 def yield_all_modules(package: ModuleType) -> Generator[ModuleType, None, None]:
@@ -63,7 +81,10 @@ class DoctestMetaClass(type):
                 loop variables within a new function.
                 """
                 suite = self.names_to_suites[self._testMethodName]  # pylint: disable=protected-access
-                result = self.test_runner.run(suite)
+                with warnings.catch_warnings():
+                    warnings.simplefilter(category=UnseededRandomWarning, action="ignore")
+                    # Suppress UnseededRandomWarnings - they'd make doctests more verbose than they need to be
+                    result = self.test_runner.run(suite)
                 if result.failures or result.errors:
                     for _, result in result.failures:
                         self.fail(result)

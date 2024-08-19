@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Gaussian processes can be trained on inputs with uncertainty.
 """
@@ -13,11 +27,12 @@ import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
-from .base import GPController
-from .base.posteriors import Posterior
-from .optimise import NoImprovementError, SmartOptimiser
-from .utils import generator_append_constant, infinite_tensor_generator
-from .warnings import _INPUT_WARNING, GPInputWarning
+from vanguard import utils
+from vanguard.base import GPController
+from vanguard.base.posteriors import Posterior
+from vanguard.optimise import NoImprovementError, SmartOptimiser
+from vanguard.utils import generator_append_constant, infinite_tensor_generator
+from vanguard.warnings import _INPUT_WARNING, GPInputWarning
 
 
 class GaussianUncertaintyGPController(GPController):
@@ -41,12 +56,13 @@ class GaussianUncertaintyGPController(GPController):
         marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
         optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
         smart_optimiser_class: Type[SmartOptimiser] = SmartOptimiser,
+        rng: Optional[np.random.Generator] = None,
         **kwargs: Any,
     ) -> None:
         """
         Initialise self.
 
-        :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values)
+        :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values).
         :param train_x_std: The standard deviation of input noise:
 
             * *array_like[float]* (n_features,): observation std dev per input feature,
@@ -74,6 +90,7 @@ class GaussianUncertaintyGPController(GPController):
         :param smart_optimiser_class: An uninstantiated subclass of
             :class:`~vanguard.optimise.optimiser.SmartOptimiser`, that wraps around the given ``optimiser_class``
             to enable advanced features, for example early stopping.
+        :param rng: Generator instance used to generate random numbers.
         :param kwargs: For a complete list, see :class:`~vanguard.base.gpcontroller.GPController`.
         """
         super().__init__(
@@ -86,6 +103,7 @@ class GaussianUncertaintyGPController(GPController):
             marginal_log_likelihood_class=marginal_log_likelihood_class,
             optimiser_class=optimiser_class,
             smart_optimiser_class=smart_optimiser_class,
+            rng=utils.optional_random_generator(rng),
             **kwargs,
         )
 
@@ -104,6 +122,7 @@ class GaussianUncertaintyGPController(GPController):
                 (self.train_y, self._y_batch_axis),
                 (self._y_variance, self._y_batch_axis),
                 (self.train_x_std, 0),
+                rng=rng,
             )
         else:
             self.train_data_generator = generator_append_constant(
@@ -252,7 +271,7 @@ class GaussianUncertaintyGPController(GPController):
         tx = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         tx_std = self._process_x_std(x_std).to(self.device)
         predictions, covar, additive_grad_noise = self._get_additive_grad_noise(tx, tx_std**2)
-        additional_covar = torch.diag(self._noise_transform(additive_grad_noise).T.reshape(-1))
+        additional_covar = torch.diag(self._noise_transform(additive_grad_noise).t().reshape(-1))
         covar += additional_covar
 
         jitter = torch.eye(covar.shape[0]) * gpytorch.settings.cholesky_jitter.value(covar.dtype)

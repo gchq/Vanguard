@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains test cases for Vanguard testing.
 """
@@ -5,13 +19,82 @@ Contains test cases for Vanguard testing.
 import contextlib
 import unittest
 import warnings
-from functools import wraps
-from typing import Callable, Tuple, Type, TypeVar, Union
+from typing import Optional, Tuple, Type, Union
 
 import numpy as np
 import numpy.typing
+import pytest
 from scipy import stats
-from typing_extensions import ParamSpec
+
+DEFAULT_RNG_SEED = 1234
+
+
+def get_default_rng() -> np.random.Generator:
+    """
+    Get a random number generator with a default seed.
+
+    Call this function rather than `np.random.default_rng()` to create RNGs for testing. Having a centralised
+    function for this means that (a) changing the default seed is easy, and (b) we're able to override it to be
+    unseeded to evaluate our tests' sensitivity to the random seed.
+
+    If the default seed doesn't work, use `get_default_rng_override_seed` instead, and check that your test would be
+    expected to be sensitive to random seeding. For example, we would expect an optimisation problem to be sensitive
+    to random seeding (e.g. some of the tests under `classification` are very sensitive), but we would not expect a
+    simpler test to be sensitive, and if it were it may indicate a bug.
+
+    :return: A random number generator.
+    """
+    # TODO: Implement ability to override this (maybe with an environment variable or Pytest flag?) to allow us to
+    #  evaluate sensitivity to random seeds.
+    # https://github.com/gchq/Vanguard/issues/300
+    return get_default_rng_override_seed(DEFAULT_RNG_SEED)
+
+
+def get_default_rng_override_seed(seed: int) -> np.random.Generator:
+    """
+    Get a random number generator with a given seed.
+
+    Call this function rather than `np.random.default_rng()` to create RNGs for testing, but **only if the default seed
+    provided by `get_default_rng()` doesn't work**. Having a centralised function for this means that we're able to
+    override it to be unseeded to evaluate our tests' sensitivity to the random seed.
+
+    :return: A random number generator.
+    """
+    return np.random.default_rng(seed)
+
+
+@contextlib.contextmanager
+def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
+    """
+    Do nothing if :data:`None` is given. Do :py:func:`pytest.raises()` if an exception type is passed.
+
+    :return: :data:`None` if no exception type was passed. ExceptionInfo from :py:func:`pytest.raises()` if an
+        exception type was passed.
+    """
+    if category is None:
+        yield
+        return None
+    else:
+        with pytest.raises(category, match=match) as exc:
+            yield
+        return exc
+
+
+@contextlib.contextmanager
+def maybe_warns(category: Optional[Type[Warning]], match: Optional[str] = None) -> Optional[pytest.WarningsRecorder]:
+    """
+    Do nothing if :data:`None` is given. Do :py:func:`pytest.warns()` if a warning type is passed.
+
+    :return: :data:`None` if no warning type was passed. ExceptionInfo from :py:func:`pytest.warns()` if a warning
+        type was passed.
+    """
+    if category is None:
+        yield
+        return None
+    else:
+        with pytest.warns(category, match=match) as caught_warnings:
+            yield
+        return caught_warnings
 
 
 class VanguardTestCase(unittest.TestCase):
@@ -78,41 +161,3 @@ class VanguardTestCase(unittest.TestCase):
 
         if len(ws) > 0:
             self.fail(f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}")
-
-
-class FlakyTestError(AssertionError):
-    """Raised when a flaky test fails repeatedly."""
-
-
-P = ParamSpec("P")
-T = TypeVar("T")
-
-
-def flaky(test_method: Callable[P, T]) -> Callable[P, T]:
-    """
-    Mark a test as flaky - flaky tests are rerun up to 5 times, and pass as soon as they pass at least once.
-    """
-    max_attempts = 5  # TODO: make this a parameter
-    # https://github.com/gchq/Vanguard/issues/195
-
-    @wraps(test_method)
-    def repeated_test(self: unittest.TestCase, *args: P.args, **kwargs: P.kwargs) -> T:
-        last_attempt = max_attempts - 1
-        for attempt_number in range(max_attempts):
-            if attempt_number > 0:
-                # skip the first setUp as unittest does it for us
-                self.setUp()
-
-            try:
-                return test_method(self, *args, **kwargs)
-            except AssertionError as ex:
-                if attempt_number == last_attempt:
-                    raise FlakyTestError(
-                        f"Flaky test failed {max_attempts} separate times. Last failure is given above."
-                    ) from ex
-
-            if attempt_number != last_attempt:
-                # skip the last tearDown as unittest does it for us
-                self.tearDown()
-
-    return repeated_test

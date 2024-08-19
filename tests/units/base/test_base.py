@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Tests for the GPController class.
 """
@@ -15,15 +29,12 @@ from numpy.typing import NDArray
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 
+from tests.cases import VanguardTestCase, get_default_rng
 from vanguard.base import GPController
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import PeriodicRBFKernel, ScaledRBFKernel
 from vanguard.optimise import SmartOptimiser
 from vanguard.vanilla import GaussianGPController
-
-from ..cases import VanguardTestCase
-
-RANDOM_SEED = 1234
 
 
 class DefaultTensorTypeTests(unittest.TestCase):
@@ -33,52 +44,52 @@ class DefaultTensorTypeTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.original_default_tensor_type = GaussianGPController.get_default_tensor_type()
-        self.original_dtype = self.original_default_tensor_type.dtype
-        self.original_is_cuda = self.original_default_tensor_type.is_cuda
+        self.original_dtype = GaussianGPController.get_default_tensor_dtype()
+        self.original_device = GaussianGPController.get_default_tensor_device()
 
-        if self.original_default_tensor_type == torch.DoubleTensor:
-            self.skipTest("Skipping this test because the default tensor type would not be changed.")
+        if self.original_dtype == torch.double:
+            self.skipTest("Skipping this test because the default tensor dtype would not be changed.")
 
         original_tensor = torch.tensor([])
         self.assertEqual(original_tensor.dtype, self.original_dtype)
-        self.assertEqual(original_tensor.is_cuda, self.original_is_cuda)
+        self.assertEqual(original_tensor.device, self.original_device)
 
         class NewController(GaussianGPController):
             pass
 
         self.new_controller_class = NewController
-        self.new_controller_class.set_default_tensor_type(torch.DoubleTensor)
+        self.new_controller_class.set_default_tensor_dtype(torch.double)
 
     def tearDown(self) -> None:
         """Code to run after each test."""
         # Set the NewController's default tensor type as the original GaussianGPController's
-        self.new_controller_class.set_default_tensor_type(self.original_default_tensor_type)
+        self.new_controller_class.set_default_tensor_dtype(self.original_dtype)
         tensor = torch.tensor([])
         self.assertEqual(tensor.dtype, self.original_dtype)
-        self.assertEqual(tensor.is_cuda, self.original_is_cuda)
+        self.assertEqual(tensor.device, self.original_device)
 
     def test_class_default_tensor(self) -> None:
-        """Test that the new controller's default tensor type was set correctly to torch.DoubleTensor in setUp()."""
-        self.assertEqual(self.new_controller_class.get_default_tensor_type(), torch.DoubleTensor)
+        """Test that the new controller's default tensor dtype was set correctly to torch.DoubleTensor in setUp()."""
+        self.assertEqual(self.new_controller_class.get_default_tensor_dtype(), torch.double)
 
     def test_superclass_default_tensor(self) -> None:
-        """Test that the GaussianGPController's default tensor type is unchanged by setUp()."""
-        self.assertEqual(GaussianGPController.get_default_tensor_type(), self.original_default_tensor_type)
+        """Test that the GaussianGPController's default tensor dtype is unchanged by setUp()."""
+        self.assertEqual(GaussianGPController.get_default_tensor_dtype(), self.original_dtype)
 
     def test_default_tensor(self) -> None:
         """
         Test that the properties of a newly-created tensor are as expected.
 
-        This test fails unless the tensor's dtype is float64. By default, PyTorch creates tensors with float32 dtype.
-        This test checks that the default tensor type is successfully set to torch.DoubleTensor in setUp() above. Note,
-        in BaseGPController, we set _default_tensor_type: ttypes = torch.FloatTensor.
+        This test fails unless the tensor's dtype is :class:`torch.double`. By default, PyTorch creates tensors with
+        dtype :class:`torch.float32`. This test checks that the default tensor dtype is successfully set to
+        :class:`torch.double` in `setUp()` above. Note, in :class:`~vanguard.BaseGPController`,
+        we set `_default_tensor_dtype` to :class:`torch.float`.
 
-        This test expects the new tensor to be on the CPU if the CUDA device (i.e., GPU) is not available. The is_cuda
-        property returns True if the tensor is stored on the GPU, and False otherwise.
+        This test expects the new tensor to be on the CPU if the CUDA device (i.e., GPU) is not available. The
+        `is_cuda` property returns :data:`True` if the tensor is stored on the GPU, and :data:`False` otherwise.
         """
         new_tensor = torch.tensor([])
-        self.assertEqual(new_tensor.dtype, torch.float64)
+        self.assertEqual(new_tensor.dtype, torch.double)
         self.assertEqual(new_tensor.is_cuda, torch.cuda.is_available())
 
 
@@ -89,7 +100,7 @@ class InputTests(VanguardTestCase):
     GP controllers are forgiving about the shape of data arrays, where possible. These tests check this behaviour.
     """
 
-    DATASET = SyntheticDataset()
+    DATASET = SyntheticDataset(rng=get_default_rng())
 
     def test_unsqueeze_y(self) -> None:
         """
@@ -110,6 +121,7 @@ class InputTests(VanguardTestCase):
             marginal_log_likelihood_class=ExactMarginalLogLikelihood,
             optimiser_class=torch.optim.Adam,
             smart_optimiser_class=SmartOptimiser,
+            rng=get_default_rng(),
         )
         # Convert train_y on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
         gp_train_y = gp.train_y.detach().cpu().numpy()
@@ -133,6 +145,7 @@ class InputTests(VanguardTestCase):
             marginal_log_likelihood_class=ExactMarginalLogLikelihood,
             optimiser_class=torch.optim.Adam,
             smart_optimiser_class=SmartOptimiser,
+            rng=get_default_rng(),
         )
         # Convert train_x on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
         gp_train_x = gp.train_x.detach().cpu().numpy()
@@ -141,13 +154,14 @@ class InputTests(VanguardTestCase):
     def test_error_handling_of_higher_rank_features(self) -> None:
         """Test that shape errors, due to incorrectly treated high-rank features, are caught and explained."""
         shape = (len(self.DATASET.train_y), 31, 4)
-        rng = np.random.default_rng(RANDOM_SEED)
+        rng = get_default_rng()
         random_train_x = rng.standard_normal(shape)
         gp = GaussianGPController(
             train_x=random_train_x,
             train_y=self.DATASET.train_y,
             kernel_class=PeriodicRBFKernel,
             y_std=self.DATASET.train_y_std,
+            rng=rng,
         )
         shape_rx = rf"\({shape[0]}, {shape[1]}, {shape[2]}\)"
         expected_regex = (
@@ -159,8 +173,6 @@ class InputTests(VanguardTestCase):
         with self.assertRaisesRegex(ValueError, expected_regex):
             gp.fit()
 
-    @unittest.skip  # TODO: fix test; underlying issues in batch mode
-    # https://github.com/gchq/Vanguard/issues/265
     def test_error_handling_of_batch_size(self) -> None:
         """Test that a UserWarning is raised when both batch_size and gradient_every are not None."""
         gp = GaussianGPController(
@@ -169,6 +181,7 @@ class InputTests(VanguardTestCase):
             kernel_class=PeriodicRBFKernel,
             y_std=self.DATASET.train_y_std,
             batch_size=20,
+            rng=get_default_rng(),
         )
         gradient_every = 2
         gp.fit()
@@ -183,6 +196,7 @@ class NLLTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
+        self.rng = get_default_rng()
 
         class UniformSyntheticDataset:
             def __init__(
@@ -191,8 +205,9 @@ class NLLTests(unittest.TestCase):
                 num_train_points: int,
                 num_test_points: int,
                 y_std: Union[float, NDArray[np.floating]],
+                rng: np.random.Generator,
             ) -> None:
-                self.rng = np.random.default_rng(RANDOM_SEED)  # pylint: disable=no-member
+                self.rng = rng
 
                 unscaled_train_x = self.rng.uniform(0, 1, num_train_points).reshape(-1, 1)
                 scaled_train_x = (unscaled_train_x - unscaled_train_x.mean()) / unscaled_train_x.std()
@@ -208,7 +223,7 @@ class NLLTests(unittest.TestCase):
 
         self.y_std = 1
 
-        self.dataset = UniformSyntheticDataset(lambda x: np.sin(10 * x), 100, 100 // 4, self.y_std)
+        self.dataset = UniformSyntheticDataset(lambda x: np.sin(10 * x), 100, 100 // 4, self.y_std, rng=self.rng)
 
         rbf_kernel = 1.0 * RBF(length_scale=1e-1, length_scale_bounds=(1e-2, 1e3))
         white_kernel = WhiteKernel(noise_level=1e-2, noise_level_bounds=(1e-10, 1e1))
@@ -284,7 +299,7 @@ class NLLTests(unittest.TestCase):
     def test_vanguard_nll(self) -> None:
         """Test that the NLL calculated with Vanguard agrees with sklearn."""
         controller = GaussianGPController(
-            train_x=self.dataset.x, train_y=self.dataset.y, kernel_class=ScaledRBFKernel, y_std=self.y_std
+            train_x=self.dataset.x, train_y=self.dataset.y, kernel_class=ScaledRBFKernel, y_std=self.y_std, rng=self.rng
         )
 
         controller.likelihood_noise = torch.ones_like(controller.likelihood_noise) * self.noise_variance

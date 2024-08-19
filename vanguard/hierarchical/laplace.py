@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Implementation of tempered Laplace approximation approach to Bayesian hyperparameters."""
 
 import itertools
@@ -9,16 +23,17 @@ import numpy as np
 import torch
 from numpy.typing import NDArray
 
-from ..decoratorutils import wraps_class
-from .base import (
+from vanguard import utils
+from vanguard.decoratorutils import process_args, wraps_class
+from vanguard.hierarchical.base import (
     BaseHierarchicalHyperparameters,
     GPController,
     Posterior,
     extract_bayesian_hyperparameters,
     set_batch_shape,
 )
-from .collection import OnePointHyperparameterCollection
-from .distributions import SpectralRegularisedMultivariateNormal
+from vanguard.hierarchical.collection import OnePointHyperparameterCollection
+from vanguard.hierarchical.distributions import SpectralRegularisedMultivariateNormal
 
 HESSIAN_JITTER = 1e-5
 
@@ -76,7 +91,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                                     predictive posterior.
         :param temperature: The (inverse) scale for tempering the posterior, for balancing
                                     exploration and exploitation of the target distribution.
-                                    If None, it's set automatically using a trace rescaling heuristic
+                                    If :data:`None`, it's set automatically using a trace rescaling heuristic.
         :param uv_cutoff: The cutoff for eigenvalues in computing the eigenbasis and spectrum
                                     of the Hessian. For eigenvalues below this cutoff, the Hessian
                                     inverse eigenvalues are set to a fixed small jitter value.
@@ -97,7 +112,12 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 for module_name in ("kernel", "mean", "likelihood"):
                     set_batch_shape(kwargs, module_name, torch.Size([]))
 
-                super().__init__(*args, **kwargs)
+                all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
+                self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
+                # Pop `rng` from kwargs to ensure we don't provide duplicate values to superclass init
+                kwargs.pop("rng", None)
+
+                super().__init__(*args, rng=self.rng, **kwargs)
 
                 module_hyperparameter_pairs, _ = extract_bayesian_hyperparameters(self)
 
@@ -218,7 +238,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
         controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
-    ) -> Generator[torch.Tensor, None, None]:
+    ) -> Generator[PosteriorT, None, None]:
         """
         Yield fuzzy posterior samples forever.
 
@@ -228,6 +248,8 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
             * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
             * float: Assume homoskedastic noise.
+
+        :return: Generator that provides posterior samples.
         """
         tx = torch.tensor(x, dtype=torch.float32, device=controller.device)
         tx_std = controller._process_x_std(x_std).to(controller.device)  # pylint: disable=protected-access
@@ -243,8 +265,14 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     @staticmethod
     def _infinite_likelihood_samples(
         controller: ControllerT, x: NDArray[np.floating]
-    ) -> Generator[torch.Tensor, None, None]:
-        """Yield likelihood samples forever."""
+    ) -> Generator[PosteriorT, None, None]:
+        """
+        Yield likelihood samples forever.
+
+        :param controller: The controller from which to yield samples.
+        :param x: (n_predictions, n_features) The predictive inputs.
+        :return: Generator that provides likelihood samples.
+        """
         func = _posterior_to_likelihood_samples(LaplaceHierarchicalHyperparameters._infinite_posterior_samples)
         yield from func(controller, x)
 
@@ -252,9 +280,23 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     def _infinite_fuzzy_likelihood_samples(
         controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
     ) -> Generator[torch.Tensor, None, None]:
-        """Yield fuzzy likelihood samples forever."""
+        """
+        Yield fuzzy likelihood samples forever.
+
+        :param controller: The controller from which to yield samples.
+        :param x: (n_predictions, n_features) The predictive inputs.
+        :param x_std: The input noise standard deviations:
+
+            * array_like[float]: (n_features,) The standard deviation per input dimension for the predictions,
+            * float: Assume homoskedastic noise.
+
+        :return: Generator that provides likelihood samples.
+        """
         func = _posterior_to_likelihood_samples(LaplaceHierarchicalHyperparameters._infinite_fuzzy_posterior_samples)
-        yield from func(controller, x)
+        # TODO: x_std was previously unused, but this function failed when writing unit tests.
+        #  Is passing x_std below the correct behaviour?
+        # https://github.com/gchq/Vanguard/issues/301
+        yield from func(controller, x, x_std)
 
 
 def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -268,6 +310,10 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -
     Taylor expansion behind the Laplace approximation breaks down.
     Along bad directions, we set the Hessian inverse eigenvalues to a fixed
     small jitter value.
+
+    :param hessian: Hessian matrix we wish to invert
+    :param cutoff: Eigenvalues smaller than `cutoff` will be discarded from computations
+    :return: Arrays holding inverse_eigenvalues and eigenvectors
     """
     eigenvalues, eigenvectors = torch.linalg.eigh(hessian)  # pylint: disable=not-callable
     keep_indices = eigenvalues > cutoff
@@ -279,10 +325,21 @@ def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -
 def _posterior_to_likelihood_samples(
     posterior_generator: Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]],
 ) -> Callable[[ControllerT, NDArray[np.floating]], Generator[torch.Tensor, None, None]]:
-    """Convert an infinite posterior sample generator to generate likelihood samples."""
+    """
+    Convert an infinite posterior sample generator to generate likelihood samples.
+
+    :param posterior_generator: Generator objective that provides posterior objects
+    :return: Generator object that provides likelihood samples.
+    """
 
     def generator(controller: ControllerT, x: NDArray[np.floating], *args) -> Generator[torch.Tensor, None, None]:
-        """Yield likelihood samples forever."""
+        """
+        Yield likelihood samples forever.
+
+        :param controller: The controller from which to yield samples.
+        :param x: (n_predictions, n_features) The predictive inputs.
+        :return: Generator that provides likelihood samples.
+        """
         for sample in posterior_generator(controller, x, *args):
             # pylint: disable-next=protected-access
             shape = controller._decide_noise_shape(controller.posterior_class(sample), x)

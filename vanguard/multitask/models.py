@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the multitask_model decorator.
 """
@@ -19,7 +33,9 @@ from gpytorch.variational import (
     VariationalStrategy,
 )
 from torch import Tensor
+from typing_extensions import override
 
+from vanguard import utils
 from vanguard.decoratorutils import wraps_class
 
 GPT = TypeVar("GPT", bound=GP)
@@ -104,7 +120,9 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             covar_module: Kernel,
             n_inducing_points: int,
             num_tasks: int,
+            rng: Optional[np.random.Generator] = None,
         ) -> None:
+            self.rng = utils.optional_random_generator(rng)
             self.num_tasks = num_tasks
             self.num_latents = self._get_num_latents(mean_module)
             # No suitable base class for ``cls`` to specify this protocol
@@ -116,11 +134,10 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
                 mean_module,
                 covar_module,
                 n_inducing_points,
+                rng=self.rng,
             )
 
-        def _init_inducing_points(
-            self, train_x: Tensor, n_inducing_points: int, rng: Optional[np.random.Generator] = None
-        ) -> Tensor:
+        def _init_inducing_points(self, train_x: Tensor, n_inducing_points: int) -> Tensor:
             """
             Create the initial inducing points by sampling from the training inputs.
 
@@ -128,8 +145,7 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             :param n_inducing_points: How many inducing points to select.
             :returns: The inducing points sampled from the training points.
             """
-            rng = rng if rng is not None else np.random.default_rng()
-            induce_indices = rng.choice(train_x.shape[0], size=n_inducing_points * self.num_latents, replace=True)
+            induce_indices = self.rng.choice(train_x.shape[0], size=n_inducing_points * self.num_latents, replace=True)
             inducing_points = train_x[induce_indices]
             inducing_points = torch.stack(
                 [
@@ -165,13 +181,20 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
                     f"{covar_module.batch_shape}, but a one-dimensional batch shape is required."
                 )
 
+            # Checking that num_tasks == num_latents is done in a separate method, so that that check can be
+            # overridden for LMC models.
+            self._check_num_tasks_num_latents(mean_module)
+
+        def _check_num_tasks_num_latents(self, mean_module: Mean):
+            """Check that `num_tasks == num_latents`, and raise an appropriate error if not."""
             if self.num_tasks != self.num_latents:
-                raise ValueError(
+                msg = (
                     "You are using a multitask variational model which requires that "
-                    "num_tasks==num_latents, but you have supplied mean and kernel with "
+                    "`num_tasks==num_latents`, but you have supplied mean and kernel with "
                     f"batch_shape {mean_module.batch_shape} whereas num_tasks == {self.num_tasks}."
-                    " Possibly you meant to use multitask with LMC?."
+                    " Possibly you meant to use an `lmc_variational_multitask_model` instead?."
                 )
+                raise ValueError(msg)
 
         @staticmethod
         def _get_num_latents(mean_module: Mean) -> int:
@@ -181,8 +204,10 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
             except IndexError as exc:
                 raise TypeError(
                     f"You are using a multitask variational model but have passed a mean with batch shape"
-                    f"{mean_module.batch_shape}, but a one-dimensional batch shape is required."
+                    f"{mean_module.batch_shape}, but a one-dimensional, non-zero length batch shape is required."
                 ) from exc
+            except TypeError as exc:
+                raise TypeError("'mean_module.batch_shape' must be subscriptable, cannot index given value.") from exc
             return num_latents
 
     # Pyright does not detect that wraps_class renames InnerClass
@@ -205,13 +230,9 @@ def lmc_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
                 base_variational_strategy, num_tasks=self.num_tasks, num_latents=self.num_latents, latent_dim=-1
             )
 
-        def _check_batch_shape(self, mean_module: Mean, covar_module: Kernel) -> None:
-            try:
-                # No way to tell Pyright that cls must have been appropriately decorated
-                # first
-                super()._check_batch_shape(mean_module, covar_module)  # pyright: ignore [reportAttributeAccessIssue]
-            except ValueError:
-                pass  # num_tasks can differ from num_latents for LMC.
+        @override
+        def _check_num_tasks_num_latents(self, _):
+            """LMC models can have the number of tasks not equal to the number of latents, so don't raise any error."""
 
     # Pyright does not detect that wraps_class renames InnerClass
     return InnerClass  # pyright: ignore [reportReturnType]
