@@ -102,24 +102,20 @@ plot_rcparams = {
 autodoc_mock_imports = ["pandas", "sklearn_extra"]
 
 intersphinx_mapping = {
-    "gpytorch": ("https://docs.gpytorch.ai/en/v1.8.1/", None),  # TODO: Bump this when updating gpytorch
-    # https://github.com/gchq/Vanguard/issues/197
-    "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
+    "gpytorch": ("https://docs.gpytorch.ai/en/stable", None),
+    "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable", None),
+    "linear_operator": ("https://linear-operator.readthedocs.io/en/latest", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
     "python3": ("https://docs.python.org/3", None),
-    "sklearn": ("https://scikit-learn.org/stable/", None),
-    "torch": ("https://pytorch.org/docs/stable/", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
+    "torch": ("https://pytorch.org/docs/stable", None),
 }
 
 nitpicky = True
 nitpicky_ignore_mapping: Dict[str, List[str]] = {
     "py:class": [
         "torch.Size",
-        "gpytorch.distributions.multivariate_normal.MultivariateNormal",  # TODO: Remove when bumping gpytorch
-        # https://github.com/gchq/Vanguard/issues/197
-        "gpytorch.likelihoods.likelihood.Likelihood",  # TODO: Remove when bumping gpytorch
-        # https://github.com/gchq/Vanguard/issues/197
     ],
     "py:meth": [
         "activate",
@@ -167,29 +163,6 @@ autodoc_custom_types: dict[TypeAlias, str] = {
 }
 
 
-# TODO: Remove these when gpytorch is sufficiently bumped:
-# https://github.com/gchq/Vanguard/issues/197
-autodoc_custom_types.update(
-    {
-        gpytorch.means.Mean: ":class:`~gpytorch.means.Mean`",
-        gpytorch.kernels.Kernel: ":class:`~gpytorch.kernels.Kernel`",
-        gpytorch.likelihoods.Likelihood: ":class:`~gpytorch.likelihoods.Likelihood`",
-        gpytorch.likelihoods.GaussianLikelihood: ":class:`~gpytorch.likelihoods.GaussianLikelihood`",
-        gpytorch.distributions.Distribution: ":class:`~gpytorch.distributions.Distribution`",
-        gpytorch.distributions.MultivariateNormal: ":class:`~gpytorch.distributions.MultivariateNormal`",
-        gpytorch.distributions.MultitaskMultivariateNormal: (
-            ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`"
-        ),
-        gpytorch.models.ExactGP: ":class:`~gpytorch.models.ExactGP`",
-        gpytorch.module.Module: ":class:`~gpytorch.Module",
-        gpytorch.constraints.Interval: ":class:`~gpytorch.constraints.Interval`",
-        # pylint: disable=protected-access
-        gpytorch.variational._VariationalStrategy: ":class:`~gpytorch.variational._VariationalStrategy`",
-        gpytorch.variational._VariationalDistribution: ":class:`~gpytorch.variational._VariationalDistribution`",
-    }
-)
-
-
 def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Optional[str]:
     """
     Properly replace custom type aliases.
@@ -206,7 +179,7 @@ def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Option
         If so, return that.
     2. Check if the annotation is a TypeVar. If so, replace it with its "bound" type
         for clarity in the docs. If not, then replace it with typing.Any.
-    3. If not, then return None, which uses thee default formatter.
+    3. If not, then return None, which uses the default formatter.
 
     See https://github.com/tox-dev/sphinx-autodoc-typehints?tab=readme-ov-file#options
     for specification.
