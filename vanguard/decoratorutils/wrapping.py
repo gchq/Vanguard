@@ -32,7 +32,7 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> Dict[str, Any]:
     """
     Process the arguments for a function.
 
-    This is just a wrapper on :func:`inspect.Signature.bind` that also applies any default arguments and folds any
+    This is just a wrapper on :py:meth:`inspect.Signature.bind` that also applies any default arguments and folds any
     additional `kwargs` into the returned dictionary.
 
     Note that when passed a bound method, ``"self"`` will not be a key in the returned dictionary, and should not be
