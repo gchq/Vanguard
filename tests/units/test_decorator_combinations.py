@@ -14,7 +14,7 @@ from gpytorch.mlls import VariationalELBO
 from tests.cases import get_default_rng, maybe_throws, maybe_warns
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
-from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
+from vanguard.classification import BinaryClassification, CategoricalClassification, DirichletMulticlassClassification
 from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_f
@@ -27,6 +27,7 @@ from vanguard.learning import LearnYNoise
 from vanguard.multitask import Multitask
 from vanguard.multitask.likelihoods import FixedNoiseMultitaskGaussianLikelihood
 from vanguard.normalise import NormaliseY
+from vanguard.standardise import DisableStandardScaling
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 from vanguard.warps import SetInputWarp, SetWarp, warpfunctions
@@ -58,6 +59,14 @@ DECORATORS = {
         },
         # TODO: fails with a shape mismatch error for any fewer than 40 points
         # https://github.com/gchq/Vanguard/issues/322
+        "dataset": MulticlassGaussianClassificationDataset(
+            num_train_points=40, num_test_points=4, num_classes=4, rng=get_default_rng()
+        ),
+    },
+    DisableStandardScaling: {"decorator": {}, "controller": {}},
+    CategoricalClassification: {
+        "decorator": {"num_classes": 4},
+        "controller": {},
         "dataset": MulticlassGaussianClassificationDataset(
             num_train_points=40, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
@@ -109,8 +118,8 @@ COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dic
 EXCLUDED_COMBINATIONS = {
     (BinaryClassification, Multitask),  # likelihood contradiction
     (BinaryClassification, VariationalInference),  # model contradiction
-    (BinaryClassification, DirichletMulticlassClassification),  # can only do classification once
     (DirichletMulticlassClassification, Multitask),  # multiple datasets
+    (CategoricalClassification, Multitask),  # multiple datasets
     (DirichletMulticlassClassification, VariationalInference),  # model contradiction
     (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
     (Distributed, VariationalHierarchicalHyperparameters),  # cannot combine with a BCM aggregator
@@ -118,6 +127,18 @@ EXCLUDED_COMBINATIONS = {
         VariationalHierarchicalHyperparameters,
         DirichletMulticlassClassification,
     ),  # can't aggregate multitask predictions
+    *{
+        # can only perform classification once
+        (lower, upper)
+        for lower, upper in itertools.combinations(
+            [
+                BinaryClassification,
+                CategoricalClassification,
+                DirichletMulticlassClassification,
+            ],
+            r=2,
+        )
+    },
 }
 
 # Errors we expect to be raised on initialisation of the decorated class.
