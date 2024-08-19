@@ -95,8 +95,8 @@ class BaseGPController:
             :py:mod:`gpytorch.mlls`. The default is :py:class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
     :param optimiser_class: An uninstantiated :py:class:`torch.optim.Optimizer` class used for
             gradient-based learning of hyperparameters. The default is :py:class:`torch.optim.Adam`.
-    :param smart_optimiser_class: An uninstantiated :py:class:SmartOptimiser class used to wrap the
-        `optimiser_class` and enable early stopping.
+    :param smart_optimiser_class: An uninstantiated :py:class:`~vanguard.optimise.optimiser.SmartOptimiser` class used
+        to wrap the ``optimiser_class`` and enable early stopping.
     :param rng: Generator instance used to generate random numbers.
 
     :Keyword Arguments:

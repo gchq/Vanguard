@@ -98,6 +98,7 @@ nbgallery
 nbqa
 nbsphinx
 nbstripout
+ndarray
 ndim
 ndimension
 notebooknode
@@ -129,6 +130,7 @@ refs
 refstyle
 relazified
 relazifying
+reraised
 rpds
 rsample
 rtype

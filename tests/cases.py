@@ -19,10 +19,11 @@ Contains test cases for Vanguard testing.
 import contextlib
 import unittest
 import warnings
-from typing import Tuple, Type, Union
+from typing import Optional, Tuple, Type, Union
 
 import numpy as np
 import numpy.typing
+import pytest
 from scipy import stats
 
 DEFAULT_RNG_SEED = 1234
@@ -60,6 +61,40 @@ def get_default_rng_override_seed(seed: int) -> np.random.Generator:
     :return: A random number generator.
     """
     return np.random.default_rng(seed)
+
+
+@contextlib.contextmanager
+def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
+    """
+    Do nothing if :data:`None` is given. Do :py:func:`pytest.raises()` if an exception type is passed.
+
+    :return: :data:`None` if no exception type was passed. ExceptionInfo from :py:func:`pytest.raises()` if an
+        exception type was passed.
+    """
+    if category is None:
+        yield
+        return None
+    else:
+        with pytest.raises(category, match=match) as exc:
+            yield
+        return exc
+
+
+@contextlib.contextmanager
+def maybe_warns(category: Optional[Type[Warning]], match: Optional[str] = None) -> Optional[pytest.WarningsRecorder]:
+    """
+    Do nothing if :data:`None` is given. Do :py:func:`pytest.warns()` if a warning type is passed.
+
+    :return: :data:`None` if no warning type was passed. ExceptionInfo from :py:func:`pytest.warns()` if a warning
+        type was passed.
+    """
+    if category is None:
+        yield
+        return None
+    else:
+        with pytest.warns(category, match=match) as caught_warnings:
+            yield
+        return caught_warnings
 
 
 class VanguardTestCase(unittest.TestCase):

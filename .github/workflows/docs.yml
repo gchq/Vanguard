@@ -29,7 +29,7 @@ jobs:
         run: pip install -e .[doc]
       - name: Build documentation
         run: |
-          python -m sphinx -b html -aE docs/source docs/build
+          python -m sphinx -b html --write-all --fresh-env --nitpicky --fail-on-warning --keep-going docs/source docs/build
       - name: Check external links
         run: |
           python -m sphinx -b linkcheck docs/source docs/build
@@ -52,7 +52,7 @@ jobs:
         run: pip install -r requirements-docs.txt --no-deps
       - name: Build documentation
         run: |
-          python -m sphinx -b html -aE docs/source docs/build
+          python -m sphinx -b html --write-all --fresh-env --nitpicky --fail-on-warning --keep-going docs/source docs/build
       - name: Check external links
         run: |
           python -m sphinx -b linkcheck docs/source docs/build

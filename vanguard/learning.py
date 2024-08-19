@@ -72,7 +72,6 @@ class LearnYNoise(Decorator):
                 except TypeError:
                     all_parameters_as_kwargs = vanguard.decoratorutils.process_args(super().__init__, *args, **kwargs)
 
-                all_parameters_as_kwargs.pop("self")
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
                 y = all_parameters_as_kwargs["train_y"]
                 y_std = _process_y_std(all_parameters_as_kwargs.pop("y_std", 0), y.shape, super().dtype, super().device)

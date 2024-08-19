@@ -91,7 +91,6 @@ class NormaliseY(Decorator):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 y_std = all_parameters_as_kwargs.pop("y_std")
