@@ -40,8 +40,8 @@ class BasicTests(unittest.TestCase):
             )
 
         assert str(ctx.exception) == (
-            "The class passed to ``marginal_log_likelihood_class`` must take a "
-            "``num_data`` :class:`int` argument since we run variational inference with SGD."
+            "The class passed to `marginal_log_likelihood_class` must take a "
+            "`num_data: int` argument, since we run variational inference with SGD."
         )
 
     def test_other_type_error_unaffected(self):

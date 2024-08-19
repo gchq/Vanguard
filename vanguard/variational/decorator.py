@@ -157,9 +157,8 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                 except TypeError as error:
                     if "__init__() got an unexpected keyword argument 'num_data'" in str(error):
                         raise TypeError(
-                            "The class passed to ``marginal_log_likelihood_class`` must take a "
-                            "``num_data`` :class:`int` argument since we run "
-                            "variational inference with SGD."
+                            "The class passed to `marginal_log_likelihood_class` must take a "
+                            "`num_data: int` argument, since we run variational inference with SGD."
                         ) from error
                     else:
                         raise
