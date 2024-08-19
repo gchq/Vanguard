@@ -5,7 +5,7 @@ Tests for learning functionality that is not covered elsewhere.
 import sys
 import unittest
 from typing import Any, Optional
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -130,7 +130,6 @@ class TestLearning(unittest.TestCase):
         # we mock the output of the initial check to reach the secondary check.
         with patch("vanguard.decoratorutils.process_args") as mock_process_args:
             mock_process_args.return_value = {
-                "self": MagicMock(),
                 "rng": self.rng,
                 "train_y": self.dataset.train_y,
                 "y_std": self.dataset.test_y_std,
