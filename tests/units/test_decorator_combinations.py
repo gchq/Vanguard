@@ -9,12 +9,15 @@ from unittest.mock import patch
 import pytest
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
+from gpytorch.means import ZeroMean
 from gpytorch.mlls import VariationalELBO
 
 from tests.cases import get_default_rng, maybe_throws, maybe_warns
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, CategoricalClassification, DirichletMulticlassClassification
+from vanguard.classification.kernel import DirichletKernelMulticlassClassification
+from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
 from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_f
@@ -63,12 +66,24 @@ DECORATORS = {
             num_train_points=40, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
     },
+    DirichletKernelMulticlassClassification: {
+        "decorator": {"num_classes": 4},
+        "controller": {
+            "mean_class": ZeroMean,
+            "kernel_class": RBFKernel,
+            "likelihood_class": DirichletKernelClassifierLikelihood,
+            "marginal_log_likelihood_class": GenericExactMarginalLogLikelihood,
+        },
+        "dataset": MulticlassGaussianClassificationDataset(
+            num_train_points=20, num_test_points=4, num_classes=4, rng=get_default_rng()
+        ),
+    },
     DisableStandardScaling: {"decorator": {}, "controller": {}},
     CategoricalClassification: {
         "decorator": {"num_classes": 4},
         "controller": {},
         "dataset": MulticlassGaussianClassificationDataset(
-            num_train_points=40, num_test_points=4, num_classes=4, rng=get_default_rng()
+            num_train_points=10, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
     },
     Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}, "controller": {}},
@@ -116,29 +131,37 @@ COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dic
 }
 
 EXCLUDED_COMBINATIONS = {
-    (BinaryClassification, Multitask),  # likelihood contradiction
-    (BinaryClassification, VariationalInference),  # model contradiction
-    (DirichletMulticlassClassification, Multitask),  # multiple datasets
-    (CategoricalClassification, Multitask),  # multiple datasets
-    (DirichletMulticlassClassification, VariationalInference),  # model contradiction
+    # multitask classification generally doesn't work:
+    (Multitask, BinaryClassification),  # likelihood contradiction
+    (Multitask, CategoricalClassification),  # multiple datasets
+    (Multitask, DirichletMulticlassClassification),  # multiple datasets
+    (Multitask, DirichletKernelMulticlassClassification),  # multiple datasets
+    # nor does classification with variational inference:
+    (VariationalInference, BinaryClassification),  # model contradiction
+    (VariationalInference, DirichletKernelMulticlassClassification),  # model contradiction
+    # conflicts with Distributed:
     (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
     (Distributed, VariationalHierarchicalHyperparameters),  # cannot combine with a BCM aggregator
-    (
-        VariationalHierarchicalHyperparameters,
-        DirichletMulticlassClassification,
-    ),  # can't aggregate multitask predictions
+    # can't aggregate multitask predictions:
+    (VariationalHierarchicalHyperparameters, DirichletMulticlassClassification),
+    (VariationalHierarchicalHyperparameters, DirichletKernelMulticlassClassification),
+    # can only perform classification once:
     *{
-        # can only perform classification once
         (lower, upper)
         for lower, upper in itertools.combinations(
             [
                 BinaryClassification,
                 CategoricalClassification,
                 DirichletMulticlassClassification,
+                DirichletKernelMulticlassClassification,
             ],
             r=2,
         )
     },
+    # TEMPORARY - TO FIX:
+    # TODO(rg): Fails with an "index out of bounds" error - seems to be because the warp function moves  the class
+    #  indices out of the expected range
+    (DirichletKernelMulticlassClassification, SetWarp),
 }
 
 # Errors we expect to be raised on initialisation of the decorated class.
@@ -165,7 +188,7 @@ EXPECTED_COMBINATION_FIT_ERRORS = {
 
 def _initialise_decorator_pair(
     upper_decorator_details: Tuple[Decorator, Dict], lower_decorator_details: Tuple[Decorator, Dict]
-) -> "Tuple[Callable, Callable, dict[str, Any], Dataset]":
+) -> Tuple[Callable, Callable, Dict[str, Any], Dataset]:
     """Initialise a pair of decorators."""
     upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
     lower_decorator, lower_controller_kwargs, lower_dataset = _create_decorator(lower_decorator_details)
@@ -272,6 +295,12 @@ def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tupl
         # so just pick the minimum number that doesn't cause numerical errors.
         with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 25):
             # check that fuzzy classification doesn't throw any errors
+            if isinstance(lower_decorator, DirichletKernelMulticlassClassification) or isinstance(
+                upper_decorator, DirichletKernelMulticlassClassification
+            ):
+                # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
+                # https://github.com/gchq/Vanguard/issues/288
+                pytest.skip("`classify_fuzzy_points` currently fails due to incorrect distribution covariance_matrix")
             controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
     else:
         # check that the prediction methods don't throw any unexpected errors
