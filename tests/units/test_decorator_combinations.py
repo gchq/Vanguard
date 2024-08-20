@@ -24,6 +24,7 @@ from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_
 from vanguard.decoratorutils import Decorator
 from vanguard.decoratorutils.errors import BadCombinationWarning, MissingRequirementsError, TopmostDecoratorError
 from vanguard.distribute import Distributed
+from vanguard.features import HigherRankFeatures
 from vanguard.hierarchical import BayesianHyperparameters, VariationalHierarchicalHyperparameters
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.learning import LearnYNoise
@@ -77,6 +78,11 @@ DECORATORS = {
         "dataset": MulticlassGaussianClassificationDataset(
             num_train_points=20, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
+    },
+    HigherRankFeatures: {
+        # TODO: use a higher rank than 1!
+        "decorator": {"rank": 1},
+        "controller": {},
     },
     DisableStandardScaling: {"decorator": {}, "controller": {}},
     CategoricalClassification: {
