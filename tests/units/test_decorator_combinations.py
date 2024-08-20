@@ -13,6 +13,10 @@ from gpytorch.means import ZeroMean
 from gpytorch.mlls import VariationalELBO
 
 from tests.cases import get_default_rng, maybe_throws, maybe_warns
+
+# not super happy about importing HigherRankKernel/HigherRankMean from another test file - these should probably be
+# moved to some more central location
+from tests.units.test_features import HigherRankKernel, HigherRankMean
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, CategoricalClassification, DirichletMulticlassClassification
@@ -20,7 +24,7 @@ from vanguard.classification.kernel import DirichletKernelMulticlassClassificati
 from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
 from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
-from vanguard.datasets.synthetic import SyntheticDataset, complicated_f, simple_f
+from vanguard.datasets.synthetic import HigherRankSyntheticDataset, SyntheticDataset, complicated_f, simple_f
 from vanguard.decoratorutils import Decorator
 from vanguard.decoratorutils.errors import BadCombinationWarning, MissingRequirementsError, TopmostDecoratorError
 from vanguard.distribute import Distributed
@@ -79,8 +83,12 @@ DECORATORS = {
         ),
     },
     HigherRankFeatures: {
-        # TODO: use a higher rank than 1!
-        "decorator": {"rank": 1},
+        "decorator": {"rank": 2},
+        "controller": {
+            "kernel_class": HigherRankKernel,
+            "mean_class": HigherRankMean,
+        },
+        "dataset": HigherRankSyntheticDataset(n_train_points=10, n_test_points=4, rng=get_default_rng()),
     },
     DisableStandardScaling: {},
     CategoricalClassification: {
@@ -159,10 +167,19 @@ EXCLUDED_COMBINATIONS = {
             r=2,
         )
     },
+    # HigherRankFeatures has dataset conflicts with several other decorators:
+    (HigherRankFeatures, DirichletMulticlassClassification),  # two datasets
+    (HigherRankFeatures, DirichletKernelMulticlassClassification),  # two datasets
+    (HigherRankFeatures, CategoricalClassification),  # two datasets
+    (HigherRankFeatures, Multitask),  # two datasets
     # TEMPORARY - TO FIX:
     # TODO(rg): Fails with an "index out of bounds" error - seems to be because the warp function moves  the class
-    #  indices out of the expected range
+    #  indices out of the expected range.
     (DirichletKernelMulticlassClassification, SetWarp),
+    # TODO(rg): Fails due to shape mismatch whichever one is on top. When VHR is on top of HRF this makes sense, but
+    #  the other way around should probably work. Will require a custom @BayesianHyperparameters higher-rank kernel
+    #  class.
+    (HigherRankFeatures, VariationalHierarchicalHyperparameters),
 }
 
 # Errors we expect to be raised on initialisation of the decorated class.
@@ -170,6 +187,15 @@ EXPECTED_COMBINATION_INIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], 
     (NormaliseY, DirichletMulticlassClassification): (
         TypeError,
         "NormaliseY should not be used above classification decorators.",
+    ),
+}
+
+# Errors we expect to be raised on decorator application.
+EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
+    (Distributed, HigherRankFeatures): (
+        TypeError,
+        ".* cannot handle higher-rank features. Consider moving the `@Distributed` decorator "
+        "below the `@HigherRankFeatures` decorator.",
     ),
 }
 
@@ -260,11 +286,16 @@ def test_combinations(upper_details: Tuple[Type[Decorator], Dict], lower_details
     expected_warning_class, expected_warning_message = EXPECTED_COMBINATION_APPLY_WARNINGS.get(
         combination, (None, None)
     )
-    with maybe_warns(expected_warning_class, expected_warning_message):
+    expected_error_class, expected_error_message = EXPECTED_COMBINATION_APPLY_ERRORS.get(combination, (None, None))
+    with maybe_warns(expected_warning_class, expected_warning_message), maybe_throws(
+        expected_error_class, expected_error_message
+    ):
         try:
             controller_class = upper_decorator(lower_decorator(GaussianGPController))
         except (MissingRequirementsError, TopmostDecoratorError):
             return
+    if expected_error_class is not None:
+        return
 
     final_kwargs = {
         "train_x": dataset.train_x,

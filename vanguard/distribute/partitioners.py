@@ -32,6 +32,9 @@ class BasePartitioner:
     :param rng: Generator instance used to generate random numbers.
     """
 
+    _can_handle_higher_rank_features = False
+    """Whether this partitioner class can handle features that are not 1-dimensional."""
+
     def __init__(
         self,
         train_x: NDArray[np.floating],
