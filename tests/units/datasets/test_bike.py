@@ -114,7 +114,7 @@ class TestBikeDataset(TestCase):
     def test_data_loading_file_not_found(self) -> None:
         """Test loading a file when it cannot be found on disk."""
 
-        def forced_error(file_path: str, parse_dates: list[str]):
+        def forced_error(file_path: str, parse_dates: list):
             """Force a FileNotFoundError to be returned regardless of input parameters."""
             raise FileNotFoundError("Test")
 
