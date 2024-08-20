@@ -173,13 +173,15 @@ EXCLUDED_COMBINATIONS = {
     (HigherRankFeatures, CategoricalClassification),  # two datasets
     (HigherRankFeatures, Multitask),  # two datasets
     # TEMPORARY - TO FIX:
-    # TODO(rg): Fails with an "index out of bounds" error - seems to be because the warp function moves  the class
-    #  indices out of the expected range.
+    # TODO(rg): Fails with an "index out of bounds" error - seems to be because the warp function moves the class
+    #  indices out of the expected range. The other classification decorators seem to work though!
+    # https://github.com/gchq/Vanguard/issues/376
     (DirichletKernelMulticlassClassification, SetWarp),
     # TODO(rg): Fails due to shape mismatch whichever one is on top. When VHR is on top of HRF this makes sense, but
     #  the other way around should probably work. Will require a custom @BayesianHyperparameters higher-rank kernel
     #  class.
-    (HigherRankFeatures, VariationalHierarchicalHyperparameters),
+    # https://github.com/gchq/Vanguard/issues/375
+    # (HigherRankFeatures, VariationalHierarchicalHyperparameters),
 }
 
 # Errors we expect to be raised on initialisation of the decorated class.
