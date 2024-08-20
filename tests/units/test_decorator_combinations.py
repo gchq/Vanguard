@@ -46,7 +46,6 @@ class TestHierarchicalKernel(RBFKernel):
 
 DECORATORS = {
     BinaryClassification: {
-        "decorator": {},
         "controller": {
             "y_std": 0,
             "likelihood_class": BernoulliLikelihood,
@@ -82,25 +81,23 @@ DECORATORS = {
     HigherRankFeatures: {
         # TODO: use a higher rank than 1!
         "decorator": {"rank": 1},
-        "controller": {},
     },
-    DisableStandardScaling: {"decorator": {}, "controller": {}},
+    DisableStandardScaling: {},
     CategoricalClassification: {
         "decorator": {"num_classes": 4},
-        "controller": {},
         "dataset": MulticlassGaussianClassificationDataset(
             num_train_points=10, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
     },
-    Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}, "controller": {}},
+    Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}},
     VariationalHierarchicalHyperparameters: {
         "decorator": {"num_mc_samples": 13},
         "controller": {
             "kernel_class": TestHierarchicalKernel,
         },
     },
-    LearnYNoise: {"decorator": {}, "controller": {}},
-    NormaliseY: {"decorator": {}, "controller": {}},
+    LearnYNoise: {},
+    NormaliseY: {},
     Multitask: {
         "decorator": {"num_tasks": 2},
         "controller": {
@@ -112,11 +109,9 @@ DECORATORS = {
     },
     SetWarp: {
         "decorator": {"warp_function": warpfunctions.SinhWarpFunction()},
-        "controller": {},
     },
     SetInputWarp: {
         "decorator": {"warp_function": warpfunctions.SinhWarpFunction()},
-        "controller": {},
     },
     VariationalInference: {
         "decorator": {"n_inducing_points": 5},
