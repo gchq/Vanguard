@@ -47,8 +47,6 @@ class AirPassengers(FileDataset):
         try:
             df = pd.read_csv(file_path)
         except FileNotFoundError as exc:
-            message = (
-                f"Could not find data at {file_path}."
-            )
+            message = f"Could not find data at {file_path}."
             raise FileNotFoundError(message) from exc
         return df

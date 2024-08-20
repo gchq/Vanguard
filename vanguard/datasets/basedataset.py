@@ -91,18 +91,16 @@ class Dataset:
 class FileDataset(Dataset):
     """
     A Vanguard dataset which requires a file to be loaded.
-
-    If missing, this file can be
-    downloaded with the :meth:`~vanguard.datasets.basedataset.FileDataset.download` method.
     """
+
     @staticmethod
     def _get_data_path(file_name: str) -> str:
         """
         Get the full path to the file name within the data folder.
 
         .. note::
-            This will also create the ``data`` folder if it is missing. If the
-            download fails then this can result in an unexpected empty folder.
+            This will also create the ``data`` folder if it is missing, but the data should be
+            placed there manually by the user.
         """
         current_directory_path = os.path.dirname(__file__)
         data_path = os.path.join(current_directory_path, "data")

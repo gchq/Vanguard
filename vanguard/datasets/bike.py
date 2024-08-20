@@ -18,16 +18,16 @@ The bike dataset contains messy information about bike rentals, and is a good da
 Supplied by the UC Irvine Machine Learning Repository :cite:`FanaeeT2013`.
 """
 
+import warnings
 from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import stats
-import warnings
 
-from vanguard.datasets.basedataset import FileDataset
 import vanguard.utils as utils
+from vanguard.datasets.basedataset import FileDataset
 
 
 class BikeDataset(FileDataset):
@@ -154,7 +154,7 @@ class BikeDataset(FileDataset):
         try:
             df = pd.read_csv(file_path, parse_dates=["dteday"])
         except FileNotFoundError as exc:
-            message = (f"Could not find data at {file_path}.")
+            message = f"Could not find data at {file_path}."
             raise FileNotFoundError(message) from exc
         # Extract the day of the date and convert it to an integer
         df["dteday"] = df["dteday"].apply(lambda x: int(x.strftime("%d")))
@@ -168,7 +168,7 @@ class BikeDataset(FileDataset):
         """
         Verify the number of samples is valid for some given data.
 
-        :param data: Dataframe we wish to take samples from.
+        :param data: Data we wish to take samples from.
         :param n_samples: The number of samples we wish to take.
         :return: A number representing how many samples to take, potentially altered based on its
             relation to the size of the provided data.
@@ -177,10 +177,9 @@ class BikeDataset(FileDataset):
             n_samples = data.shape[0]
         if n_samples > data.shape[0]:
             warnings.warn(
-                "You requested more samples than there are datapoints in the data. Using "
-                "all datapoints instead."
+                "You requested more samples than there are data points in the data. Using all data points instead."
             )
             n_samples = data.shape[0]
         if n_samples < 0:
-            raise ValueError('A negative number of samples has been requested.')
+            raise ValueError("A negative number of samples has been requested.")
         return n_samples

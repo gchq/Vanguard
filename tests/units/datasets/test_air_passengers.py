@@ -17,8 +17,9 @@
 from unittest import TestCase
 from unittest.mock import patch
 
-from vanguard.datasets.air_passengers import AirPassengers
 import pandas as pd
+
+from vanguard.datasets.air_passengers import AirPassengers
 
 
 class TestAirPassengersDataset(TestCase):
@@ -29,26 +30,28 @@ class TestAirPassengersDataset(TestCase):
         """Set up data shared across tests."""
         # Mock data to avoid reading from disk on every unittest run
         cls.mocked_data = pd.DataFrame([{"ds": "2024-03-04", "y": 3.0}, {"ds": "2024-03-05", "y": 4.0}])
-        with patch('pandas.read_csv') as mock_read_csv:
+        with patch("pandas.read_csv") as mock_read_csv:
             mock_read_csv.return_value = cls.mocked_data.copy()
             cls.dataset = AirPassengers()
 
     def test_data_loading(self) -> None:
         """Test loading a file and processing it."""
-        with patch('pandas.read_csv') as mock_read_csv:
+        with patch("pandas.read_csv") as mock_read_csv:
             mock_read_csv.return_value = self.mocked_data
             # No processing of any form should be applied, so the data loading method should return the passed
             # mocked data exactly as is
+            # pylint: disable-next=protected-access
             pd.testing.assert_frame_equal(self.dataset._load_data(), self.mocked_data)
 
     def test_data_loading_file_not_found(self) -> None:
         """Test loading a file when it cannot be found on disk."""
+
         def forced_error(file_path: str):
             """Force a FileNotFoundError to be returned regardless of input parameters."""
             raise FileNotFoundError("Test")
 
-        with patch('pandas.read_csv') as mock_read_csv:
+        with patch("pandas.read_csv") as mock_read_csv:
             mock_read_csv.side_effect = forced_error
-            with self.assertRaisesRegex(FileNotFoundError, 'Could not find data'):
+            with self.assertRaisesRegex(FileNotFoundError, "Could not find data"):
+                # pylint: disable-next=protected-access
                 self.dataset._load_data()
-
