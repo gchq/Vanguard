@@ -11,6 +11,7 @@ from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.means import ZeroMean
 from gpytorch.mlls import VariationalELBO
+from typing_extensions import TypedDict
 
 from tests.cases import get_default_rng, maybe_throws, maybe_warns
 
@@ -48,7 +49,15 @@ class TestHierarchicalKernel(RBFKernel):
     """A kernel to test Bayesian hierarchical hyperparameters"""
 
 
-DECORATORS = {
+class DecoratorDetails(TypedDict, total=False):
+    """Type hint for the decorator details specification in `DECORATORS`."""
+
+    decorator: Dict[str, Any]
+    controller: Dict[str, Any]
+    dataset: Dataset
+
+
+DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     BinaryClassification: {
         "controller": {
             "y_std": 0,
@@ -216,7 +225,8 @@ EXPECTED_COMBINATION_FIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], T
 
 
 def _initialise_decorator_pair(
-    upper_decorator_details: Tuple[Type[Decorator], Dict], lower_decorator_details: Tuple[Type[Decorator], Dict]
+    upper_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
+    lower_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
 ) -> Tuple[Decorator, Decorator, Dict[str, Any], Dataset]:
     """Initialise a pair of decorators."""
     upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
@@ -237,7 +247,7 @@ def _initialise_decorator_pair(
 
 
 def _create_decorator(
-    details: Tuple[Type[Decorator], Dict[str, Dict[str, Any]]],
+    details: Tuple[Type[Decorator], DecoratorDetails],
 ) -> Tuple[Decorator, Dict[str, Any], Optional[Dataset]]:
     """Unpack decorator details."""
     decorator_class, all_decorator_kwargs = details
@@ -258,7 +268,9 @@ def _create_decorator(
         and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
     ],
 )
-def test_combinations(upper_details: Tuple[Type[Decorator], Dict], lower_details: Tuple[Type[Decorator], Dict]) -> None:
+def test_combinations(
+    upper_details: Tuple[Type[Decorator], DecoratorDetails], lower_details: Tuple[Type[Decorator], DecoratorDetails]
+) -> None:
     """
     For each decorator combination, check that basic usage doesn't throw any unexpected errors.
 
