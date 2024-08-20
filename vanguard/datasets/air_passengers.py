@@ -48,16 +48,7 @@ class AirPassengers(FileDataset):
             df = pd.read_csv(file_path)
         except FileNotFoundError as exc:
             message = (
-                f"Could not find data at {file_path}. If you have not downloaded the data, "
-                f"call {type(self).__name__}.download()."
+                f"Could not find data at {file_path}."
             )
             raise FileNotFoundError(message) from exc
         return df
-
-    @classmethod
-    def download(cls) -> None:
-        """Download the dataset."""
-        raise NotImplementedError(
-            "Dataset download not implemented for air passengers data. This must instead be done manually "
-            "from the Github repo."
-        )

@@ -20,13 +20,10 @@ The dataset instances allow for easy access to the training and testing data thr
 """
 
 import os
-from contextlib import contextmanager
-from typing import Generator, Union
+from typing import Union
 
 import numpy as np
-import urllib3
 from numpy.typing import NDArray
-from urllib3 import BaseHTTPResponse
 
 
 class Dataset:
@@ -98,23 +95,6 @@ class FileDataset(Dataset):
     If missing, this file can be
     downloaded with the :meth:`~vanguard.datasets.basedataset.FileDataset.download` method.
     """
-
-    @classmethod
-    def download(cls):
-        """Download the data needed for this dataset."""
-        raise NotImplementedError
-
-    @staticmethod
-    @contextmanager
-    def _large_file_downloader(url: str) -> Generator[BaseHTTPResponse, None, None]:
-        """Download a file within a context manager."""
-        http = urllib3.PoolManager()
-        request = http.request("GET", url, preload_content=False)
-        try:
-            yield request
-        finally:
-            request.release_conn()
-
     @staticmethod
     def _get_data_path(file_name: str) -> str:
         """
@@ -158,8 +138,3 @@ class EmptyDataset(Dataset):
             np.zeros((0,)),
             significance=significance,
         )
-
-    @classmethod
-    def download(cls):
-        """Download the data needed for this dataset."""
-        raise TypeError("Not implemented for this class.")
