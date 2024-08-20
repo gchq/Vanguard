@@ -115,10 +115,10 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
         "decorator": {"num_mc_samples": 13},
         "controller": {"kernel_class": TestHierarchicalKernel},
     },
-    # LaplaceHierarchicalHyperparameters: {
-    #     "decorator": {"num_mc_samples": 13},
-    #     "controller": {"kernel_class": TestHierarchicalKernel},
-    # },
+    LaplaceHierarchicalHyperparameters: {
+        "decorator": {"num_mc_samples": 13},
+        "controller": {"kernel_class": TestHierarchicalKernel},
+    },
     LearnYNoise: {},
     NormaliseY: {},
     Multitask: {
@@ -167,8 +167,13 @@ EXCLUDED_COMBINATIONS = {
     (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
     (Distributed, VariationalHierarchicalHyperparameters),  # cannot combine with a BCM aggregator
     # can't aggregate multitask predictions:
+    # TODO(rg): Commenting out either the (VHH, DMC) or (LHH, DMC) pair below causes several unrelated combinations
+    #  DirichletMulticlassClassification to fail. This indicates a failure of test isolation.
+    # https://github.com/gchq/Vanguard/issues/378
     (VariationalHierarchicalHyperparameters, DirichletMulticlassClassification),
     (VariationalHierarchicalHyperparameters, DirichletKernelMulticlassClassification),
+    (LaplaceHierarchicalHyperparameters, DirichletMulticlassClassification),
+    (LaplaceHierarchicalHyperparameters, DirichletKernelMulticlassClassification),
     # HigherRankFeatures has dataset conflicts with several other decorators:
     (HigherRankFeatures, DirichletMulticlassClassification),  # two datasets
     (HigherRankFeatures, DirichletKernelMulticlassClassification),  # two datasets
@@ -179,11 +184,11 @@ EXCLUDED_COMBINATIONS = {
     #  indices out of the expected range. The other classification decorators seem to work though!
     # https://github.com/gchq/Vanguard/issues/376
     (DirichletKernelMulticlassClassification, SetWarp),
-    # TODO(rg): Fails due to shape mismatch whichever one is on top. When VHR is on top of HRF this makes sense, but
-    #  the other way around should probably work. Will require a custom @BayesianHyperparameters higher-rank kernel
-    #  class.
-    # https://github.com/gchq/Vanguard/issues/375
+    # TODO(rg): Fails due to shape mismatch whichever one is on top. When VHH/LHH is on top of HRF this makes sense,
+    #  but the other way around should probably work. Will require a custom @BayesianHyperparameters higher-rank
+    #  kernel class. https://github.com/gchq/Vanguard/issues/375
     (HigherRankFeatures, VariationalHierarchicalHyperparameters),
+    (HigherRankFeatures, LaplaceHierarchicalHyperparameters),
 }
 
 # Errors we expect to be raised on initialisation of the decorated class.
