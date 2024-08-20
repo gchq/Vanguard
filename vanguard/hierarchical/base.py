@@ -42,6 +42,16 @@ class BaseHierarchicalHyperparameters(Decorator):
         self.sample_shape = torch.Size([num_mc_samples])
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
+    def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
+        super().verify_decorated_class(cls)
+        for previous_decorator in cls.__decorators__:
+            if issubclass(previous_decorator, BaseHierarchicalHyperparameters):
+                msg = (
+                    f"This class is already decorated with `{previous_decorator.__name__}`. "
+                    f"Please use only one hierarchical hyperparameters decorator at once."
+                )
+                raise TypeError(msg)
+
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
 

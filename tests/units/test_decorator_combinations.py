@@ -30,7 +30,11 @@ from vanguard.decoratorutils import Decorator
 from vanguard.decoratorutils.errors import BadCombinationWarning, MissingRequirementsError, TopmostDecoratorError
 from vanguard.distribute import Distributed
 from vanguard.features import HigherRankFeatures
-from vanguard.hierarchical import BayesianHyperparameters, VariationalHierarchicalHyperparameters
+from vanguard.hierarchical import (
+    BayesianHyperparameters,
+    LaplaceHierarchicalHyperparameters,
+    VariationalHierarchicalHyperparameters,
+)
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.learning import LearnYNoise
 from vanguard.multitask import Multitask
@@ -109,10 +113,12 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}},
     VariationalHierarchicalHyperparameters: {
         "decorator": {"num_mc_samples": 13},
-        "controller": {
-            "kernel_class": TestHierarchicalKernel,
-        },
+        "controller": {"kernel_class": TestHierarchicalKernel},
     },
+    # LaplaceHierarchicalHyperparameters: {
+    #     "decorator": {"num_mc_samples": 13},
+    #     "controller": {"kernel_class": TestHierarchicalKernel},
+    # },
     LearnYNoise: {},
     NormaliseY: {},
     Multitask: {
@@ -190,7 +196,7 @@ EXCLUDED_COMBINATIONS = {
     #  the other way around should probably work. Will require a custom @BayesianHyperparameters higher-rank kernel
     #  class.
     # https://github.com/gchq/Vanguard/issues/375
-    # (HigherRankFeatures, VariationalHierarchicalHyperparameters),
+    (HigherRankFeatures, VariationalHierarchicalHyperparameters),
 }
 
 # Errors we expect to be raised on initialisation of the decorated class.
@@ -208,6 +214,17 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
         ".* cannot handle higher-rank features. Consider moving the `@Distributed` decorator "
         "below the `@HigherRankFeatures` decorator.",
     ),
+    # can only use one hyperparameter decorator at once:
+    **{
+        (upper, lower): (
+            TypeError,
+            f"This class is already decorated with `{lower.__name__}`. "
+            f"Please use only one hierarchical hyperparameters decorator at once.",
+        )
+        for upper, lower in itertools.permutations(
+            [VariationalHierarchicalHyperparameters, LaplaceHierarchicalHyperparameters], r=2
+        )
+    },
 }
 
 # Warnings we expect to be raised on decorator application.
