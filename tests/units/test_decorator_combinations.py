@@ -316,8 +316,20 @@ def _create_decorator(
         and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
     ],
 )
+@pytest.mark.parametrize(
+    "batch_size",
+    [
+        pytest.param(None, id="full"),
+        # TODO(rg): Many test failures when running with a batch_size set! Often "You must train on the training
+        #  inputs". To be investigated. See for a similar example:
+        # https://github.com/gchq/Vanguard/issues/377
+        # pytest.param(2, id="batch"),
+    ],
+)
 def test_combinations(
-    upper_details: Tuple[Type[Decorator], DecoratorDetails], lower_details: Tuple[Type[Decorator], DecoratorDetails]
+    upper_details: Tuple[Type[Decorator], DecoratorDetails],
+    lower_details: Tuple[Type[Decorator], DecoratorDetails],
+    batch_size: Optional[int],
 ) -> None:
     """
     For each decorator combination, check that basic usage doesn't throw any unexpected errors.
@@ -370,6 +382,7 @@ def test_combinations(
         "y_std": dataset.train_y_std,
         "kernel_class": ScaledRBFKernel,
         "rng": get_default_rng(),
+        "batch_size": batch_size,
     }
 
     combination_controller_kwargs = COMBINATION_CONTROLLER_KWARGS.get(combination, {})
@@ -384,7 +397,7 @@ def test_combinations(
 
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
-        controller.fit(1)
+        controller.fit(2)
     if expected_error_class is not None:
         return
 
