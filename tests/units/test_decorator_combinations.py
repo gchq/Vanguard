@@ -3,7 +3,7 @@ Tests for the pairwise combinations of decorators.
 """
 
 import itertools
-from typing import Any, Callable, Dict, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, Optional, Tuple, Type, TypeVar
 from unittest.mock import patch
 
 import pytest
@@ -171,7 +171,7 @@ EXCLUDED_COMBINATIONS = {
 }
 
 # Errors we expect to be raised on initialisation of the decorated class.
-EXPECTED_COMBINATION_INIT_ERRORS = {
+EXPECTED_COMBINATION_INIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
     (NormaliseY, DirichletMulticlassClassification): (
         TypeError,
         "NormaliseY should not be used above classification decorators.",
@@ -179,7 +179,7 @@ EXPECTED_COMBINATION_INIT_ERRORS = {
 }
 
 # Warnings we expect to be raised on decorator application.
-EXPECTED_COMBINATION_APPLY_WARNINGS = {
+EXPECTED_COMBINATION_APPLY_WARNINGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Warning], str]] = {
     (NormaliseY, DirichletMulticlassClassification): (
         BadCombinationWarning,
         "NormaliseY should not be used above classification decorators - this may lead to unexpected behaviour.",
@@ -187,14 +187,14 @@ EXPECTED_COMBINATION_APPLY_WARNINGS = {
 }
 
 # Errors we expect to be raised when calling controller.fit().
-EXPECTED_COMBINATION_FIT_ERRORS = {
+EXPECTED_COMBINATION_FIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
     (VariationalInference, Multitask): (RuntimeError, ".* may not be the correct choice for a variational strategy"),
 }
 
 
 def _initialise_decorator_pair(
-    upper_decorator_details: Tuple[Decorator, Dict], lower_decorator_details: Tuple[Decorator, Dict]
-) -> Tuple[Callable, Callable, Dict[str, Any], Dataset]:
+    upper_decorator_details: Tuple[Type[Decorator], Dict], lower_decorator_details: Tuple[Type[Decorator], Dict]
+) -> Tuple[Decorator, Decorator, Dict[str, Any], Dataset]:
     """Initialise a pair of decorators."""
     upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
     lower_decorator, lower_controller_kwargs, lower_dataset = _create_decorator(lower_decorator_details)
@@ -213,11 +213,13 @@ def _initialise_decorator_pair(
     return upper_decorator, lower_decorator, controller_kwargs, dataset
 
 
-def _create_decorator(details: Tuple[Callable, Dict[str, Any]]) -> Tuple[Callable, ControllerT, Optional[Dataset]]:
+def _create_decorator(
+    details: Tuple[Type[Decorator], Dict[str, Dict[str, Any]]],
+) -> Tuple[Decorator, Dict[str, Any], Optional[Dataset]]:
     """Unpack decorator details."""
     decorator_class, all_decorator_kwargs = details
-    decorator = decorator_class(ignore_all=True, **all_decorator_kwargs["decorator"])
-    return decorator, all_decorator_kwargs["controller"], all_decorator_kwargs.get("dataset", None)
+    decorator = decorator_class(ignore_all=True, **all_decorator_kwargs.get("decorator", {}))
+    return decorator, all_decorator_kwargs.get("controller", {}), all_decorator_kwargs.get("dataset", None)
 
 
 @pytest.mark.parametrize(
@@ -233,7 +235,7 @@ def _create_decorator(details: Tuple[Callable, Dict[str, Any]]) -> Tuple[Callabl
         and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
     ],
 )
-def test_combinations(upper_details: Tuple[Decorator, Dict], lower_details: Tuple[Decorator, Dict]) -> None:
+def test_combinations(upper_details: Tuple[Type[Decorator], Dict], lower_details: Tuple[Type[Decorator], Dict]) -> None:
     """
     For each decorator combination, check that basic usage doesn't throw any unexpected errors.
 
