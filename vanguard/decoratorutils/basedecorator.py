@@ -69,7 +69,7 @@ class Decorator:
         self.verify_decorated_class(cls)
         decorated_class = self._decorate_class(cls)
         if decorated_class is not cls:
-            decorated_class.__decorators__ = cls.__decorators__ + [type(self)]
+            decorated_class.__decorators__ = decorated_class.__decorators__ + [type(self)]
         return decorated_class
 
     def _decorate_class(self, cls: Type[T]) -> Type[T]:
@@ -95,7 +95,9 @@ class Decorator:
 
         missing_decorators = self.required_decorators - set(__decorators__)
         if missing_decorators:
-            raise errors.MissingRequirementsError(f"The following decorators are missing: {repr(missing_decorators)}")
+            raise errors.MissingRequirementsError(
+                f"The following decorators are missing for decorator {type(self).__name__}: {repr(missing_decorators)}"
+            )
 
         if not self.ignore_all:
             super_methods = {key for key, value in getmembers(self.framework_class) if isfunction(value)}

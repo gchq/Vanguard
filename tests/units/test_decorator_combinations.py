@@ -169,19 +169,6 @@ EXCLUDED_COMBINATIONS = {
     # can't aggregate multitask predictions:
     (VariationalHierarchicalHyperparameters, DirichletMulticlassClassification),
     (VariationalHierarchicalHyperparameters, DirichletKernelMulticlassClassification),
-    # can only perform classification once:
-    *{
-        (lower, upper)
-        for lower, upper in itertools.combinations(
-            [
-                BinaryClassification,
-                CategoricalClassification,
-                DirichletMulticlassClassification,
-                DirichletKernelMulticlassClassification,
-            ],
-            r=2,
-        )
-    },
     # HigherRankFeatures has dataset conflicts with several other decorators:
     (HigherRankFeatures, DirichletMulticlassClassification),  # two datasets
     (HigherRankFeatures, DirichletKernelMulticlassClassification),  # two datasets
@@ -225,6 +212,23 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
             [VariationalHierarchicalHyperparameters, LaplaceHierarchicalHyperparameters], r=2
         )
     },
+    # can only use one classification decorator at a time:
+    **{
+        (upper, lower): (
+            TypeError,
+            "This class is already decorated with a classification decorator. "
+            "Please use only one classification decorator at once.",
+        )
+        for upper, lower in itertools.permutations(
+            [
+                # Note that we _don't_ include binary or categorical classification - they will instead raise
+                # a `MissingRequirementsError` for missing `VariationalInference`.
+                DirichletMulticlassClassification,
+                DirichletKernelMulticlassClassification,
+            ],
+            r=2,
+        )
+    },
 }
 
 # Warnings we expect to be raised on decorator application.
@@ -240,24 +244,51 @@ EXPECTED_COMBINATION_FIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], T
     (VariationalInference, Multitask): (RuntimeError, ".* may not be the correct choice for a variational strategy"),
 }
 
+# Combinations for which we ignore the normal error raised when we try and pass two datasets. This is only for
+# testing errors raised on decorator application - these combinations *must* raise an exception on application,
+# as initialisation will always fail with an `AttributeError` since `_initialise_decorator_pair` will return
+# `dataset=None`.
+DATASET_CONFLICT_OVERRIDES = {
+    # Ignore combinations of classification decorators which might have conflicting dataset requirements - applying
+    # two classification decorators raises an error which we want to check for.
+    *{
+        (upper, lower)
+        for upper, lower in itertools.permutations(
+            [
+                CategoricalClassification,
+                DirichletMulticlassClassification,
+                DirichletKernelMulticlassClassification,
+            ],
+            r=2,
+        )
+    }
+}
+
 
 def _initialise_decorator_pair(
     upper_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
     lower_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
-) -> Tuple[Decorator, Decorator, Dict[str, Any], Dataset]:
+) -> Tuple[Decorator, Decorator, Dict[str, Any], Optional[Dataset]]:
     """Initialise a pair of decorators."""
     upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
     lower_decorator, lower_controller_kwargs, lower_dataset = _create_decorator(lower_decorator_details)
 
-    if upper_dataset and lower_dataset:
+    if (type(upper_decorator), type(lower_decorator)) in DATASET_CONFLICT_OVERRIDES:
+        # Decorator application *must* fail, so passing dataset=None doesn't matter as we'll never reach initialisation
+        dataset = None
+    elif upper_dataset and lower_dataset:
+        # Passing two datasets is ambiguous!
         raise RuntimeError(
             f"Cannot combine {type(upper_decorator).__name__} and "
             f"{type(lower_decorator).__name__}: two datasets have been passed."
         )
-
-    dataset = (
-        upper_dataset or lower_dataset or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
-    )
+    else:
+        # Pass whichever dataset we have, or a default.
+        dataset = (
+            upper_dataset
+            or lower_dataset
+            or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
+        )
 
     controller_kwargs = {**upper_controller_kwargs, **lower_controller_kwargs}
     return upper_decorator, lower_decorator, controller_kwargs, dataset
@@ -323,11 +354,16 @@ def test_combinations(
     ):
         try:
             controller_class = upper_decorator(lower_decorator(GaussianGPController))
-        except (MissingRequirementsError, TopmostDecoratorError):
+        except (MissingRequirementsError, TopmostDecoratorError) as exc:
+            if expected_error_class is not None and not isinstance(exc, expected_error_class):
+                raise AssertionError(
+                    f"Expected {expected_error_class.__name__} to be raised, but got {type(exc).__name__}."
+                ) from exc
             return
     if expected_error_class is not None:
         return
 
+    assert dataset is not None
     final_kwargs = {
         "train_x": dataset.train_x,
         "train_y": dataset.train_y,
