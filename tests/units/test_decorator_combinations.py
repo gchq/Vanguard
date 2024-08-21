@@ -72,13 +72,12 @@ class DecoratorDetails(TypedDict, total=False):
 
 DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     BinaryClassification: {
-        # TODO: This is entirely untested - any test _other_ than with VariationalInference fails to a
-        #  MissingRequirementsError, and the test with VariationalInference is skipped!
         "controller": {
             "y_std": 0,
             "likelihood_class": BernoulliLikelihood,
             "marginal_log_likelihood_class": VariationalELBO,
         },
+        "requirements": {VariationalInference: {"decorator": {"n_inducing_points": 5}}},
     },
     DirichletMulticlassClassification: {
         "decorator": {"num_classes": 4},
@@ -161,12 +160,9 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
 
 # (upper, lower) -> kwargs
 COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dict[str, Any]] = {
-    (VariationalInference, DirichletMulticlassClassification): {
-        "likelihood_class": DirichletClassificationLikelihood,
-    },
-    (Multitask, VariationalInference): {
-        "likelihood_class": FixedNoiseMultitaskGaussianLikelihood,
-    },
+    (VariationalInference, DirichletMulticlassClassification): {"likelihood_class": DirichletClassificationLikelihood},
+    (VariationalInference, BinaryClassification): {"likelihood_class": BernoulliLikelihood},
+    (Multitask, VariationalInference): {"likelihood_class": FixedNoiseMultitaskGaussianLikelihood},
 }
 
 EXCLUDED_COMBINATIONS = {
@@ -188,6 +184,10 @@ EXCLUDED_COMBINATIONS = {
     (VariationalHierarchicalHyperparameters, DirichletKernelMulticlassClassification),
     (LaplaceHierarchicalHyperparameters, DirichletMulticlassClassification),
     (LaplaceHierarchicalHyperparameters, DirichletKernelMulticlassClassification),
+    # fails with AttributeError: 'Bernoulli' object has no attribute 'covariance_matrix'
+    # TODO(rg): investigate this
+    (BinaryClassification, VariationalHierarchicalHyperparameters),
+    (BinaryClassification, LaplaceHierarchicalHyperparameters),
     # HigherRankFeatures has dataset conflicts with several other decorators:
     (HigherRankFeatures, DirichletMulticlassClassification),  # two datasets
     (HigherRankFeatures, DirichletKernelMulticlassClassification),  # two datasets
@@ -242,8 +242,9 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
         )
         for upper, lower in itertools.permutations(
             [
-                # Note that we _don't_ include binary or categorical classification - they will instead raise
+                # Note that we _don't_ include categorical classification - that will instead raise
                 # a `MissingRequirementsError` for missing `VariationalInference`.
+                BinaryClassification,
                 DirichletMulticlassClassification,
                 DirichletKernelMulticlassClassification,
             ],
@@ -409,7 +410,7 @@ def test_combinations(
     upper_decorator, upper_requirements, lower_decorator, lower_requirements, controller_kwargs, dataset = (
         _initialise_decorator_pair(upper_details, lower_details)
     )
-    all_decorators = compose([upper_decorator, upper_requirements, lower_decorator, lower_requirements])
+    apply_all_decorators = compose([upper_decorator, upper_requirements, lower_decorator, lower_requirements])
 
     combination = (type(upper_decorator), type(lower_decorator))
     expected_warning_class, expected_warning_message = EXPECTED_COMBINATION_APPLY_WARNINGS.get(
@@ -420,7 +421,7 @@ def test_combinations(
         expected_error_class, expected_error_message
     ):
         try:
-            controller_class = all_decorators(GaussianGPController)
+            controller_class = apply_all_decorators(GaussianGPController)
         except (MissingRequirementsError, TopmostDecoratorError) as exc:
             if expected_error_class is not None and not isinstance(exc, expected_error_class):
                 raise AssertionError(
@@ -458,7 +459,13 @@ def test_combinations(
 
     if hasattr(controller, "classify_points"):
         # check that classification doesn't throw any errors
-        controller.classify_points(dataset.test_x)
+        try:
+            controller.classify_points(dataset.test_x)
+        except TypeError as exc:
+            if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
+                assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
+            else:
+                raise
 
         # Lower the number of MC samples to speed up testing. We don't care about any kind of accuracy here,
         # so just pick the minimum number that doesn't cause numerical errors.
@@ -470,7 +477,13 @@ def test_combinations(
                 # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
                 # https://github.com/gchq/Vanguard/issues/288
                 pytest.skip("`classify_fuzzy_points` currently fails due to incorrect distribution covariance_matrix")
-            controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
+            try:
+                controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
+            except TypeError as exc:
+                if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
+                    assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
+                else:
+                    raise
     else:
         # check that the prediction methods don't throw any unexpected errors
         posterior = controller.posterior_over_point(dataset.test_x)
