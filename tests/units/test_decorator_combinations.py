@@ -34,6 +34,7 @@ from tests.cases import get_default_rng, maybe_throws, maybe_warns
 # not super happy about importing HigherRankKernel/HigherRankMean from another test file - these should probably be
 # moved to some more central location
 from tests.units.test_features import HigherRankKernel, HigherRankMean
+from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, CategoricalClassification, DirichletMulticlassClassification
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
@@ -67,16 +68,25 @@ from vanguard.warps import SetInputWarp, SetWarp, warpfunctions
 
 T = TypeVar("T")
 
+# Default dataset that is used when neither decorator specifies a test dataset.
 DEFAULT_DATASET = SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
 
 
 @BayesianHyperparameters()
 class TestHierarchicalKernel(RBFKernel):
-    """A kernel to test Bayesian hierarchical hyperparameters"""
+    """A kernel to test the `HierarchicalHyperparameters` decorators with."""
 
 
 class OneHotMulticlassGaussianClassificationDataset(MulticlassGaussianClassificationDataset):
+    """
+    Synthetic dataset for use with `CategoricalClassification`.
+
+    This is just a thin wrapper around `MulticlassGaussianClassificationDataset` that performs one-hot encoding on
+    its y-values.
+    """
+
     def __init__(self, num_train_points: int, num_test_points: int, num_classes: int, rng: np.random.Generator):
+        """Initialise the dataset."""
         super().__init__(
             num_train_points=num_train_points, num_test_points=num_test_points, num_classes=num_classes, rng=rng
         )
@@ -88,30 +98,49 @@ class RequirementDetails(TypedDict, total=False):
     """Type hint for the sub-decorator details specification in `DECORATORS`."""
 
     decorator: Dict[str, Any]
+    """Keyword arguments to pass to the decorator. `ignore_all=True` is always passed."""
     controller: Dict[str, Any]
+    """Additional keyword arguments to pass to the GPController on instantiation."""
 
 
 class DecoratorDetails(TypedDict, total=False):
     """Type hint for the decorator details specifications in `DECORATORS`."""
 
     decorator: Dict[str, Any]
+    """Keyword arguments to pass to the decorator. `ignore_all=True` is always passed."""
     controller: Dict[str, Any]
+    """Additional keyword arguments to pass to the GPController on instantiation."""
     dataset: Dataset
-    # TODO: Remove the requirements specification from here if it gets added to the Decorator framework
+    """
+    Specifies a dataset for the `GPController` to be fitted and tested on.
+
+    If unspecified, the dataset for the other decorator is used, or `DEFAULT_DATASET`, if the other decorator doesn't
+    specify a dataset.
+
+    Can be overridden for specific decorator combinations in `DATASET_CONFLICT_OVERRIDES`.
+    """
+    # TODO(rg): Remove the requirements specification from here if it gets added to the Decorator framework
     requirements: Dict[Type[Decorator], RequirementDetails]
+    """
+    Specifies additional decorators that this decorator requires.
+
+    These are applied to the GPController before this decorator.
+    """
 
 
-class EmptyDecorator:
+class EmptyDecorator(Decorator):
     """Placeholder decorator to allow testing each other decorator on its own."""
 
     def __init__(self, **kwargs) -> None:
-        pass
+        """Initialise the placeholder decorator."""
+        super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def __call__(self, cls: T) -> T:
-        """Do nothing, and return the class as is."""
+    def _decorate_class(self, cls: T) -> T:
+        """Return the class unaltered."""
         return cls
 
 
+# Details for each of the decorators under test. See `DecoratorDetails` for documentation on each key.
 DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     EmptyDecorator: {},
     BinaryClassification: {
@@ -159,11 +188,10 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
         "controller": {
             "likelihood_class": MultitaskBernoulliLikelihood,
             "marginal_log_likelihood_class": VariationalELBO,
-            "kernel": RBFKernel,  # TODO: remove
             "y_std": 0,
         },
         "dataset": OneHotMulticlassGaussianClassificationDataset(
-            num_train_points=60, num_test_points=20, num_classes=4, rng=get_default_rng()
+            num_train_points=20, num_test_points=4, num_classes=4, rng=get_default_rng()
         ),
         "requirements": {
             Multitask: {"decorator": {"num_tasks": 4}},
@@ -204,6 +232,7 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
 }
 
 # (upper, lower) -> kwargs
+# Additional keyword arguments to provide to the `GPController` on instantiation for specific decorator combinations
 COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dict[str, Any]] = {
     (VariationalInference, DirichletMulticlassClassification): {"likelihood_class": DirichletClassificationLikelihood},
     (VariationalInference, CategoricalClassification): {"likelihood_class": MultitaskBernoulliLikelihood},
@@ -211,6 +240,9 @@ COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dic
     (Multitask, VariationalInference): {"likelihood_class": FixedNoiseMultitaskGaussianLikelihood},
 }
 
+# Combinations that are not tested at all. This is matched against independent of order, so if (A, B) is listed,
+# neither (A, B) nor (B, A) is tested. Note that these are not skipped, they are just not provided as parameter
+# combinations in the first place.
 EXCLUDED_COMBINATIONS = {
     # multitask classification generally doesn't work:
     (Multitask, BinaryClassification),  # likelihood contradiction
@@ -255,6 +287,7 @@ EXCLUDED_COMBINATIONS = {
     (HigherRankFeatures, LaplaceHierarchicalHyperparameters),
 }
 
+# (upper, lower) -> (error type, message regex)
 # Errors we expect to be raised on initialisation of the decorated class.
 EXPECTED_COMBINATION_INIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
     (NormaliseY, DirichletMulticlassClassification): (
@@ -263,6 +296,7 @@ EXPECTED_COMBINATION_INIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], 
     ),
 }
 
+# (upper, lower) -> (error type, message regex)
 # Errors we expect to be raised on decorator application.
 EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
     (Distributed, HigherRankFeatures): (
@@ -300,6 +334,7 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
     },
 }
 
+# (upper, lower) -> (warning type, message regex)
 # Warnings we expect to be raised on decorator application.
 EXPECTED_COMBINATION_APPLY_WARNINGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Warning], str]] = {
     (NormaliseY, DirichletMulticlassClassification): (
@@ -308,11 +343,13 @@ EXPECTED_COMBINATION_APPLY_WARNINGS: Dict[Tuple[Type[Decorator], Type[Decorator]
     ),
 }
 
+# (upper, lower) -> (error type, message regex)
 # Errors we expect to be raised when calling controller.fit().
 EXPECTED_COMBINATION_FIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
     (VariationalInference, Multitask): (RuntimeError, ".* may not be the correct choice for a variational strategy"),
 }
 
+# (upper, lower) -> dataset
 # Combinations for which we ignore the normal error raised when we try and pass two datasets, and instead provide a
 # replacement dataset.
 DATASET_CONFLICT_OVERRIDES = {
@@ -338,10 +375,22 @@ def _initialise_decorator_pair(
     lower_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
 ) -> Tuple[Decorator, List[Decorator], Decorator, List[Decorator], Dict[str, Any], Optional[Dataset]]:
     """
-    Initialise a pair of decorators.
+    Initialise a pair of decorators for testing.
 
+    :param upper_decorator_details: (key, value) entry from `DECORATORS` for the upper decorator.
+    :param upper_decorator_details: (key, value) entry from `DECORATORS` for the lower decorator.
     :return: Tuple (upper_decorator, upper_requirement_decorators, lower_decorator, lower_requirement_decorators,
-        controller_kwargs, dataset)
+        controller_kwargs, dataset):
+        - `upper_decorator`: the instantiated upper decorator
+        - `upper_requirement_decorators`: list of instantiated decorators to be applied before `upper_decorator` to
+            fulfil its requirements
+        - `lower_decorator`: the instantiated upper decorator
+        - `lower_requirement_decorators`: list of instantiated decorators to be applied before `lower_decorator` to
+            fulfil its requirements
+        - `controller_kwargs`: additional keyword arguments to provide to the `GPController` on instantiation. In case
+            multiple decorators provide values for the same keyword argument, if a value is given in
+            `COMBINATION_CONTROLLER_KWARGS`, that value is used; if not the value from the topmost decorator is used.
+        - `dataset`: dataset to provide to the `GPController` on instantiation and test with
     """
     upper_decorator, upper_requirement_decorators, upper_controller_kwargs, upper_dataset = _create_decorator(
         upper_decorator_details
@@ -385,7 +434,13 @@ def _create_decorator(
     """
     Unpack decorator details.
 
-    :return: Tuple (decorator, requirement_decorators, controller_kwargs, optional dataset)
+    :param details: (key, value) entry from `DECORATORS` for the decorator.
+    :return: Tuple (decorator, requirement_decorators, controller_kwargs, optional dataset):
+        - `decorator`: the instantiated decorator
+        - `requirement_decorators`: list of instantiated decorators to be applied before `decorator` to fulfil
+            requirements
+        - `controller_kwargs`: additional keyword arguments to provide to the `GPController` on instantiation
+        - `dataset`: dataset to test with, or `None` to defer to the other decorator or to a default
     """
     decorator_class, decorator_details = details
     decorator = decorator_class(ignore_all=True, **decorator_details.get("decorator", {}))
@@ -394,9 +449,11 @@ def _create_decorator(
     requirement_decorators = []
     requirements_details = decorator_details.get("requirements", {})
     for required_decorator_class, required_decorator_details in requirements_details.items():
+        # For controller arguments, ones on higher decorators override those on lower decorators
         requirement_decorators.append(required_decorator_class(**required_decorator_details.get("decorator", {})))
         controller_kwargs.update(required_decorator_details.get("controller", {}))
 
+    # ...and the ones from the main decorator are given priority over those from requirement decorators
     controller_kwargs.update(decorator_details.get("controller", {}))
 
     return decorator, requirement_decorators, controller_kwargs, decorator_details.get("dataset", None)
@@ -410,16 +467,16 @@ def _create_decorator(
             lower_details,
             id=(
                 f"Upper: {upper_details[0].__name__}-Lower: {lower_details[0].__name__}"
-                if upper_details[0] is not EmptyDecorator
-                else f"Only {lower_details[0].__name__}"
+                if lower_details[0] is not EmptyDecorator
+                else f"Only {upper_details[0].__name__}"
             ),
         )
         for upper_details, lower_details in itertools.product(DECORATORS.items(), repeat=2)
         # don't test combinations which we've excluded above
         if (upper_details[0], lower_details[0]) not in EXCLUDED_COMBINATIONS
         and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
-        # NoDecorator should only be on top, to avoid cluttering the test log
-        and lower_details[0] is not EmptyDecorator
+        # NoDecorator should only be on bottom, to avoid cluttering the test log
+        and upper_details[0] is not EmptyDecorator
         # TopMostDecorators must be on top, as the name suggests
         and not issubclass(lower_details[0], TopMostDecorator)
     ],
@@ -496,20 +553,22 @@ def test_combinations(
     final_kwargs.update(controller_kwargs)
     final_kwargs.update(combination_controller_kwargs)
 
+    # instantiate the controller
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_INIT_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
         controller = controller_class(**final_kwargs)
     if expected_error_class is not None:
         return
 
+    # fit the controller
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
         controller.fit(2)
     if expected_error_class is not None:
         return
 
+    # If it's a classifier, check that the classification methods don't throw any unexpected errors
     if hasattr(controller, "classify_points"):
-        # check that classification doesn't throw any errors
         try:
             controller.classify_points(dataset.test_x)
         except TypeError as exc:
@@ -520,15 +579,17 @@ def test_combinations(
 
         # Lower the number of MC samples to speed up testing. We don't care about any kind of accuracy here,
         # so just pick the minimum number that doesn't cause numerical errors.
-        with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 25):
+        with patch.object(
+            MonteCarloPosteriorCollection,
+            "INITIAL_NUMBER_OF_SAMPLES",
+            # TODO(rg): Investigate why CategoricalClassification needs so many more samples?
+            90 if any(isinstance(decorator, CategoricalClassification) for decorator in all_decorators) else 20,
+        ):
             # check that fuzzy classification doesn't throw any errors
             if any(isinstance(decorator, DirichletKernelMulticlassClassification) for decorator in all_decorators):
                 # TODO(rg): This test fails as the distribution covariance_matrix is the wrong shape.
                 # https://github.com/gchq/Vanguard/issues/288
                 pytest.skip("`classify_fuzzy_points` currently fails due to incorrect distribution covariance_matrix")
-            if any(isinstance(decorator, CategoricalClassification) for decorator in all_decorators):
-                # TODO(rg): This test fails as the distribution covariance_matrix is not positive definite.
-                pytest.skip("`classify_fuzzy_points` currently fails due to non-positive-definite covariance_matrix")
             try:
                 controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
             except TypeError as exc:
@@ -536,8 +597,9 @@ def test_combinations(
                     assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
                 else:
                     raise
+
+    # If not, check that the prediction methods don't throw any unexpected errors
     else:
-        # check that the prediction methods don't throw any unexpected errors
         posterior = controller.posterior_over_point(dataset.test_x)
         try:
             posterior.prediction()
