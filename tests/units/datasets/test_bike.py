@@ -26,7 +26,7 @@ from vanguard.datasets.bike import BikeDataset
 
 
 class TestBikeDataset(TestCase):
-    """Tests for the `BikeDataset` class."""
+    """Tests for the :class:`vanguard.datasets.bike.BikeDataset` class."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -99,6 +99,11 @@ class TestBikeDataset(TestCase):
 
         # If we don't specify how many samples we want, we should use them all
         assert self.dataset._get_n_samples(df, n_samples=None) == self.mocked_data.shape[0]
+
+        # If we request a non-integer number of samples, we should not be able to proceed
+        with self.assertRaisesRegex(ValueError, "A non-integer number of samples has been requested."):
+            self.dataset._get_n_samples(df, n_samples=2.0)
+
         # pylint: enable=protected-access
 
     def test_data_loading(self) -> None:
@@ -115,7 +120,7 @@ class TestBikeDataset(TestCase):
         """Test loading a file when it cannot be found on disk."""
 
         def forced_error(file_path: str, parse_dates: list):
-            """Force a FileNotFoundError to be returned regardless of input parameters."""
+            """Force a ``FileNotFoundError`` to be returned regardless of input parameters."""
             raise FileNotFoundError("Test")
 
         with patch("pandas.read_csv") as mock_read_csv:

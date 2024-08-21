@@ -50,7 +50,7 @@ class BikeDataset(FileDataset):
         """
         Initialise self.
 
-        :param num_samples: The number of samples to use. If None, all samples will be used.
+        :param num_samples: The number of samples to use. If :data:`None`, all samples will be used.
         :param training_proportion: The proportion of data used for training, defaults to 0.9.
         :param significance: The significance used, defaults to 0.025.
         :param noise_scale: The standard deviation of a given vector v is taken to be
@@ -182,4 +182,6 @@ class BikeDataset(FileDataset):
             n_samples = data.shape[0]
         if n_samples < 0:
             raise ValueError("A negative number of samples has been requested.")
+        if not isinstance(n_samples, int):
+            raise ValueError("A non-integer number of samples has been requested.")
         return n_samples

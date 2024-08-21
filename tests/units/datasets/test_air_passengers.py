@@ -23,7 +23,7 @@ from vanguard.datasets.air_passengers import AirPassengers
 
 
 class TestAirPassengersDataset(TestCase):
-    """Tests for the `AirPassengers` class."""
+    """Tests for the :class:`vanguard.datasets.air_passengers.AirPassengers` class."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -47,7 +47,7 @@ class TestAirPassengersDataset(TestCase):
         """Test loading a file when it cannot be found on disk."""
 
         def forced_error(file_path: str):
-            """Force a FileNotFoundError to be returned regardless of input parameters."""
+            """Force a ``FileNotFoundError`` to be returned regardless of input parameters."""
             raise FileNotFoundError("Test")
 
         with patch("pandas.read_csv") as mock_read_csv:
