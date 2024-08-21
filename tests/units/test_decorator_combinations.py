@@ -63,6 +63,8 @@ class DecoratorDetails(TypedDict, total=False):
 
 DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     BinaryClassification: {
+        # TODO: This is entirely untested - any test _other_ than with VariationalInference fails to a
+        #  MissingRequirementsError, and the test with VariationalInference is skipped!
         "controller": {
             "y_std": 0,
             "likelihood_class": BernoulliLikelihood,
@@ -105,6 +107,9 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     },
     DisableStandardScaling: {},
     CategoricalClassification: {
+        # NOTE: This decorator is actually _not tested at all_ here! It requires both `Multitask` and
+        # `VariationalInference`, and so since only two decorators are used, this will _always_ raise
+        # `MissingRequirementsError` and have its test skipped.
         "decorator": {"num_classes": 4},
         "dataset": MulticlassGaussianClassificationDataset(
             num_train_points=10, num_test_points=4, num_classes=4, rng=get_default_rng()
@@ -181,7 +186,9 @@ EXCLUDED_COMBINATIONS = {
     (HigherRankFeatures, Multitask),  # two datasets
     # TEMPORARY - TO FIX:
     # TODO(rg): Fails with an "index out of bounds" error - seems to be because the warp function moves the class
-    #  indices out of the expected range. The other classification decorators seem to work though!
+    #  indices out of the expected range. `DirichletMulticlassClassification` seems to work fine though. Unsure on
+    #  `BinaryClassification` or `CategoricalClassification` - these two aren't tested with `SetWarp` due to a
+    #  `MissingRequirementsError`.
     # https://github.com/gchq/Vanguard/issues/376
     (DirichletKernelMulticlassClassification, SetWarp),
     # TODO(rg): Fails due to shape mismatch whichever one is on top. When VHH/LHH is on top of HRF this makes sense,
