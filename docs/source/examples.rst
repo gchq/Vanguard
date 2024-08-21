@@ -14,7 +14,7 @@ Regression
     :maxdepth: 1
 
     examples/intro_to_gps.ipynb
-    examples/laplace-hierarchical.ipynb
+    examples/laplace_hierarchical.ipynb
     examples/distributed_gp.ipynb
     examples/sparse_variational_gps.ipynb
     examples/sparse_kernel_approximation.ipynb
