@@ -6,7 +6,9 @@ import itertools
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 from unittest.mock import patch
 
+import numpy as np
 import pytest
+import sklearn
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.means import ZeroMean
@@ -24,6 +26,7 @@ from vanguard.classification.kernel import DirichletKernelMulticlassClassificati
 from vanguard.classification.likelihoods import (
     DirichletKernelClassifierLikelihood,
     GenericExactMarginalLogLikelihood,
+    MultitaskBernoulliLikelihood,
 )
 from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
@@ -56,6 +59,15 @@ class TestHierarchicalKernel(RBFKernel):
     """A kernel to test Bayesian hierarchical hyperparameters"""
 
 
+class OneHotMulticlassGaussianClassificationDataset(MulticlassGaussianClassificationDataset):
+    def __init__(self, num_train_points: int, num_test_points: int, num_classes: int, rng: np.random.Generator):
+        super().__init__(
+            num_train_points=num_train_points, num_test_points=num_test_points, num_classes=num_classes, rng=rng
+        )
+        self.train_y = sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y)
+        self.test_y = sklearn.preprocessing.LabelBinarizer().fit_transform(self.test_y)
+
+
 class RequirementDetails(TypedDict, total=False):
     """Type hint for the sub-decorator details specification in `DECORATORS`."""
 
@@ -69,6 +81,7 @@ class DecoratorDetails(TypedDict, total=False):
     decorator: Dict[str, Any]
     controller: Dict[str, Any]
     dataset: Dataset
+    # TODO: Remove the requirements specification from here if it gets added to the Decorator framework
     requirements: Dict[Type[Decorator], RequirementDetails]
 
 
@@ -125,22 +138,22 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
         "dataset": HigherRankSyntheticDataset(n_train_points=10, n_test_points=4, rng=get_default_rng()),
     },
     DisableStandardScaling: {},
-    # CategoricalClassification: {
-    #     "decorator": {"num_classes": 3},
-    #     "controller": {
-    #         "likelihood_class": MultitaskBernoulliLikelihood,
-    #         "marginal_log_likelihood_class": VariationalELBO,
-    #         "kernel": RBFKernel,  # TODO: remove
-    #         "y_std": 0,
-    #     },
-    #     "dataset": MulticlassGaussianClassificationDataset(
-    #         num_train_points=12, num_test_points=6, num_classes=3, rng=get_default_rng()
-    #     ),
-    #     "requirements": {
-    #         Multitask: {"decorator": {"num_tasks": 3}},
-    #         VariationalInference: {"decorator": {"n_inducing_points": 5}},
-    #     },
-    # },
+    CategoricalClassification: {
+        "decorator": {"num_classes": 4},
+        "controller": {
+            "likelihood_class": MultitaskBernoulliLikelihood,
+            "marginal_log_likelihood_class": VariationalELBO,
+            "kernel": RBFKernel,  # TODO: remove
+            "y_std": 0,
+        },
+        "dataset": OneHotMulticlassGaussianClassificationDataset(
+            num_train_points=60, num_test_points=20, num_classes=4, rng=get_default_rng()
+        ),
+        "requirements": {
+            Multitask: {"decorator": {"num_tasks": 4}},
+            VariationalInference: {"decorator": {}},
+        },
+    },
     Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}},
     VariationalHierarchicalHyperparameters: {
         "decorator": {"num_mc_samples": 13},
@@ -177,6 +190,7 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
 # (upper, lower) -> kwargs
 COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dict[str, Any]] = {
     (VariationalInference, DirichletMulticlassClassification): {"likelihood_class": DirichletClassificationLikelihood},
+    (VariationalInference, CategoricalClassification): {"likelihood_class": MultitaskBernoulliLikelihood},
     (VariationalInference, BinaryClassification): {"likelihood_class": BernoulliLikelihood},
     (Multitask, VariationalInference): {"likelihood_class": FixedNoiseMultitaskGaussianLikelihood},
 }
@@ -184,10 +198,10 @@ COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dic
 EXCLUDED_COMBINATIONS = {
     # multitask classification generally doesn't work:
     (Multitask, BinaryClassification),  # likelihood contradiction
-    (Multitask, CategoricalClassification),  # multiple datasets
+    (Multitask, CategoricalClassification),  # multiple datasets - unnecessary as Multitask is already a requirement
     (Multitask, DirichletMulticlassClassification),  # multiple datasets
     (Multitask, DirichletKernelMulticlassClassification),  # multiple datasets
-    # nor does (some) classification with variational inference:
+    # nor does classification with variational inference:
     (VariationalInference, DirichletKernelMulticlassClassification),  # model contradiction
     # conflicts with Distributed:
     (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
@@ -204,6 +218,8 @@ EXCLUDED_COMBINATIONS = {
     # TODO(rg): investigate this
     (BinaryClassification, VariationalHierarchicalHyperparameters),
     (BinaryClassification, LaplaceHierarchicalHyperparameters),
+    (CategoricalClassification, VariationalHierarchicalHyperparameters),
+    (CategoricalClassification, LaplaceHierarchicalHyperparameters),
     # HigherRankFeatures has dataset conflicts with several other decorators:
     (HigherRankFeatures, DirichletMulticlassClassification),  # two datasets
     (HigherRankFeatures, DirichletKernelMulticlassClassification),  # two datasets
@@ -258,8 +274,6 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
         )
         for upper, lower in itertools.permutations(
             [
-                # Note that we _don't_ include categorical classification - that will instead raise
-                # a `MissingRequirementsError` for missing `VariationalInference`.
                 BinaryClassification,
                 CategoricalClassification,
                 DirichletMulticlassClassification,
@@ -489,12 +503,13 @@ def test_combinations(
         # so just pick the minimum number that doesn't cause numerical errors.
         with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 25):
             # check that fuzzy classification doesn't throw any errors
-            if isinstance(lower_decorator, DirichletKernelMulticlassClassification) or isinstance(
-                upper_decorator, DirichletKernelMulticlassClassification
-            ):
-                # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
+            if any(isinstance(decorator, DirichletKernelMulticlassClassification) for decorator in all_decorators):
+                # TODO(rg): This test fails as the distribution covariance_matrix is the wrong shape.
                 # https://github.com/gchq/Vanguard/issues/288
                 pytest.skip("`classify_fuzzy_points` currently fails due to incorrect distribution covariance_matrix")
+            if any(isinstance(decorator, CategoricalClassification) for decorator in all_decorators):
+                # TODO(rg): This test fails as the distribution covariance_matrix is not positive definite.
+                pytest.skip("`classify_fuzzy_points` currently fails due to non-positive-definite covariance_matrix")
             try:
                 controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
             except TypeError as exc:
