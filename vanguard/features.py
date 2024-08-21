@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains decorators to deal with input features that aren't vectors.
 """
@@ -46,7 +60,6 @@ class HigherRankFeatures(Decorator):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
                 train_x = all_parameters_as_kwargs["train_x"]
-                all_parameters_as_kwargs.pop("self")
                 self.gp_model_class = _HigherRankFeaturesModel(train_x.shape[-rank:])(self.gp_model_class)
                 kernel_class = all_parameters_as_kwargs.pop("kernel_class")
                 super().__init__(kernel_class=kernel_class, rng=self.rng, **all_parameters_as_kwargs)

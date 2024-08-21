@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains some multitask classification likelihoods.
 """
@@ -213,7 +227,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         Initialise self.
 
         :param likelihood: The Gaussian likelihood for the model.
-        :param model: The exact GP .
+        :param model: The exact GP.
         """
         super(ExactMarginalLogLikelihood, self).__init__(likelihood, model)
 
@@ -224,8 +238,8 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
         Compute the MLL given :math:`p(\mathbf f)` and :math:`\mathbf y`.
 
         :param function_dist: :math:`p(\mathbf f)` the outputs of the latent function
-            (the :obj:`gpytorch.models.ExactGP`)
-        :param target: :math:`\mathbf y` The target values
+            (the :obj:`gpytorch.models.ExactGP`).
+        :param target: :math:`\mathbf y` The target values.
         :return: Exact MLL. Output shape corresponds to batch shape of the model/input data.
         """
         output = self.likelihood(function_dist, *params, **kwargs)

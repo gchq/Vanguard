@@ -1,13 +1,26 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
 
-from typing import Callable, Iterable, Optional, Tuple, TypedDict
+from typing import Callable, Iterable, Optional, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
-from typing_extensions import Unpack
 
 from vanguard import utils
 from vanguard.datasets.basedataset import Dataset
@@ -127,36 +140,53 @@ class SyntheticDataset(Dataset):
         return (x_mean, x_std), y
 
 
-class _SyntheticDataParams(TypedDict, total=False):
-    output_noise: float
-    train_input_noise_bounds: Tuple[float, float]
-    test_input_noise_bounds: Tuple[float, float]
-    n_train_points: int
-    n_test_points: int
-    significance: float
-
-
 class MultidimensionalSyntheticDataset(Dataset):
     """Synthetic data with multiple input dimensions."""
 
     def __init__(
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f, complicated_f),
+        output_noise: float = 0.1,
+        train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
+        test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
+        n_train_points: int = 30,
+        n_test_points: int = 50,
+        significance: float = 0.025,
         rng: Optional[np.random.Generator] = None,
-        **kwargs: Unpack[_SyntheticDataParams],
     ) -> None:
         """
         Initialise self.
 
         :param functions: The functions used on each input dimension
             (they are combined linearly to make a single output).
+        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1. Only applied
+            to the training data; the testing data has no output noise actually applied, but we still set
+            `test_y_std = output_noise`.
+        :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+            for the training input. Defaults to (0.01, 0.05).
+        :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+            for the testing input. Defaults to (0.01, 0.03).
+        :param n_train_points: The total number of training points.
+        :param n_test_points: The total number of testing points.
+        :param significance: The significance to be used.
         :param rng: Generator instance used to generate random numbers.
         """
         rng = utils.optional_random_generator(rng)
 
         one_dimensional_datasets = [
-            SyntheticDataset(functions=(function,), rng=rng, **kwargs) for function in functions
+            SyntheticDataset(
+                functions=(function,),
+                rng=rng,
+                output_noise=output_noise,
+                train_input_noise_bounds=train_input_noise_bounds,
+                test_input_noise_bounds=test_input_noise_bounds,
+                n_train_points=n_train_points,
+                n_test_points=n_test_points,
+                significance=significance,
+            )
+            for function in functions
         ]
+
         train_x = np.stack([dataset.train_x.ravel() for dataset in one_dimensional_datasets], -1)
         train_x_std = np.stack([dataset.train_x_std.ravel() for dataset in one_dimensional_datasets], -1)
         train_y = np.mean(np.stack([dataset.train_y.ravel() for dataset in one_dimensional_datasets], -1), axis=-1)
@@ -166,16 +196,9 @@ class MultidimensionalSyntheticDataset(Dataset):
         test_x_std = np.stack([dataset.test_x_std.ravel() for dataset in one_dimensional_datasets], -1)
         test_y = np.mean(np.stack([dataset.test_y.ravel() for dataset in one_dimensional_datasets], -1), axis=-1)
         test_y_std = one_dimensional_datasets[0].test_y_std
+
         super().__init__(
-            train_x,
-            train_x_std,
-            train_y,
-            train_y_std,
-            test_x,
-            test_x_std,
-            test_y,
-            test_y_std,
-            kwargs.pop("significance", 0.025),
+            train_x, train_x_std, train_y, train_y_std, test_x, test_x_std, test_y, test_y_std, significance
         )
 
 

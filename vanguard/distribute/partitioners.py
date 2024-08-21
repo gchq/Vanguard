@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Partitioners are responsible for separating the training data into subsets to be assigned to each expert controller.
 """
@@ -71,8 +85,8 @@ class BasePartitioner:
         """
         Plot a partition on a T-SNE graph.
 
-        :param partition: List of data partitions to plot
-        :param cmap: Colormap to use for plotting
+        :param partition: List of data partitions to plot.
+        :param cmap: Colormap to use for plotting.
         """
         embedding = sklearn.manifold.TSNE().fit_transform(self.train_x)
 
@@ -192,11 +206,10 @@ class KMedoidsPartitioner(BasePartitioner):
     Create a partition using KMedoids with similarity defined by the kernel.
 
     :param train_x: The mean of the inputs.
-    :param kernel: The kernel to use for constructing the
-            similarity matrix in KMedoids.
     :param n_experts: The number of partitions in which to split the data. Defaults to 2.
     :param communication: If True, A communications expert will be included. Defaults to False.
     :param rng: Generator instance used to generate random numbers.
+    :param kernel: The kernel to use for constructing the similarity matrix in KMedoids.
 
     :seealso: Clusters are computed using a :class:`kmedoids.KMedoids` object.
     """
@@ -204,14 +217,22 @@ class KMedoidsPartitioner(BasePartitioner):
     def __init__(
         self,
         train_x: NDArray[np.floating],
-        kernel: gpytorch.kernels.Kernel,
         n_experts: int = 2,
         communication: bool = False,
         rng: Optional[np.random.Generator] = None,
+        *,
+        kernel: gpytorch.kernels.Kernel,
     ) -> None:
         """
         Initialise the KMedoidsPartitioner class.
         """
+        if not isinstance(kernel, gpytorch.kernels.Kernel):
+            msg = (
+                f"Invalid kernel type - expected {gpytorch.kernels.Kernel.__qualname__}, "
+                f"got {type(kernel).__qualname__}"
+            )
+            raise TypeError(msg)
+
         super().__init__(
             train_x=train_x, n_experts=n_experts, communication=communication, rng=utils.optional_random_generator(rng)
         )
@@ -228,8 +249,8 @@ class KMedoidsPartitioner(BasePartitioner):
         clusterer = kmedoids.KMedoids(
             n_clusters=n_clusters, metric="precomputed", random_state=self.rng.integers(0, (2**32 - 1))
         )
-        labels = clusterer.fit(dist_matrix).labels_
-        partition = self._group_indices_by_label(labels)
+        labels: NDArray = clusterer.fit(dist_matrix).labels_
+        partition = self._group_indices_by_label(labels.astype(int))
         return partition
 
     def _construct_distance_matrix(self) -> NDArray[np.floating]:

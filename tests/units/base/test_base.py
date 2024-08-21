@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Tests for the GPController class.
 """
@@ -30,52 +44,52 @@ class DefaultTensorTypeTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Code to run before each test."""
-        self.original_default_tensor_type = GaussianGPController.get_default_tensor_type()
-        self.original_dtype = self.original_default_tensor_type.dtype
-        self.original_is_cuda = self.original_default_tensor_type.is_cuda
+        self.original_dtype = GaussianGPController.get_default_tensor_dtype()
+        self.original_device = GaussianGPController.get_default_tensor_device()
 
-        if self.original_default_tensor_type == torch.DoubleTensor:
-            self.skipTest("Skipping this test because the default tensor type would not be changed.")
+        if self.original_dtype == torch.double:
+            self.skipTest("Skipping this test because the default tensor dtype would not be changed.")
 
         original_tensor = torch.tensor([])
         self.assertEqual(original_tensor.dtype, self.original_dtype)
-        self.assertEqual(original_tensor.is_cuda, self.original_is_cuda)
+        self.assertEqual(original_tensor.device, self.original_device)
 
         class NewController(GaussianGPController):
             pass
 
         self.new_controller_class = NewController
-        self.new_controller_class.set_default_tensor_type(torch.DoubleTensor)
+        self.new_controller_class.set_default_tensor_dtype(torch.double)
 
     def tearDown(self) -> None:
         """Code to run after each test."""
         # Set the NewController's default tensor type as the original GaussianGPController's
-        self.new_controller_class.set_default_tensor_type(self.original_default_tensor_type)
+        self.new_controller_class.set_default_tensor_dtype(self.original_dtype)
         tensor = torch.tensor([])
         self.assertEqual(tensor.dtype, self.original_dtype)
-        self.assertEqual(tensor.is_cuda, self.original_is_cuda)
+        self.assertEqual(tensor.device, self.original_device)
 
     def test_class_default_tensor(self) -> None:
-        """Test that the new controller's default tensor type was set correctly to torch.DoubleTensor in setUp()."""
-        self.assertEqual(self.new_controller_class.get_default_tensor_type(), torch.DoubleTensor)
+        """Test that the new controller's default tensor dtype was set correctly to torch.DoubleTensor in setUp()."""
+        self.assertEqual(self.new_controller_class.get_default_tensor_dtype(), torch.double)
 
     def test_superclass_default_tensor(self) -> None:
-        """Test that the GaussianGPController's default tensor type is unchanged by setUp()."""
-        self.assertEqual(GaussianGPController.get_default_tensor_type(), self.original_default_tensor_type)
+        """Test that the GaussianGPController's default tensor dtype is unchanged by setUp()."""
+        self.assertEqual(GaussianGPController.get_default_tensor_dtype(), self.original_dtype)
 
     def test_default_tensor(self) -> None:
         """
         Test that the properties of a newly-created tensor are as expected.
 
-        This test fails unless the tensor's dtype is float64. By default, PyTorch creates tensors with float32 dtype.
-        This test checks that the default tensor type is successfully set to torch.DoubleTensor in setUp() above. Note,
-        in BaseGPController, we set _default_tensor_type: ttypes = torch.FloatTensor.
+        This test fails unless the tensor's dtype is :class:`torch.double`. By default, PyTorch creates tensors with
+        dtype :class:`torch.float32`. This test checks that the default tensor dtype is successfully set to
+        :class:`torch.double` in `setUp()` above. Note, in :class:`~vanguard.BaseGPController`,
+        we set `_default_tensor_dtype` to :class:`torch.float`.
 
-        This test expects the new tensor to be on the CPU if the CUDA device (i.e., GPU) is not available. The is_cuda
-        property returns True if the tensor is stored on the GPU, and False otherwise.
+        This test expects the new tensor to be on the CPU if the CUDA device (i.e., GPU) is not available. The
+        `is_cuda` property returns :data:`True` if the tensor is stored on the GPU, and :data:`False` otherwise.
         """
         new_tensor = torch.tensor([])
-        self.assertEqual(new_tensor.dtype, torch.float64)
+        self.assertEqual(new_tensor.dtype, torch.double)
         self.assertEqual(new_tensor.is_cuda, torch.cuda.is_available())
 
 
@@ -159,8 +173,6 @@ class InputTests(VanguardTestCase):
         with self.assertRaisesRegex(ValueError, expected_regex):
             gp.fit()
 
-    @unittest.skip  # TODO: fix test; underlying issues in batch mode
-    # https://github.com/gchq/Vanguard/issues/265
     def test_error_handling_of_batch_size(self) -> None:
         """Test that a UserWarning is raised when both batch_size and gradient_every are not None."""
         gp = GaussianGPController(
@@ -169,6 +181,7 @@ class InputTests(VanguardTestCase):
             kernel_class=PeriodicRBFKernel,
             y_std=self.DATASET.train_y_std,
             batch_size=20,
+            rng=get_default_rng(),
         )
         gradient_every = 2
         gp.fit()

@@ -1,9 +1,27 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Tests for the DirichletMulticlassClassification decorator.
 """
 
+from unittest.mock import Mock, patch
+
+import torch
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 
+from vanguard.base.posteriors import Posterior
 from vanguard.classification import DirichletMulticlassClassification
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.uncertainty import GaussianUncertaintyGPController
@@ -12,8 +30,10 @@ from vanguard.vanilla import GaussianGPController
 from ...cases import get_default_rng_override_seed
 from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase
 
+NUM_CLASSES = 4
 
-@DirichletMulticlassClassification(num_classes=4, ignore_methods=("__init__",))
+
+@DirichletMulticlassClassification(num_classes=NUM_CLASSES, ignore_methods=("__init__",))
 class DirichletMulticlassClassifier(GaussianGPController):
     """A simple Dirichlet multiclass classifier."""
 
@@ -49,6 +69,38 @@ class MulticlassTests(ClassificationTestCase):
         self.controller.fit(10)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.3)
+
+    def test_classify_points_num_samples(self):
+        """Test that the `n_posterior_samples` keyword argument is handled correctly when classifying points."""
+        n_samples = 123
+
+        self.controller.fit(10)
+        mock_posterior = Mock(spec=Posterior)
+        # pylint: disable-next=protected-access
+        mock_posterior._tensor_sample = Mock(
+            side_effect=lambda size: torch.ones((*size, self.dataset.test_x.shape[1], NUM_CLASSES))
+        )
+        with patch.object(GaussianGPController, "posterior_over_point", return_value=mock_posterior):
+            self.controller.classify_points(self.dataset.test_x, n_posterior_samples=n_samples)
+        # pylint: disable-next=protected-access
+        mock_posterior._tensor_sample.assert_called_once_with(torch.Size((n_samples,)))
+
+    def test_classify_fuzzy_points_num_samples(self):
+        """Test that the `n_posterior_samples` keyword argument is handled correctly when classifying fuzzy points."""
+        n_samples = 123
+
+        self.controller.fit(10)
+        mock_posterior = Mock(spec=Posterior)
+        # pylint: disable-next=protected-access
+        mock_posterior._tensor_sample_condensed = Mock(
+            side_effect=lambda size: torch.ones((*size, self.dataset.test_x.shape[1], NUM_CLASSES))
+        )
+        with patch.object(GaussianGPController, "posterior_over_fuzzy_point", return_value=mock_posterior):
+            self.controller.classify_fuzzy_points(
+                self.dataset.test_x, self.dataset.test_x_std, n_posterior_samples=n_samples
+            )
+        # pylint: disable-next=protected-access
+        mock_posterior._tensor_sample_condensed.assert_called_once_with(torch.Size((n_samples,)))
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect `likelihood_class` is given, an appropriate exception is raised."""

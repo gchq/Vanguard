@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contain some small utilities of use in some cases.
 """
@@ -126,8 +140,6 @@ def infinite_tensor_generator(
 
         def shuffle(array: numpy.typing.NDArray) -> None:
             """Random shuffle function."""
-            # TODO: Shuffling when batch_size is not None raises RuntimeError("You must train on the training inputs!")
-            # https://github.com/gchq/Vanguard/issues/265
             rng.shuffle(array)
 
     index = 0

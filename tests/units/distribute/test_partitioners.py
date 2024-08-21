@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Tests for partitioner classes.
 """
@@ -133,6 +147,7 @@ class MockedPartitionTests(unittest.TestCase):
         """
         # Setup a mocked kernel that returns trivial distances to check
         mocked_kernel = MagicMock()
+        mocked_kernel.__class__ = RBFKernel
         actual_distances = np.exp(np.array([0, 0, 1, 1, 0]))
         partitioner = partitioners.KMedoidsPartitioner(
             train_x=self.train_x, n_experts=self.n_experts, kernel=mocked_kernel, rng=self.rng
@@ -143,7 +158,7 @@ class MockedPartitionTests(unittest.TestCase):
         mocked_clustering_return = MagicMock()
         mocked_fit = MagicMock()
         mocked_fit_return = MagicMock()
-        mocked_fit_return.labels_ = self.example_labels
+        mocked_fit_return.labels_ = np.array(self.example_labels)
         mocked_fit.return_value = mocked_fit_return
         mocked_clustering_return.fit = mocked_fit
         mock_clustering.return_value = mocked_clustering_return

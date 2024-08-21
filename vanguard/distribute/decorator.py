@@ -1,9 +1,23 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Contains the Distributed decorator.
 """
 
 import warnings
-from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -24,7 +38,7 @@ from vanguard.distribute.aggregators import (
     XBCMAggregator,
     XGRBCMAggregator,
 )
-from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner, KMedoidsPartitioner
+from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner
 from vanguard.features import HigherRankFeatures
 
 _AGGREGATION_JITTER = 1e-10
@@ -61,11 +75,11 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
     :param aggregator_class: The class to be used for aggregation. Defaults to
         :class:`~vanguard.distribute.aggregators.RBCMAggregator`.
     :param partitioner_class: The class to be used for partitioning. Defaults to
-        :class:`~vanguard.distribute.partitioners.KMeansPartitioner`.
+        :class:`~vanguard.distribute.partitioners.KMeansPartitioner`. See
+        :mod:`vanguard.distribute.partitioners` for alternative partitioners.
+    :param partitioner_kwargs: Additional parameters passed to the partitioner initialisation.
 
     :Keyword Arguments:
-
-        * **partitioner_args** *dict*: Additional parameters passed to the partitioner initialisation.
         * For other possible keyword arguments, see the
           :class:`~vanguard.decoratorutils.basedecorator.Decorator` class.
     """
@@ -77,6 +91,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         rng: Optional[np.random.Generator] = None,
         aggregator_class: Type[BaseAggregator] = RBCMAggregator,
         partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
+        partitioner_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -87,7 +102,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self.rng = utils.optional_random_generator(rng)
         self.aggregator_class = aggregator_class
         self.partitioner_class = partitioner_class
-        self.partitioner_kwargs = kwargs.pop("partitioner_kwargs", {})
+        self.partitioner_kwargs = partitioner_kwargs if partitioner_kwargs is not None else {}
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
@@ -113,7 +128,6 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
-                all_parameters_as_kwargs.pop("self")
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 self._full_train_x: NDArray = all_parameters_as_kwargs.pop("train_x")
@@ -129,9 +143,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self.aggregator_class = decorator.aggregator_class
 
                 partitioner_class = decorator.partitioner_class
-                partitioner_kwargs = decorator.partitioner_kwargs
-                if issubclass(partitioner_class, KMedoidsPartitioner):
-                    partitioner_kwargs["kernel"] = all_parameters_as_kwargs["kernel"]
+                partitioner_kwargs = dict(decorator.partitioner_kwargs)  # copy
+                partitioner_kwargs.update(all_parameters_as_kwargs.pop("partitioner_kwargs", {}))
                 communications_expert = issubclass(self.aggregator_class, (GRBCMAggregator, XGRBCMAggregator))
                 self.partitioner = partitioner_class(
                     train_x=self._full_train_x,

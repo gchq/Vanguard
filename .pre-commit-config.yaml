@@ -59,7 +59,7 @@ repos:
       # No tabs, only spaces
       - id: forbid-tabs
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+    rev: v0.6.1
     hooks:
       # Run the formatter.
       - id: ruff-format
@@ -78,7 +78,7 @@ repos:
       # Ensure that necessary package information is provided
       - id: pyroma
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.8.1
+    rev: v8.13.3
     hooks:
       # Run a spellcheck (words pulled from cspell.config.yaml)
         - id: cspell
@@ -113,6 +113,17 @@ repos:
         exclude:
           (?x)^(
             docs/source/_static/.+.png
+          )$
+      - id: check-copyright
+        name: Check for copyright notice
+        description: Ensure a copyright notice is present at the top of each Python file
+        entry: python pre_commit_hooks/check_copyright.py
+        types: [ python ]
+        language: python
+        # require_ascii is excluded as it's licensed under the Apache license, so has a different header
+        exclude: |
+          (?x)^(
+            pre_commit_hooks/require_ascii.py
           )$
       - id: markdown-cells
         name: forbid markdown cells

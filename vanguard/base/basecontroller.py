@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 The (non-user-facing) base class of Vanguard controllers.
 
@@ -16,8 +30,6 @@ import torch
 from gpytorch import constraints
 from gpytorch.models import ApproximateGP, ExactGP
 from linear_operator.utils.errors import NanError
-from numpy import dtype
-from torch import Tensor
 
 from vanguard import utils
 from vanguard.base import metrics
@@ -30,43 +42,13 @@ from vanguard.utils import infinite_tensor_generator, instantiate_with_subset_of
 from vanguard.warnings import _CHOLESKY_WARNING, _JITTER_WARNING, NumericalWarning
 
 NOISE_LOWER_BOUND = 1e-3
-# pylint: disable-next=invalid-name
-ttypes = Type[
-    Union[
-        torch.FloatTensor,
-        torch.DoubleTensor,
-        torch.IntTensor,
-        torch.BoolTensor,
-        torch.HalfTensor,
-        torch.BFloat16Tensor,
-        torch.ByteTensor,
-        torch.CharTensor,
-        torch.ShortTensor,
-        torch.LongTensor,
-    ]
-]
-# pylint: disable-next=invalid-name
-ttypes_cuda = Type[
-    Union[
-        torch.cuda.FloatTensor,  # pylint: disable=no-member
-        torch.cuda.DoubleTensor,  # pylint: disable=no-member
-        torch.cuda.IntTensor,  # pylint: disable=no-member
-        torch.cuda.BoolTensor,  # pylint: disable=no-member
-        torch.cuda.HalfTensor,  # pylint: disable=no-member
-        torch.cuda.BFloat16Tensor,  # pylint: disable=no-member
-        torch.cuda.ByteTensor,  # pylint: disable=no-member
-        torch.cuda.CharTensor,  # pylint: disable=no-member
-        torch.cuda.ShortTensor,  # pylint: disable=no-member
-        torch.cuda.LongTensor,  # pylint: disable=no-member
-    ]
-]
 
 
 class BaseGPController:
     """
     Contains the base machinery for the :class:`~vanguard.base.gpcontroller.GPController` class.
 
-    :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values)
+    :param train_x: (n_samples, n_features) The mean of the inputs (or the observed values).
     :param train_y: (n_samples,) or (n_samples, 1) The responsive values.
     :param kernel_class: An uninstantiated subclass of :py:class:`gpytorch.kernels.Kernel`.
     :param mean_class: An uninstantiated subclass of :py:class:`gpytorch.means.Mean` to use in the prior GP.
@@ -81,8 +63,8 @@ class BaseGPController:
             :py:mod:`gpytorch.mlls`. The default is :py:class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
     :param optimiser_class: An uninstantiated :py:class:`torch.optim.Optimizer` class used for
             gradient-based learning of hyperparameters. The default is :py:class:`torch.optim.Adam`.
-    :param smart_optimiser_class: An uninstantiated :py:class:`SmartOptimiser` class used to wrap the
-        ``optimiser_class`` and enable early stopping.
+    :param smart_optimiser_class: An uninstantiated :py:class:`~vanguard.optimise.optimiser.SmartOptimiser` class used
+        to wrap the ``optimiser_class`` and enable early stopping.
     :param rng: Generator instance used to generate random numbers.
 
     :Keyword Arguments:
@@ -101,13 +83,14 @@ class BaseGPController:
 
     """
 
+    _default_tensor_dtype = torch.float
     if torch.cuda.is_available():
-        # pylint: disable-next=no-member
-        _default_tensor_type: ttypes_cuda = torch.cuda.FloatTensor
+        _default_tensor_device = torch.device("cuda")
     else:
-        _default_tensor_type: ttypes = torch.FloatTensor
+        _default_tensor_device = torch.device("cpu")
 
-    torch.set_default_tensor_type(_default_tensor_type)
+    torch.set_default_device(_default_tensor_device)
+    torch.set_default_dtype(_default_tensor_dtype)
 
     gp_model_class: Type[Union[ExactGP, ApproximateGP]] = ExactGPModel
     posterior_class = Posterior
@@ -187,9 +170,17 @@ class BaseGPController:
         class SafeMarginalLogLikelihoodClass(marginal_log_likelihood_class):
             pass
 
+        if self.batch_size is not None:
+            # then the training data will be updated at each training iteration
+            gp_train_x = None
+            gp_train_y = None
+        else:
+            gp_train_x = self.train_x
+            gp_train_y = self.train_y.squeeze(dim=-1)
+
         self._gp = SafeGPModelClass(
-            self.train_x,
-            self.train_y.squeeze(dim=-1),
+            gp_train_x,
+            gp_train_y,
             covar_module=self.kernel,
             likelihood=self.likelihood,
             mean_module=self.mean,
@@ -220,17 +211,14 @@ class BaseGPController:
         self.warn_normalise_y()
 
     @property
-    def dtype(self) -> Optional[dtype]:
+    def dtype(self) -> Optional[torch.dtype]:
         """Return the default dtype of the controller."""
-        return self._default_tensor_type.dtype
+        return self._default_tensor_dtype
 
     @property
     def device(self) -> torch.device:
         """Return the default device of the controller."""
-        if self._default_tensor_type.is_cuda:
-            return torch.device("cuda:0")
-        else:
-            return torch.device("cpu")
+        return self._default_tensor_device
 
     @property
     def _likelihood(self) -> gpytorch.likelihoods.Likelihood:
@@ -248,9 +236,14 @@ class BaseGPController:
         self._set_requires_grad(False)
 
     @classmethod
-    def get_default_tensor_type(cls) -> Type[Tensor]:
+    def get_default_tensor_dtype(cls) -> torch.dtype:
         """Get the default tensor type for this controller class."""
-        return cls._default_tensor_type
+        return cls._default_tensor_dtype
+
+    @classmethod
+    def get_default_tensor_device(cls) -> torch.dtype:
+        """Get the default tensor device for this controller class."""
+        return cls._default_tensor_device
 
     def _predictive_likelihood(
         self,
@@ -339,7 +332,7 @@ class BaseGPController:
         """
         Set the required grad flag of all trainable params.
 
-        :param value: value to set for requires_grad attribute
+        :param value: The value to set for the `requires_grad` attribute.
         """
         for param in self._smart_optimiser.parameters():
             param.requires_grad = value
@@ -361,6 +354,12 @@ class BaseGPController:
 
         for iter_num, (train_x, train_y, train_y_noise) in enumerate(islice(self.train_data_generator, n_iters)):
             self.likelihood_noise = train_y_noise
+            if self.batch_size is not None:
+                # update the training data to the current train_x and train_y, to avoid "You must train on the
+                # training data!"
+                self._gp.set_train_data(train_x, train_y.squeeze(dim=-1), strict=False)
+                # TODO: consider using get_fantasy_model() instead if possible, when using ExactGP?
+                # https://github.com/gchq/Vanguard/issues/352
             try:
                 loss = self._single_optimisation_step(train_x, train_y, retain_graph=iter_num < n_iters - 1)
 
@@ -474,10 +473,10 @@ class BaseGPController:
         """
         Parse supplied std dev for input noise for different cases.
 
-        :param array_like[float],float,None std: The standard deviation:
+        :param std: The standard deviation. This can be:
 
-            * array_like[float]: (n_point, self.dim) heteroskedastic input noise across feature dimensions,
-            * float: homoskedastic input noise across feature dimensions,
+            * array_like[float]: (n_point, self.dim) heteroskedastic input noise across feature dimensions, or
+            * float: homoskedastic input noise across feature dimensions.
 
         :return: The parsed standard deviation of shape (self.dim,) or (std.shape[0], self.dim) depending on
                     the shape of ``std``. If ``std`` is ``None`` then trainable values are returned.
@@ -503,18 +502,24 @@ class BaseGPController:
         return scaled_modules
 
     @classmethod
-    def set_default_tensor_type(
-        cls,
-        tensor_type: Union[ttypes, ttypes_cuda],
-    ) -> None:
+    def set_default_tensor_dtype(cls, dtype: torch.dtype) -> None:
         """
-        Set the default tensor type for the class, subsequent subclasses, and external tensors.
+        Set the default tensor dtype for the class, subsequent subclasses, and external tensors.
 
-        :param tensor_type: The tensor type to apply as the default. See the list of
-                            :ref:`available data types <tensors:data types>`.
+        :param dtype: The tensor dtype to use as the default.
         """
-        cls._default_tensor_type = tensor_type
-        torch.set_default_tensor_type(tensor_type)
+        cls._default_tensor_dtype = dtype
+        torch.set_default_dtype(dtype)
+
+    @classmethod
+    def set_default_tensor_device(cls, device: torch.device) -> None:
+        """
+        Set the default tensor device for the class, subsequent subclasses, and external tensors.
+
+        :param device: The device to use as the default.
+        """
+        cls._default_tensor_device = device
+        torch.set_default_device(device)
 
     @staticmethod
     def _decide_noise_shape(

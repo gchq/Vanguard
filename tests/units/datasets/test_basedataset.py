@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Tests for the classes in basedataset.py."""
 
 from unittest import TestCase
@@ -52,14 +66,14 @@ class TestEmptyDataset:
     def test_members(self):
         """Test that all the data members of `EmptyDataset` are in fact empty."""
         dataset = EmptyDataset()
-        assert not dataset.train_x
-        assert not dataset.train_x_std
-        assert not dataset.train_y
-        assert not dataset.train_y_std
-        assert not dataset.test_x
-        assert not dataset.test_x_std
-        assert not dataset.test_y
-        assert not dataset.test_y_std
+        assert dataset.train_x.size == 0
+        assert dataset.train_x_std.size == 0
+        assert dataset.train_y.size == 0
+        assert dataset.train_y_std.size == 0
+        assert dataset.test_x.size == 0
+        assert dataset.test_x_std.size == 0
+        assert dataset.test_y.size == 0
+        assert dataset.test_y_std.size == 0
 
     def test_properties(self):
         """Test that the number-of-points properties correctly report that the dataset has zero points."""

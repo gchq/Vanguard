@@ -1,3 +1,17 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Basic end to end functionality test for distributed decorators in Vanguard.
 """
@@ -24,6 +38,7 @@ from vanguard.distribute.aggregators import (
 )
 from vanguard.distribute.partitioners import (
     KMeansPartitioner,
+    KMedoidsPartitioner,
     MiniBatchKMeansPartitioner,
     RandomPartitioner,
 )
@@ -130,9 +145,7 @@ class VanguardTestCase(unittest.TestCase):
             RandomPartitioner,
             KMeansPartitioner,
             MiniBatchKMeansPartitioner,
-            # TODO: Do we have an example of this working?
-            # https://github.com/gchq/Vanguard/issues/233
-            # KMedoidsPartitioner,
+            KMedoidsPartitioner,
         ]:
 
             @Distributed(
@@ -143,6 +156,12 @@ class VanguardTestCase(unittest.TestCase):
             class BinaryClassifier(GaussianGPController):
                 pass
 
+            if partitioner is KMedoidsPartitioner:
+                # KMedoids requires a kernel to be passed to the partitioner
+                partitioner_kwargs = {"kernel": ScaledRBFKernel()}
+            else:
+                partitioner_kwargs = {}
+
             # Define the controller object
             gp = BinaryClassifier(
                 train_x=self.x[self.train_indices],
@@ -151,6 +170,7 @@ class VanguardTestCase(unittest.TestCase):
                 y_std=0,
                 likelihood_class=BernoulliLikelihood,
                 marginal_log_likelihood_class=VariationalELBO,
+                partitioner_kwargs=partitioner_kwargs,
                 rng=self.rng,
             )
 

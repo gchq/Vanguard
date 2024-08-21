@@ -1,16 +1,33 @@
+# © Crown Copyright GCHQ
+#
+# Licensed under the GNU General Public License, version 3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Configuration file for the Sphinx documentation builder.
 
 This file only contains a selection of the most common options.
 For a full list see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html.
 """
+
+import logging
+
 # a bunch of pylint disables as this file is uniquely weird:
 # pylint: disable=import-error,invalid-name,wrong-import-order,wrong-import-position
-
 import os
+import re
 import shutil
 import sys
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar
 
 import gpytorch.constraints
 import gpytorch.distributions
@@ -22,6 +39,7 @@ import gpytorch.models
 import gpytorch.module
 import gpytorch.variational
 import sphinx.config
+import sphinx_autodoc_typehints
 import torch
 import torch.optim
 from PIL import Image
@@ -40,7 +58,6 @@ sys.path.extend([DOCS_FOLDER_FILE_PATH, SOURCE_FOLDER_FILE_PATH, VANGUARD_FOLDER
 # ignore Ruff's E402 "Module level import not at top of file" here - this must come after the sys.path manipulation
 # first party module imports
 import vanguard  # noqa: E402
-from vanguard.base.basecontroller import ttypes, ttypes_cuda  # noqa: E402
 from vanguard.hierarchical.collection import ModuleT  # noqa: E402
 
 # local folder imports
@@ -102,24 +119,20 @@ plot_rcparams = {
 autodoc_mock_imports = ["pandas", "sklearn_extra"]
 
 intersphinx_mapping = {
-    "gpytorch": ("https://docs.gpytorch.ai/en/v1.8.1/", None),  # TODO: Bump this when updating gpytorch
-    # https://github.com/gchq/Vanguard/issues/197
-    "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
+    "gpytorch": ("https://docs.gpytorch.ai/en/stable", None),
+    "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable", None),
+    "linear_operator": ("https://linear-operator.readthedocs.io/en/latest", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
     "python3": ("https://docs.python.org/3", None),
-    "sklearn": ("https://scikit-learn.org/stable/", None),
-    "torch": ("https://pytorch.org/docs/stable/", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
+    "torch": ("https://pytorch.org/docs/stable", None),
 }
 
 nitpicky = True
 nitpicky_ignore_mapping: Dict[str, List[str]] = {
     "py:class": [
         "torch.Size",
-        "gpytorch.distributions.multivariate_normal.MultivariateNormal",  # TODO: Remove when bumping gpytorch
-        # https://github.com/gchq/Vanguard/issues/197
-        "gpytorch.likelihoods.likelihood.Likelihood",  # TODO: Remove when bumping gpytorch
-        # https://github.com/gchq/Vanguard/issues/197
     ],
     "py:meth": [
         "activate",
@@ -163,31 +176,7 @@ autodoc_custom_types: dict[TypeAlias, str] = {
     ModuleT: ":class:`~gpytorch.Module`",
     Self: ":data:`~typing.Self`",
     gpytorch.mlls.MarginalLogLikelihood: f":mod:`{gpytorch.mlls.MarginalLogLikelihood.__name__} <gpytorch.mlls>`",
-    Union[ttypes, ttypes_cuda]: str(default_format_annotation(Type[torch.Tensor], sphinx.config.Config())),
 }
-
-
-# TODO: Remove these when gpytorch is sufficiently bumped:
-# https://github.com/gchq/Vanguard/issues/197
-autodoc_custom_types.update(
-    {
-        gpytorch.means.Mean: ":class:`~gpytorch.means.Mean`",
-        gpytorch.kernels.Kernel: ":class:`~gpytorch.kernels.Kernel`",
-        gpytorch.likelihoods.Likelihood: ":class:`~gpytorch.likelihoods.Likelihood`",
-        gpytorch.likelihoods.GaussianLikelihood: ":class:`~gpytorch.likelihoods.GaussianLikelihood`",
-        gpytorch.distributions.Distribution: ":class:`~gpytorch.distributions.Distribution`",
-        gpytorch.distributions.MultivariateNormal: ":class:`~gpytorch.distributions.MultivariateNormal`",
-        gpytorch.distributions.MultitaskMultivariateNormal: (
-            ":class:`~gpytorch.distributions.MultitaskMultivariateNormal`"
-        ),
-        gpytorch.models.ExactGP: ":class:`~gpytorch.models.ExactGP`",
-        gpytorch.module.Module: ":class:`~gpytorch.Module",
-        gpytorch.constraints.Interval: ":class:`~gpytorch.constraints.Interval`",
-        # pylint: disable=protected-access
-        gpytorch.variational._VariationalStrategy: ":class:`~gpytorch.variational._VariationalStrategy`",
-        gpytorch.variational._VariationalDistribution: ":class:`~gpytorch.variational._VariationalDistribution`",
-    }
-)
 
 
 def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Optional[str]:
@@ -206,7 +195,7 @@ def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Option
         If so, return that.
     2. Check if the annotation is a TypeVar. If so, replace it with its "bound" type
         for clarity in the docs. If not, then replace it with typing.Any.
-    3. If not, then return None, which uses thee default formatter.
+    3. If not, then return None, which uses the default formatter.
 
     See https://github.com/tox-dev/sphinx-autodoc-typehints?tab=readme-ov-file#options
     for specification.
@@ -229,6 +218,61 @@ def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Option
     return None
 
 
+# ignore unused-argument here - the signature needs to be exactly this as it's an
+# event handler
+def require_full_stops_on_params(
+    app: sphinx.config.Sphinx,  # pylint: disable=unused-argument
+    what: str,  # pylint: disable=unused-argument
+    name: str,
+    obj: object,  # pylint: disable=unused-argument
+    options: sphinx_autodoc_typehints.Options,  # pylint: disable=unused-argument
+    lines: List[str],
+):
+    """Require full stops on `param` directives in docstrings."""
+    current_param = None  # The parameter we're currently processing
+    current_param_lines = []  # The docstring lines for the parameter we're currently processing
+
+    # We need to use the Sphinx logger to ensure warnings are counted and can fail the build
+    logger = logging.getLogger("sphinx")
+
+    # add an extra empty string onto the front of "lines" to ensure we don't miss param
+    # directives on the first line
+    for line in ["%%START_LINE%%"] + lines + ["%%END_LINE%%"]:
+        # check for start/end of params
+        if line.startswith(":") or line == "%%END_LINE%%":
+            if current_param is not None and not "".join(current_param_lines).strip().endswith("."):
+                # then the previous :param: directive has ended - if it doesn't have a full stop at the end,
+                # log a warning.
+                logger.warning(
+                    "%s: docstring for parameter `%s` missing full stop",
+                    name,
+                    current_param,
+                )
+
+            # clear out the current param lines
+            current_param_lines = []
+
+            # check for start of new :param: directive
+            if line.strip().startswith(":param "):
+                match = re.match(r"^:param ([^:]+):(.*)$", line.strip())
+                if match is None:
+                    logger.warning("%s: Line did not match regex:\n\t%s", name, line.strip())
+                    current_param = None
+                else:
+                    if not match.group(2).strip():
+                        # empty param docstring - this obviously won't end in a full stop, so ignore it
+                        current_param = None
+                    else:
+                        # then there is actually a docstring here
+                        current_param = match.group(1)
+            else:
+                current_param = None
+
+        if current_param is not None:
+            # if we're in a :param: directive, add the current line to the current :param: directive's lines
+            current_param_lines.append(line)
+
+
 def skip(app, what, name, obj, would_skip, options):  # pylint: disable=unused-argument
     """Ensure that __init__ files are NOT skipped."""
     if name == "__init__":
@@ -237,8 +281,9 @@ def skip(app, what, name, obj, would_skip, options):  # pylint: disable=unused-a
 
 
 def setup(app):
-    """Ensure that our new skip function is called."""
+    """Set up Sphinx and connect handlers to events."""
     app.connect("autodoc-skip-member", skip)
+    app.connect("autodoc-process-docstring", require_full_stops_on_params)
 
 
 # -- FILE PRE-PROCESSING -----------------------------------------------------
