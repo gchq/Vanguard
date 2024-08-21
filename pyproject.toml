@@ -60,7 +60,7 @@ doc = [
 ]
 # All tools for a developer including those for running pylint
 dev = [
-    "vanguard[test, doc]",
+    "vanguard[test, doc, notebook]",
     "isort",
     "jupyterlab",
     "pre-commit",
@@ -69,7 +69,12 @@ dev = [
     "pyroma",
     "ruff",
 ]
-
+# All tools for running the example notebooks
+notebook = [
+    "jupyterlab",
+    "jupyter",
+    "tqdm",
+]
 [project.urls]
 #Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved
 # https://github.com/gchq/Vanguard/issues/254
