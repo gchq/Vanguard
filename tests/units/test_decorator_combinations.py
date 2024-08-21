@@ -3,7 +3,7 @@ Tests for the pairwise combinations of decorators.
 """
 
 import itertools
-from typing import Any, Dict, Optional, Tuple, Type, TypeVar
+from typing import Any, Callable, Dict, Optional, Tuple, Type
 from unittest.mock import patch
 
 import pytest
@@ -41,11 +41,12 @@ from vanguard.multitask import Multitask
 from vanguard.multitask.likelihoods import FixedNoiseMultitaskGaussianLikelihood
 from vanguard.normalise import NormaliseY
 from vanguard.standardise import DisableStandardScaling
+from vanguard.utils import compose
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 from vanguard.warps import SetInputWarp, SetWarp, warpfunctions
 
-ControllerT = TypeVar("ControllerT", bound=GPController)
+DecoratorAlias = Callable[[Type[GPController]], Type[GPController]]
 
 
 @BayesianHyperparameters()
@@ -53,12 +54,20 @@ class TestHierarchicalKernel(RBFKernel):
     """A kernel to test Bayesian hierarchical hyperparameters"""
 
 
+class RequirementDetails(TypedDict, total=False):
+    """Type hint for the sub-decorator details specification in `DECORATORS`."""
+
+    decorator: Dict[str, Any]
+    controller: Dict[str, Any]
+
+
 class DecoratorDetails(TypedDict, total=False):
-    """Type hint for the decorator details specification in `DECORATORS`."""
+    """Type hint for the decorator details specifications in `DECORATORS`."""
 
     decorator: Dict[str, Any]
     controller: Dict[str, Any]
     dataset: Dataset
+    requirements: Dict[Type[Decorator], RequirementDetails]
 
 
 DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
@@ -150,8 +159,9 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     },
 }
 
+# (upper, lower) -> kwargs
 COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dict[str, Any]] = {
-    (DirichletMulticlassClassification, VariationalInference): {
+    (VariationalInference, DirichletMulticlassClassification): {
         "likelihood_class": DirichletClassificationLikelihood,
     },
     (Multitask, VariationalInference): {
@@ -165,8 +175,7 @@ EXCLUDED_COMBINATIONS = {
     (Multitask, CategoricalClassification),  # multiple datasets
     (Multitask, DirichletMulticlassClassification),  # multiple datasets
     (Multitask, DirichletKernelMulticlassClassification),  # multiple datasets
-    # nor does classification with variational inference:
-    (VariationalInference, BinaryClassification),  # model contradiction
+    # nor does (some) classification with variational inference:
     (VariationalInference, DirichletKernelMulticlassClassification),  # model contradiction
     # conflicts with Distributed:
     (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
@@ -280,10 +289,19 @@ DATASET_CONFLICT_OVERRIDES = {
 def _initialise_decorator_pair(
     upper_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
     lower_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
-) -> Tuple[Decorator, Decorator, Dict[str, Any], Optional[Dataset]]:
-    """Initialise a pair of decorators."""
-    upper_decorator, upper_controller_kwargs, upper_dataset = _create_decorator(upper_decorator_details)
-    lower_decorator, lower_controller_kwargs, lower_dataset = _create_decorator(lower_decorator_details)
+) -> Tuple[Decorator, DecoratorAlias, Decorator, DecoratorAlias, Dict[str, Any], Optional[Dataset]]:
+    """
+    Initialise a pair of decorators.
+
+    :return: Tuple (upper_decorator, upper_requirement_decorators, lower_decorator, lower_requirement_decorators,
+        controller_kwargs, dataset)
+    """
+    upper_decorator, upper_requirement_decorators, upper_controller_kwargs, upper_dataset = _create_decorator(
+        upper_decorator_details
+    )
+    lower_decorator, lower_requirement_decorators, lower_controller_kwargs, lower_dataset = _create_decorator(
+        lower_decorator_details
+    )
 
     if (type(upper_decorator), type(lower_decorator)) in DATASET_CONFLICT_OVERRIDES:
         # Decorator application *must* fail, so passing dataset=None doesn't matter as we'll never reach initialisation
@@ -302,17 +320,41 @@ def _initialise_decorator_pair(
             or SyntheticDataset(n_train_points=20, n_test_points=2, rng=get_default_rng())
         )
 
-    controller_kwargs = {**upper_controller_kwargs, **lower_controller_kwargs}
-    return upper_decorator, lower_decorator, controller_kwargs, dataset
+    # For controller arguments, ones on higher decorators override those on lower decorators
+    controller_kwargs = lower_controller_kwargs
+    controller_kwargs.update(upper_controller_kwargs)
+    return (
+        upper_decorator,
+        upper_requirement_decorators,
+        lower_decorator,
+        lower_requirement_decorators,
+        controller_kwargs,
+        dataset,
+    )
 
 
 def _create_decorator(
     details: Tuple[Type[Decorator], DecoratorDetails],
-) -> Tuple[Decorator, Dict[str, Any], Optional[Dataset]]:
-    """Unpack decorator details."""
-    decorator_class, all_decorator_kwargs = details
-    decorator = decorator_class(ignore_all=True, **all_decorator_kwargs.get("decorator", {}))
-    return decorator, all_decorator_kwargs.get("controller", {}), all_decorator_kwargs.get("dataset", None)
+) -> Tuple[Decorator, DecoratorAlias, Dict[str, Any], Optional[Dataset]]:
+    """
+    Unpack decorator details.
+
+    :return: Tuple (decorator, composed_requirements, controller_kwargs, optional dataset)
+    """
+    decorator_class, decorator_details = details
+    decorator = decorator_class(ignore_all=True, **decorator_details.get("decorator", {}))
+    controller_kwargs = {}
+
+    requirement_decorators = []
+    requirements_details = decorator_details.get("requirements", {})
+    for required_decorator_class, required_decorator_details in requirements_details.items():
+        requirement_decorators.append(required_decorator_class(**required_decorator_details.get("decorator", {})))
+        controller_kwargs.update(required_decorator_details.get("controller", {}))
+
+    controller_kwargs.update(decorator_details.get("controller", {}))
+
+    composed_requirements: Callable[[Type[GPController]], Type[GPController]] = compose(requirement_decorators)
+    return decorator, composed_requirements, controller_kwargs, decorator_details.get("dataset", None)
 
 
 @pytest.mark.parametrize(
@@ -321,7 +363,7 @@ def _create_decorator(
         pytest.param(
             upper_details,
             lower_details,
-            id=f"Upper: {upper_details[0].__name__} - Lower: {lower_details[0].__name__}",
+            id=f"Upper: {upper_details[0].__name__}-Lower: {lower_details[0].__name__}",
         )
         for upper_details, lower_details in itertools.permutations(DECORATORS.items(), r=2)
         if (upper_details[0], lower_details[0]) not in EXCLUDED_COMBINATIONS
@@ -364,9 +406,10 @@ def test_combinations(
 
     and check that none of the above operations raise any unexpected errors.
     """
-    upper_decorator, lower_decorator, controller_kwargs, dataset = _initialise_decorator_pair(
-        upper_details, lower_details
+    upper_decorator, upper_requirements, lower_decorator, lower_requirements, controller_kwargs, dataset = (
+        _initialise_decorator_pair(upper_details, lower_details)
     )
+    all_decorators = compose([upper_decorator, upper_requirements, lower_decorator, lower_requirements])
 
     combination = (type(upper_decorator), type(lower_decorator))
     expected_warning_class, expected_warning_message = EXPECTED_COMBINATION_APPLY_WARNINGS.get(
@@ -377,7 +420,7 @@ def test_combinations(
         expected_error_class, expected_error_message
     ):
         try:
-            controller_class = upper_decorator(lower_decorator(GaussianGPController))
+            controller_class = all_decorators(GaussianGPController)
         except (MissingRequirementsError, TopmostDecoratorError) as exc:
             if expected_error_class is not None and not isinstance(exc, expected_error_class):
                 raise AssertionError(
