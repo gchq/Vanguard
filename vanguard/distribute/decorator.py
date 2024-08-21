@@ -90,9 +90,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self.partitioner_kwargs = kwargs.pop("partitioner_kwargs", {})
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
-        decorator = self
-
+    def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
+        super().verify_decorated_class(cls)
         # pylint: disable-next=protected-access
         if HigherRankFeatures in cls.__decorators__ and not self.partitioner_class._can_handle_higher_rank_features:
             msg = (
@@ -100,6 +99,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 "Consider moving the `@Distributed` decorator below the `@HigherRankFeatures` decorator."
             )
             raise TypeError(msg)
+
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+        decorator = self
 
         @wraps_class(cls)
         class InnerClass(cls):
