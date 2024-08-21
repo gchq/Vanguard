@@ -120,6 +120,7 @@ class DecoratorDetails(TypedDict, total=False):
     Can be overridden for specific decorator combinations in `DATASET_CONFLICT_OVERRIDES`.
     """
     # TODO(rg): Remove the requirements specification from here if it gets added to the Decorator framework
+    # https://github.com/gchq/Vanguard/issues/381
     requirements: Dict[Type[Decorator], RequirementDetails]
     """
     Specifies additional decorators that this decorator requires.
@@ -262,8 +263,8 @@ EXCLUDED_COMBINATIONS = {
     (VariationalHierarchicalHyperparameters, DirichletKernelMulticlassClassification),
     (LaplaceHierarchicalHyperparameters, DirichletMulticlassClassification),
     (LaplaceHierarchicalHyperparameters, DirichletKernelMulticlassClassification),
-    # fails with AttributeError: 'Bernoulli' object has no attribute 'covariance_matrix'
-    # TODO(rg): investigate this
+    # TODO(rg): these fail with AttributeError: 'Bernoulli' object has no attribute 'covariance_matrix'
+    # https://github.com/gchq/Vanguard/issues/382
     (BinaryClassification, VariationalHierarchicalHyperparameters),
     (BinaryClassification, LaplaceHierarchicalHyperparameters),
     (CategoricalClassification, VariationalHierarchicalHyperparameters),
@@ -282,7 +283,8 @@ EXCLUDED_COMBINATIONS = {
     (DirichletKernelMulticlassClassification, SetWarp),
     # TODO(rg): Fails due to shape mismatch whichever one is on top. When VHH/LHH is on top of HRF this makes sense,
     #  but the other way around should probably work. Will require a custom @BayesianHyperparameters higher-rank
-    #  kernel class. https://github.com/gchq/Vanguard/issues/375
+    #  kernel class.
+    # https://github.com/gchq/Vanguard/issues/375
     (HigherRankFeatures, VariationalHierarchicalHyperparameters),
     (HigherRankFeatures, LaplaceHierarchicalHyperparameters),
 }
@@ -537,6 +539,7 @@ def test_combinations(
     if isinstance(upper_decorator, HigherRankFeatures) and isinstance(lower_decorator, HigherRankFeatures):
         # TODO(rg): figure out what to do with this? Do we make the HRF decorator raise an error if applied to a class
         #  already decorated with HRF? Or do we try and provide some appropriate arguments to make this work?
+        # https://github.com/gchq/Vanguard/issues/383
         pytest.skip("Needs more work!")
 
     assert dataset is not None
@@ -583,6 +586,7 @@ def test_combinations(
             MonteCarloPosteriorCollection,
             "INITIAL_NUMBER_OF_SAMPLES",
             # TODO(rg): Investigate why CategoricalClassification needs so many more samples?
+            # https://github.com/gchq/Vanguard/issues/380
             90 if any(isinstance(decorator, CategoricalClassification) for decorator in all_decorators) else 20,
         ):
             # check that fuzzy classification doesn't throw any errors
