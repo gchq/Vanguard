@@ -3,7 +3,7 @@ Tests for the pairwise combinations of decorators.
 """
 
 import itertools
-from typing import Any, Callable, Dict, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 from unittest.mock import patch
 
 import pytest
@@ -18,16 +18,18 @@ from tests.cases import get_default_rng, maybe_throws, maybe_warns
 # not super happy about importing HigherRankKernel/HigherRankMean from another test file - these should probably be
 # moved to some more central location
 from tests.units.test_features import HigherRankKernel, HigherRankMean
-from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
 from vanguard.classification import BinaryClassification, CategoricalClassification, DirichletMulticlassClassification
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
-from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
+from vanguard.classification.likelihoods import (
+    DirichletKernelClassifierLikelihood,
+    GenericExactMarginalLogLikelihood,
+)
 from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import HigherRankSyntheticDataset, SyntheticDataset, complicated_f, simple_f
-from vanguard.decoratorutils import Decorator
-from vanguard.decoratorutils.errors import BadCombinationWarning, MissingRequirementsError, TopmostDecoratorError
+from vanguard.decoratorutils import Decorator, TopMostDecorator
+from vanguard.decoratorutils.errors import BadCombinationWarning
 from vanguard.distribute import Distributed
 from vanguard.features import HigherRankFeatures
 from vanguard.hierarchical import (
@@ -46,7 +48,7 @@ from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 from vanguard.warps import SetInputWarp, SetWarp, warpfunctions
 
-DecoratorAlias = Callable[[Type[GPController]], Type[GPController]]
+T = TypeVar("T")
 
 
 @BayesianHyperparameters()
@@ -70,7 +72,19 @@ class DecoratorDetails(TypedDict, total=False):
     requirements: Dict[Type[Decorator], RequirementDetails]
 
 
+class EmptyDecorator:
+    """Placeholder decorator to allow testing each other decorator on its own."""
+
+    def __init__(self, **kwargs) -> None:
+        pass
+
+    def __call__(self, cls: T) -> T:
+        """Do nothing, and return the class as is."""
+        return cls
+
+
 DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
+    EmptyDecorator: {},
     BinaryClassification: {
         "controller": {
             "y_std": 0,
@@ -107,22 +121,26 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     },
     HigherRankFeatures: {
         "decorator": {"rank": 2},
-        "controller": {
-            "kernel_class": HigherRankKernel,
-            "mean_class": HigherRankMean,
-        },
+        "controller": {"kernel_class": HigherRankKernel, "mean_class": HigherRankMean},
         "dataset": HigherRankSyntheticDataset(n_train_points=10, n_test_points=4, rng=get_default_rng()),
     },
     DisableStandardScaling: {},
-    CategoricalClassification: {
-        # NOTE: This decorator is actually _not tested at all_ here! It requires both `Multitask` and
-        # `VariationalInference`, and so since only two decorators are used, this will _always_ raise
-        # `MissingRequirementsError` and have its test skipped.
-        "decorator": {"num_classes": 4},
-        "dataset": MulticlassGaussianClassificationDataset(
-            num_train_points=10, num_test_points=4, num_classes=4, rng=get_default_rng()
-        ),
-    },
+    # CategoricalClassification: {
+    #     "decorator": {"num_classes": 3},
+    #     "controller": {
+    #         "likelihood_class": MultitaskBernoulliLikelihood,
+    #         "marginal_log_likelihood_class": VariationalELBO,
+    #         "kernel": RBFKernel,  # TODO: remove
+    #         "y_std": 0,
+    #     },
+    #     "dataset": MulticlassGaussianClassificationDataset(
+    #         num_train_points=12, num_test_points=6, num_classes=3, rng=get_default_rng()
+    #     ),
+    #     "requirements": {
+    #         Multitask: {"decorator": {"num_tasks": 3}},
+    #         VariationalInference: {"decorator": {"n_inducing_points": 5}},
+    #     },
+    # },
     Distributed: {"decorator": {"n_experts": 3, "rng": get_default_rng()}},
     VariationalHierarchicalHyperparameters: {
         "decorator": {"num_mc_samples": 13},
@@ -136,9 +154,7 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     NormaliseY: {},
     Multitask: {
         "decorator": {"num_tasks": 2},
-        "controller": {
-            "likelihood_class": FixedNoiseMultitaskGaussianLikelihood,
-        },
+        "controller": {"likelihood_class": FixedNoiseMultitaskGaussianLikelihood},
         "dataset": SyntheticDataset(
             [simple_f, complicated_f], n_train_points=10, n_test_points=1, rng=get_default_rng()
         ),
@@ -245,6 +261,7 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
                 # Note that we _don't_ include categorical classification - that will instead raise
                 # a `MissingRequirementsError` for missing `VariationalInference`.
                 BinaryClassification,
+                CategoricalClassification,
                 DirichletMulticlassClassification,
                 DirichletKernelMulticlassClassification,
             ],
@@ -290,7 +307,7 @@ DATASET_CONFLICT_OVERRIDES = {
 def _initialise_decorator_pair(
     upper_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
     lower_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
-) -> Tuple[Decorator, DecoratorAlias, Decorator, DecoratorAlias, Dict[str, Any], Optional[Dataset]]:
+) -> Tuple[Decorator, List[Decorator], Decorator, List[Decorator], Dict[str, Any], Optional[Dataset]]:
     """
     Initialise a pair of decorators.
 
@@ -336,11 +353,11 @@ def _initialise_decorator_pair(
 
 def _create_decorator(
     details: Tuple[Type[Decorator], DecoratorDetails],
-) -> Tuple[Decorator, DecoratorAlias, Dict[str, Any], Optional[Dataset]]:
+) -> Tuple[Decorator, List[Decorator], Dict[str, Any], Optional[Dataset]]:
     """
     Unpack decorator details.
 
-    :return: Tuple (decorator, composed_requirements, controller_kwargs, optional dataset)
+    :return: Tuple (decorator, requirement_decorators, controller_kwargs, optional dataset)
     """
     decorator_class, decorator_details = details
     decorator = decorator_class(ignore_all=True, **decorator_details.get("decorator", {}))
@@ -354,8 +371,7 @@ def _create_decorator(
 
     controller_kwargs.update(decorator_details.get("controller", {}))
 
-    composed_requirements: Callable[[Type[GPController]], Type[GPController]] = compose(requirement_decorators)
-    return decorator, composed_requirements, controller_kwargs, decorator_details.get("dataset", None)
+    return decorator, requirement_decorators, controller_kwargs, decorator_details.get("dataset", None)
 
 
 @pytest.mark.parametrize(
@@ -364,11 +380,20 @@ def _create_decorator(
         pytest.param(
             upper_details,
             lower_details,
-            id=f"Upper: {upper_details[0].__name__}-Lower: {lower_details[0].__name__}",
+            id=(
+                f"Upper: {upper_details[0].__name__}-Lower: {lower_details[0].__name__}"
+                if upper_details[0] is not EmptyDecorator
+                else f"Only {lower_details[0].__name__}"
+            ),
         )
         for upper_details, lower_details in itertools.permutations(DECORATORS.items(), r=2)
+        # don't test combinations which we've excluded above
         if (upper_details[0], lower_details[0]) not in EXCLUDED_COMBINATIONS
         and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
+        # NoDecorator should only be on top, to avoid cluttering the test log
+        and lower_details[0] is not EmptyDecorator
+        # TopMostDecorators must be on top, as the name suggests
+        and not issubclass(lower_details[0], TopMostDecorator)
     ],
 )
 @pytest.mark.parametrize(
@@ -410,7 +435,7 @@ def test_combinations(
     upper_decorator, upper_requirements, lower_decorator, lower_requirements, controller_kwargs, dataset = (
         _initialise_decorator_pair(upper_details, lower_details)
     )
-    apply_all_decorators = compose([upper_decorator, upper_requirements, lower_decorator, lower_requirements])
+    all_decorators = [upper_decorator, *upper_requirements, lower_decorator, *lower_requirements]
 
     combination = (type(upper_decorator), type(lower_decorator))
     expected_warning_class, expected_warning_message = EXPECTED_COMBINATION_APPLY_WARNINGS.get(
@@ -420,14 +445,7 @@ def test_combinations(
     with maybe_warns(expected_warning_class, expected_warning_message), maybe_throws(
         expected_error_class, expected_error_message
     ):
-        try:
-            controller_class = apply_all_decorators(GaussianGPController)
-        except (MissingRequirementsError, TopmostDecoratorError) as exc:
-            if expected_error_class is not None and not isinstance(exc, expected_error_class):
-                raise AssertionError(
-                    f"Expected {expected_error_class.__name__} to be raised, but got {type(exc).__name__}."
-                ) from exc
-            return
+        controller_class = compose(all_decorators)(GaussianGPController)
     if expected_error_class is not None:
         return
 
@@ -462,7 +480,7 @@ def test_combinations(
         try:
             controller.classify_points(dataset.test_x)
         except TypeError as exc:
-            if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
+            if any(isinstance(decorator, SetWarp) for decorator in all_decorators):
                 assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
             else:
                 raise
@@ -480,7 +498,7 @@ def test_combinations(
             try:
                 controller.classify_fuzzy_points(dataset.test_x, dataset.test_x_std)
             except TypeError as exc:
-                if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
+                if any(isinstance(decorator, SetWarp) for decorator in all_decorators):
                     assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
                 else:
                     raise
@@ -490,7 +508,7 @@ def test_combinations(
         try:
             posterior.prediction()
         except TypeError as exc:
-            if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
+            if any(isinstance(decorator, SetWarp) for decorator in all_decorators):
                 assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
             else:
                 raise
@@ -505,7 +523,7 @@ def test_combinations(
         try:
             fuzzy_posterior.prediction()
         except TypeError as exc:
-            if isinstance(upper_decorator, SetWarp) or isinstance(lower_decorator, SetWarp):
+            if any(isinstance(decorator, SetWarp) for decorator in all_decorators):
                 assert str(exc) == "The mean and covariance of a warped GP cannot be computed exactly."
             else:
                 raise
