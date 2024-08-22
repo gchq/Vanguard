@@ -56,7 +56,6 @@ doc = [
     "sphinx",
     "sphinx-autodoc-typehints",
     "sphinxcontrib-bibtex",
-    "tqdm",
 ]
 # All tools for a developer including those for running pylint
 dev = [
