@@ -56,6 +56,9 @@ doc = [
     "sphinx",
     "sphinx-autodoc-typehints",
     "sphinxcontrib-bibtex",
+    "jupyterlab",
+    "jupyter",
+    "tqdm",
 ]
 # All tools for a developer including those for running pylint
 dev = [
@@ -67,12 +70,6 @@ dev = [
     "pyright",
     "pyroma",
     "ruff",
-]
-# All tools for running the example notebooks
-notebook = [
-    "jupyterlab",
-    "jupyter",
-    "tqdm",
 ]
 [project.urls]
 #Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved

@@ -102,7 +102,6 @@ coverage_write_headline = False
 coverage_ignore_classes = ["EmptyDataset"]
 coverage_ignore_pyobjects = [r"vanguard\.warps\.warpfunctions\..*?WarpFunction\.(deriv|forward|inverse)"]
 
-nbsphinx_execute = "never"
 nbsphinx_thumbnails = {"examples/*": "_static/logo_circle.png"}
 
 
@@ -298,7 +297,15 @@ os.mkdir(examples_dest)
 confutils.copy_filtered_files(examples_source, examples_dest, file_types={".ipynb", ".rst"})
 
 notebooks_file_paths = [os.path.join(examples_dest, notebook_path) for notebook_path in os.listdir(examples_dest)]
-confutils.process_notebooks(notebooks_file_paths)
+confutils.process_notebooks(
+    notebooks_file_paths,
+    notebooks_to_skip=[
+        "distributed_gp",
+        "laplace_hierarchical",
+        "sparse_variational_gps",
+        "sparse_kernel_approximation",
+    ],
+)
 
 circle_logo_path = os.path.join(SOURCE_FOLDER_FILE_PATH, "_static", "logo_circle.png")
 if not os.path.exists(circle_logo_path):
