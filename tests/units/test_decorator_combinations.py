@@ -33,6 +33,8 @@ from tests.cases import get_default_rng, maybe_throws, maybe_warns
 
 # not super happy about importing HigherRankKernel/HigherRankMean from another test file - these should probably be
 # moved to some more central location
+# TODO: replace these with something more general?
+# https://github.com/gchq/Vanguard/issues/387
 from tests.units.test_features import HigherRankKernel, HigherRankMean
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection
