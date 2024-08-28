@@ -100,7 +100,7 @@ class RequirementDetails(TypedDict, total=False):
     decorator: Dict[str, Any]
     """Keyword arguments to pass to the decorator. `ignore_all=True` is always passed."""
     controller: Dict[str, Any]
-    """Additional keyword arguments to pass to the GPController on instantiation."""
+    """Additional keyword arguments to pass to the `GPController` on instantiation."""
 
 
 class DecoratorDetails(TypedDict, total=False):
@@ -109,7 +109,7 @@ class DecoratorDetails(TypedDict, total=False):
     decorator: Dict[str, Any]
     """Keyword arguments to pass to the decorator. `ignore_all=True` is always passed."""
     controller: Dict[str, Any]
-    """Additional keyword arguments to pass to the GPController on instantiation."""
+    """Additional keyword arguments to pass to the `GPController` on instantiation."""
     dataset: Dataset
     """
     Specifies a dataset for the `GPController` to be fitted and tested on.
@@ -125,7 +125,7 @@ class DecoratorDetails(TypedDict, total=False):
     """
     Specifies additional decorators that this decorator requires.
 
-    These are applied to the GPController before this decorator.
+    These are applied to the `GPController` before this decorator.
     """
 
 
@@ -244,17 +244,26 @@ COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dic
 # Combinations that are not tested at all. This is matched against independent of order, so if (A, B) is listed,
 # neither (A, B) nor (B, A) is tested. Note that these are not skipped, they are just not provided as parameter
 # combinations in the first place.
+# TODO(rg): Ideally, this set should be empty; everything in here should be a temporary measure. If a pair of decorators
+#  are incompatible, we should raise an exception saying so, and then we should test for that exception here.
+# https://github.com/gchq/Vanguard/issues/386
 EXCLUDED_COMBINATIONS = {
     # multitask classification generally doesn't work:
+    # TODO(rg): these mainly fail due to dataset conflicts - we should provide datasets that work with these
+    #  combinations
+    # https://github.com/gchq/Vanguard/issues/385
     (Multitask, BinaryClassification),  # likelihood contradiction
     (Multitask, CategoricalClassification),  # multiple datasets - unnecessary as Multitask is already a requirement
     (Multitask, DirichletMulticlassClassification),  # multiple datasets
     (Multitask, DirichletKernelMulticlassClassification),  # multiple datasets
     # nor does classification with variational inference:
-    (VariationalInference, DirichletKernelMulticlassClassification),  # model contradiction
+    # TODO(rg): if this is an accepted incompatibility, we should raise an exception saying so
+    # https://github.com/gchq/Vanguard/issues/386
+    (VariationalInference, DirichletKernelMulticlassClassification),  # MLL/likelihood class contradiction
     # conflicts with Distributed:
+    # TODO(rg): if this is an accepted incompatibility, we should raise an exception saying so
+    # https://github.com/gchq/Vanguard/issues/386
     (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
-    (Distributed, VariationalHierarchicalHyperparameters),  # cannot combine with a BCM aggregator
     # can't aggregate multitask predictions:
     # TODO(rg): Commenting out either the (VHH, DMC) or (LHH, DMC) pair below causes several unrelated combinations
     #  DirichletMulticlassClassification to fail. This indicates a failure of test isolation.
@@ -269,6 +278,8 @@ EXCLUDED_COMBINATIONS = {
     (BinaryClassification, LaplaceHierarchicalHyperparameters),
     (CategoricalClassification, VariationalHierarchicalHyperparameters),
     (CategoricalClassification, LaplaceHierarchicalHyperparameters),
+    # TODO(rg): We should provide some datasets that work with these combinations.
+    # https://github.com/gchq/Vanguard/issues/385
     # HigherRankFeatures has dataset conflicts with several other decorators:
     (HigherRankFeatures, DirichletMulticlassClassification),  # two datasets
     (HigherRankFeatures, DirichletKernelMulticlassClassification),  # two datasets
@@ -442,7 +453,7 @@ def _create_decorator(
         - `requirement_decorators`: list of instantiated decorators to be applied before `decorator` to fulfil
             requirements
         - `controller_kwargs`: additional keyword arguments to provide to the `GPController` on instantiation
-        - `dataset`: dataset to test with, or `None` to defer to the other decorator or to a default
+        - `dataset`: dataset to test with, or :data:`None` to defer to the other decorator or to a default
     """
     decorator_class, decorator_details = details
     decorator = decorator_class(ignore_all=True, **decorator_details.get("decorator", {}))
@@ -604,7 +615,17 @@ def test_combinations(
 
     # If not, check that the prediction methods don't throw any unexpected errors
     else:
-        posterior = controller.posterior_over_point(dataset.test_x)
+        try:
+            posterior = controller.posterior_over_point(dataset.test_x)
+        except RuntimeError as exc:
+            if isinstance(upper_decorator, Distributed) and isinstance(
+                lower_decorator, VariationalHierarchicalHyperparameters
+            ):
+                assert str(exc) == "Cannot distribute using this kernel - try using a non-BCM aggregator instead."
+                return
+            else:
+                raise
+
         try:
             posterior.prediction()
         except TypeError as exc:
