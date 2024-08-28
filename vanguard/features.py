@@ -25,6 +25,7 @@ import torch
 from vanguard import utils
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.warnings import warn_experimental
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -48,6 +49,7 @@ class HigherRankFeatures(Decorator):
         """
         :param rank: The rank of the input features. Should be a positive integer.
         """
+        warn_experimental("The HigherRankFeatures decorator")
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.rank = rank
 

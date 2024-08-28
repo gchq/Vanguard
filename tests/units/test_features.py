@@ -22,6 +22,7 @@ Tests for the HigherRankFeatures decorator.
 import unittest
 from typing import Any, Type
 
+import pytest
 import torch
 from gpytorch.lazy import LazyEvaluatedKernelTensor
 from gpytorch.means import ConstantMean
@@ -33,6 +34,7 @@ from vanguard.features import HigherRankFeatures
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.standardise import DisableStandardScaling
 from vanguard.vanilla import GaussianGPController
+from vanguard.warnings import ExperimentalFeatureWarning
 
 
 class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
@@ -156,3 +158,11 @@ class BasicTests(unittest.TestCase):
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
         mean, _, _ = posterior.confidence_interval()
         self.assertEqual(mean.shape, self.dataset.test_y.shape)
+
+    def test_warns(self) -> None:
+        """Test that the decorator raises a warning about it being experimental."""
+        with pytest.warns(ExperimentalFeatureWarning, match="HigherRankFeatures"):
+
+            @HigherRankFeatures(2)
+            class HigherRankController(GaussianGPController):  # pylint: disable=unused-variable
+                pass
