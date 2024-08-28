@@ -39,6 +39,7 @@ from vanguard.distribute.aggregators import (
     XGRBCMAggregator,
 )
 from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner
+from vanguard.features import HigherRankFeatures
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
@@ -103,6 +104,16 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self.partitioner_class = partitioner_class
         self.partitioner_kwargs = partitioner_kwargs if partitioner_kwargs is not None else {}
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
+
+    def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
+        super().verify_decorated_class(cls)
+        # pylint: disable-next=protected-access
+        if HigherRankFeatures in cls.__decorators__ and not self.partitioner_class._can_handle_higher_rank_features:
+            msg = (
+                f"{self.partitioner_class.__name__} cannot handle higher-rank features. "
+                "Consider moving the `@Distributed` decorator below the `@HigherRankFeatures` decorator."
+            )
+            raise TypeError(msg)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
