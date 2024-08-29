@@ -23,6 +23,7 @@ import numpy as np
 import numpy.typing
 import torch
 from torch import Tensor
+from typing_extensions import Self
 
 from vanguard.base.basecontroller import BaseGPController
 from vanguard.base.metaclass import _StoreInitValues
@@ -208,7 +209,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         return self._fuzzy_predictive_likelihood(x, x_std)
 
     @classmethod
-    def new(cls, instance, **kwargs):
+    def new(cls, instance: Self, **kwargs) -> Self:
         """
         Create an instance of the class with the same initialisation parameters as an existing instance.
 

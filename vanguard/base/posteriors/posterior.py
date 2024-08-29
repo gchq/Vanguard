@@ -23,9 +23,13 @@ import numpy as np
 import numpy.typing
 import torch
 from scipy import stats
+from torch.distributions import Distribution
 from typing_extensions import Self
 
 T = TypeVar("T")
+
+# TODO: Unsure about the usage of `torch.distributions.Distribution` vs `gpytorch.distributions.Distribution` in this
+#  file. Could be the source of https://github.com/gchq/Vanguard/issues/382?
 
 
 class Posterior:
@@ -44,13 +48,13 @@ class Posterior:
 
     def __init__(
         self,
-        distribution: gpytorch.distributions.MultivariateNormal,
+        distribution: Distribution,
     ) -> None:
         """Initialise self."""
         self.distribution = self._add_jitter(distribution)
 
     @property
-    def condensed_distribution(self) -> gpytorch.distributions.MultivariateNormal:
+    def condensed_distribution(self) -> Distribution:
         """
         Return the condensed distribution.
 
@@ -280,8 +284,8 @@ class Posterior:
 
     @staticmethod
     def _add_jitter(
-        distribution: gpytorch.distributions.MultivariateNormal,
-    ) -> gpytorch.distributions.MultivariateNormal:
+        distribution: Distribution,
+    ) -> Distribution:
         """
         Add diagonal jitter to covariance matrices to avoid indefinite covariance matrices.
 

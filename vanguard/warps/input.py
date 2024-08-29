@@ -19,6 +19,7 @@ Contains the Python decorators for applying input warping.
 from typing import Any, Type, TypeVar
 
 import torch
+from typing_extensions import Self
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -107,7 +108,7 @@ class SetInputWarp(Decorator):
                 self.input_warp = warp_function
 
             @classmethod
-            def new(cls, instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
+            def new(cls, instance: Self, **kwargs: Any) -> Self:
                 """Also apply warping to the new instance."""
                 new_instance = super().new(instance, **kwargs)
                 new_instance.input_warp = instance.input_warp

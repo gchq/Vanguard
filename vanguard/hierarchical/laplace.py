@@ -22,6 +22,7 @@ import gpytorch
 import numpy as np
 import torch
 from numpy.typing import NDArray
+from typing_extensions import Self
 
 from vanguard import utils
 from vanguard.decoratorutils import process_args, wraps_class
@@ -135,7 +136,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 self._temperature = posterior_temperature
 
             @classmethod
-            def new(cls: Type[ControllerT], instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
+            def new(cls, instance: Self, **kwargs: Any) -> Self:
                 """Copy hyperparameter posteriors."""
                 new_instance = super().new(instance, **kwargs)
                 new_instance.hyperparameter_posterior_mean = (

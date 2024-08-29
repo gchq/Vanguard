@@ -22,7 +22,7 @@ import numpy as np
 import torch
 from gpytorch.distributions import MultivariateNormal
 from gpytorch.kernels import Kernel
-from gpytorch.likelihoods import GaussianLikelihood
+from gpytorch.likelihoods import Likelihood
 from gpytorch.means import Mean
 from gpytorch.models import ApproximateGP
 from gpytorch.variational import (
@@ -56,7 +56,7 @@ class SVGPModel(ApproximateGP):
         self,
         train_x: Union[Tensor, NDArray[np.floating]],
         train_y: Union[Tensor, NDArray[np.floating]],  # pylint: disable=unused-argument
-        likelihood: GaussianLikelihood,
+        likelihood: Likelihood,
         mean_module: Mean,
         covar_module: Kernel,
         n_inducing_points: int,

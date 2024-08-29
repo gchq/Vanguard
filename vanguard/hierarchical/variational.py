@@ -21,7 +21,7 @@ from typing import Any, Generator, List, Optional, Type, TypeVar, Union
 import gpytorch
 import numpy as np
 import torch
-from gpytorch.variational import CholeskyVariationalDistribution
+from gpytorch.variational import CholeskyVariationalDistribution, _VariationalDistribution
 from linear_operator import to_linear_operator
 from numpy.typing import NDArray
 
@@ -40,10 +40,7 @@ ControllerT = TypeVar("ControllerT", bound=GPController)
 KernelT = TypeVar("KernelT", bound=gpytorch.kernels.Kernel)
 LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-VariationalDistributionT = TypeVar(
-    "VariationalDistributionT",
-    bound=gpytorch.variational._VariationalDistribution,  # pylint: disable=protected-access
-)
+DistributionT = TypeVar("DistributionT", bound=gpytorch.distributions.Distribution)
 
 
 class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
@@ -84,7 +81,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     def __init__(
         self,
         num_mc_samples: int = 100,
-        variational_distribution_class: Optional[VariationalDistributionT] = CholeskyVariationalDistribution,
+        variational_distribution_class: Optional[_VariationalDistribution] = CholeskyVariationalDistribution,
         **kwargs: Any,
     ) -> None:
         """
@@ -253,8 +250,8 @@ def _correct_point_estimate_shapes(point_estimate_kernels: List[KernelT]) -> Non
 
 
 def _safe_index_batched_multivariate_normal(
-    distribution: VariationalDistributionT,
-) -> Generator[VariationalDistributionT, None, None]:
+    distribution: DistributionT,
+) -> Generator[DistributionT, None, None]:
     """
     Delazifies the batched covariance matrix and yields recreated non-batch normals.
 

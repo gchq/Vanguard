@@ -36,6 +36,7 @@ dependencies = [
     "torch>=1.7.0",
     "typing_extensions",
     "urllib3>=2.2.1",
+    "beartype",
 ]
 
 [project.optional-dependencies]

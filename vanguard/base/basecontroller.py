@@ -28,6 +28,7 @@ import numpy as np
 import numpy.typing
 import torch
 from gpytorch import constraints
+from gpytorch.distributions import MultivariateNormal
 from gpytorch.models import ApproximateGP, ExactGP
 from linear_operator.utils.errors import NanError
 
@@ -101,11 +102,11 @@ class BaseGPController:
 
     def __init__(
         self,
-        train_x: Union[numpy.typing.NDArray[float], float],
-        train_y: Union[numpy.typing.NDArray[float], float],
+        train_x: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
+        train_y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.integer], float],
         kernel_class: Type[gpytorch.kernels.Kernel],
         mean_class: Type[gpytorch.means.Mean],
-        y_std: Union[numpy.typing.NDArray[float], float],
+        y_std: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
         likelihood_class: Type[gpytorch.likelihoods.Likelihood],
         marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
         optimiser_class: Type[torch.optim.Optimizer],
@@ -386,7 +387,7 @@ class BaseGPController:
                     detached_loss = loss
                 self._metrics_tracker.run_metrics(detached_loss, self)
         self._smart_optimiser.set_parameters()
-        return detached_loss
+        return torch.as_tensor(detached_loss)
 
     def _single_optimisation_step(
         self,
@@ -427,7 +428,7 @@ class BaseGPController:
 
     def _get_posterior_over_point_in_eval_mode(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
+        x: Union[torch.Tensor, numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Predict the y-value of a single point in evaluation mode.
@@ -440,8 +441,8 @@ class BaseGPController:
 
     def _gp_forward(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
-    ) -> ExactGPModel:
+        x: Union[torch.Tensor, numpy.typing.NDArray[float], float],
+    ) -> MultivariateNormal:
         """Pass inputs through the base GPyTorch GP model."""
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=NumericalWarning, message=_JITTER_WARNING)
@@ -454,7 +455,7 @@ class BaseGPController:
 
     def _get_posterior_over_point(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
+        x: Union[torch.Tensor, numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
@@ -488,8 +489,8 @@ class BaseGPController:
 
     def _input_standardise_modules(
         self,
-        *modules: torch.nn.Module,
-    ) -> List[torch.nn.Module]:
+        *modules: Type[torch.nn.Module],
+    ) -> List[Type[torch.nn.Module]]:
         """
         Apply standard input scaling (mean zero, variance 1) to the supplied PyTorch nn.Modules.
 
@@ -524,8 +525,8 @@ class BaseGPController:
     @staticmethod
     def _decide_noise_shape(
         posterior: Posterior,
-        x: torch.Tensor,
-    ) -> Tuple[int]:
+        x: Union[torch.Tensor, np.typing.NDArray[np.floating]],
+    ) -> Tuple[int, ...]:
         """
         Determine the correct shape of the likelihood noise.
 
@@ -580,8 +581,8 @@ def _catch_and_check_module_errors(
     """
 
     def decorator(
-        module_class: torch.nn.Module,
-    ) -> torch.nn.Module:
+        module_class: Type[torch.nn.Module],
+    ) -> Type[torch.nn.Module]:
         """
         Decorate a particular module (mean/kernel).
 

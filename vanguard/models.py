@@ -37,7 +37,7 @@ class ExactGPModel(ExactGP):
         self,
         train_x: torch.Tensor,
         train_y: torch.Tensor,
-        likelihood: gpytorch.likelihoods.GaussianLikelihood,
+        likelihood: gpytorch.likelihoods._GaussianLikelihoodBase,
         mean_module: gpytorch.means.Mean,
         covar_module: gpytorch.kernels.Kernel,
         **kwargs: Any,

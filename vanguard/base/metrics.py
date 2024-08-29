@@ -25,7 +25,7 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Callable, Optional
 
 if TYPE_CHECKING:
-    from vanguard.base.basecontroller import BaseGPController
+    import vanguard.base.basecontroller
 
 
 class MetricsTracker:
@@ -121,7 +121,7 @@ class MetricsTracker:
     def run_metrics(
         self,
         loss_value: float,
-        controller: Optional["BaseGPController"],
+        controller: Optional["vanguard.base.basecontroller.BaseGPController"],
         **additional_info,
     ) -> None:
         """
@@ -180,6 +180,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float, controller: "BaseGPController") -> float:  # pylint: disable=unused-argument
+def loss(loss_value: float, controller: "vanguard.base.basecontroller.BaseGPController") -> float:  # pylint: disable=unused-argument
     """Return the loss value."""
     return loss_value

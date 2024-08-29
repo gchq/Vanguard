@@ -20,9 +20,10 @@ import inspect
 from collections import deque
 from functools import total_ordering
 from heapq import heappush, heappushpop, nlargest
-from typing import Any, Callable, Deque, Dict, Generator, Generic, List, Optional, Type, TypeVar, overload
+from typing import Any, Callable, Deque, Dict, Generator, Generic, List, Optional, Type, TypeVar, Union, overload
 
 import numpy as np
+import torch
 from torch import Tensor
 from torch.nn import Module
 from torch.optim import Optimizer
@@ -106,12 +107,16 @@ class SmartOptimiser(Generic[OptimiserT]):
         self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     @overload
-    def step(self, loss: float, closure: None = ...) -> None: ...  # pragma: no cover
+    def step(self, loss: Union[float, torch.Tensor], closure: None = ...) -> None: ...  # pragma: no cover
 
     @overload
-    def step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
+    def step(
+        self, loss: Union[float, torch.Tensor], closure: Callable[[], float]
+    ) -> Union[float, torch.Tensor]: ...  # pragma: no cover
 
-    def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def step(
+        self, loss: Union[float, torch.Tensor], closure: Optional[Callable[[], float]] = None
+    ) -> Optional[Union[float, torch.Tensor]]:
         """Perform a single optimisation step."""
         step_result = self._step(loss, closure=closure)
         self.last_n_losses.append(float(loss))
@@ -342,7 +347,7 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
         super().__init__(optimiser_class, *initial_modules, early_stop_patience=early_stop_patience, **optimiser_kwargs)
         self._top_n_parameters = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
 
-    def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> None:
+    def step(self, loss: Union[float, torch.Tensor], closure: Optional[Callable[[], float]] = None) -> None:
         """Step the optimiser and update the record best parameters."""
         super().step(loss, closure=closure)
         state_dicts = {module: module.state_dict() for module in self._stored_initial_state_dicts}

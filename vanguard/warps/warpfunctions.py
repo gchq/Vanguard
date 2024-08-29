@@ -136,7 +136,7 @@ class BoxCoxWarpFunction(WarpFunction):
         y\mapsto\frac{sgn(y)|y|^\lambda - 1}{\lambda}, \lambda\in\mathbb{R}_0^+.
     """
 
-    def __init__(self, lambda_: float = 0) -> None:
+    def __init__(self, lambda_: Union[int, float] = 0) -> None:
         """
         Initialise self.
 

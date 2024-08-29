@@ -22,6 +22,7 @@ from typing import Any, Optional
 import gpytorch
 import torch
 from gpytorch import settings
+from gpytorch.distributions import MultivariateNormal
 from gpytorch.means import ZeroMean
 from gpytorch.models import ExactGP
 from gpytorch.utils.warnings import GPInputWarning
@@ -35,6 +36,9 @@ class DummyKernelDistribution:
     """
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
+
+    # TODO: Lying to the type checker here feels like bad code.
+    __class__ = MultivariateNormal
 
     def __init__(self, labels: LinearOperator, kernel: LinearOperator) -> None:
         """
@@ -114,7 +118,7 @@ class InertKernelModel(ExactGPModel):
             )
         return super().train(mode)
 
-    def _label_tensor(self, targets: torch.Tensor) -> torch.Tensor:
+    def _label_tensor(self, targets: torch.Tensor) -> LinearOperator:
         return DiagLinearOperator(torch.ones(self.n_classes))[targets.long()]
 
     def __call__(self, *args: Any, **kwargs: Any) -> DummyKernelDistribution:

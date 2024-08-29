@@ -21,6 +21,7 @@ from typing import Any, Tuple, Type, TypeVar
 import numpy as np
 import numpy.typing
 import torch
+from typing_extensions import Self
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -174,7 +175,7 @@ class SetWarp(Decorator):
                 self.posterior_collection_class = warp_posterior_class(self.posterior_collection_class)
 
             @classmethod
-            def new(cls, instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
+            def new(cls, instance: Self, **kwargs: Any) -> Self:
                 """Also apply warping to the new instance."""
                 new_instance = super().new(instance, **kwargs)
                 new_instance.warp = instance.warp

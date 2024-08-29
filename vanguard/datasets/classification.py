@@ -118,7 +118,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
             random_state=self.rng.integers(2**32 - 1),
         )
 
-        super().__init__(train_x, 0, train_y, 0, test_x, 0, test_y, 0, 0)
+        super().__init__(train_x, 0.0, train_y, 0.0, test_x, 0.0, test_y, 0.0, 0.0)
 
     @property
     def one_hot_train_y(self) -> NDArray[int]:

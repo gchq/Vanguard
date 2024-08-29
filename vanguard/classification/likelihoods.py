@@ -25,11 +25,12 @@ import torch
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.constraints import Interval, Positive
 from gpytorch.distributions import Distribution
-from gpytorch.likelihoods import BernoulliLikelihood
+from gpytorch.likelihoods import BernoulliLikelihood, _GaussianLikelihoodBase
 from gpytorch.likelihoods import SoftmaxLikelihood as _SoftmaxLikelihood
 from gpytorch.likelihoods.likelihood import _OneDimensionalLikelihood
 from gpytorch.likelihoods.noise_models import MultitaskHomoskedasticNoise
 from gpytorch.priors import Prior
+from linear_operator import LinearOperator
 from linear_operator.operators import DiagLinearOperator
 from torch import Tensor
 
@@ -112,7 +113,12 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
     A pseudo Dirichlet distribution with the log probability modified.
     """
 
-    def __init__(self, label_matrix: torch.Tensor, kernel_matrix: torch.Tensor, alpha: float) -> None:
+    def __init__(
+        self,
+        label_matrix: Union[torch.Tensor, LinearOperator],
+        kernel_matrix: Union[torch.Tensor, LinearOperator],
+        alpha: Union[torch.Tensor, float],
+    ) -> None:
         """
         Initialise self.
 
@@ -215,6 +221,10 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             )
 
 
+# TODO: I don't really like this! Maybe the type hints that depend on this should change instead?
+_GaussianLikelihoodBase.register(DirichletKernelClassifierLikelihood)
+
+
 class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
     """
     A lightweight modification of :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
@@ -222,7 +232,9 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
     This removes some RuntimeErrors that prevent use with non-Gaussian likelihoods even when it is possible to do so.
     """
 
-    def __init__(self, likelihood: gpytorch.likelihoods.GaussianLikelihood, model: gpytorch.models.ExactGP) -> None:
+    def __init__(
+        self, likelihood: gpytorch.likelihoods._GaussianLikelihoodBase, model: gpytorch.models.ExactGP
+    ) -> None:
         """
         Initialise self.
 

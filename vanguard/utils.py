@@ -114,7 +114,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
 
 def infinite_tensor_generator(
     batch_size: Optional[int],
-    device: torch.DeviceObjType,
+    device: torch.device,
     *tensor_axis_pairs: Tuple[torch.Tensor, int],
     rng: Optional[np.random.Generator] = None,
 ) -> Generator[torch.Tensor, None, None]:

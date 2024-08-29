@@ -116,7 +116,10 @@ class LearnYNoise(Decorator):
 
 
 def _process_y_std(
-    y_std: Union[float, numpy.typing.NDArray[np.floating]], shape: Tuple[int], dtype: type, device: torch.DeviceObjType
+    y_std: Union[float, torch.Tensor, numpy.typing.NDArray[np.floating]],
+    shape: Tuple[int, ...],
+    dtype: torch.dtype,
+    device: torch.device,
 ) -> torch.Tensor:
     """
     Create default y_std value or make sure given value is a tensor of the right type and shape.
