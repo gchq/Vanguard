@@ -25,25 +25,19 @@ If the code is not running properly, recreate the environment with `pip install 
 
 ## Tests
 
-Vanguard's tests are contained in the `tests/` directory, and can be run with `unittest` or `pytest`.
-
-Unit tests are in `tests/units`. There are two additional test files that dynamically run additional tests:
- - `test_doctests.py` finds and runs all doctests.
- - `test_examples.py` runs all notebooks under `examples/` as tests. These require `nbconvert` and `nbformat` to run,
+Vanguard's tests are contained in the `tests/` directory, and can be run with `pytest`. The tests are arranged
+as follows:
+ - `tests/units` contains unit tests. These should be fairly quick to run.
+ - `tests/integration` contains integration tests, which may take longer to run.
+ - `tests/test_doctests.py` finds and runs all doctests. This should be fairly quick to run.
+ - `tests/test_examples.py` runs all notebooks under `examples/` as tests. These require `nbconvert` and `nbformat` to run,
 and can take a significant amount of time to complete, so consider excluding `test_examples.py` from your test
 discovery.
 
 ```shell
-# Unittest:
-$ python -m unittest discover -s tests/units # run unit tests
-$ python -m unittest tests/test_doctests.py # run doctests
-$ python -m unittest tests/test_examples.py # run example tests (slow)
-
-# Pytest:
+$ pytest # run all tests (slow)
 $ pytest tests/units # run unit tests
+$ pytest tests/integration # run integration tests (slow)
 $ pytest tests/test_doctests.py # run doctests
 $ pytest tests/test_examples.py # run example tests (slow)
 ```
-
-Note that some tests are non-deterministic and as such may occasionally fail due to randomness.
-Please try running them again before raising an issue.
