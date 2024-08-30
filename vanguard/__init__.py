@@ -19,15 +19,7 @@ Vanguard contains convenience wrappers for a number of advanced Gaussian Process
 techniques, designed with a focus on simplicity, extension and combination.
 """
 
-from beartype.claw import beartype_this_package
-
-beartype_this_package()
-# beartype_this_package() must come before _any_ other statements, so ignore any following E402s.
-
-# pylint: disable=wrong-import-position
 from vanguard import _bibliography  # noqa: E402
-
-# pylint: enable=wrong-import-position
 
 __author__ = "GCHQ"
 __version__ = "2.1.0"

@@ -1,3 +1,4 @@
+addopts
 allclose
 arange
 archiveprefix
