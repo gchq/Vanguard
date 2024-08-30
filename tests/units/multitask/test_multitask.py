@@ -94,7 +94,7 @@ class ErrorTests(unittest.TestCase):
                 self.dataset.train_x, self.dataset.train_y, ScaledRBFKernel, self.dataset.train_y_std, rng=self.rng
             )
 
-    @pytest.mark.skip("Incompatible with beartype")
+    @pytest.mark.no_beartype
     def test_bad_batch_shape_on_kernel(self) -> None:
         """
         Test how the multitask decorator handles an invalid batch shape in the kernel keyword arguments.

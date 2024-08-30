@@ -58,8 +58,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         """Set up data shared between tests."""
         self.rng = get_default_rng()
 
-    # Skipped as this conflicts with beartype
-    @pytest.mark.skip("Conflicts with beartype")
+    @pytest.mark.no_beartype
     def test_illegal_input_type(self):
         """Test that we get an appropriate error when an illegal argument type is passed."""
         # various illegal inputs

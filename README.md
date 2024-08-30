@@ -34,10 +34,25 @@ as follows:
 and can take a significant amount of time to complete, so consider excluding `test_examples.py` from your test
 discovery.
 
+
 ```shell
 $ pytest # run all tests (slow)
 $ pytest tests/units # run unit tests
 $ pytest tests/integration # run integration tests (slow)
 $ pytest tests/test_doctests.py # run doctests
 $ pytest tests/test_examples.py # run example tests (slow)
+```
+
+Our PR workflows run our tests with the `pytest-beartype` plugin. This is a runtime type checker that ensures all
+our type hints are correct. In order to run with these checks locally, add
+`--beartype-packages="vanguard" -m "not no_beartype"` to your pytest invocation. You should then separately run pytest
+with `-m no_beartype` to ensure that all tests are run. The reason for this separation is that some of our tests check
+that our handling of inputs of invalid type are correct, but `beartype` catches these errors before we get a chance to
+look at them, causing the tests to fail; thus, these tests need to be run separately _without_ beartype.
+
+For example, to run the unit tests with type checking:
+
+```shell
+$ pytest tests/units --beartype-packages="vanguard" -m "not no_beartype"  # run unit tests with type checking
+$ pytest tests/units -m no_beartype  # run unit tests that are incompatible with beartype
 ```

@@ -112,7 +112,7 @@ class TestParameters(unittest.TestCase):
         assert not b < a  # pylint: disable=unnecessary-negation
         assert not b > a  # pylint: disable=unnecessary-negation
 
-    @pytest.mark.skip("Incompatible with beartype")
+    @pytest.mark.no_beartype
     def test_parameter_type_error_comparison(self):
         """Test that comparison with something other than a `Parameters` instance raises a `TypeError`."""
         a = Parameters({}, 1)
@@ -126,7 +126,7 @@ class TestParameters(unittest.TestCase):
         with pytest.raises(TypeError):
             _ = a >= 1
 
-    @pytest.mark.skip("Incompatible with beartype")
+    @pytest.mark.no_beartype
     def test_parameter_not_equal_to_numeric(self):
         """Test that `Parameters` instances do not compare equal with numerics of the same value."""
         a = Parameters({}, 1)

@@ -26,8 +26,16 @@ jobs:
       run: python -m pip install --upgrade pip
     - name: Install test dependencies
       run: pip install -r requirements.txt --no-deps --upgrade
-    - name: Test with pytest
+    - name: Run tests incompatible with type checking
       run: >
         pytest
         --ignore=tests/test_examples.py
         -W "error::vanguard.utils.UnseededRandomWarning"
+        -m "no_beartype"
+    - name: Test with pytest (and type checking)
+      run: >
+        pytest
+        --ignore=tests/test_examples.py
+        -W "error::vanguard.utils.UnseededRandomWarning"
+        -m "not no_beartype"
+        --beartype-packages="vanguard"

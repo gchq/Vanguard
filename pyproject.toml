@@ -133,7 +133,9 @@ exclude_also = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--beartype-packages='vanguard'"
+markers = [
+    "no_beartype: for tests incompatible with beartype (e.g. checking for TypeErrors)",
+]
 
 # TODO: fix as many of these as possible, and for those we can't fix, suppress as many as possible at the point that
 #  they're emitted using the catch_warnings context manager. Suppress globally here only as a last resort.

@@ -72,7 +72,7 @@ class InitialisationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.rng = get_default_rng()
 
-    @pytest.mark.skip("Incompatible with beartype")
+    @pytest.mark.no_beartype
     def test_cannot_pass_array_as_y_std(self) -> None:
         """
         Test that if `train_y_std` is provided as an array, this input is rejected.
@@ -107,7 +107,7 @@ class InitialisationTests(unittest.TestCase):
                 dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, rng=self.rng
             )
 
-    @pytest.mark.skip("Incompatible with beartype")
+    @pytest.mark.no_beartype
     def test_uninitialised_kernel_with_k_medoids(self) -> None:
         """
         Test incorrect initialisation of the distributed decorator when using the KMedoidsPartitioner.
@@ -281,7 +281,7 @@ class SubsetCreationTests(unittest.TestCase):
         self.assertTrue(len(set(subset_arrays[0])) == 2)
         self.assertTrue(len(set(subset_arrays[1])) == 2)
 
-    @pytest.mark.skip("Incompatible with beartype")
+    @pytest.mark.no_beartype
     def test_create_subset_unexpected_inputs(self):
         """
         Test the handling of arrays without the shape attribute.
