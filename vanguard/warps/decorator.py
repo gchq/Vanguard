@@ -16,7 +16,7 @@
 Contains the SetWarp decorator.
 """
 
-from typing import Any, Tuple, Type, TypeVar
+from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -83,8 +83,8 @@ class SetWarp(Decorator):
                 self.train_y = self.train_y.to(self.device)
 
                 def _unwarp_values(
-                    *values: numpy.typing.NDArray[np.floating],
-                ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
+                    *values: Union[torch.Tensor, numpy.typing.NDArray[np.floating]],
+                ) -> Tuple[Union[torch.Tensor, numpy.typing.NDArray[np.floating]], ...]:
                     """
                     Map values back through the warp.
 

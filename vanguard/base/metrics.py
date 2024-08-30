@@ -180,6 +180,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float, controller: "vanguard.base.basecontroller.BaseGPController") -> float:  # pylint: disable=unused-argument
+def loss(loss_value: float, controller: Optional["vanguard.base.basecontroller.BaseGPController"]) -> float:  # pylint: disable=unused-argument
     """Return the loss value."""
     return loss_value

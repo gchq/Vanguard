@@ -79,7 +79,7 @@ class Posterior:
     def confidence_interval(
         self,
         alpha: float = 0.05,
-    ) -> Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
@@ -88,7 +88,7 @@ class Posterior:
                     predictive posterior, each of shape (n_predictions,).
         """
         median, lower, upper = self._tensor_confidence_interval(alpha)
-        return median.detach().cpu().numpy(), lower.detach().cpu().numpy(), upper.detach().cpu().numpy()
+        return median, lower, upper
 
     def mse(
         self,
@@ -106,8 +106,8 @@ class Posterior:
 
     def nll(
         self,
-        y: Union[numpy.typing.NDArray[np.floating], float],
-        noise_variance: Union[numpy.typing.NDArray[np.floating], float] = 0,
+        y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
+        noise_variance: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float] = 0,
         alpha: float = stats.norm.cdf(-1) * 2,
     ) -> float:
         """
@@ -119,13 +119,16 @@ class Posterior:
         :param alpha: The significance of the confidence interval used to calculate the standard deviation.
         :returns: The negative log-likelihood of the given y values.
         """
+        y = torch.as_tensor(y)
+        noise_variance = torch.as_tensor(noise_variance)
+
         mean, _, upper = self.confidence_interval(alpha)
         variance = (upper - mean) ** 2
         sigma = variance + noise_variance
         rss = (y - mean) ** 2
         const = 0.5 * np.log(2 * np.pi * sigma)
         p_nll = const + rss / (2 * sigma)
-        return p_nll.mean()
+        return p_nll.mean().item()
 
     def log_probability(
         self,

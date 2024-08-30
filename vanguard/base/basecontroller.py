@@ -242,7 +242,7 @@ class BaseGPController:
         return cls._default_tensor_dtype
 
     @classmethod
-    def get_default_tensor_device(cls) -> torch.dtype:
+    def get_default_tensor_device(cls) -> torch.device:
         """Get the default tensor device for this controller class."""
         return cls._default_tensor_device
 

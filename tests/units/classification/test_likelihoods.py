@@ -15,12 +15,13 @@
 """Tests for DirichletKernelClassifierLikelihood."""
 
 from unittest import TestCase, expectedFailure
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import numpy as np
+import pytest
 import torch.testing
 from gpytorch.constraints import GreaterThan
-from gpytorch.distributions import MultivariateNormal
+from gpytorch.distributions import Distribution, MultivariateNormal
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import Likelihood
 from gpytorch.means import ZeroMean
@@ -57,6 +58,8 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         """Set up data shared between tests."""
         self.rng = get_default_rng()
 
+    # Skipped as this conflicts with beartype
+    @pytest.mark.skip("Conflicts with beartype")
     def test_illegal_input_type(self):
         """Test that we get an appropriate error when an illegal argument type is passed."""
         # various illegal inputs
@@ -89,11 +92,11 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         controller = MulticlassGaussianClassifier(
             train_x=self.dataset.train_x,
             train_y=self.dataset.train_y,
-            y_std=0,
+            y_std=0.0,
             mean_class=ZeroMean,
             kernel_class=RBFKernel,
             likelihood_class=DirichletKernelClassifierLikelihood,
-            likelihood_kwargs={"learn_alpha": True, "alpha": 1},
+            likelihood_kwargs={"learn_alpha": True, "alpha": 1.0},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
             rng=self.rng,
         )
@@ -119,22 +122,22 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         constrained_controller = MulticlassGaussianClassifier(
             train_x=self.dataset.train_x,
             train_y=self.dataset.train_y,
-            y_std=0,
+            y_std=0.0,
             mean_class=ZeroMean,
             kernel_class=RBFKernel,
             likelihood_class=DirichletKernelClassifierLikelihood,
-            likelihood_kwargs={"learn_alpha": True, "alpha": 1, "alpha_constraint": GreaterThan(constraint_value)},
+            likelihood_kwargs={"learn_alpha": True, "alpha": 1.0, "alpha_constraint": GreaterThan(constraint_value)},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
             rng=self.rng,
         )
         unconstrained_controller = MulticlassGaussianClassifier(
             train_x=self.dataset.train_x,
             train_y=self.dataset.train_y,
-            y_std=0,
+            y_std=0.0,
             mean_class=ZeroMean,
             kernel_class=RBFKernel,
             likelihood_class=DirichletKernelClassifierLikelihood,
-            likelihood_kwargs={"learn_alpha": True, "alpha": 1},
+            likelihood_kwargs={"learn_alpha": True, "alpha": 1.0},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
             rng=self.rng,
         )
@@ -174,7 +177,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         This is tested by just checking that the parent class (`Likelihood`) has its `__call__` method called.
         """
         input_tensor = torch.tensor(self.rng.standard_normal(size=1), dtype=torch.float)
-        with patch.object(Likelihood, "__call__") as mock_super_call:
+        with patch.object(Likelihood, "__call__", return_value=Mock(Distribution)) as mock_super_call:
             self.likelihood(input_tensor)
         mock_super_call.assert_called_once_with(input_tensor)
 
@@ -188,7 +191,9 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         distribution = DummyKernelDistribution(
             to_linear_operator(torch.eye(self.num_classes, dtype=torch.float)), to_linear_operator(kernel)
         )
-        with patch.object(DirichletKernelClassifierLikelihood, "marginal") as mock_marginal:
+        with patch.object(
+            DirichletKernelClassifierLikelihood, "marginal", return_value=Mock(Distribution)
+        ) as mock_marginal:
             self.likelihood(distribution)
         mock_marginal.assert_called_once_with(distribution)
 

@@ -62,7 +62,7 @@ class CategoricalClassification(Decorator):
         >>>
         >>> train_x = np.array([0, 0.5, 0.9, 1])
         >>> train_y = np.array([[1, 0, 0], [0, 1,0], [0, 0, 1], [0, 0, 1]])
-        >>> gp = CategoricalClassifier(train_x, train_y, RBFKernel, y_std=0,
+        >>> gp = CategoricalClassifier(train_x, train_y, RBFKernel, y_std=0.0,
         ...                            likelihood_class=MultitaskBernoulliLikelihood,
         ...                            marginal_log_likelihood_class=VariationalELBO)
         >>> loss = gp.fit(100)

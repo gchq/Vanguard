@@ -221,7 +221,7 @@ class NLLTests(unittest.TestCase):
                 self.x_test = scaled_test_x
                 self.y_test = function(self.x_test)
 
-        self.y_std = 1
+        self.y_std = 1.0
 
         self.dataset = UniformSyntheticDataset(lambda x: np.sin(10 * x), 100, 100 // 4, self.y_std, rng=self.rng)
 

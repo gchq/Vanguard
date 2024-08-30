@@ -204,7 +204,7 @@ class DisableStandardiseModuleTests(StandardiseModuleTests):
         gp = DisableStandardScalingController(
             train_x=self.data,
             train_y=self.rng.standard_normal(self.data.shape[0]),
-            y_std=0,
+            y_std=0.0,
             kernel_class=RBFKernel,
             mean_class=type(self.base_mean),
             rng=self.rng,

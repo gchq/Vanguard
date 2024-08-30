@@ -95,14 +95,14 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         self._likelihood.noise = value
 
     @property
-    def learning_rate(self) -> np.floating:
+    def learning_rate(self) -> float:
         """Return the learning rate of the parameter optimiser."""
         return self._smart_optimiser.learning_rate
 
     @learning_rate.setter
     def learning_rate(
         self,
-        value: np.floating,
+        value: float,
     ) -> None:
         """Set the learning rate of the parameter optimiser."""
         self._smart_optimiser.learning_rate = value
@@ -116,7 +116,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         self,
         n_sgd_iters: int = 10,
         gradient_every: Optional[int] = None,
-    ) -> torch.Tensor:
+    ) -> Union[torch.Tensor, float]:
         """
         Run rounds of hyperparameter tuning.
 

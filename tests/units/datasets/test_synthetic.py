@@ -120,7 +120,7 @@ class TestHeteroskedasticSyntheticDataset(TestCase):
 
         This is tested by setting `output_noise_mean` quite low, and `output_noise_std` high.
         """
-        dataset = HeteroskedasticSyntheticDataset(output_noise_mean=0.1, output_noise_std=1, rng=get_default_rng())
+        dataset = HeteroskedasticSyntheticDataset(output_noise_mean=0.1, output_noise_std=1.0, rng=get_default_rng())
         assert np.all(dataset.train_y_std >= 0)
         assert np.all(dataset.test_y_std >= 0)
 

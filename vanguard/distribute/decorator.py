@@ -279,7 +279,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
             def _aggregate_expert_predictions(
                 self,
-                x: Union[NDArray[np.floating], torch.Tensor],
+                x: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
                 means_and_covars: List[Tuple[torch.Tensor, torch.Tensor]],
             ) -> Tuple[torch.Tensor, torch.Tensor]:
                 """

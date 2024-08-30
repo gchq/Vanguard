@@ -43,7 +43,7 @@ class BasicTests(unittest.TestCase):
         """Code to run before each test."""
         self.tracker = MetricsTracker(loss)
         for loss_value in range(100):
-            self.tracker.run_metrics(loss_value=loss_value, controller=None)
+            self.tracker.run_metrics(loss_value=float(loss_value), controller=None)
 
     def test_get_item(self) -> None:
         """Items should be correct."""
@@ -77,11 +77,11 @@ class NanTests(unittest.TestCase):
         """Code to run before each test."""
         self.tracker = MetricsTracker()
         for loss_value in range(50):
-            self.tracker.run_metrics(loss_value=loss_value, controller=None)
+            self.tracker.run_metrics(loss_value=float(loss_value), controller=None)
 
         self.tracker.add_metrics(loss)
         for loss_value in range(50, 100):
-            self.tracker.run_metrics(loss_value=loss_value, controller=None)
+            self.tracker.run_metrics(loss_value=float(loss_value), controller=None)
 
     def test_get_item_before_50(self) -> None:
         """Items should be correct."""
@@ -107,7 +107,7 @@ class MultipleMetricTests(unittest.TestCase):
         """Code to run before each test."""
         self.tracker = MetricsTracker(loss, loss_squared)
         for loss_value in range(100):
-            self.tracker.run_metrics(loss_value=loss_value, controller=None)
+            self.tracker.run_metrics(loss_value=float(loss_value), controller=None)
 
     def test_get_item_before_50(self) -> None:
         """Items should be correct."""

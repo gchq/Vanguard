@@ -70,7 +70,7 @@ class BinaryClassification(Decorator):
         >>> train_x = np.array([0, 0.1, 0.9, 1])
         >>> train_y = np.array([0, 0, 1, 1])
         >>>
-        >>> gp = BinaryClassifier(train_x, train_y, ScaledRBFKernel, y_std=0,
+        >>> gp = BinaryClassifier(train_x, train_y, ScaledRBFKernel, y_std=0.0,
         ...                       likelihood_class=BernoulliLikelihood,
         ...                       marginal_log_likelihood_class=VariationalELBO)
         >>> loss = gp.fit(100)

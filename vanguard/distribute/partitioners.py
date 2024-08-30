@@ -51,7 +51,7 @@ class BasePartitioner:
 
     def __init__(
         self,
-        train_x: NDArray[np.floating],
+        train_x: Union[NDArray[np.floating], NDArray[np.integer]],
         n_experts: int = 3,
         communication: bool = False,
         rng: Optional[np.random.Generator] = None,

@@ -166,10 +166,10 @@ class TestLearning(unittest.TestCase):
         y_std = np.array([[0.5, 0.6, 0.7], [5.0, 6.0, 7.0]])
 
         # We expect a conversion to a torch tensor, with floating point data and sent to the provided device
-        expected_result = torch.tensor([[0.5, 0.6, 0.7], [5.0, 6.0, 7.0]], dtype=float, device=device)
+        expected_result = torch.tensor([[0.5, 0.6, 0.7], [5.0, 6.0, 7.0]], dtype=torch.float, device=device)
 
         # Call the function and verify output
-        result = _process_y_std(y_std=y_std, shape=(2, 3), dtype=float, device=device)
+        result = _process_y_std(y_std=y_std, shape=(2, 3), dtype=torch.float, device=device)
         torch.testing.assert_allclose(result, expected_result)
 
     @pytest.mark.skipif(sys.version_info < (3, 12), reason="requires python3.12 or higher")
@@ -198,14 +198,14 @@ class TestLearning(unittest.TestCase):
         DirichletMulticlassClassifier(
             dataset.train_x,
             dataset.train_y,
-            y_std=0,
+            y_std=0.0,
             mean_class=BatchScaledMean,
             kernel_class=BatchScaledRBFKernel,
             likelihood_class=DirichletClassificationLikelihood,
             likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
             optim_kwargs={"lr": 0.05},
-            kernel_kwargs={"batch_shape": 4},
-            mean_kwargs={"batch_shape": 4},
+            kernel_kwargs={"batch_shape": torch.Size([4])},
+            mean_kwargs={"batch_shape": torch.Size([4])},
             rng=self.rng,
         )
 
@@ -220,14 +220,14 @@ class TestLearning(unittest.TestCase):
             DirichletMulticlassClassifier(
                 dataset.train_x,
                 dataset.train_y,
-                y_std=0,
+                y_std=0.0,
                 mean_class=BatchScaledMean,
                 kernel_class=BatchScaledRBFKernel,
                 likelihood_class=AlteredDirichletClassificationLikelihoodExpectedError,
                 likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
                 optim_kwargs={"lr": 0.05},
-                kernel_kwargs={"batch_shape": 4},
-                mean_kwargs={"batch_shape": 4},
+                kernel_kwargs={"batch_shape": torch.Size([4])},
+                mean_kwargs={"batch_shape": torch.Size([4])},
                 rng=self.rng,
             )
 
@@ -237,13 +237,13 @@ class TestLearning(unittest.TestCase):
             DirichletMulticlassClassifier(
                 dataset.train_x,
                 dataset.train_y,
-                y_std=0,
+                y_std=0.0,
                 mean_class=BatchScaledMean,
                 kernel_class=BatchScaledRBFKernel,
                 likelihood_class=AlteredDirichletClassificationLikelihoodUnexpectedError,
                 likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
                 optim_kwargs={"lr": 0.05},
-                kernel_kwargs={"batch_shape": 4},
-                mean_kwargs={"batch_shape": 4},
+                kernel_kwargs={"batch_shape": torch.Size([4])},
+                mean_kwargs={"batch_shape": torch.Size([4])},
                 rng=self.rng,
             )

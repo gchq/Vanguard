@@ -173,12 +173,12 @@ class SmartOptimiser(Generic[OptimiserT]):
         )
 
     @overload
-    def _step(self, loss: float, closure: None = ...) -> None: ...  # pragma: no cover
+    def _step(self, loss: Union[torch.Tensor, float], closure: None = ...) -> None: ...  # pragma: no cover
 
     @overload
-    def _step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
+    def _step(self, loss: Union[torch.Tensor, float], closure: Callable[[], float]) -> float: ...  # pragma: no cover
 
-    def _step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def _step(self, loss: Union[torch.Tensor, float], closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Perform a single optimisation step."""
         raise NotImplementedError
 

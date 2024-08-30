@@ -23,7 +23,7 @@ import numpy as np
 from linear_operator.utils.errors import NanError
 
 if typing.TYPE_CHECKING:
-    from vanguard.base import GPController
+    import vanguard.base
 
 
 class LearningRateFinder:
@@ -34,7 +34,7 @@ class LearningRateFinder:
     the best learning rate (i.e. the largest learning rate giving stable training).
     """
 
-    def __init__(self, controller: "GPController") -> None:
+    def __init__(self, controller: "vanguard.base.GPController") -> None:
         """
         Initialise self.
 

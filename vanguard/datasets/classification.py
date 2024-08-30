@@ -58,7 +58,7 @@ class BinaryStripeClassificationDataset(Dataset):
         train_y = self.even_split(train_x)
         test_y = self.even_split(test_x)
 
-        super().__init__(train_x, np.array([]), train_y, np.array([]), test_x, np.array([]), test_y, np.array([]), 0)
+        super().__init__(train_x, np.array([]), train_y, np.array([]), test_x, np.array([]), test_y, np.array([]), 0.0)
 
     @staticmethod
     def even_split(x: NDArray[np.floating]) -> NDArray[np.floating]:

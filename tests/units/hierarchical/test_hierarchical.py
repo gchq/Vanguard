@@ -21,6 +21,7 @@ import unittest
 from typing import Any, Generic, Type, TypeVar
 from unittest.mock import MagicMock
 
+import gpytorch
 import numpy as np
 import torch
 from gpytorch.constraints import Positive
@@ -285,8 +286,8 @@ class TestBayesianHyperparameterCreation(unittest.TestCase):
         """
         Test descending a module tree when the tree has more than one level.
         """
-        mock_object = MagicMock()
-        mock_object.a = 123
+        mock_object = MagicMock(gpytorch.Module)
+        mock_object.a = MagicMock(gpytorch.Module)
         parameter_ancestry = ["a", "b"]
 
         result = _descend_module_tree(mock_object, parameter_ancestry)
@@ -294,5 +295,5 @@ class TestBayesianHyperparameterCreation(unittest.TestCase):
         # Check the output - we expect to get mock_object.a as the first return, and 'b'
         # (the next parameter in the list) as the second return
         self.assertEqual(len(result), 2)
-        self.assertEqual(result[0], 123)
+        self.assertEqual(result[0], mock_object.a)
         self.assertEqual(result[1], "b")
