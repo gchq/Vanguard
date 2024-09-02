@@ -14,6 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Note that we only do type checking on Python 3.12.
         python-version:
           - "3.8"
           - "3.9"
@@ -41,6 +42,7 @@ jobs:
         --ignore=tests/test_examples.py
         -W "error::vanguard.utils.UnseededRandomWarning"
         -m "no_beartype"
+      if: matrix.python-version == '3.12'
     - name: Test with pytest (and type checking)
       run: >
         pytest
@@ -48,3 +50,10 @@ jobs:
         -W "error::vanguard.utils.UnseededRandomWarning"
         -m "not no_beartype"
         --beartype-packages="vanguard"
+      if: matrix.python-version == '3.12'
+    - name: Run all tests
+      run: >
+        pytest
+        --ignore=tests/test_examples.py
+        -W "error::vanguard.utils.UnseededRandomWarning"
+      if: matrix.python-version != '3.12'

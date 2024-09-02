@@ -50,6 +50,10 @@ with `-m no_beartype` to ensure that all tests are run. The reason for this sepa
 that our handling of inputs of invalid type are correct, but `beartype` catches these errors before we get a chance to
 look at them, causing the tests to fail; thus, these tests need to be run separately _without_ beartype.
 
+Since different Python versions have different versions of standard library and third-party modules, we can't guarantee
+that type hints are 100% correct on all Python versions. Type hints are only tested for correctness on the latest
+version of Python (3.12).
+
 For example, to run the unit tests with type checking:
 
 ```shell
