@@ -28,9 +28,9 @@ import numpy as np
 import numpy.typing
 import torch
 from gpytorch import constraints
-from gpytorch.distributions import MultivariateNormal
 from gpytorch.models import ApproximateGP, ExactGP
 from linear_operator.utils.errors import NanError
+from torch.distributions import Distribution
 
 from vanguard import utils
 from vanguard.base import metrics
@@ -442,7 +442,7 @@ class BaseGPController:
     def _gp_forward(
         self,
         x: Union[torch.Tensor, numpy.typing.NDArray[float], float],
-    ) -> MultivariateNormal:
+    ) -> Distribution:
         """Pass inputs through the base GPyTorch GP model."""
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=NumericalWarning, message=_JITTER_WARNING)

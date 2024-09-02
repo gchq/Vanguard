@@ -28,9 +28,6 @@ from typing_extensions import Self
 
 T = TypeVar("T")
 
-# TODO: Unsure about the usage of `torch.distributions.Distribution` vs `gpytorch.distributions.Distribution` in this
-#  file. Could be the source of https://github.com/gchq/Vanguard/issues/382?
-
 
 class Posterior:
     """

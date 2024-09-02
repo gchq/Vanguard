@@ -24,9 +24,10 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import torch
-from gpytorch.distributions import Distribution, MultivariateNormal
+from gpytorch.distributions import MultivariateNormal
 from scipy.stats import multivariate_normal
 from torch import Tensor
+from torch.distributions import Distribution
 
 from tests.cases import get_default_rng
 from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior

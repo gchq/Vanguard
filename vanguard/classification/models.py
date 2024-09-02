@@ -37,7 +37,9 @@ class DummyKernelDistribution:
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
 
-    # TODO: Lying to the type checker here feels like bad code.
+    # TODO: Lying to the type checker here feels like bad code, and should only be a very temporary measure. Should
+    #  probably just inherit from Distribution, and type hint downstream code to expect an arbitrary Distribution.
+    # https://github.com/gchq/Vanguard/issues/394
     __class__ = MultivariateNormal
 
     def __init__(self, labels: LinearOperator, kernel: LinearOperator) -> None:

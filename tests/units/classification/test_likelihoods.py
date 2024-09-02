@@ -21,11 +21,12 @@ import numpy as np
 import pytest
 import torch.testing
 from gpytorch.constraints import GreaterThan
-from gpytorch.distributions import Distribution, MultivariateNormal
+from gpytorch.distributions import MultivariateNormal
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import Likelihood
 from gpytorch.means import ZeroMean
 from linear_operator import to_linear_operator
+from torch.distributions import Distribution
 
 from tests.cases import get_default_rng
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification

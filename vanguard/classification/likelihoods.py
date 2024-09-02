@@ -24,8 +24,7 @@ import numpy.typing
 import torch
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.constraints import Interval, Positive
-from gpytorch.distributions import Distribution
-from gpytorch.likelihoods import BernoulliLikelihood, _GaussianLikelihoodBase
+from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.likelihoods import SoftmaxLikelihood as _SoftmaxLikelihood
 from gpytorch.likelihoods.likelihood import _OneDimensionalLikelihood
 from gpytorch.likelihoods.noise_models import MultitaskHomoskedasticNoise
@@ -33,6 +32,7 @@ from gpytorch.priors import Prior
 from linear_operator import LinearOperator
 from linear_operator.operators import DiagLinearOperator
 from torch import Tensor
+from torch.distributions import Distribution
 
 from vanguard.classification.models import DummyKernelDistribution
 
@@ -221,10 +221,6 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             )
 
 
-# TODO: I don't really like this! Maybe the type hints that depend on this should change instead?
-_GaussianLikelihoodBase.register(DirichletKernelClassifierLikelihood)
-
-
 class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
     """
     A lightweight modification of :class:`gpytorch.mlls.ExactMarginalLogLikelihood`.
@@ -233,7 +229,9 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
     """
 
     def __init__(
-        self, likelihood: gpytorch.likelihoods._GaussianLikelihoodBase, model: gpytorch.models.ExactGP
+        self,
+        likelihood: Union[gpytorch.likelihoods._GaussianLikelihoodBase, DirichletKernelClassifierLikelihood],
+        model: gpytorch.models.ExactGP,
     ) -> None:
         """
         Initialise self.
