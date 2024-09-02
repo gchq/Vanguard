@@ -24,6 +24,7 @@ import numpy as np
 import torch
 from gpytorch.kernels import ScaleKernel
 from numpy.typing import NDArray
+from torch import Tensor
 from typing_extensions import Self
 
 from vanguard.base import GPController
@@ -178,25 +179,25 @@ class BaseHierarchicalHyperparameters(Decorator):
 
     @staticmethod
     def _infinite_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_fuzzy_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 

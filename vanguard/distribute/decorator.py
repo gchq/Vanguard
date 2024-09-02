@@ -318,7 +318,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
 
 def _create_subset(
-    *arrays: Union[NDArray[np.floating], NDArray[np.integer], float],
+    *arrays: Union[NDArray[np.floating], NDArray[np.integer], float, int],
     subset_fraction: float = 0.1,
     rng: Optional[np.random.Generator] = None,
 ) -> List[Union[NDArray[np.floating], NDArray[np.integer], float]]:

@@ -151,7 +151,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_point(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], float],
+        x: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.

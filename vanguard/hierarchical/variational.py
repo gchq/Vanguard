@@ -24,6 +24,7 @@ import torch
 from gpytorch.variational import CholeskyVariationalDistribution, _VariationalDistribution
 from linear_operator import to_linear_operator
 from numpy.typing import NDArray
+from torch import Tensor
 
 from vanguard import utils
 from vanguard.decoratorutils import process_args, wraps_class
@@ -67,14 +68,14 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         ... class BayesianRBFKernel(RBFKernel):
         ...     pass
         >>>
-        >>> train_x = np.array([0, 0.5, 0.9, 1])
+        >>> train_x = torch.tensor([0, 0.5, 0.9, 1])
         >>> train_y = 1 / (1 + train_x) + np.random.randn(4)*0.005
-        >>> gp = HierarchicalController(train_x, train_y, BayesianRBFKernel, y_std=0)
+        >>> gp = HierarchicalController(train_x, train_y, BayesianRBFKernel, y_std=0.0)
         >>> loss = gp.fit(100)
         >>>
-        >>> test_x = np.array([0.05, 0.95])
+        >>> test_x = torch.tensor([0.05, 0.95])
         >>> mean, lower, upper = gp.posterior_over_point(test_x).confidence_interval()
-        >>> (upper > 1/(1 + test_x)).all(), (lower < 1/(1 + test_x)).all()
+        >>> (upper > 1/(1 + test_x)).all().item(), (lower < 1/(1 + test_x)).all().item()
         (True, True)
     """
 
@@ -134,7 +135,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield posterior samples forever.
@@ -151,7 +152,9 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+        controller: ControllerT,
+        x: Union[Tensor, NDArray[np.floating]],
+        x_std: Union[Tensor, NDArray[np.floating], float],
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield fuzzy posterior samples forever.
@@ -179,7 +182,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield likelihood samples forever.
@@ -202,7 +205,9 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_fuzzy_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+        controller: ControllerT,
+        x: Union[Tensor, NDArray[np.floating]],
+        x_std: Union[Tensor, NDArray[np.floating], float],
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield fuzzy likelihood samples forever.

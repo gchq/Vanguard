@@ -57,7 +57,7 @@ def require_controller_input(cache_name: str) -> Callable[[Type[WarpFunctionT]],
         ...     '''
         ...     def __init__(self):
         ...         train_y = self.controller_inputs["train_y"]
-        ...         mu, sigma = train_y.mean(), train_y.std()
+        ...         mu, sigma = train_y.mean().item(), train_y.std().item()
         ...         super().__init__(1/sigma, -mu/sigma)
         >>>
         >>> warp_function = GaussianScaledAffineWarpFunction()
