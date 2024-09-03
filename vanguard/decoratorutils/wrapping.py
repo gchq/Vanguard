@@ -140,7 +140,10 @@ def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
         for attribute in WRAPPER_ASSIGNMENTS:
             try:
                 base_attribute_value = getattr(base_class, attribute)
-            except AttributeError:
+            except AttributeError:  # pragma: no cover
+                # this should be impossible on Python 3.12; even a completely empty class has all the attributes
+                # in `WRAPPER_ASSIGNMENTS`, so we'll never hit an AttributeError here assuming that inner_class is
+                # actually a class.
                 pass
             else:
                 setattr(inner_class, attribute, base_attribute_value)

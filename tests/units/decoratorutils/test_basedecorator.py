@@ -20,58 +20,15 @@ import inspect
 import unittest
 from typing import Any, Type, TypeVar, Union
 
+import pytest
+
 from tests.cases import VanguardTestCase
 from vanguard.base import GPController
-from vanguard.decoratorutils import Decorator, errors, process_args, wraps_class
+from vanguard.decoratorutils import Decorator, TopMostDecorator, errors, process_args, wraps_class
+from vanguard.decoratorutils.errors import TopmostDecoratorError
+from vanguard.vanilla import GaussianGPController
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
-
-
-class DummyDecorator1(Decorator):
-    """
-    A dummy decorator used for testing.
-    """
-
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
-
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
-        @wraps_class(cls)
-        class InnerClass(cls):
-            """A subclass which adds no functionality."""
-
-        return super()._decorate_class(InnerClass)
-
-
-class DummyDecorator2(Decorator):
-    """
-    A dummy decorator used for testing.
-    """
-
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
-
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
-        @wraps_class(cls)
-        class InnerClass(cls):
-            """A subclass which adds no functionality."""
-
-        return super()._decorate_class(InnerClass)
-
-
-class DummySubclass(DummyDecorator1):
-    """
-    A subclass of a decorator.
-    """
-
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
-        super_decorated = super()._decorate_class(cls)
-
-        @wraps_class(super_decorated)
-        class InnerClass(super_decorated):
-            """A subclass which adds no functionality."""
-
-        return super()._decorate_class(InnerClass)
 
 
 class TrackingTests(unittest.TestCase):
@@ -79,19 +36,57 @@ class TrackingTests(unittest.TestCase):
     Testing the __decorators__ attribute.
     """
 
+    class DummyDecorator1(Decorator):
+        """A dummy decorator used for testing."""
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
+
+        def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+            @wraps_class(cls)
+            class InnerClass(cls):
+                """A subclass which adds no functionality."""
+
+            return super()._decorate_class(InnerClass)
+
+    class DummyDecorator2(Decorator):
+        """A dummy decorator used for testing."""
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
+
+        def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+            @wraps_class(cls)
+            class InnerClass(cls):
+                """A subclass which adds no functionality."""
+
+            return super()._decorate_class(InnerClass)
+
+    class DummySubclass(DummyDecorator1):
+        """A subclass of a decorator."""
+
+        def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+            super_decorated = super()._decorate_class(cls)
+
+            @wraps_class(super_decorated)
+            class InnerClass(super_decorated):
+                """A subclass which adds no functionality."""
+
+            return super()._decorate_class(InnerClass)
+
     def setUp(self) -> None:
         """Code to run before each test."""
 
-        @DummyDecorator1()
+        @self.DummyDecorator1()
         class DecoratedOnceGPController(GPController):
             """A dummy decorated class."""
 
-        @DummyDecorator2()
-        @DummyDecorator1()
+        @self.DummyDecorator2()
+        @self.DummyDecorator1()
         class DecoratedTwiceGPController(GPController):
             """A dummy decorated class."""
 
-        @DummySubclass()
+        @self.DummySubclass()
         class DecoratedWithSubclassController(GPController):
             """A dummy class decorated with a controller."""
 
@@ -105,15 +100,17 @@ class TrackingTests(unittest.TestCase):
 
     def test_once_decorated_value(self) -> None:
         """List should contain the decorator."""
-        self.assertListEqual([DummyDecorator1], self.decorated_once_controller_class.__decorators__)
+        self.assertListEqual([self.DummyDecorator1], self.decorated_once_controller_class.__decorators__)
 
     def test_twice_decorated_value(self) -> None:
-        """List should contain both decorator."""
-        self.assertListEqual([DummyDecorator1, DummyDecorator2], self.decorated_twice_controller_class.__decorators__)
+        """List should contain both decorators."""
+        self.assertListEqual(
+            [self.DummyDecorator1, self.DummyDecorator2], self.decorated_twice_controller_class.__decorators__
+        )
 
     def test_subclass_decorated_value(self) -> None:
         """Should only contain one decorator."""
-        self.assertEqual([DummySubclass], self.decorated_with_subclass_controller.__decorators__)
+        self.assertEqual([self.DummySubclass], self.decorated_with_subclass_controller.__decorators__)
 
 
 class AttributeTests(unittest.TestCase):
@@ -519,3 +516,50 @@ class SignatureTests(unittest.TestCase):
         """Signature should contain number."""
         processed_args = process_args(self.SimilarNumberAfter.__init__, None, 1)
         self.assertDictEqual({"self": None, "number": 1}, processed_args)
+
+
+class InvalidDecorationTests(unittest.TestCase):
+    """Test that decorators do not allow invalid classes to be decorated."""
+
+    class DummyDecorator(Decorator):
+        """A dummy `Decorator` used for testing."""
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
+
+        def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+            @wraps_class(cls)
+            class InnerClass(cls):
+                """A subclass which adds no functionality."""
+
+            return super()._decorate_class(InnerClass)
+
+    class DummyTopmostDecorator(TopMostDecorator):
+        """A dummy `TopmostDecorator` used for testing."""
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
+
+        def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+            @wraps_class(cls)
+            class InnerClass(cls):
+                """A subclass which adds no functionality."""
+
+            return super()._decorate_class(InnerClass)
+
+    def test_can_decorate_correct_framework_class(self):
+        """Test that we can decorate subclasses of the framework class without error."""
+        self.DummyDecorator()(GaussianGPController)
+
+    def test_cannot_decorate_incorrect_framework_class(self):
+        """Test that we can decorate subclasses of the framework class without error."""
+        with pytest.raises(TypeError, match=f"Can only apply decorator to subclasses of {GPController.__name__}"):
+            self.DummyDecorator()(object)
+
+    def test_topmost_decorator_error(self):
+        """Test that we get an appropriate error if we try to decorate on top of a `TopmostDecorator`."""
+        # decorating once is fine
+        decorated_once = self.DummyTopmostDecorator()(GaussianGPController)
+        # but twice raises an error
+        with pytest.raises(TopmostDecoratorError):
+            self.DummyDecorator()(decorated_once)
