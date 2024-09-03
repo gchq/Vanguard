@@ -150,14 +150,16 @@ class VanguardTestCase(unittest.TestCase):
         lower = mu - std_dev * sig_fac
         return lower, upper
 
-    # Ignore invalid-name: we're conforming to the unittest name scheme here, so using camelCase
-    @contextlib.contextmanager
-    def assertNotWarns(self, expected_warning_type: Type[Warning] = Warning) -> None:  # pylint: disable=invalid-name
-        """Assert that enclosed code raises no warnings, or no warnings of a given type."""
-        with warnings.catch_warnings(record=True) as ws:
-            yield
 
-        ws = list(filter(lambda w: issubclass(w.category, expected_warning_type), ws))
+# Ignore invalid-name: we're conforming to the unittest name scheme here, so using camelCase
+@contextlib.contextmanager
+def assert_not_warns(expected_warning_type: Type[Warning] = Warning) -> None:  # pylint: disable=invalid-name
+    """Assert that enclosed code raises no warnings, or no warnings of a given type."""
+    with warnings.catch_warnings(record=True) as ws:
+        yield
 
-        if len(ws) > 0:
-            self.fail(f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}")
+    ws = list(filter(lambda w: issubclass(w.category, expected_warning_type), ws))
+
+    if len(ws) > 0:
+        msg = f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}"
+        raise AssertionError(msg)

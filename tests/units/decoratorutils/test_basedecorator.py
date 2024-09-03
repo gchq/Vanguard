@@ -14,17 +14,18 @@
 
 """Contains tests for the decorators."""
 
-from typing import Any, Type, TypeVar, Union
+from typing import Any, List, Type, TypeVar, Union
 
 import pytest
 
-from tests.cases import VanguardTestCase
+from tests.cases import assert_not_warns
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, TopMostDecorator, errors, wraps_class
 from vanguard.decoratorutils.errors import TopmostDecoratorError
 from vanguard.vanilla import GaussianGPController
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
+T = TypeVar("T")
 
 
 class SimpleNumber:
@@ -38,6 +39,10 @@ class SimpleNumber:
     def add_5(self) -> Union[int, float]:
         """Add 5 to a number."""
         return self.number + 5
+
+    def function_with_no_annotations_or_docstring(self, t):
+        # This function deliberately has no docstring, to check that one is not somehow added by the decorator.
+        return [t, t]
 
 
 class SquareResult(Decorator):
@@ -60,6 +65,15 @@ class SquareResult(Decorator):
 
             def do_nothing(self) -> None:
                 """Do nothing. Note that this method is not on the base class."""
+
+            def function_with_no_annotations_or_docstring(self, t: T) -> List[T]:
+                """
+                Return three of whatever was passed in.
+
+                The function actually has annotations and a docstring here! However, they'll be overwritten by
+                :func:`wraps_class`.
+                """
+                return [t, t, t]
 
         return InnerClass
 
@@ -176,26 +190,23 @@ class TestWrapping:
         assert 15**2 == number.add_5()
 
     @pytest.mark.parametrize("attr", ["__doc__", "__name__", "__qualname__", "__annotations__"])
-    @pytest.mark.parametrize("which", ["class", "instance", "method-on-class", "method-on-instance", "class-init"])
-    def test_dunder_attributes_equal(self, attr: str, which: str):
+    @pytest.mark.parametrize("which", ["self", "__init__", "add_5", "function_with_no_annotations_or_docstring"])
+    @pytest.mark.parametrize("where", ["class", "instance"])
+    def test_dunder_attributes_equal(self, attr: str, where: str, which: str):
         """Test that dunder attributes are correctly copied from the decorated class."""
-        if which == "class":
+        if where == "class":
             before = SimpleNumber
             after = SquareResult()(SimpleNumber)
-        elif which == "instance":
+        elif where == "instance":
             before = SimpleNumber(10)
             after = SquareResult()(SimpleNumber)(10)
-        elif which == "method-on-class":
-            before = SimpleNumber.add_5
-            after = SquareResult()(SimpleNumber).add_5
-        elif which == "class-init":
-            before = SimpleNumber.__init__
-            after = SquareResult()(SimpleNumber).__init__
-        elif which == "method-on-instance":
-            before = SimpleNumber(10).add_5
-            after = SquareResult()(SimpleNumber)(10).add_5
         else:
-            raise ValueError(which)
+            raise ValueError(where)
+
+        if which != "self":
+            # i.e. if `which` is "__init__" or "add_5" etc
+            before = getattr(before, which)
+            after = getattr(after, which)
 
         # check that the attribute is set on one iff it's set on the other
         assert hasattr(before, attr) == hasattr(after, attr)
@@ -218,7 +229,7 @@ class TestWrapping:
         )
 
 
-class TestErrorsWhenOverwriting(VanguardTestCase):
+class TestErrorsWhenOverwriting:
     """Testing breaking the decorator by overwriting or extending parts of the base class."""
 
     def test_overwrite_method_with_raise(self) -> None:
@@ -247,7 +258,7 @@ class TestErrorsWhenOverwriting(VanguardTestCase):
 
     def test_overwrite_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
-        with self.assertNotWarns(errors.OverwrittenMethodWarning):
+        with assert_not_warns(errors.OverwrittenMethodWarning):
 
             @SquareResult(ignore_methods=("add_5",))
             class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
@@ -284,7 +295,7 @@ class TestErrorsWhenOverwriting(VanguardTestCase):
 
     def test_unexpected_method_with_ignore(self) -> None:
         """Test that such an error can be avoided."""
-        with self.assertNotWarns(errors.UnexpectedMethodWarning):
+        with assert_not_warns(errors.UnexpectedMethodWarning):
 
             @SquareResult(ignore_methods=["something_new"])
             class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
