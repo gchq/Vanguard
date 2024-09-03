@@ -14,6 +14,7 @@
 
 """Contains tests for the decorators."""
 
+import contextlib
 from typing import Any, List, Type, TypeVar, Union
 
 import pytest
@@ -76,6 +77,13 @@ class SquareResult(Decorator):
                 return [t, t, t]
 
         return InnerClass
+
+
+class RequiresSquareResult(Decorator):
+    """A decorator with a requirement."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(framework_class=SimpleNumber, required_decorators={SquareResult}, **kwargs)
 
 
 class DummyDecorator(Decorator):
@@ -232,157 +240,125 @@ class TestWrapping:
 class TestErrorsWhenOverwriting:
     """Testing breaking the decorator by overwriting or extending parts of the base class."""
 
-    def test_overwrite_method_with_raise(self) -> None:
-        """Test that overwriting a method throws an error instead."""
-        expected_error_message = "The class 'NewNumber' has overwritten the following methods: {'add_5'}."
-        with pytest.raises(errors.OverwrittenMethodError, match=expected_error_message):
+    @pytest.mark.parametrize("mode", ["new_method", "override_method"])
+    @pytest.mark.parametrize("raise_instead", [True, False])
+    @pytest.mark.parametrize("ignore", ["specific", "all", "other", "none"])
+    @pytest.mark.parametrize("who_is_wrong", ["subclass", "superclass", "both"])
+    def test_unexpected_method_change(self, *, mode: str, ignore: str, raise_instead: bool, who_is_wrong: str):
+        """
+        Test what happens if the decorated class's methods are different from those of the framework class.
 
-            @SquareResult(raise_instead=True)
-            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should throw an error."""
+        We test in two modes:
+         - `new_method`: Adding a new method not present on the base class
+         - `override_method`: Overriding a method that was present on the base class
 
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 1
+        We test with the `raise_instead` flag set to both true and false, testing for an exception or warning as
+        appropriate.
 
-    def test_overwrite_method(self) -> None:
-        """Test that overwriting a method throws a warning."""
-        expected_warning_message = "The class 'NewNumber' has overwritten the following methods: {'add_5'}."
-        with pytest.warns(errors.OverwrittenMethodWarning, match=expected_warning_message):
+        We test with three "ignore" settings:
+         - Don't do any ignores (and check that the correct warning/error is raised)
+         - Specify some other name to be ignored (and check the correct warning/error is still raised)
+         - Ignore by specifying the name (and check no error/warning is raised)
+         - Ignore by setting `ignore_all = True` (and check no error/warning is raised)
 
-            @SquareResult()
-            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should raise a warning."""
+        We test with the error in three locations:
+         - Unexpected method change is in the class being decorated (class being decorated is blamed)
+         - Unexpected method change is in a superclass of the class being decorated (superclass is blamed)
+         - Both the class being decorated and a superclass have an unexpected method change (superclass is blamed)
+        """
+        # Set up the classes.
+        if who_is_wrong == "subclass":
 
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 1
+            class MiddleNumber(SimpleNumber):
+                """Transparent subclass."""
+        else:
+            if mode == "new_method":
 
-    def test_overwrite_method_with_ignore(self) -> None:
-        """Test that such an error can be avoided."""
-        with assert_not_warns(errors.OverwrittenMethodWarning):
+                class MiddleNumber(SimpleNumber):
+                    """Subclass that adds a new method."""
 
-            @SquareResult(ignore_methods=("add_5",))
-            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should not raise any OverwrittenMethodWarning."""
+                    def something_new(self) -> None:
+                        pass
+            elif mode == "override_method":
 
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 1
+                class MiddleNumber(SimpleNumber):
+                    """Subclass that overrides an existing method."""
 
-    def test_unexpected_method_with_raise(self) -> None:
-        """Test that creating a new method throws an error instead."""
-        expected_error_message = "The class 'NewNumber' has added the following unexpected methods: {'something_new'}."
-        with pytest.raises(errors.UnexpectedMethodError, match=expected_error_message):
+                    def add_5(self) -> Union[int, float]:
+                        return super().add_5() + 1
+            else:
+                raise ValueError("mode")
 
-            @SquareResult(raise_instead=True)
-            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should throw an error."""
+        if who_is_wrong == "superclass":
 
-                def something_new(self) -> None:
-                    pass
+            class NewNumber(MiddleNumber):
+                """Transparent subclass."""
+        else:
+            if mode == "new_method":
 
-    def test_unexpected_method_with_warn(self) -> None:
-        """Test that creating a new method throws a warning."""
-        expected_warning_message = (
-            "The class 'NewNumber' has added the following unexpected methods: {'something_new'}."
-        )
-        with pytest.warns(errors.UnexpectedMethodWarning, match=expected_warning_message):
+                class NewNumber(MiddleNumber):
+                    """Subclass that adds a new method."""
 
-            @SquareResult()
-            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should raise a warning."""
+                    def something_new(self) -> None:
+                        pass
+            elif mode == "override_method":
 
-                def something_new(self) -> None:
-                    pass
+                class NewNumber(MiddleNumber):
+                    """Subclass that overrides an existing method."""
 
-    def test_unexpected_method_with_ignore(self) -> None:
-        """Test that such an error can be avoided."""
-        with assert_not_warns(errors.UnexpectedMethodWarning):
+                    def add_5(self) -> Union[int, float]:
+                        return super().add_5() + 1
+            else:
+                raise ValueError("mode")
 
-            @SquareResult(ignore_methods=["something_new"])
-            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should not raise UnexpectedMethodWarning."""
+        # Set up the test itself.
+        kwargs = {"raise_instead": raise_instead}
+        if ignore == "none" or ignore == "other":
+            if ignore == "other":
+                kwargs["ignore_methods"] = ["some_other_method"]
 
-                def something_new(self) -> None:
-                    pass
+            # If we're not ignoring the errors, then specify what the expected error/warning is.
+            if who_is_wrong == "subclass":
+                blame_class = "NewNumber"
+            elif who_is_wrong == "superclass" or who_is_wrong == "both":
+                blame_class = "MiddleNumber"
+            else:
+                raise ValueError(who_is_wrong)
 
-    def test_overwrite_method_with_superclass_subclass_wrong(self) -> None:
-        """Warning should reference the SUBCLASS."""
-        expected_warning_message = "The class 'NewNumber' has overwritten the following methods: {'add_5'}."
+            if mode == "new_method":
+                expected_message = (
+                    f"The class '{blame_class}' has added the following unexpected methods: {{'something_new'}}."
+                )
+                expected_types = errors.UnexpectedMethodError, errors.UnexpectedMethodWarning
+            elif mode == "override_method":
+                expected_message = f"The class '{blame_class}' has overwritten the following methods: {{'add_5'}}."
+                expected_types = errors.OverwrittenMethodError, errors.OverwrittenMethodWarning
+            else:
+                raise ValueError(mode)
 
-        class MiddleNumber(SimpleNumber):
-            """An intermediate number."""
+            if raise_instead:
+                context = pytest.raises(expected_types[0], match=expected_message)
+            else:
+                context = pytest.warns(expected_types[1], match=expected_message)
+        elif ignore == "specific":
+            # Ignore by setting `ignore_methods`.
+            if mode == "new_method":
+                kwargs["ignore_methods"] = ["something_new"]
+            elif mode == "override_method":
+                kwargs["ignore_methods"] = ["add_5"]
+            else:
+                raise ValueError(mode)
+            context = contextlib.nullcontext() if raise_instead else assert_not_warns()
+        elif ignore == "all":
+            # Ignore by setting `ignore_all`.
+            kwargs["ignore_all"] = True
+            context = contextlib.nullcontext() if raise_instead else assert_not_warns()
+        else:
+            raise ValueError(ignore)
 
-        with pytest.warns(errors.OverwrittenMethodWarning, match=expected_warning_message):
-
-            @SquareResult()
-            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should raise a warning."""
-
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 1
-
-    def test_overwrite_method_with_superclass_superclass_wrong(self) -> None:
-        """Warning should reference the SUPERCLASS."""
-        expected_warning_message = "The class 'MiddleNumber' has overwritten the following methods: {'add_5'}."
-
-        class MiddleNumber(SimpleNumber):
-            """An intermediate number."""
-
-            def add_5(self) -> Union[int, float]:
-                return super().add_5() + 1
-
-        with pytest.warns(errors.OverwrittenMethodWarning, match=expected_warning_message):
-
-            @SquareResult()
-            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should raise a warning."""
-
-    def test_overwrite_method_with_superclass_both_wrong(self) -> None:
-        """Warning should reference the SUPERCLASS."""
-        expected_warning_message = "The class 'MiddleNumber' has overwritten the following methods: {'add_5'}."
-
-        class MiddleNumber(SimpleNumber):
-            """An intermediate number."""
-
-            def add_5(self) -> Union[int, float]:
-                return super().add_5() + 1
-
-        with pytest.warns(errors.OverwrittenMethodWarning, match=expected_warning_message):
-
-            @SquareResult()
-            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should raise a warning."""
-
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 2
-
-    def test_missing_requirements(self) -> None:
-        """Test that we get an appropriate error if we are missing requirements for a decorator."""
-
-        class RequirementDecorator(Decorator):
-            """A decorator with a requirement."""
-
-            def __init__(self, **kwargs: Any) -> None:
-                super().__init__(framework_class=SimpleNumber, required_decorators={SquareResult}, **kwargs)
-
-        with pytest.raises(errors.MissingRequirementsError, match=SquareResult.__name__):
-
-            @RequirementDecorator()
-            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
-                """Declaring this class should throw an error, as we're missing a required decorator"""
-
-    def test_passed_requirements(self) -> None:
-        """Test that when all requirements for a decorator are satisfied, no error is thrown."""
-
-        class RequirementDecorator(Decorator):
-            """A decorator with a requirement."""
-
-            def __init__(self, **kwargs: Any) -> None:
-                super().__init__(framework_class=SimpleNumber, required_decorators={SquareResult}, **kwargs)
-
-        @RequirementDecorator(ignore_methods=("__init__", "add_5"))
-        @SquareResult()
-        class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
-            """Declaring this class should not throw any error, as all requirements are satisfied."""
+        # Actually perform the decoration, and check for errors/warnings as appropriate
+        with context:
+            SquareResult(**kwargs)(NewNumber)
 
 
 class TestInvalidDecoration:
@@ -404,3 +380,19 @@ class TestInvalidDecoration:
         # but twice raises an error
         with pytest.raises(TopmostDecoratorError):
             DummyDecorator()(decorated_once)
+
+    def test_missing_requirements(self) -> None:
+        """Test that we get an appropriate error if we are missing requirements for a decorator."""
+        with pytest.raises(errors.MissingRequirementsError, match=SquareResult.__name__):
+
+            @RequiresSquareResult()
+            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
+                """Declaring this class should throw an error, as we're missing a required decorator."""
+
+    def test_passed_requirements(self) -> None:
+        """Test that when all requirements for a decorator are satisfied, no error is thrown."""
+
+        @RequiresSquareResult(ignore_methods=("__init__", "add_5"))
+        @SquareResult()
+        class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
+            """Declaring this class should not throw any error, as all requirements are satisfied."""
