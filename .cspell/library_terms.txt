@@ -43,6 +43,7 @@ diag
 doctests
 dtype
 dtypes
+dunder
 eigh
 ename
 eprint
