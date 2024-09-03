@@ -18,6 +18,7 @@ Basic end to end functionality test for classification problems in Vanguard.
 
 import unittest
 
+import gpytorch.means
 import numpy as np
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood
 from gpytorch.mlls import VariationalELBO
@@ -27,6 +28,7 @@ from tests.cases import get_default_rng
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
+from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
@@ -199,6 +201,52 @@ class VanguardTestCase(unittest.TestCase):
         # Sense check outputs
         self.assertGreaterEqual(f1_score(predictions_train, y[train_indices], average="micro"), self.required_f1_score)
         self.assertGreaterEqual(f1_score(predictions_test, y[test_indices], average="micro"), self.required_f1_score)
+
+    def test_multitask_dirichlet_classification_notebook_example(self) -> None:
+        """
+        Explicitly test the multitask dirichlet classification example using Gaussian data.
+
+        Here we recreate a minimal example based on the content of the notebook  ``multiclass_dirichlet_classification''
+        to ensure it is tested on all python versions rather than just a pinned package version and the latest.
+        """
+        # Recreate the notebook example, with specific data and a relaxed acceptance criteria
+        num_classes = 4
+        dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=100,
+            num_test_points=500,
+            num_classes=num_classes,
+            covariance_scale=1,
+            rng=self.rng,
+        )
+        required_f1_score = 0.5
+
+        @DirichletKernelMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
+        class MulticlassGaussianClassifier(GaussianGPController):
+            pass
+
+        gp = MulticlassGaussianClassifier(
+            dataset.train_x,
+            dataset.train_y,
+            kernel_class=ScaledRBFKernel,
+            y_std=0,
+            mean_class=gpytorch.means.ZeroMean,
+            likelihood_class=DirichletKernelClassifierLikelihood,
+            likelihood_kwargs={"learn_alpha": False, "alpha": 5},
+            marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            optim_kwargs={"lr": 0.1, "early_stop_patience": 5},
+            rng=self.rng,
+        )
+
+        # Fit the controller to the data
+        gp.fit(100)
+
+        # Get predictions from the controller object
+        predictions_train, _ = gp.classify_points(dataset.train_x)
+        predictions_test, _ = gp.classify_points(dataset.test_x)
+
+        # Sense check outputs
+        self.assertGreaterEqual(f1_score(predictions_train, dataset.train_y, average="micro"), required_f1_score)
+        self.assertGreaterEqual(f1_score(predictions_test, dataset.test_y, average="micro"), required_f1_score)
 
 
 if __name__ == "__main__":

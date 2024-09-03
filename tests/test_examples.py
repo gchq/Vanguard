@@ -106,7 +106,7 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
     ) -> None:
         """Verify if an error is expected in a cell."""
         cell_source_lines = cell.source.split("\n")
-        match_if_cell_expected_to_ignore = _RE_SPHINX_EXPECT.match(cell_source_lines[0])
+        match_if_cell_expected_to_ignore = _RE_SPHINX_EXPECT.match(cell_source_lines[1])
         if not match_if_cell_expected_to_ignore:
             self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: {output.evalue}")
         else:

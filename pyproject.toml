@@ -56,13 +56,11 @@ doc = [
     "sphinx",
     "sphinx-autodoc-typehints",
     "sphinxcontrib-bibtex",
-    "jupyterlab",
-    "jupyter",
     "tqdm",
 ]
 # All tools for a developer including those for running pylint
 dev = [
-    "vanguard[test, doc, notebook]",
+    "vanguard[test, doc]",
     "isort",
     "jupyterlab",
     "pre-commit",
