@@ -69,11 +69,11 @@ dev = [
     "pyroma",
     "ruff",
 ]
-# Run notebooks in the jupyter interface and edit them
+# Run notebooks in the jupyter interface
 notebook = [
-    "vanguard[dev]",
     "jupyter",
     "jupyterlab",
+    "tqdm",
 ]
 [project.urls]
 #Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved
