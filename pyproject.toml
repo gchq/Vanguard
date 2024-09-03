@@ -69,6 +69,12 @@ dev = [
     "pyroma",
     "ruff",
 ]
+# Run notebooks in the jupyter interface and edit them
+notebook = [
+    "vanguard[dev]",
+    "jupyter",
+    "jupyterlab",
+]
 [project.urls]
 #Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved
 # https://github.com/gchq/Vanguard/issues/254

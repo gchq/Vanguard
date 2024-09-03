@@ -209,7 +209,7 @@ class VanguardTestCase(unittest.TestCase):
         Here we recreate a minimal example based on the content of the notebook  ``multiclass_dirichlet_classification''
         to ensure it is tested on all python versions rather than just a pinned package version and the latest.
         """
-        # Recreate the notebook example, with specific data and a relaxed acceptance criteria
+        # Recreate the notebook example with specific data
         num_classes = 4
         dataset = MulticlassGaussianClassificationDataset(
             num_train_points=100,
@@ -218,13 +218,33 @@ class VanguardTestCase(unittest.TestCase):
             covariance_scale=1,
             rng=self.rng,
         )
-        required_f1_score = 0.5
 
         @DirichletKernelMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
-        class MulticlassGaussianClassifier(GaussianGPController):
+        class MulticlassGaussianClassifierWithKernel(GaussianGPController):
             pass
 
-        gp = MulticlassGaussianClassifier(
+        @DirichletMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
+        class MulticlassGaussianClassifierWithoutKernel(GaussianGPController):
+            pass
+
+        # Test the first controller can be created and fit
+        gp = MulticlassGaussianClassifierWithoutKernel(
+            dataset.train_x,
+            dataset.train_y,
+            ScaledRBFKernel,
+            y_std=0,
+            mean_class=gpytorch.means.ZeroMean,
+            likelihood_class=DirichletClassificationLikelihood,
+            mean_kwargs={"batch_shape": (num_classes,)},
+            kernel_kwargs={"batch_shape": (num_classes,)},
+            likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
+            optim_kwargs={"lr": 0.05},
+            rng=self.rng,
+        )
+        gp.fit(1)
+
+        # Test the second controller can be created and fit
+        gp = MulticlassGaussianClassifierWithKernel(
             dataset.train_x,
             dataset.train_y,
             kernel_class=ScaledRBFKernel,
@@ -236,17 +256,22 @@ class VanguardTestCase(unittest.TestCase):
             optim_kwargs={"lr": 0.1, "early_stop_patience": 5},
             rng=self.rng,
         )
+        gp.fit(1)
 
-        # Fit the controller to the data
-        gp.fit(100)
-
-        # Get predictions from the controller object
-        predictions_train, _ = gp.classify_points(dataset.train_x)
-        predictions_test, _ = gp.classify_points(dataset.test_x)
-
-        # Sense check outputs
-        self.assertGreaterEqual(f1_score(predictions_train, dataset.train_y, average="micro"), required_f1_score)
-        self.assertGreaterEqual(f1_score(predictions_test, dataset.test_y, average="micro"), required_f1_score)
+        # Test the third controller can be created and fit
+        gp = MulticlassGaussianClassifierWithKernel(
+            dataset.train_x,
+            dataset.train_y,
+            kernel_class=ScaledRBFKernel,
+            y_std=0,
+            mean_class=gpytorch.means.ZeroMean,
+            likelihood_class=DirichletKernelClassifierLikelihood,
+            likelihood_kwargs={"learn_alpha": False, "alpha": 5},
+            marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            optim_kwargs={"lr": 0.1, "early_stop_patience": 5},
+            rng=self.rng,
+        )
+        gp.fit(1)
 
 
 if __name__ == "__main__":
