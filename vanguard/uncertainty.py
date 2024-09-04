@@ -26,6 +26,7 @@ import numpy.typing
 import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
+from numpy.typing import NDArray
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -48,7 +49,7 @@ class GaussianUncertaintyGPController(GPController):
         self,
         train_x: numpy.typing.NDArray[np.floating],
         train_x_std: Optional[Union[numpy.typing.NDArray[np.floating], float]],
-        train_y: numpy.typing.NDArray[np.floating],
+        train_y: Union[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]],
         y_std: Union[numpy.typing.NDArray[np.floating], float],
         kernel_class: Type[gpytorch.kernels.Kernel],
         mean_class: Type[gpytorch.means.Mean] = gpytorch.means.ConstantMean,
@@ -130,7 +131,7 @@ class GaussianUncertaintyGPController(GPController):
             )
 
     @property
-    def gradient_variance(self) -> torch.Tensor:
+    def gradient_variance(self) -> Optional[torch.Tensor]:
         r"""
         Return the gradient variance.
 
@@ -152,7 +153,7 @@ class GaussianUncertaintyGPController(GPController):
         self._gradient_variance = value
         self.likelihood_noise = self._original_y_variance_as_tensor + self._noise_transform(value)
 
-    def predict_at_point(self, x: torch.Tensor) -> NoReturn:
+    def predict_at_point(self, x: Union[NDArray[np.floating], torch.Tensor]) -> NoReturn:
         """Doesn't make sense for an uncertain controller."""
         raise TypeError("Cannot call 'predict_at_point' directly, try 'predict_at_fuzzy_point'.")
 

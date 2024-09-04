@@ -56,9 +56,9 @@ class NormaliseY(Decorator):
         ...     pass
         >>>
         >>> controller = NormalisedController(
-        ...                     train_x=np.array([0, 1, 2, 3]),
-        ...                     train_x_std=1,
-        ...                     train_y=np.array([0, 1, 4, 9]),
+        ...                     train_x=np.array([0.0, 1.0, 2.0, 3.0]),
+        ...                     train_x_std=1.0,
+        ...                     train_y=np.array([0.0, 1.0, 4.0, 9.0]),
         ...                     y_std=0.5,
         ...                     kernel_class=ScaledRBFKernel
         ...                     )

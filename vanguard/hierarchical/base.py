@@ -24,6 +24,8 @@ import numpy as np
 import torch
 from gpytorch.kernels import ScaleKernel
 from numpy.typing import NDArray
+from torch import Tensor
+from typing_extensions import Self
 
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior
@@ -33,7 +35,7 @@ from vanguard.warnings import _JITTER_WARNING, NumericalWarning
 ControllerT = TypeVar("ControllerT", bound=GPController)
 DistributionT = TypeVar("DistributionT", bound=gpytorch.distributions.Distribution)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)
+ModuleT = TypeVar("ModuleT", bound=torch.nn.Module)
 
 
 class BaseHierarchicalHyperparameters(Decorator):
@@ -72,7 +74,7 @@ class BaseHierarchicalHyperparameters(Decorator):
         @wraps_class(cls)
         class InnerClass(cls):
             @classmethod
-            def new(cls, instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
+            def new(cls, instance: Self, **kwargs: Any) -> Self:
                 """Make sure that the hyperparameter collection is copied over."""
                 new_instance = super().new(instance, **kwargs)
                 new_instance.hyperparameter_collection = instance.hyperparameter_collection
@@ -177,25 +179,25 @@ class BaseHierarchicalHyperparameters(Decorator):
 
     @staticmethod
     def _infinite_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_fuzzy_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 

@@ -46,6 +46,7 @@ dependencies = [
 # Run unit tests
 test = [
     "pytest-cov",
+    "pytest-beartype"
 ]
 # Compile documentation
 doc = [
@@ -135,6 +136,10 @@ exclude_also = [
 ]
 
 [tool.pytest.ini_options]
+markers = [
+    "no_beartype: for tests incompatible with beartype (e.g. checking for TypeErrors)",
+]
+
 # TODO: fix as many of these as possible, and for those we can't fix, suppress as many as possible at the point that
 #  they're emitted using the catch_warnings context manager. Suppress globally here only as a last resort.
 # https://github.com/gchq/Vanguard/issues/281
@@ -164,4 +169,6 @@ filterwarnings = [
     # TODO: replace with sparse_coo_tensor
     # https://github.com/gchq/Vanguard/issues/278
     "ignore:torch.sparse.SparseTensor\\(indices, values, shape, \\*, device=\\) is deprecated:UserWarning",
+    # TODO: replace with some alternative (e.g. beartype.typing.*)
+    "ignore::beartype.roar.BeartypeDecorHintPep585DeprecationWarning"
 ]

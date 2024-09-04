@@ -17,8 +17,9 @@ Contains decorators for torch optimisers to apply LR schedulers as part of the o
 """
 
 import inspect
-from typing import Any, Callable, Generic, Optional, Type, TypeVar, overload
+from typing import Any, Callable, Generic, Optional, Type, TypeVar, Union, overload
 
+import torch
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 
@@ -56,12 +57,16 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
                 self._applied_scheduler = scheduler_class(self, *scheduler_args, **scheduler_kwargs)
 
             @overload
-            def step(self, loss: float, closure: None) -> None: ...  # pragma: no cover
+            def step(self, loss: Union[float, torch.Tensor], closure: None) -> None: ...  # pragma: no cover
 
             @overload
-            def step(self, loss: float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
+            def step(
+                self, loss: Union[float, torch.Tensor], closure: Callable[[], float]
+            ) -> Union[float, torch.Tensor]: ...  # pragma: no cover
 
-            def step(self, loss: float, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+            def step(
+                self, loss: Union[float, torch.Tensor], closure: Optional[Callable[[], float]] = None
+            ) -> Optional[Union[float, torch.Tensor]]:
                 ret = super().step(closure=closure)
                 scheduler_step_func(self._applied_scheduler, loss)
                 return ret
@@ -73,5 +78,5 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
         scheduler.step()
 
     @staticmethod
-    def _step_scheduler_with_loss(scheduler: LRSchedulerT, loss: float) -> None:
+    def _step_scheduler_with_loss(scheduler: LRSchedulerT, loss: Union[float, torch.Tensor]) -> None:
         scheduler.step(loss)

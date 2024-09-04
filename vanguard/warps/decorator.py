@@ -16,11 +16,12 @@
 Contains the SetWarp decorator.
 """
 
-from typing import Any, Tuple, Type, TypeVar
+from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
 import torch
+from typing_extensions import Self
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -82,8 +83,8 @@ class SetWarp(Decorator):
                 self.train_y = self.train_y.to(self.device)
 
                 def _unwarp_values(
-                    *values: numpy.typing.NDArray[np.floating],
-                ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
+                    *values: Union[torch.Tensor, numpy.typing.NDArray[np.floating]],
+                ) -> Tuple[Union[torch.Tensor, numpy.typing.NDArray[np.floating]], ...]:
                     """
                     Map values back through the warp.
 
@@ -174,7 +175,7 @@ class SetWarp(Decorator):
                 self.posterior_collection_class = warp_posterior_class(self.posterior_collection_class)
 
             @classmethod
-            def new(cls, instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
+            def new(cls, instance: Self, **kwargs: Any) -> Self:
                 """Also apply warping to the new instance."""
                 new_instance = super().new(instance, **kwargs)
                 new_instance.warp = instance.warp

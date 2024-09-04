@@ -48,7 +48,7 @@ class MulticlassTests(ClassificationTestCase):
         self.controller = MulticlassGaussianClassifier(
             self.dataset.train_x,
             self.dataset.train_y,
-            y_std=0,
+            y_std=0.0,
             mean_class=means.ZeroMean,
             kernel_class=kernels.RBFKernel,
             likelihood_class=DirichletKernelClassifierLikelihood,
@@ -91,7 +91,7 @@ class MulticlassTests(ClassificationTestCase):
                 self.dataset.train_y,
                 mean_class=means.ZeroMean,
                 kernel_class=kernels.RBFKernel,
-                y_std=0,
+                y_std=0.0,
                 likelihood_class=IllegalLikelihoodClass,
                 rng=self.rng,
             )

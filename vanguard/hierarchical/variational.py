@@ -21,9 +21,10 @@ from typing import Any, Generator, List, Optional, Type, TypeVar, Union
 import gpytorch
 import numpy as np
 import torch
-from gpytorch.variational import CholeskyVariationalDistribution
+from gpytorch.variational import CholeskyVariationalDistribution, _VariationalDistribution
 from linear_operator import to_linear_operator
 from numpy.typing import NDArray
+from torch import Tensor
 
 from vanguard import utils
 from vanguard.decoratorutils import process_args, wraps_class
@@ -40,10 +41,7 @@ ControllerT = TypeVar("ControllerT", bound=GPController)
 KernelT = TypeVar("KernelT", bound=gpytorch.kernels.Kernel)
 LikelihoodT = TypeVar("LikelihoodT", bound=gpytorch.likelihoods.GaussianLikelihood)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-VariationalDistributionT = TypeVar(
-    "VariationalDistributionT",
-    bound=gpytorch.variational._VariationalDistribution,  # pylint: disable=protected-access
-)
+DistributionT = TypeVar("DistributionT", bound=gpytorch.distributions.Distribution)
 
 
 class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
@@ -70,21 +68,21 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         ... class BayesianRBFKernel(RBFKernel):
         ...     pass
         >>>
-        >>> train_x = np.array([0, 0.5, 0.9, 1])
+        >>> train_x = torch.tensor([0, 0.5, 0.9, 1])
         >>> train_y = 1 / (1 + train_x) + np.random.randn(4)*0.005
-        >>> gp = HierarchicalController(train_x, train_y, BayesianRBFKernel, y_std=0)
+        >>> gp = HierarchicalController(train_x, train_y, BayesianRBFKernel, y_std=0.0)
         >>> loss = gp.fit(100)
         >>>
-        >>> test_x = np.array([0.05, 0.95])
+        >>> test_x = torch.tensor([0.05, 0.95])
         >>> mean, lower, upper = gp.posterior_over_point(test_x).confidence_interval()
-        >>> (upper > 1/(1 + test_x)).all(), (lower < 1/(1 + test_x)).all()
+        >>> (upper > 1/(1 + test_x)).all().item(), (lower < 1/(1 + test_x)).all().item()
         (True, True)
     """
 
     def __init__(
         self,
         num_mc_samples: int = 100,
-        variational_distribution_class: Optional[VariationalDistributionT] = CholeskyVariationalDistribution,
+        variational_distribution_class: Optional[_VariationalDistribution] = CholeskyVariationalDistribution,
         **kwargs: Any,
     ) -> None:
         """
@@ -137,7 +135,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield posterior samples forever.
@@ -154,7 +152,9 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+        controller: ControllerT,
+        x: Union[Tensor, NDArray[np.floating]],
+        x_std: Union[Tensor, NDArray[np.floating], float],
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield fuzzy posterior samples forever.
@@ -182,7 +182,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield likelihood samples forever.
@@ -205,7 +205,9 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_fuzzy_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+        controller: ControllerT,
+        x: Union[Tensor, NDArray[np.floating]],
+        x_std: Union[Tensor, NDArray[np.floating], float],
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield fuzzy likelihood samples forever.
@@ -253,8 +255,8 @@ def _correct_point_estimate_shapes(point_estimate_kernels: List[KernelT]) -> Non
 
 
 def _safe_index_batched_multivariate_normal(
-    distribution: VariationalDistributionT,
-) -> Generator[VariationalDistributionT, None, None]:
+    distribution: DistributionT,
+) -> Generator[DistributionT, None, None]:
     """
     Delazifies the batched covariance matrix and yields recreated non-batch normals.
 

@@ -133,6 +133,7 @@ nitpicky = True
 nitpicky_ignore_mapping: Dict[str, List[str]] = {
     "py:class": [
         "torch.Size",
+        "gpytorch.likelihoods.gaussian_likelihood._GaussianLikelihoodBase",
     ],
     "py:meth": [
         "activate",

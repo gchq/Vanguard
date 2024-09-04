@@ -269,17 +269,17 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 except (TypeError, IndexError):
                     y_std_subset = self._full_y_std
 
-                expect_controller = cls.new(
+                expert_controller = cls.new(
                     self, train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset, **self._expert_init_kwargs
                 )
-                expect_controller.kernel.load_state_dict(self.kernel.state_dict())
-                expect_controller.mean.load_state_dict(self.mean.state_dict())
+                expert_controller.kernel.load_state_dict(self.kernel.state_dict())
+                expert_controller.mean.load_state_dict(self.mean.state_dict())
 
-                return expect_controller
+                return expert_controller
 
             def _aggregate_expert_predictions(
                 self,
-                x: Union[NDArray[np.floating], torch.Tensor],
+                x: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
                 means_and_covars: List[Tuple[torch.Tensor, torch.Tensor]],
             ) -> Tuple[torch.Tensor, torch.Tensor]:
                 """
@@ -318,8 +318,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
 
 def _create_subset(
-    *arrays: Union[NDArray[np.floating], float], subset_fraction: float = 0.1, rng: Optional[np.random.Generator] = None
-) -> List[Union[NDArray[np.floating], float]]:
+    *arrays: Union[NDArray[np.floating], NDArray[np.integer], float, int],
+    subset_fraction: float = 0.1,
+    rng: Optional[np.random.Generator] = None,
+) -> List[Union[NDArray[np.floating], NDArray[np.integer], float]]:
     """
     Return subsets of the arrays along the same random indices.
 

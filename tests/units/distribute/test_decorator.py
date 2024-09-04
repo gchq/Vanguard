@@ -20,6 +20,7 @@ import unittest
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 import torch
 
 from tests.cases import get_default_rng
@@ -71,6 +72,7 @@ class InitialisationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.rng = get_default_rng()
 
+    @pytest.mark.no_beartype
     def test_cannot_pass_array_as_y_std(self) -> None:
         """
         Test that if `train_y_std` is provided as an array, this input is rejected.
@@ -105,6 +107,7 @@ class InitialisationTests(unittest.TestCase):
                 dataset.train_x, dataset.train_y, ScaledRBFKernel, 0.01, rng=self.rng
             )
 
+    @pytest.mark.no_beartype
     def test_uninitialised_kernel_with_k_medoids(self) -> None:
         """
         Test incorrect initialisation of the distributed decorator when using the KMedoidsPartitioner.
@@ -225,7 +228,7 @@ class SharedDataTests(unittest.TestCase):
         """
         # Define a new controller and fit it
         gp = DistributedGaussianGPControllerBCMAggregator(
-            np.arange(20).reshape(-1, 1),
+            np.arange(20, dtype=np.floating).reshape(-1, 1),
             2.5 + 0.5 * np.arange(20),
             ScaledRBFKernel,
             0.0,
@@ -236,12 +239,12 @@ class SharedDataTests(unittest.TestCase):
         # Change the kernel on the controller to ensure we hit the case where the posterior prediction
         # computation does not make sense due to the prior variance computed
         mocked_kernel = MagicMock()
-        mocked_kernel.return_value = torch.zeros(size=[2, 3, 5])
+        mocked_kernel.return_value = torch.zeros(size=[2, 3, 5], dtype=torch.float)
         gp.kernel = mocked_kernel
 
         # Check we reject the invalid noise from the kernel
         with self.assertRaises(RuntimeError) as exc:
-            gp.posterior_over_point(np.arange(3))
+            gp.posterior_over_point(np.arange(3, dtype=np.floating))
         self.assertEqual(
             str(exc.exception), "Cannot distribute using this kernel - try using a non-BCM aggregator instead."
         )
@@ -278,6 +281,7 @@ class SubsetCreationTests(unittest.TestCase):
         self.assertTrue(len(set(subset_arrays[0])) == 2)
         self.assertTrue(len(set(subset_arrays[1])) == 2)
 
+    @pytest.mark.no_beartype
     def test_create_subset_unexpected_inputs(self):
         """
         Test the handling of arrays without the shape attribute.

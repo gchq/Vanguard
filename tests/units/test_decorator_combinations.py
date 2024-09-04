@@ -148,7 +148,7 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
     EmptyDecorator: {},
     BinaryClassification: {
         "controller": {
-            "y_std": 0,
+            "y_std": 0.0,
             "likelihood_class": BernoulliLikelihood,
             "marginal_log_likelihood_class": VariationalELBO,
         },
@@ -161,6 +161,7 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
             "likelihood_kwargs": {"learn_additional_noise": True},
             "kernel_class": ScaledRBFKernel,
             "kernel_kwargs": {"batch_shape": (4,)},
+            "y_std": 0.0,
         },
         # TODO: fails with a shape mismatch error for any fewer than 40 points
         # https://github.com/gchq/Vanguard/issues/322
@@ -191,7 +192,7 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
         "controller": {
             "likelihood_class": MultitaskBernoulliLikelihood,
             "marginal_log_likelihood_class": VariationalELBO,
-            "y_std": 0,
+            "y_std": 0.0,
         },
         "dataset": OneHotMulticlassGaussianClassificationDataset(
             num_train_points=20, num_test_points=4, num_classes=4, rng=get_default_rng()

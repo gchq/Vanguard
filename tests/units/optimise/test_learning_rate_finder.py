@@ -52,7 +52,7 @@ class BasicTests(unittest.TestCase):
         lr_finder = LearningRateFinder(self.controller)
 
         min_lr = 1e-5
-        max_lr = 10
+        max_lr = 10.0
         num_divisions = 25
         learning_rate_losses = {}
 
@@ -83,7 +83,7 @@ class BasicTests(unittest.TestCase):
 
         with patch.object(self.controller, "fit", side_effect=NanError):
             # pylint: disable-next=protected-access
-            loss = lr_finder._run_learning_rate(lr=1, max_iterations=10)
+            loss = lr_finder._run_learning_rate(lr=1.0, max_iterations=10)
 
         assert loss == np.inf
 
@@ -91,7 +91,7 @@ class BasicTests(unittest.TestCase):
         """Test that `_run_learning_rate` correctly passes through its parameters to the controller."""
         lr_finder = LearningRateFinder(self.controller)
 
-        learning_rate = 1234
+        learning_rate = 1234.0
         max_iterations = 4321
 
         with patch.object(self.controller, "fit") as mock_fit:

@@ -35,9 +35,9 @@ class ExactGPModel(ExactGP):
 
     def __init__(  # pylint: disable=unused-argument
         self,
-        train_x: torch.Tensor,
-        train_y: torch.Tensor,
-        likelihood: gpytorch.likelihoods.GaussianLikelihood,
+        train_x: Optional[torch.Tensor],
+        train_y: Optional[torch.Tensor],
+        likelihood: gpytorch.likelihoods._GaussianLikelihoodBase,
         mean_module: gpytorch.means.Mean,
         covar_module: gpytorch.kernels.Kernel,
         **kwargs: Any,

@@ -23,6 +23,7 @@ import numpy as np
 import numpy.typing
 import torch
 from torch import Tensor
+from typing_extensions import Self
 
 from vanguard.base.basecontroller import BaseGPController
 from vanguard.base.metaclass import _StoreInitValues
@@ -94,14 +95,14 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         self._likelihood.noise = value
 
     @property
-    def learning_rate(self) -> np.floating:
+    def learning_rate(self) -> float:
         """Return the learning rate of the parameter optimiser."""
         return self._smart_optimiser.learning_rate
 
     @learning_rate.setter
     def learning_rate(
         self,
-        value: np.floating,
+        value: float,
     ) -> None:
         """Set the learning rate of the parameter optimiser."""
         self._smart_optimiser.learning_rate = value
@@ -115,7 +116,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         self,
         n_sgd_iters: int = 10,
         gradient_every: Optional[int] = None,
-    ) -> torch.Tensor:
+    ) -> Union[torch.Tensor, float]:
         """
         Run rounds of hyperparameter tuning.
 
@@ -150,7 +151,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_point(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], float],
+        x: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.
@@ -208,7 +209,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
         return self._fuzzy_predictive_likelihood(x, x_std)
 
     @classmethod
-    def new(cls, instance, **kwargs):
+    def new(cls, instance: Self, **kwargs) -> Self:
         """
         Create an instance of the class with the same initialisation parameters as an existing instance.
 

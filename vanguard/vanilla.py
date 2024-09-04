@@ -64,10 +64,10 @@ class GaussianGPController(GPController):
 
     def __init__(
         self,
-        train_x: numpy.typing.NDArray[np.floating],
-        train_y: numpy.typing.NDArray[np.floating],
+        train_x: Union[torch.Tensor, numpy.typing.NDArray[np.floating]],
+        train_y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.integer]],
         kernel_class: Type[gpytorch.kernels.Kernel],
-        y_std: Union[numpy.typing.NDArray[np.floating], float],
+        y_std: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
         mean_class: Type[gpytorch.means.Mean] = ConstantMean,
         likelihood_class: Type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
         marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,

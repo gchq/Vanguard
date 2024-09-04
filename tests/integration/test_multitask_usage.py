@@ -85,7 +85,7 @@ class VanguardTestCase(unittest.TestCase):
             train_x=x[train_indices],
             train_y=y[train_indices],
             kernel_class=ScaledRBFKernel,
-            y_std=0,
+            y_std=0.0,
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
         )

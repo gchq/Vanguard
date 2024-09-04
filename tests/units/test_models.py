@@ -17,9 +17,10 @@ Tests for models.
 """
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import gpytorch
+import numpy as np
 import torch
 
 from vanguard.kernels import ScaledRBFKernel
@@ -78,9 +79,11 @@ class TestInducingPointKernelGPModel(unittest.TestCase):
         # Create the model
         kernel = ScaledRBFKernel()
 
-        with patch("gpytorch.kernels.InducingPointKernel") as patched_kernel:
+        with patch(
+            "gpytorch.kernels.InducingPointKernel", return_value=Mock(gpytorch.kernels.InducingPointKernel)
+        ) as patched_kernel:
             # Mock the random generation to pick some fixed indices
-            mocked_rng = MagicMock()
+            mocked_rng = MagicMock(np.random.Generator)
             mocked_choice = MagicMock()
             mocked_choice.return_value = [1, 2, 4]
             mocked_rng.choice = mocked_choice

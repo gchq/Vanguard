@@ -16,15 +16,15 @@
 Contains the HyperparameterCollection class.
 """
 
-from typing import Any, Iterator, List, Tuple, TypeVar
+from typing import Any, Iterator, List, Tuple, Type, TypeVar
 
 import gpytorch
 import torch
 from gpytorch.distributions import MultivariateNormal
 
-from vanguard.hierarchical.base import BaseHierarchicalHyperparameters
+from vanguard.hierarchical.hyperparameter import BayesianHyperparameter
 
-HyperparameterT = TypeVar("HyperparameterT", bound=BaseHierarchicalHyperparameters)
+HyperparameterT = TypeVar("HyperparameterT", bound=BayesianHyperparameter)
 ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)
 VariationalDistributionT = TypeVar(
     "VariationalDistributionT",
@@ -45,7 +45,7 @@ class HyperparameterCollection:
         self,
         module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]],
         sample_shape: torch.Size,
-        variational_distribution_class: VariationalDistributionT,
+        variational_distribution_class: Type[VariationalDistributionT],
     ) -> None:
         """
         Initialise self.

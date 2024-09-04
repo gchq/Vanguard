@@ -32,7 +32,7 @@ class TestSmartOptimiser(unittest.TestCase):
         """Test that the `SmartOptimiser` stops early if there is no improvement across several steps."""
         patience = 5
         smart_optimiser = SmartOptimiser(torch.optim.Adam, Linear(2, 2), early_stop_patience=patience)
-        with patch.object(smart_optimiser, "_step"):
+        with patch.object(smart_optimiser, "_step", return_value=1.0):
             for _ in range(patience):
                 smart_optimiser.step(1.0)
             with pytest.raises(
@@ -43,7 +43,7 @@ class TestSmartOptimiser(unittest.TestCase):
     def test_no_early_stopping(self):
         """Test that the `SmartOptimiser` doesn't stop early if patience is unset."""
         smart_optimiser = SmartOptimiser(torch.optim.Adam, Linear(2, 2), early_stop_patience=None)
-        with patch.object(smart_optimiser, "_step"):
+        with patch.object(smart_optimiser, "_step", return_value=1.0):
             # assertion: we don't hit any NoImprovementError
             for _ in range(100):
                 smart_optimiser.step(1.0)
