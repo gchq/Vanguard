@@ -92,7 +92,6 @@ class VanguardTestCase(unittest.TestCase):
 
         # Sense check the outputs. Note that we do not check confidence interval quality here,
         # just that they can be created, due to highly varying quality of the resulting intervals,
-
         self.assertTrue(torch.all(prediction_medians <= prediction_ci_upper))
         self.assertTrue(torch.all(prediction_medians >= prediction_ci_lower))
 
