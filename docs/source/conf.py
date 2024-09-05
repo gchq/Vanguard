@@ -99,6 +99,7 @@ bibtex_bibfiles = [os.path.join(VANGUARD_FOLDER_FILE_PATH, "references.bib")]
 
 linkcheck_ignore = ["https://doi.org"]
 linkcheck_timeout = 5
+linkcheck_report_timeouts_as_broken = True
 
 coverage_show_missing_items = True
 coverage_write_headline = False
