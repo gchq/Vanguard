@@ -57,11 +57,10 @@ class BasicTests(unittest.TestCase):
             with self.subTest(msg):
                 posterior = Posterior.from_mean_and_covariance(posterior_mean, covar)
                 ci_median, ci_lower, ci_upper = posterior.confidence_interval(CONF_INTERVAL_SIZE)
-                mean, std = self.mean.detach().cpu().numpy(), self.std.detach().cpu().numpy()
 
-                np.testing.assert_array_almost_equal(ci_lower, mean - CONF_FAC * std, decimal=4)
-                np.testing.assert_array_almost_equal(ci_median, mean, decimal=4)
-                np.testing.assert_array_almost_equal(ci_upper, mean + CONF_FAC * std, decimal=4)
+                torch.testing.assert_close(ci_lower, self.mean - CONF_FAC * self.std)
+                torch.testing.assert_close(ci_median, self.mean)
+                torch.testing.assert_close(ci_upper, self.mean + CONF_FAC * self.std)
 
     def test_2_task_confidence_interval(self) -> None:
         """
@@ -72,17 +71,15 @@ class BasicTests(unittest.TestCase):
         covar = torch.diag(torch.cat([std1, std2]) ** 2)
         posterior = Posterior.from_mean_and_covariance(torch.stack([mean1, mean2], -1), covar)
         ci_median, ci_lower, ci_upper = posterior.confidence_interval(0.05)
-        mean_1, std_1 = mean1.detach().cpu().numpy(), std1.detach().cpu().numpy()
-        mean_2, std_2 = mean2.detach().cpu().numpy(), std2.detach().cpu().numpy()
 
         # assert results are as expected for task 1
-        np.testing.assert_array_almost_equal(ci_lower[:, 0], mean_1.squeeze() - CONF_FAC * std_1, decimal=3)
-        np.testing.assert_array_almost_equal(ci_median[:, 0], mean_1.squeeze(), decimal=3)
-        np.testing.assert_array_almost_equal(ci_upper[:, 0], mean_1.squeeze() + CONF_FAC * std_1, decimal=3)
+        np.testing.assert_array_almost_equal(ci_lower[:, 0], mean1.squeeze() - CONF_FAC * std1, decimal=3)
+        np.testing.assert_array_almost_equal(ci_median[:, 0], mean1.squeeze(), decimal=3)
+        np.testing.assert_array_almost_equal(ci_upper[:, 0], mean1.squeeze() + CONF_FAC * std1, decimal=3)
         # assert results are as expected for task 2
-        np.testing.assert_array_almost_equal(ci_lower[:, 1], mean_2.squeeze() - CONF_FAC * std_2, decimal=3)
-        np.testing.assert_array_almost_equal(ci_median[:, 1], mean_2.squeeze(), decimal=3)
-        np.testing.assert_array_almost_equal(ci_upper[:, 1], mean_2.squeeze() + CONF_FAC * std_2, decimal=3)
+        np.testing.assert_array_almost_equal(ci_lower[:, 1], mean2.squeeze() - CONF_FAC * std2, decimal=3)
+        np.testing.assert_array_almost_equal(ci_median[:, 1], mean2.squeeze(), decimal=3)
+        np.testing.assert_array_almost_equal(ci_upper[:, 1], mean2.squeeze() + CONF_FAC * std2, decimal=3)
 
     def test_1_dim_mean_log_probability_size(self) -> None:
         """

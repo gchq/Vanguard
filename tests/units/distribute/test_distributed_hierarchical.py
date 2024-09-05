@@ -79,9 +79,9 @@ class VariationalTests(unittest.TestCase):
         hyperparameter_collections = (expert.hyperparameter_collection for expert in gp._expert_controllers)
         var_dists = [collection.variational_distribution() for collection in hyperparameter_collections]
 
-        means = torch.stack([var_dist.mean for var_dist in var_dists]).detach().cpu().numpy()
-        mean_dists = distance_matrix(means, means)
-        self.assertTrue((mean_dists == 0).all())
+        means = torch.stack([var_dist.mean for var_dist in var_dists])
+        mean_dists = torch.cdist(means, means)
+        assert (mean_dists == 0).all()
 
     def test_variational_distribution_from_subset_is_copied(self) -> None:
         """
@@ -98,11 +98,11 @@ class VariationalTests(unittest.TestCase):
         hyperparameter_collections = (expert.hyperparameter_collection for expert in gp._expert_controllers)
         var_dists = [collection.variational_distribution() for collection in hyperparameter_collections]
 
-        means = torch.stack([var_dist.mean for var_dist in var_dists]).detach().cpu().numpy()
+        means = torch.stack([var_dist.mean for var_dist in var_dists])
         distribution = gp.hyperparameter_collection.variational_distribution
-        fit_mean = distribution().mean.unsqueeze(dim=0).detach().cpu().numpy()
-        mean_dists = distance_matrix(fit_mean, means)
-        self.assertTrue((mean_dists == 0).all())
+        fit_mean = distribution().mean.unsqueeze(dim=0)
+        mean_dists = torch.cdist(fit_mean, means)
+        assert (mean_dists == 0).all()
 
 
 class LaplaceTests(unittest.TestCase):
@@ -129,9 +129,9 @@ class LaplaceTests(unittest.TestCase):
         # pylint: disable=protected-access
         posterior_means = [expert.hyperparameter_posterior_mean for expert in gp._expert_controllers]
 
-        means = torch.stack(posterior_means).detach().cpu().numpy()
-        mean_dists = distance_matrix(means, means)
-        self.assertTrue((mean_dists == 0).all())
+        means = torch.stack(posterior_means)
+        mean_dists = torch.cdist(means, means)
+        assert (mean_dists == 0).all()
 
     def test_posterior_covar_is_same_on_all_experts(self) -> None:
         """
@@ -157,15 +157,15 @@ class LaplaceTests(unittest.TestCase):
             for expert in gp._expert_controllers
         ]
 
-        covars_evals = torch.stack(posterior_covariance_evals).detach().cpu().numpy()
+        covars_evals = torch.stack(posterior_covariance_evals)
         covars_evals = covars_evals.reshape((covars_evals.shape[0], -1))
         covar_dists = distance_matrix(covars_evals, covars_evals)
         self.assertTrue((covar_dists == 0).all())
 
-        covars_evecs = torch.stack(posterior_covariance_evecs).detach().cpu().numpy()
+        covars_evecs = torch.stack(posterior_covariance_evecs)
         covars_evecs = covars_evecs.reshape((covars_evecs.shape[0], -1))
-        covar_dists = distance_matrix(covars_evecs, covars_evecs)
-        self.assertTrue((covar_dists == 0).all())
+        covar_dists = torch.cdist(covars_evecs, covars_evecs)
+        assert (covar_dists == 0).all()
 
     def test_posterior_mean_from_subset_is_copied(self) -> None:
         """
@@ -180,10 +180,10 @@ class LaplaceTests(unittest.TestCase):
 
         # pylint: disable=protected-access
         posterior_means = [expert.hyperparameter_posterior_mean for expert in gp._expert_controllers]
-        means = torch.stack(posterior_means).detach().cpu().numpy()
-        fit_mean = gp.hyperparameter_posterior_mean.unsqueeze(dim=0).detach().cpu().numpy()
-        mean_dists = distance_matrix(fit_mean, means)
-        self.assertTrue((mean_dists == 0).all())
+        means = torch.stack(posterior_means)
+        fit_mean = gp.hyperparameter_posterior_mean.unsqueeze(dim=0)
+        mean_dists = torch.cdist(fit_mean, means)
+        assert (mean_dists == 0).all()
 
     def test_posterior_covariance_from_subset_is_copied(self) -> None:
         """
@@ -206,14 +206,14 @@ class LaplaceTests(unittest.TestCase):
             expert.hyperparameter_posterior_covariance[1]
             for expert in gp._expert_controllers
         ]
-        covars_evals = torch.stack(posterior_covariance_evals).detach().cpu().numpy()
+        covars_evals = torch.stack(posterior_covariance_evals)
         covars_evals = covars_evals.reshape((covars_evals.shape[0], -1))
-        covars_evecs = torch.stack(posterior_covariance_evecs).detach().cpu().numpy()
+        covars_evecs = torch.stack(posterior_covariance_evecs)
         covars_evecs = covars_evecs.reshape((covars_evecs.shape[0], -1))
 
-        fit_covar_evals = gp.hyperparameter_posterior_covariance[0].detach().cpu().numpy().reshape((1, -1))
-        fit_covar_evecs = gp.hyperparameter_posterior_covariance[1].detach().cpu().numpy().reshape((1, -1))
-        covar_dists = distance_matrix(fit_covar_evals, covars_evals)
-        self.assertTrue((covar_dists == 0).all())
-        covar_dists = distance_matrix(fit_covar_evecs, covars_evecs)
-        self.assertTrue((covar_dists == 0).all())
+        fit_covar_evals = gp.hyperparameter_posterior_covariance[0].reshape((1, -1))
+        fit_covar_evecs = gp.hyperparameter_posterior_covariance[1].reshape((1, -1))
+        covar_evals_dists = torch.cdist(fit_covar_evals, covars_evals)
+        assert (covar_evals_dists == 0).all()
+        covar_evecs_dists = torch.cdist(fit_covar_evecs, covars_evecs)
+        assert (covar_evecs_dists == 0).all()

@@ -28,9 +28,11 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 from numpy.typing import NDArray
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
+from torch import Tensor
 
 from tests.cases import VanguardTestCase, get_default_rng
 from vanguard.base import GPController
+from vanguard.datasets import Dataset
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import PeriodicRBFKernel, ScaledRBFKernel
 from vanguard.optimise import SmartOptimiser
@@ -124,8 +126,7 @@ class InputTests(VanguardTestCase):
             rng=get_default_rng(),
         )
         # Convert train_y on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
-        gp_train_y = gp.train_y.detach().cpu().numpy()
-        np.testing.assert_array_almost_equal(squeezed_train_y, gp_train_y, decimal=5)
+        np.testing.assert_array_almost_equal(squeezed_train_y, gp.train_y, decimal=5)
 
     def test_unsqueeze_x(self) -> None:
         """
@@ -148,8 +149,7 @@ class InputTests(VanguardTestCase):
             rng=get_default_rng(),
         )
         # Convert train_x on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
-        gp_train_x = gp.train_x.detach().cpu().numpy()
-        np.testing.assert_array_almost_equal(self.DATASET.train_x, gp_train_x, decimal=5)
+        np.testing.assert_array_almost_equal(self.DATASET.train_x, gp.train_x, decimal=5)
 
     def test_error_handling_of_higher_rank_features(self) -> None:
         """Test that shape errors, due to incorrectly treated high-rank features, are caught and explained."""
@@ -198,7 +198,7 @@ class NLLTests(unittest.TestCase):
         """Code to run before each test."""
         self.rng = get_default_rng()
 
-        class UniformSyntheticDataset:
+        class UniformSyntheticDataset(Dataset):
             def __init__(
                 self,
                 function: Callable,
@@ -211,15 +211,23 @@ class NLLTests(unittest.TestCase):
 
                 unscaled_train_x = self.rng.uniform(0, 1, num_train_points).reshape(-1, 1)
                 scaled_train_x = (unscaled_train_x - unscaled_train_x.mean()) / unscaled_train_x.std()
-
-                self.x = scaled_train_x
-                self.y = self.rng.normal(function(self.x), y_std)
+                train_y = self.rng.normal(function(scaled_train_x), y_std)
 
                 unscaled_test_x = self.rng.uniform(0, 1, num_test_points).reshape(-1, 1)
                 scaled_test_x = (unscaled_test_x - unscaled_train_x.mean()) / unscaled_train_x.std()
+                test_y = function(scaled_test_x)
 
-                self.x_test = scaled_test_x
-                self.y_test = function(self.x_test)
+                super().__init__(
+                    train_x=scaled_train_x,
+                    train_x_std=0.0,
+                    train_y=train_y,
+                    train_y_std=y_std,
+                    test_x=scaled_test_x,
+                    test_x_std=0.0,
+                    test_y=test_y,
+                    test_y_std=y_std,
+                    significance=0.1,
+                )
 
         self.y_std = 1.0
 
@@ -230,10 +238,10 @@ class NLLTests(unittest.TestCase):
         kernel = rbf_kernel + white_kernel
 
         gpr = GaussianProcessRegressor(kernel=kernel, alpha=0)
-        gpr.fit(self.dataset.x, self.dataset.y)
+        gpr.fit(self.dataset.train_x, self.dataset.train_y)
 
         # Generate a test set and predict on that (with sklearn)
-        z, z_std = gpr.predict(self.dataset.x_test, return_std=True)
+        z, z_std = gpr.predict(self.dataset.test_x, return_std=True)
 
         # Get the learned hyperparameters
         params = gpr.kernel_.get_params()
@@ -243,10 +251,10 @@ class NLLTests(unittest.TestCase):
 
         # Get the NLL for this test set
         self.sklearn_nll = self.predictive_nll(
-            mean=z.flatten(), variance=z_std**2, noise_variance=self.noise_variance, y=self.dataset.y_test.flatten()
+            mean=z.flatten(), variance=z_std**2, noise_variance=self.noise_variance, y=self.dataset.test_y.flatten()
         )
         # Get the MSE for this test set
-        self.sklearn_mse = self.predictive_mse(mu_pred=z.flatten(), y=self.dataset.y_test.flatten())
+        self.sklearn_mse = self.predictive_mse(mu_pred=z.flatten(), y=self.dataset.test_y.flatten())
 
     def test_gpytorch_nll(self) -> None:
         """Test that the NLL calculated with GPyTorch agrees with sklearn."""
@@ -265,9 +273,9 @@ class NLLTests(unittest.TestCase):
                 return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
         # Flatten and tensor-ify the test data
-        train_x = torch.tensor(self.dataset.x.flatten())
-        train_y = torch.tensor(self.dataset.y.flatten())
-        test_x = torch.tensor(self.dataset.x_test.flatten())
+        train_x = torch.tensor(self.dataset.train_x.flatten())
+        train_y = torch.tensor(self.dataset.train_y.flatten())
+        test_x = torch.tensor(self.dataset.test_x.flatten())
 
         likelihood = gpytorch.likelihoods.GaussianLikelihood()
         model = ExactGPModel(train_x, train_y, likelihood)
@@ -284,14 +292,14 @@ class NLLTests(unittest.TestCase):
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
             observed_pred = likelihood(model(test_x))
             _, upper = observed_pred.confidence_region()
-            mean = observed_pred.mean.detach().cpu().numpy()
-            std = (upper - observed_pred.mean).detach().cpu().numpy() / 2.0
+            mean = observed_pred.mean
+            std = (upper - observed_pred.mean) / 2.0
 
             noise_variance = model.likelihood.noise.item()
             gpytorch_nll = self.predictive_nll(
-                mean=mean, variance=std**2, noise_variance=noise_variance, y=self.dataset.y_test.flatten()
+                mean=mean, variance=std**2, noise_variance=noise_variance, y=self.dataset.test_y.flatten()
             )
-            gpytorch_mse = self.predictive_mse(mu_pred=mean, y=self.dataset.y_test.flatten())
+            gpytorch_mse = self.predictive_mse(mu_pred=mean, y=self.dataset.test_y.flatten())
 
         self.assertAlmostEqual(self.sklearn_nll, gpytorch_nll)
         self.assertAlmostEqual(self.sklearn_mse, gpytorch_mse)
@@ -299,30 +307,34 @@ class NLLTests(unittest.TestCase):
     def test_vanguard_nll(self) -> None:
         """Test that the NLL calculated with Vanguard agrees with sklearn."""
         controller = GaussianGPController(
-            train_x=self.dataset.x, train_y=self.dataset.y, kernel_class=ScaledRBFKernel, y_std=self.y_std, rng=self.rng
+            train_x=self.dataset.train_x,
+            train_y=self.dataset.train_y,
+            kernel_class=ScaledRBFKernel,
+            y_std=self.y_std,
+            rng=self.rng,
         )
 
         controller.likelihood_noise = torch.ones_like(controller.likelihood_noise) * self.noise_variance
         controller.kernel.outputscale = self.outputscale
         controller.kernel.base_kernel.lengthscale = self.lengthscale
 
-        posterior = controller.predictive_likelihood(x=self.dataset.x_test.flatten())
+        posterior = controller.predictive_likelihood(x=self.dataset.test_x.flatten())
 
         vanguard_nll = posterior.nll(
-            y=self.dataset.y_test.flatten(), noise_variance=controller.likelihood.noise.mean().item()
+            y=self.dataset.test_y.flatten(), noise_variance=controller.likelihood.noise.mean().item()
         )
-        vanguard_mse = posterior.mse(y=self.dataset.y_test.flatten())
+        vanguard_mse = posterior.mse(y=self.dataset.test_y.flatten())
 
         self.assertAlmostEqual(self.sklearn_nll, vanguard_nll, delta=5e-4)
         self.assertAlmostEqual(self.sklearn_mse, vanguard_mse, delta=1e-3)
 
     @staticmethod
     def predictive_nll(
-        mean: np.typing.NDArray[np.floating],
-        variance: np.typing.NDArray[np.floating],
+        mean: Union[np.typing.NDArray[np.floating], Tensor],
+        variance: Union[np.typing.NDArray[np.floating], Tensor],
         noise_variance: Union[np.typing.NDArray[np.floating], float],
-        y: np.typing.NDArray[np.floating],
-    ) -> np.typing.NDArray[np.floating]:
+        y: Union[np.typing.NDArray[np.floating], Tensor],
+    ) -> float:
         """
         Get the mean negative log-likelihood, for testing purposes.
 
@@ -332,16 +344,23 @@ class NLLTests(unittest.TestCase):
         :param y: The observed values.
         :returns: The mean negative log-likelihood of the predictive distribution.
         """
+        # convert to tensors
+        mean = torch.as_tensor(mean)
+        variance = torch.as_tensor(variance)
+        noise_variance = torch.as_tensor(noise_variance)
+        y = torch.as_tensor(y)
+
+        # compute
         sigma = variance + noise_variance
         rss = (y - mean) ** 2
-        const = 0.5 * np.log(2 * np.pi * sigma)
+        const = 0.5 * torch.log(2 * np.pi * sigma)
         p_nll = const + rss / (2 * sigma)
-        return p_nll.mean()
+        return p_nll.mean().item()
 
     @staticmethod
     def predictive_mse(
-        mu_pred: np.typing.NDArray[np.floating], y: np.typing.NDArray[np.floating]
-    ) -> np.typing.NDArray[np.floating]:
+        mu_pred: Union[np.typing.NDArray[np.floating], Tensor], y: Union[np.typing.NDArray[np.floating], Tensor]
+    ) -> float:
         """
         Get the mean squared error, for testing purposes.
 
@@ -349,4 +368,9 @@ class NLLTests(unittest.TestCase):
         :param y: The observed values.
         :returns: The mean squared error of the predictive distribution.
         """
-        return ((mu_pred - y) ** 2).mean()
+        # convert to tensors
+        mu_pred = torch.as_tensor(mu_pred)
+        y = torch.as_tensor(y)
+
+        # compute
+        return ((mu_pred - y) ** 2).mean().item()

@@ -21,6 +21,7 @@ from typing import Optional
 
 import numpy as np
 import pytest
+import torch
 
 from tests.cases import get_default_rng
 from vanguard.kernels import ScaledRBFKernel
@@ -85,25 +86,26 @@ class TestBaseUsage:
         _prediction_ci_median, prediction_ci_lower, prediction_ci_upper = posterior.confidence_interval(
             alpha=self.confidence_interval_alpha
         )
-        prediction_ci_lower = prediction_ci_lower.numpy()
-        prediction_ci_upper = prediction_ci_upper.numpy()
 
         # Sense check the outputs
-        assert np.all(prediction_means <= prediction_ci_upper)
-        assert np.all(prediction_means >= prediction_ci_lower)
+        assert torch.all(prediction_means <= prediction_ci_upper)
+        assert torch.all(prediction_means >= prediction_ci_lower)
+
+        x = torch.as_tensor(x)
+        y = torch.as_tensor(y)
 
         # Are the prediction intervals reasonable?
         pct_above_ci_upper_train = (
-            100.0 * np.sum(y[train_indices] >= prediction_ci_upper[train_indices]) / x[train_indices].shape[0]
+            100.0 * torch.sum(y[train_indices] >= prediction_ci_upper[train_indices]) / x[train_indices].shape[0]
         )
         pct_above_ci_upper_test = (
-            100.0 * np.sum(y[test_indices] >= prediction_ci_upper[test_indices]) / x[test_indices].shape[0]
+            100.0 * torch.sum(y[test_indices] >= prediction_ci_upper[test_indices]) / x[test_indices].shape[0]
         )
         pct_below_ci_lower_train = (
-            100.0 * np.sum(y[train_indices] <= prediction_ci_lower[train_indices]) / x[train_indices].shape[0]
+            100.0 * torch.sum(y[train_indices] <= prediction_ci_lower[train_indices]) / x[train_indices].shape[0]
         )
         pct_below_ci_lower_test = (
-            100.0 * np.sum(y[test_indices] <= prediction_ci_lower[test_indices]) / x[test_indices].shape[0]
+            100.0 * torch.sum(y[test_indices] <= prediction_ci_lower[test_indices]) / x[test_indices].shape[0]
         )
         for pct_check in [
             pct_above_ci_upper_train,

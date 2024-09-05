@@ -61,7 +61,7 @@ class Posterior:
         """
         return self.distribution
 
-    def prediction(self) -> Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]:
+    def prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Return the prediction as a numpy array.
 
@@ -70,8 +70,7 @@ class Posterior:
             * ``means``: (n_predictions,) The posterior predictive mean,
             * ``covar``: (n_predictions, n_predictions) The posterior predictive covariance matrix.
         """
-        mean, covar = self._tensor_prediction()
-        return mean.detach().cpu().numpy(), covar.detach().cpu().numpy()
+        return self._tensor_prediction()
 
     def confidence_interval(
         self,
@@ -89,7 +88,7 @@ class Posterior:
 
     def mse(
         self,
-        y: Union[numpy.typing.NDArray[np.floating], float],
+        y: Union[torch.Tensor, float],
     ) -> float:
         r"""
         Compute the mean-squared of some values under the posterior.
@@ -99,7 +98,7 @@ class Posterior:
         :returns: The MSE of the given y values, i.e. :math:`\frac{1}{n}\sum_{i} (y_i - \hat{y}_i)`.
         """
         mean, _ = self.prediction()
-        return ((mean - y) ** 2).mean()
+        return ((mean - y) ** 2).mean().item()
 
     def nll(
         self,
@@ -141,13 +140,13 @@ class Posterior:
         """
         return self._tensor_log_probability(torch.as_tensor(y).float()).item()
 
-    def sample(self, n_samples: int = 1) -> numpy.typing.NDArray[np.floating]:
+    def sample(self, n_samples: int = 1) -> torch.Tensor:
         """
         Draw independent samples from the posterior.
 
         :param n_samples: The number of samples to draw.
         """
-        return self._tensor_sample(sample_shape=torch.Size([n_samples])).detach().cpu().numpy()
+        return self._tensor_sample(sample_shape=torch.Size([n_samples]))
 
     @classmethod
     def from_mean_and_covariance(

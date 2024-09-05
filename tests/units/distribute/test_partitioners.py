@@ -23,9 +23,10 @@ import kmedoids
 import matplotlib
 import numpy as np
 import sklearn.cluster
+import torch.testing
 from gpytorch.kernels import RBFKernel
 
-from tests.cases import get_default_rng
+from tests.cases import assert_mock_called_once_with, get_default_rng
 from vanguard.distribute import partitioners
 
 
@@ -102,8 +103,8 @@ class MockedPartitionTests(unittest.TestCase):
         # Verify the expected calls were made to the mocked objects - i.e. the clustering was done
         # as expected. We use ANY for the random state as it's derived from the RNG but in a way that's
         # hard to mock out.
-        mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=ANY)
-        mocked_fit.assert_called_once_with(self.train_x)
+        assert_mock_called_once_with(mock_clustering, n_clusters=self.n_experts, random_state=ANY)
+        assert_mock_called_once_with(mocked_fit, torch.as_tensor(self.train_x))
 
     @patch.object(sklearn.cluster, "MiniBatchKMeans")
     def test_mini_batch_k_means(self, mock_clustering) -> None:
@@ -135,7 +136,7 @@ class MockedPartitionTests(unittest.TestCase):
         # as expected.  We use ANY for the random state as it's derived from the RNG but in a way that's
         # hard to mock out.
         mock_clustering.assert_called_once_with(n_clusters=self.n_experts, random_state=ANY)
-        mocked_fit.assert_called_once_with(self.train_x)
+        assert_mock_called_once_with(mocked_fit, torch.as_tensor(self.train_x))
 
     @patch.object(kmedoids, "KMedoids")
     @patch.object(partitioners.KMedoidsPartitioner, "_construct_distance_matrix")
@@ -173,7 +174,7 @@ class MockedPartitionTests(unittest.TestCase):
         # as expected. We use ANY for the random state as it's derived from the RNG but in a way that's
         # hard to mock out.
         mock_clustering.assert_called_once_with(n_clusters=self.n_experts, metric="precomputed", random_state=ANY)
-        mocked_fit.assert_called_once_with(actual_distances)
+        assert_mock_called_once_with(mocked_fit, actual_distances)
 
     def test_construct_distance_matrix(self):
         """
@@ -230,7 +231,7 @@ class MockedPartitionTests(unittest.TestCase):
         partitioner.plot_partition(partition=[[0, 2], [1, 3]], cmap="Set2")
 
         # Check mocked calls
-        mock_fit_transform.assert_called_once_with(self.train_x)
+        assert_mock_called_once_with(mock_fit_transform, torch.as_tensor(self.train_x))
         self.assertEqual(1, mock_scatter.call_count)
         np.testing.assert_array_equal(mock_scatter.call_args_list[0][0][0], embedding_return[:, 0])
         np.testing.assert_array_equal(mock_scatter.call_args_list[0][0][1], embedding_return[:, 1])

@@ -19,12 +19,15 @@ Contains test cases for Vanguard testing.
 import contextlib
 import unittest
 import warnings
-from typing import Optional, Tuple, Type, Union
+from typing import Any, Optional, Tuple, Type, Union
+from unittest.mock import Mock
 
 import numpy as np
 import numpy.typing
 import pytest
+import torch.testing
 from scipy import stats
+from torch import Tensor
 
 DEFAULT_RNG_SEED = 1234
 
@@ -95,6 +98,35 @@ def maybe_warns(category: Optional[Type[Warning]], match: Optional[str] = None) 
         with pytest.warns(category, match=match) as caught_warnings:
             yield
         return caught_warnings
+
+
+def assert_mock_called_once_with(mock: Mock, *expected_args: Any, **expected_kwargs: Any) -> None:
+    """
+    Version of `Mock.assert_called_once_with` that correctly handles `Tensor`/`ndarray` inputs.
+    """
+    mock.assert_called_once()
+
+    # assert number of arguments is the same
+    assert len(mock.call_args.args) == len(expected_args)
+    assert mock.call_args.kwargs.keys() == expected_kwargs.keys()
+
+    # assert the actual arguments are the same
+    for mock_arg, expected_arg in zip(mock.call_args.args, expected_args):
+        assert_equal_safe(mock_arg, expected_arg)
+
+    for key, expected_arg in expected_kwargs.items():
+        mock_arg = mock.call_args.kwargs[key]
+        assert_equal_safe(mock_arg, expected_arg)
+
+
+def assert_equal_safe(actual: Any, expected: Any) -> None:
+    """Version of assert_equal that correctly handles `Tensor`/`ndarray` inputs."""
+    if isinstance(actual, Tensor) or isinstance(expected, Tensor):
+        torch.testing.assert_close(actual, expected)
+    elif isinstance(actual, np.ndarray) or isinstance(expected, np.ndarray):
+        np.testing.assert_array_almost_equal(actual, expected)
+    else:
+        assert actual == expected
 
 
 class VanguardTestCase(unittest.TestCase):

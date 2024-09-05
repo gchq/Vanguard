@@ -48,8 +48,8 @@ class BasicTests(unittest.TestCase):
             cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std, rng=rng
         )
 
-        cls.train_y_mean = cls.dataset.train_y.mean()
-        cls.train_y_std = cls.dataset.train_y.std()
+        cls.train_y_mean = cls.dataset.train_y.mean().item()
+        cls.train_y_std = cls.dataset.train_y.std().item()
         cls.controller.fit(10)
 
     def test_pre_normalisation(self) -> None:
@@ -165,9 +165,9 @@ class BasicTests(unittest.TestCase):
         samples = posterior.sample(n_samples=10_000)
 
         # Samples should be on the scale of the original data (pre-scaling)
-        sample_ranges = np.quantile(samples, axis=0, q=[0.0, 1.0])
-        self.assertTrue(np.all(sample_ranges[0, :] <= self.dataset.test_y))
-        self.assertTrue(np.all(sample_ranges[1, :] >= self.dataset.test_y))
+        sample_ranges = torch.quantile(samples, dim=0, q=torch.tensor([0.0, 1.0]))
+        self.assertTrue(torch.all(sample_ranges[0, :] <= self.dataset.test_y))
+        self.assertTrue(torch.all(sample_ranges[1, :] >= self.dataset.test_y))
 
     def test_with_no_y_std(self) -> None:
         """Test normalisation functionality when no `y_std` is provided."""

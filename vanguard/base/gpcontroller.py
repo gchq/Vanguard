@@ -163,8 +163,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_fuzzy_point(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], float],
-        x_std: Union[numpy.typing.NDArray[np.floating], float],
+        x: Union[Tensor, numpy.typing.NDArray[np.floating], float],
+        x_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a fuzzy point.
@@ -184,7 +184,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], float],
+        x: Union[Tensor, numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -196,8 +196,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def fuzzy_predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[np.floating], float],
-        x_std: Union[numpy.typing.NDArray[np.floating], float],
+        x: Union[Tensor, numpy.typing.NDArray[np.floating], float],
+        x_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.

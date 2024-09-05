@@ -20,6 +20,7 @@ from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
+from torch import Tensor
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -108,17 +109,17 @@ class CategoricalClassification(Decorator):
                 )
 
             def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating]]
-            ) -> Tuple[numpy.typing.NDArray[np.integer], Union[float, numpy.typing.NDArray[np.floating]]]:
+                self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
+            ) -> Tuple[Tensor, Tensor]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             def classify_fuzzy_points(
                 self,
-                x: Union[float, numpy.typing.NDArray[np.floating]],
-                x_std: Union[float, numpy.typing.NDArray[np.floating]],
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+                x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+            ) -> Tuple[Tensor, Tensor]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
                 return self._get_predictions_from_posterior(predictive_likelihood)
@@ -126,21 +127,21 @@ class CategoricalClassification(Decorator):
             @staticmethod
             def _get_predictions_from_posterior(
                 posterior: Posterior,
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            ) -> Tuple[Tensor, Tensor]:
                 """
                 Get predictions from a posterior distribution.
 
                 :param posterior: The posterior distribution.
                 :returns: The predicted class labels, and the certainty probabilities.
                 """
-                probs: numpy.typing.NDArray = posterior.distribution.probs.detach().cpu().numpy()
+                probs: Tensor = posterior.distribution.probs
                 if probs.ndim == 3:
                     # TODO: unsure why this is here? Document this, and then test it if it's intentional
                     # https://github.com/gchq/Vanguard/issues/234
                     probs = probs.mean(0)
-                normalised_probs = probs / probs.sum(axis=-1).reshape((-1, 1))
-                prediction = np.argmax(normalised_probs, axis=1)
-                return prediction, np.max(normalised_probs, axis=1)
+                normalised_probs = probs / probs.sum(dim=-1).reshape((-1, 1))
+                prediction_values, predictions = normalised_probs.max(dim=1)
+                return predictions, prediction_values
 
             @staticmethod
             def warn_normalise_y() -> None:

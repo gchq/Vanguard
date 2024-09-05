@@ -24,6 +24,7 @@ from contextlib import contextmanager
 from typing import Generator, Union
 
 import numpy as np
+import torch
 import urllib3
 from numpy.typing import NDArray
 from urllib3 import BaseHTTPResponse
@@ -36,14 +37,14 @@ class Dataset:
 
     def __init__(
         self,
-        train_x: NDArray[np.floating],
-        train_x_std: Union[float, NDArray[np.floating]],
-        train_y: Union[NDArray[np.floating], NDArray[np.integer]],
-        train_y_std: Union[float, NDArray[np.floating]],
-        test_x: NDArray[np.floating],
-        test_x_std: Union[float, NDArray[np.floating]],
-        test_y: Union[NDArray[np.floating], NDArray[np.integer]],
-        test_y_std: Union[float, NDArray[np.floating]],
+        train_x: Union[NDArray[np.floating], torch.Tensor],
+        train_x_std: Union[float, NDArray[np.floating], torch.Tensor],
+        train_y: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
+        train_y_std: Union[float, NDArray[np.floating], torch.Tensor],
+        test_x: Union[NDArray[np.floating], torch.Tensor],
+        test_x_std: Union[float, NDArray[np.floating], torch.Tensor],
+        test_y: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
+        test_y_std: Union[float, NDArray[np.floating], torch.Tensor],
         significance: float,
     ) -> None:
         """
@@ -60,14 +61,14 @@ class Dataset:
         :param significance: The recommended significance value to be used for confidence intervals.
             Note that this value does not necessarily have any bearing on the data.
         """
-        self.train_x = train_x
-        self.train_x_std = train_x_std
-        self.train_y = train_y
-        self.train_y_std = train_y_std
-        self.test_x = test_x
-        self.test_x_std = test_x_std
-        self.test_y = test_y
-        self.test_y_std = test_y_std
+        self.train_x = torch.as_tensor(train_x)
+        self.train_x_std = torch.as_tensor(train_x_std)
+        self.train_y = torch.as_tensor(train_y)
+        self.train_y_std = torch.as_tensor(train_y_std)
+        self.test_x = torch.as_tensor(test_x)
+        self.test_x_std = torch.as_tensor(test_x_std)
+        self.test_y = torch.as_tensor(test_y)
+        self.test_y_std = torch.as_tensor(test_y_std)
         self.significance = significance
 
     @property

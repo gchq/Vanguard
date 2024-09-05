@@ -30,6 +30,7 @@ import torch
 from gpytorch import constraints
 from gpytorch.models import ApproximateGP, ExactGP
 from linear_operator.utils.errors import NanError
+from torch import Tensor
 from torch.distributions import Distribution
 
 from vanguard import utils
@@ -118,20 +119,20 @@ class BaseGPController:
         self.rng = utils.optional_random_generator(rng)
 
         if train_x.ndim == 1:
-            self.train_x = torch.tensor(train_x, dtype=self.dtype, device="cpu").unsqueeze(1)
+            self.train_x = torch.tensor(train_x, dtype=self.dtype, device=self.device).unsqueeze(1)
         else:
-            self.train_x = torch.tensor(train_x, dtype=self.dtype, device="cpu")
+            self.train_x = torch.tensor(train_x, dtype=self.dtype, device=self.device)
 
         if train_y.ndim == 1:
-            self.train_y = torch.tensor(train_y, dtype=self.dtype, device="cpu").unsqueeze(1)
+            self.train_y = torch.tensor(train_y, dtype=self.dtype, device=self.device).unsqueeze(1)
         else:
-            self.train_y = torch.tensor(train_y, dtype=self.dtype, device="cpu")
+            self.train_y = torch.tensor(train_y, dtype=self.dtype, device=self.device)
 
         # pylint: disable-next=invalid-name
         self.N, self.dim, *_ = self.train_x.shape
 
         self._original_y_variance_as_tensor = torch.as_tensor(y_std**2, dtype=self.dtype)
-        if isinstance(y_std, (float, int)):
+        if isinstance(y_std, (float, int)) or y_std.ndim == 0:
             self._y_variance = torch.ones_like(self.train_y, dtype=self.dtype).squeeze(dim=-1) * (y_std**2)
         else:
             self._y_variance = torch.as_tensor(y_std**2, dtype=self.dtype)
@@ -248,7 +249,7 @@ class BaseGPController:
 
     def _predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
+        x: Union[Tensor, numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -271,8 +272,8 @@ class BaseGPController:
 
     def _fuzzy_predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
-        x_std: Union[numpy.typing.NDArray[float], float],
+        x: Union[Tensor, numpy.typing.NDArray[float], float],
+        x_std: Union[Tensor, numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.
@@ -289,8 +290,8 @@ class BaseGPController:
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
-        x_std: Union[numpy.typing.NDArray[float], float],
+        x: Union[Tensor, numpy.typing.NDArray[float], float],
+        x_std: Union[Tensor, numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
@@ -306,7 +307,7 @@ class BaseGPController:
 
         :returns: The prior distribution.
         """
-        tx = torch.tensor(x, dtype=self.dtype, device=self.device)
+        tx = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         tx_std = self._process_x_std(x_std).to(self.device)
 
         def infinite_x_samples(
@@ -412,7 +413,7 @@ class BaseGPController:
         self,
         train_x: torch.Tensor,
         train_y: torch.Tensor,
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """
         Compute the training loss (negative marginal log likelihood).
 
@@ -424,7 +425,8 @@ class BaseGPController:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=NumericalWarning, message=_JITTER_WARNING)
             warnings.filterwarnings("ignore", category=NumericalWarning, message=_CHOLESKY_WARNING)
-            return -self._mll(output, train_y.squeeze(dim=-1))
+            loss = -self._mll(output, train_y.squeeze(dim=-1))
+            return loss
 
     def _get_posterior_over_point_in_eval_mode(
         self,
@@ -469,7 +471,7 @@ class BaseGPController:
 
     def _process_x_std(
         self,
-        std: Union[numpy.typing.NDArray[float], float],
+        std: Union[Tensor, numpy.typing.NDArray[float], float],
     ) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
