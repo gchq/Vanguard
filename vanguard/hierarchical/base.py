@@ -24,6 +24,8 @@ import numpy as np
 import torch
 from gpytorch.kernels import ScaleKernel
 from numpy.typing import NDArray
+from torch import Tensor
+from typing_extensions import Self
 
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior
@@ -33,7 +35,7 @@ from vanguard.warnings import _JITTER_WARNING, NumericalWarning
 ControllerT = TypeVar("ControllerT", bound=GPController)
 DistributionT = TypeVar("DistributionT", bound=gpytorch.distributions.Distribution)
 PosteriorT = TypeVar("PosteriorT", bound=Posterior)
-ModuleT = TypeVar("ModuleT", bound=gpytorch.module.Module)
+ModuleT = TypeVar("ModuleT", bound=torch.nn.Module)
 
 
 class BaseHierarchicalHyperparameters(Decorator):
@@ -56,13 +58,23 @@ class BaseHierarchicalHyperparameters(Decorator):
         self.sample_shape = torch.Size([num_mc_samples])
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
+    def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
+        super().verify_decorated_class(cls)
+        for previous_decorator in cls.__decorators__:
+            if issubclass(previous_decorator, BaseHierarchicalHyperparameters):
+                msg = (
+                    f"This class is already decorated with `{previous_decorator.__name__}`. "
+                    f"Please use only one hierarchical hyperparameters decorator at once."
+                )
+                raise TypeError(msg)
+
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
         class InnerClass(cls):
             @classmethod
-            def new(cls, instance: Type[ControllerT], **kwargs: Any) -> Type[ControllerT]:
+            def new(cls, instance: Self, **kwargs: Any) -> Self:
                 """Make sure that the hyperparameter collection is copied over."""
                 new_instance = super().new(instance, **kwargs)
                 new_instance.hyperparameter_collection = instance.hyperparameter_collection
@@ -167,25 +179,25 @@ class BaseHierarchicalHyperparameters(Decorator):
 
     @staticmethod
     def _infinite_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_fuzzy_likelihood_samples(
-        controller: ControllerT, x: NDArray[np.floating], x_std: NDArray[np.floating]
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating]]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 

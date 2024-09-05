@@ -16,9 +16,10 @@
 Contain some small utilities of use in some cases.
 """
 
+import functools
 import os
 import warnings
-from typing import Any, Generator, Optional, Tuple
+from typing import Any, Callable, Generator, List, Optional, Tuple, TypeVar
 
 import numpy as np
 import numpy.typing
@@ -113,7 +114,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
 
 def infinite_tensor_generator(
     batch_size: Optional[int],
-    device: torch.DeviceObjType,
+    device: torch.device,
     *tensor_axis_pairs: Tuple[torch.Tensor, int],
     rng: Optional[np.random.Generator] = None,
 ) -> Generator[torch.Tensor, None, None]:
@@ -201,3 +202,30 @@ def optional_random_generator(generator: Optional[np.random.Generator]) -> np.ra
             )
 
     return np.random.default_rng()
+
+
+T = TypeVar("T")
+
+
+def compose(functions: List[Callable[[T], T]]) -> Callable[[T], T]:
+    """
+    Compose a list of functions.
+
+    Given a list of functions of type T -> T, returns a single function of type T -> T.
+    For example, compose([a, b, c])(x) = a(b(c(x))).
+
+    :Example:
+        >>> def a(x):
+        ...     return f"a({x})"
+        >>> def b(x):
+        ...     return f"b({x})"
+        >>> def c(x):
+        ...     return f"c({x})"
+        >>> composed = compose([a, b, c])
+        >>> composed("x")
+        'a(b(c(x)))'
+
+    :param functions: A list of functions of type (T -> T) to compose.
+    :return: A single function of type (T -> T) that applies each of the passed functions in series.
+    """
+    return lambda x: functools.reduce(lambda acc, f: f(acc), reversed(functions), x)

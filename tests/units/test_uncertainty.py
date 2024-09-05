@@ -87,14 +87,14 @@ class TestGaussianUncertaintyGPController(unittest.TestCase):
             raise NoImprovementError
 
         # pylint: disable=protected-access
-        self.controller._smart_optimiser.last_n_losses = [1, 2, 3]
+        self.controller._smart_optimiser.last_n_losses = [1.0, 2.0, 3.0]
 
         # Having forced a no improvement error, we should now just get the loss as the last value
         # in self.controller._smart_optimiser.last_n_losses, that is 3
         self.controller._single_optimisation_step = mocked_single_optimisation_step
         result = self.controller._sgd_round(n_iters=10)
         # pylint: enable=protected-access
-        self.assertEqual(result, 3)
+        self.assertEqual(result, 3.0)
 
     def test_sgd_round_run_time_error(self) -> None:
         """Test output of _sgd_round when we have a runtime error."""

@@ -58,7 +58,7 @@ class BinaryStripeClassificationDataset(Dataset):
         train_y = self.even_split(train_x)
         test_y = self.even_split(test_x)
 
-        super().__init__(train_x, np.array([]), train_y, np.array([]), test_x, np.array([]), test_y, np.array([]), 0)
+        super().__init__(train_x, np.array([]), train_y, np.array([]), test_x, np.array([]), test_y, np.array([]), 0.0)
 
     @staticmethod
     def even_split(x: NDArray[np.floating]) -> NDArray[np.floating]:
@@ -118,7 +118,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
             random_state=self.rng.integers(2**32 - 1),
         )
 
-        super().__init__(train_x, 0, train_y, 0, test_x, 0, test_y, 0, 0)
+        super().__init__(train_x, 0.0, train_y, 0.0, test_x, 0.0, test_y, 0.0, 0.0)
 
     @property
     def one_hot_train_y(self) -> NDArray[int]:

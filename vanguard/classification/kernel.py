@@ -57,7 +57,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         >>> train_x = np.array([0, 0.1, 0.45, 0.55, 0.9, 1])
         >>> train_y = np.array([0, 0, 1, 1, 2, 2])
         >>>
-        >>> gp = MulticlassClassifier(train_x, train_y, Kernel, y_std=0,
+        >>> gp = MulticlassClassifier(train_x, train_y, Kernel, y_std=0.0,
         ...                           likelihood_class=DirichletKernelClassifierLikelihood,
         ...                           marginal_log_likelihood_class=GenericExactMarginalLogLikelihood)
         >>> loss = gp.fit(100)

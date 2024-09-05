@@ -16,7 +16,7 @@
 Contains a torch distribution implementing a warped Gaussian.
 """
 
-from typing import Any, Type
+from typing import Any, Type, Union
 
 import numpy as np
 import numpy.typing
@@ -65,7 +65,7 @@ class WarpedGaussian(Normal):
     def from_data(
         cls,
         warp: WarpFunction,
-        samples: numpy.typing.NDArray[np.floating],
+        samples: Union[torch.Tensor, numpy.typing.NDArray[np.floating]],
         optimiser: Type[torch.optim.Optimizer] = torch.optim.Adam,
         n_iterations: int = 100,
         lr: float = 0.001,

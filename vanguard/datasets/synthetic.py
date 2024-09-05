@@ -16,7 +16,7 @@
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
 
-from typing import Callable, Iterable, Optional, Tuple
+from typing import Callable, Iterable, Optional, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -110,7 +110,7 @@ class SyntheticDataset(Dataset):
         self,
         n_points: int,
         input_noise_bounds: Tuple[float, float],
-        output_noise_level: float,
+        output_noise_level: Union[int, float],
         interval_length: float = 1,
     ) -> Tuple[Tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
         """
@@ -307,7 +307,7 @@ class HigherRankSyntheticDataset(Dataset):
         self,
         n_points: int,
         input_noise_bounds: Tuple[float, float],
-        output_noise_level: float,
+        output_noise_level: Union[int, float],
         interval_length: float = 1,
     ) -> Tuple[Tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
         """

@@ -63,7 +63,7 @@ class DirichletMulticlassClassification(Decorator):
         >>> train_x = np.array([0, 0.1, 0.45, 0.55, 0.9, 1])
         >>> train_y = np.array([0, 0, 1, 1, 2, 2])
         >>>
-        >>> gp = MulticlassClassifier(train_x, train_y, Kernel, y_std=0,
+        >>> gp = MulticlassClassifier(train_x, train_y, Kernel, y_std=0.0,
         ...                           likelihood_class=DirichletClassificationLikelihood)
         >>> loss = gp.fit(100)
         >>>
@@ -234,7 +234,7 @@ class DirichletMulticlassClassification(Decorator):
                 return super()._loss(train_x, train_y).sum()
 
             @staticmethod
-            def _noise_transform(gamma: Union[float, numpy.typing.NDArray[np.floating]]) -> torch.Tensor:
+            def _noise_transform(gamma: Union[float, numpy.typing.NDArray[np.floating], torch.Tensor]) -> torch.Tensor:
                 return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze().T
 
             @staticmethod

@@ -18,6 +18,9 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Typing :: Typed",
 ]
 license = {file = "LICENSE.md"}
@@ -43,6 +46,7 @@ dependencies = [
 # Run unit tests
 test = [
     "pytest-cov",
+    "pytest-beartype"
 ]
 # Compile documentation
 doc = [
@@ -138,6 +142,10 @@ exclude_also = [
 ]
 
 [tool.pytest.ini_options]
+markers = [
+    "no_beartype: for tests incompatible with beartype (e.g. checking for TypeErrors)",
+]
+
 # TODO: fix as many of these as possible, and for those we can't fix, suppress as many as possible at the point that
 #  they're emitted using the catch_warnings context manager. Suppress globally here only as a last resort.
 # https://github.com/gchq/Vanguard/issues/281
@@ -149,6 +157,7 @@ filterwarnings = [
 
     # Other warnings
     "ignore::pytest.PytestCollectionWarning",
+    "ignore::vanguard.warnings.ExperimentalFeatureWarning",
     "ignore:The input matches the stored training data. Did you forget to call model.train\\(\\)\\?:gpytorch.utils.warnings.GPInputWarning",
     "ignore:To copy construct from a tensor, it is recommended to use sourceTensor.clone\\(\\).detach\\(\\):UserWarning",
     "ignore:Pass auto_restart=True to the controller to automatically restart training up to the last stable iterations:UserWarning",
@@ -166,4 +175,6 @@ filterwarnings = [
     # TODO: replace with sparse_coo_tensor
     # https://github.com/gchq/Vanguard/issues/278
     "ignore:torch.sparse.SparseTensor\\(indices, values, shape, \\*, device=\\) is deprecated:UserWarning",
+    # TODO: replace with some alternative (e.g. beartype.typing.*)
+    "ignore::beartype.roar.BeartypeDecorHintPep585DeprecationWarning"
 ]

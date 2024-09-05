@@ -53,7 +53,7 @@ class MulticlassTests(ClassificationTestCase):
         self.controller = DirichletMulticlassClassifier(
             self.dataset.train_x,
             self.dataset.train_y,
-            y_std=0,
+            y_std=0.0,
             mean_class=BatchScaledMean,
             kernel_class=BatchScaledRBFKernel,
             likelihood_class=DirichletClassificationLikelihood,
@@ -113,7 +113,7 @@ class MulticlassTests(ClassificationTestCase):
                 self.dataset.train_x,
                 self.dataset.train_y,
                 kernel_class=BatchScaledRBFKernel,
-                y_std=0,
+                y_std=0.0,
                 likelihood_class=IllegalLikelihoodClass,
                 rng=self.rng,
             )
@@ -152,7 +152,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         controller = DirichletMulticlassClassifier(
             dataset.train_x,
             dataset.train_y,
-            y_std=0,
+            y_std=0.0,
             mean_class=BatchScaledMean,
             kernel_class=BatchScaledRBFKernel,
             likelihood_class=DirichletClassificationLikelihood,
@@ -194,7 +194,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
             dataset.train_y,
             mean_class=BatchScaledMean,
             kernel_class=BatchScaledRBFKernel,
-            y_std=0,
+            y_std=0.0,
             likelihood_class=DirichletClassificationLikelihood,
             likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
             optim_kwargs={"lr": 0.05},

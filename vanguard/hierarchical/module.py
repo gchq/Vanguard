@@ -21,7 +21,7 @@ over them rather than point estimates.
 """
 
 from functools import partial
-from typing import Any, Iterable, List, Optional, Tuple, TypeVar
+from typing import Any, Iterable, List, Optional, Tuple, Type, TypeVar
 
 import gpytorch
 import torch
@@ -87,7 +87,7 @@ class BayesianHyperparameters:
         self.prior_means.update({f"raw_{param}": value for param, value in self.prior_means.items()})
         self.prior_variances.update({f"raw_{param}": value for param, value in self.prior_variances.items()})
 
-    def __call__(self, module_class: ModuleT) -> ModuleT:
+    def __call__(self, module_class: Type[ModuleT]) -> Type[ModuleT]:
         ignored_parameters = self.ignored_parameters
 
         process_hyperparameter = partial(

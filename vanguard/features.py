@@ -21,12 +21,15 @@ from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import torch
+from gpytorch.models import GP
 
 from vanguard import utils
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.warnings import warn_experimental
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
+GPModelT = TypeVar("GPModelT", bound=GP)
 
 
 class HigherRankFeatures(Decorator):
@@ -48,6 +51,7 @@ class HigherRankFeatures(Decorator):
         """
         :param rank: The rank of the input features. Should be a positive integer.
         """
+        warn_experimental("The HigherRankFeatures decorator")
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.rank = rank
 
@@ -80,14 +84,14 @@ class _HigherRankFeaturesModel:
     computation (e.g. inside kernels) is performed.
     """
 
-    def __init__(self, shape: Union[Tuple[int], torch.Size]) -> None:
+    def __init__(self, shape: Union[Tuple[int, ...], torch.Size]) -> None:
         """
         :param shape: The native shape of a single data point.
         """
         self.shape = tuple(shape)
-        self.flat_shape = np.prod(self.shape)
+        self.flat_shape = int(np.prod(self.shape))
 
-    def __call__(self, model_cls: Type[ControllerT]) -> ControllerT:
+    def __call__(self, model_cls: Type[GPModelT]) -> Type[GPModelT]:
         shape = self.shape
         flat_shape = self.flat_shape
         _flatten = partial(self._flatten, item_shape=shape, item_flat_shape=flat_shape)
@@ -108,7 +112,7 @@ class _HigherRankFeaturesModel:
         return InnerClass
 
     @staticmethod
-    def _flatten(tensor: torch.Tensor, item_shape: Tuple[int], item_flat_shape: int) -> torch.Tensor:
+    def _flatten(tensor: torch.Tensor, item_shape: Tuple[int, ...], item_flat_shape: int) -> torch.Tensor:
         """
         Reshapes tensors to flat (rank - 1) features.
 
@@ -123,7 +127,7 @@ class _HigherRankFeaturesModel:
         return tensor.reshape(new_shape)
 
     @staticmethod
-    def _unflatten(tensor: torch.Tensor, item_shape: Tuple[int]) -> torch.Tensor:
+    def _unflatten(tensor: torch.Tensor, item_shape: Tuple[int, ...]) -> torch.Tensor:
         """
         Reshapes flatten tensors to native feature shape.
 

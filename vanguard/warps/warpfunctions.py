@@ -97,12 +97,12 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
         self.lambda_2 = lambda_2
 
     @property
-    def a(self) -> torch.nn.Parameter:
+    def a(self) -> torch.Tensor:
         """Return the weight."""
         return self.weight**2 - self.bias**2
 
     @property
-    def b(self) -> torch.nn.Parameter:
+    def b(self) -> torch.Tensor:
         """Return the bias."""
         return -(self.weight**2 * self.lambda_1 - self.bias**2 * self.lambda_2)
 
@@ -136,7 +136,7 @@ class BoxCoxWarpFunction(WarpFunction):
         y\mapsto\frac{sgn(y)|y|^\lambda - 1}{\lambda}, \lambda\in\mathbb{R}_0^+.
     """
 
-    def __init__(self, lambda_: float = 0) -> None:
+    def __init__(self, lambda_: Union[int, float] = 0) -> None:
         """
         Initialise self.
 

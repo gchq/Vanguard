@@ -19,7 +19,7 @@ Contains a slight adjustment to the standard multitask kernel.
 from typing import Any
 
 from gpytorch.kernels import MultitaskKernel
-from linear_operator import to_linear_operator
+from linear_operator import LinearOperator, to_linear_operator
 from linear_operator.operators import KroneckerProductLinearOperator
 from torch import Tensor
 
@@ -31,7 +31,7 @@ class BatchCompatibleMultitaskKernel(MultitaskKernel):
 
     def forward(
         self, x1: Tensor, x2: Tensor, diag: bool = False, last_dim_is_batch: bool = False, **params: Any
-    ) -> Tensor:
+    ) -> LinearOperator:
         if last_dim_is_batch:
             raise RuntimeError("MultitaskKernel does not accept the last_dim_is_batch argument.")
 

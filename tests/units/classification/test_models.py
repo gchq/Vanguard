@@ -16,6 +16,7 @@
 
 from unittest import TestCase, expectedFailure
 
+import pytest
 import torch
 from gpytorch import settings
 from gpytorch.kernels import RBFKernel
@@ -46,6 +47,7 @@ class TestInertKernelModelFailures(TestCase):
             ctx.exception.args[0],
         )
 
+    @pytest.mark.no_beartype
     def test_illegal_train_inputs(self):
         """Test that model training fails with an appropriate message if training inputs are of an incorrect type."""
         with self.assertRaises(TypeError) as ctx:

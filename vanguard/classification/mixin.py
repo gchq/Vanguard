@@ -92,8 +92,15 @@ class Classification(Decorator):
         )
         super().__init__(framework_class=GPController, required_decorators={}, ignore_methods=ignore_methods, **kwargs)
 
-    def _decorate_class(self, cls: Type[T]) -> Type[T]:
-        """Close off the prediction methods on a GP."""
+    def verify_decorated_class(self, cls: Type[T]) -> None:
+        """
+        Verify that a class can be decorated by this instance.
+
+        :param cls: The class to be decorated.
+        :raises TypeError: If cls is not a subclass of the framework_class, or if another classification decorator
+            has already been applied.
+        """
+        super().verify_decorated_class(cls)
         if not issubclass(cls, ClassificationMixin):
             warnings.warn(
                 f"Classification decorator applied to a class that doesn't "
@@ -102,6 +109,16 @@ class Classification(Decorator):
                 stacklevel=3,
                 # stacklevel 2 is in BaseDecorator.__call__, so we raise this at the call site of BaseDecorator.__call__
             )
+        for previous_decorator in cls.__decorators__:
+            if issubclass(previous_decorator, Classification):
+                msg = (
+                    "This class is already decorated with a classification decorator. "
+                    "Please use only one classification decorator at once."
+                )
+                raise TypeError(msg)
+
+    def _decorate_class(self, cls: Type[T]) -> Type[T]:
+        """Close off the prediction methods on a GP."""
 
         @wraps_class(cls)
         class InnerClass(cls):

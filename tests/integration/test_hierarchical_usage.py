@@ -19,6 +19,7 @@ Basic end to end functionality test for hierarchical code in Vanguard.
 import unittest
 
 import numpy as np
+import torch
 from gpytorch.kernels import RBFKernel
 
 from tests.cases import get_default_rng
@@ -91,8 +92,8 @@ class VanguardTestCase(unittest.TestCase):
 
         # Sense check the outputs. Note that we do not check confidence interval quality here,
         # just that they can be created, due to highly varying quality of the resulting intervals,
-        self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
-        self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
+        self.assertTrue(torch.all(prediction_medians <= prediction_ci_upper))
+        self.assertTrue(torch.all(prediction_medians >= prediction_ci_lower))
 
     def test_gp_variational_hierarchical(self):
         """
@@ -131,8 +132,8 @@ class VanguardTestCase(unittest.TestCase):
 
         # Sense check the outputs. Note that we do not check confidence interval quality here,
         # just that they can be created, due to highly varying quality of the resulting intervals,
-        self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
-        self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
+        self.assertTrue(torch.all(prediction_medians <= prediction_ci_upper))
+        self.assertTrue(torch.all(prediction_medians >= prediction_ci_lower))
 
 
 if __name__ == "__main__":

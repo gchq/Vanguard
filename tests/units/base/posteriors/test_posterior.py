@@ -117,7 +117,7 @@ class BasicTests(unittest.TestCase):
     def test_sample(self) -> None:
         """Test that the `sample()` function simply returns a sample from the internal distribution."""
         # Set up a mock distribution
-        mock_distribution = Mock()
+        mock_distribution = Mock(torch.distributions.Distribution)
         del mock_distribution.covariance_matrix  # no covariance matrix, so no jitter is added
 
         # Define a function to generate and record random samples, and replace our mock distribution's `rsample`

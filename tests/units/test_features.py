@@ -20,11 +20,13 @@ Tests for the HigherRankFeatures decorator.
 """
 
 import unittest
-from typing import Any, Type
+from typing import Any, Type, Union
 
+import pytest
 import torch
 from gpytorch.lazy import LazyEvaluatedKernelTensor
 from gpytorch.means import ConstantMean
+from linear_operator import LinearOperator
 from typing_extensions import Self
 
 from tests.cases import get_default_rng
@@ -33,6 +35,7 @@ from vanguard.features import HigherRankFeatures
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.standardise import DisableStandardScaling
 from vanguard.vanilla import GaussianGPController
+from vanguard.warnings import ExperimentalFeatureWarning
 
 
 class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
@@ -77,7 +80,7 @@ class HigherRankKernel(ScaledRBFKernel):
 
     def forward(
         self, x1: torch.Tensor, x2: torch.Tensor, last_dim_is_batch: bool = False, diag: bool = False, **params: Any
-    ) -> torch.Tensor:
+    ) -> Union[torch.Tensor, LinearOperator]:
         """
         Evaluate the kernel given two tensors.
 
@@ -95,7 +98,7 @@ class HigherRankKernel(ScaledRBFKernel):
             **params,
         )
 
-    def __call__(self, *args: Any, **kwargs: Any) -> torch.Tensor:
+    def __call__(self, *args: Any, **kwargs: Any) -> Union[torch.Tensor, LinearOperator]:
         """
         Perform forward pass of the kernel.
         """
@@ -156,3 +159,11 @@ class BasicTests(unittest.TestCase):
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
         mean, _, _ = posterior.confidence_interval()
         self.assertEqual(mean.shape, self.dataset.test_y.shape)
+
+    def test_warns(self) -> None:
+        """Test that the decorator raises a warning about it being experimental."""
+        with pytest.warns(ExperimentalFeatureWarning, match="HigherRankFeatures"):
+
+            @HigherRankFeatures(2)
+            class HigherRankController(GaussianGPController):  # pylint: disable=unused-variable
+                pass

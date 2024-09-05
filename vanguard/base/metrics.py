@@ -25,7 +25,7 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Callable, Optional
 
 if TYPE_CHECKING:
-    from vanguard.base.basecontroller import BaseGPController
+    import vanguard.base.basecontroller
 
 
 class MetricsTracker:
@@ -42,25 +42,25 @@ class MetricsTracker:
         >>>
         >>> tracker = MetricsTracker(loss)
         >>> for loss_value in range(5):
-        ...     tracker.run_metrics(loss_value, controller=None)
+        ...     tracker.run_metrics(float(loss_value), controller=None)
         >>> with tracker.print_metrics():
         ...     for loss_value in range(5):
-        ...         tracker.run_metrics(loss_value, controller=None)
-        iteration: 6, loss: 0
-        iteration: 7, loss: 1
-        iteration: 8, loss: 2
-        iteration: 9, loss: 3
-        iteration: 10, loss: 4
+        ...         tracker.run_metrics(float(loss_value), controller=None)
+        iteration: 6, loss: 0.0
+        iteration: 7, loss: 1.0
+        iteration: 8, loss: 2.0
+        iteration: 9, loss: 3.0
+        iteration: 10, loss: 4.0
         >>> with tracker.print_metrics(every=2):
         ...     for loss_value in range(5):
-        ...         tracker.run_metrics(loss_value, controller=None)
-        iteration: 12, loss: 1
-        iteration: 14, loss: 3
+        ...         tracker.run_metrics(float(loss_value), controller=None)
+        iteration: 12, loss: 1.0
+        iteration: 14, loss: 3.0
         >>> with tracker.print_metrics(every=2, format_string="loss: {loss}"):
         ...     for loss_value in range(5):
-        ...         tracker.run_metrics(loss_value, controller=None)
-        loss: 1
-        loss: 3
+        ...         tracker.run_metrics(float(loss_value), controller=None)
+        loss: 1.0
+        loss: 3.0
     """
 
     def __init__(
@@ -121,7 +121,7 @@ class MetricsTracker:
     def run_metrics(
         self,
         loss_value: float,
-        controller: Optional["BaseGPController"],
+        controller: Optional["vanguard.base.basecontroller.BaseGPController"],
         **additional_info,
     ) -> None:
         """
@@ -180,6 +180,6 @@ class MetricsTracker:
             self._every = float("nan")
 
 
-def loss(loss_value: float, controller: "BaseGPController") -> float:  # pylint: disable=unused-argument
+def loss(loss_value: float, controller: Optional["vanguard.base.basecontroller.BaseGPController"]) -> float:  # pylint: disable=unused-argument
     """Return the loss value."""
     return loss_value

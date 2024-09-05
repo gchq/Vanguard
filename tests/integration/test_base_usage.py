@@ -85,6 +85,8 @@ class TestBaseUsage:
         _prediction_ci_median, prediction_ci_lower, prediction_ci_upper = posterior.confidence_interval(
             alpha=self.confidence_interval_alpha
         )
+        prediction_ci_lower = prediction_ci_lower.numpy()
+        prediction_ci_upper = prediction_ci_upper.numpy()
 
         # Sense check the outputs
         assert np.all(prediction_means <= prediction_ci_upper)

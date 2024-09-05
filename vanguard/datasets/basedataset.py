@@ -35,11 +35,11 @@ class Dataset:
         self,
         train_x: NDArray[np.floating],
         train_x_std: Union[float, NDArray[np.floating]],
-        train_y: NDArray[np.floating],
+        train_y: Union[NDArray[np.floating], NDArray[np.integer]],
         train_y_std: Union[float, NDArray[np.floating]],
         test_x: NDArray[np.floating],
         test_x_std: Union[float, NDArray[np.floating]],
-        test_y: NDArray[np.floating],
+        test_y: Union[NDArray[np.floating], NDArray[np.integer]],
         test_y_std: Union[float, NDArray[np.floating]],
         significance: float,
     ) -> None:

@@ -66,7 +66,7 @@ class MockedPartitionTests(unittest.TestCase):
         # [0, 1, ..., num data points-1] without replacement. We have 3 experts and 10 data points.
         # Set a known output to the random choice - this should be a num experts (3) by
         # num data points / num experts (10 / 3 which rounds to 3) array
-        mock_rng = Mock()
+        mock_rng = Mock(np.random.Generator)
         mock_rng.choice = Mock(return_value=np.array([[8, 1, 5], [0, 7, 2], [9, 4, 3]]))
 
         partitioner = partitioners.RandomPartitioner(train_x=self.train_x, n_experts=self.n_experts, rng=mock_rng)

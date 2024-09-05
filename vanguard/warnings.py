@@ -17,6 +17,7 @@ Contains any warnings that are needed in one place.
 """
 
 import re
+import warnings
 
 from gpytorch.utils.warnings import GPInputWarning, NumericalWarning
 from linear_operator.utils.errors import NotPSDError
@@ -28,6 +29,27 @@ _RE_INCORRECT_LIKELIHOOD_PARAMETER = re.compile(
     r"^.*?\.?__init__\(\) got (?:an unexpected|multiple values for) keyword argument '(.*?)'$"
 )
 
+
+class ExperimentalFeatureWarning(UserWarning):
+    """Raised for parts of Vanguard which are unstable or experimental."""
+
+
+def warn_experimental(feature_name: str, stacklevel: int = 3):
+    """
+    Warn that this feature is experimental.
+
+    :param feature_name: The name of the experimental feature.
+    :param stacklevel: The stack level to raise the warning at. Note that the warning is raised _inside_ this function,
+        so e.g. stacklevel=2 raises the warning at the call site of warn_experimental.
+    """
+    warnings.warn(
+        f"{feature_name} is currently an experimental feature. "
+        "It may cause errors or give incorrect results, and may have breaking changes without warning.",
+        ExperimentalFeatureWarning,
+        stacklevel=stacklevel,
+    )
+
+
 # This is so that pre-commits don't fail on unused imports.
 __all__ = [
     "GPInputWarning",
@@ -37,4 +59,5 @@ __all__ = [
     "_JITTER_WARNING",
     "_RE_INCORRECT_LIKELIHOOD_PARAMETER",
     "NotPSDError",
+    "ExperimentalFeatureWarning",
 ]

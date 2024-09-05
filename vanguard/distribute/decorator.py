@@ -39,6 +39,7 @@ from vanguard.distribute.aggregators import (
     XGRBCMAggregator,
 )
 from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner
+from vanguard.features import HigherRankFeatures
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
@@ -103,6 +104,16 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self.partitioner_class = partitioner_class
         self.partitioner_kwargs = partitioner_kwargs if partitioner_kwargs is not None else {}
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
+
+    def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
+        super().verify_decorated_class(cls)
+        # pylint: disable-next=protected-access
+        if HigherRankFeatures in cls.__decorators__ and not self.partitioner_class._can_handle_higher_rank_features:
+            msg = (
+                f"{self.partitioner_class.__name__} cannot handle higher-rank features. "
+                "Consider moving the `@Distributed` decorator below the `@HigherRankFeatures` decorator."
+            )
+            raise TypeError(msg)
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         decorator = self
@@ -258,17 +269,17 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 except (TypeError, IndexError):
                     y_std_subset = self._full_y_std
 
-                expect_controller = cls.new(
+                expert_controller = cls.new(
                     self, train_x=train_x_subset, train_y=train_y_subset, y_std=y_std_subset, **self._expert_init_kwargs
                 )
-                expect_controller.kernel.load_state_dict(self.kernel.state_dict())
-                expect_controller.mean.load_state_dict(self.mean.state_dict())
+                expert_controller.kernel.load_state_dict(self.kernel.state_dict())
+                expert_controller.mean.load_state_dict(self.mean.state_dict())
 
-                return expect_controller
+                return expert_controller
 
             def _aggregate_expert_predictions(
                 self,
-                x: Union[NDArray[np.floating], torch.Tensor],
+                x: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
                 means_and_covars: List[Tuple[torch.Tensor, torch.Tensor]],
             ) -> Tuple[torch.Tensor, torch.Tensor]:
                 """
@@ -307,8 +318,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
 
 def _create_subset(
-    *arrays: Union[NDArray[np.floating], float], subset_fraction: float = 0.1, rng: Optional[np.random.Generator] = None
-) -> List[Union[NDArray[np.floating], float]]:
+    *arrays: Union[NDArray[np.floating], NDArray[np.integer], float, int],
+    subset_fraction: float = 0.1,
+    rng: Optional[np.random.Generator] = None,
+) -> List[Union[NDArray[np.floating], NDArray[np.integer], float]]:
     """
     Return subsets of the arrays along the same random indices.
 

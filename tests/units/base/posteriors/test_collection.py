@@ -24,8 +24,10 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import torch
-from gpytorch.distributions import Distribution, MultivariateNormal
+from gpytorch.distributions import MultivariateNormal
 from scipy.stats import multivariate_normal
+from torch import Tensor
+from torch.distributions import Distribution
 
 from tests.cases import get_default_rng
 from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior
@@ -182,12 +184,17 @@ class YieldPosteriorsTests(unittest.TestCase):
         class MockDistribution:
             """Mock of Distribution class."""
 
+            __class__ = MultivariateNormal  # lying to the type checker
+
             def __init__(self, mean: torch.Tensor, covariance: torch.Tensor):
                 self.mean = mean
                 self.covariance_matrix = covariance
 
-            def __getattr__(self, _):
-                return Mock()
+            def add_jitter(self, _):
+                return self
+
+            def rsample(self, *_, **__):
+                return Mock(Tensor)
 
         class MockPosterior:
             """Mock of Posterior class."""

@@ -25,25 +25,38 @@ If the code is not running properly, recreate the environment with `pip install 
 
 ## Tests
 
-Vanguard's tests are contained in the `tests/` directory, and can be run with `unittest` or `pytest`.
-
-Unit tests are in `tests/units`. There are two additional test files that dynamically run additional tests:
- - `test_doctests.py` finds and runs all doctests.
- - `test_examples.py` runs all notebooks under `examples/` as tests. These require `nbconvert` and `nbformat` to run,
+Vanguard's tests are contained in the `tests/` directory, and can be run with `pytest`. The tests are arranged
+as follows:
+ - `tests/units` contains unit tests. These should be fairly quick to run.
+ - `tests/integration` contains integration tests, which may take longer to run.
+ - `tests/test_doctests.py` finds and runs all doctests. This should be fairly quick to run.
+ - `tests/test_examples.py` runs all notebooks under `examples/` as tests. These require `nbconvert` and `nbformat` to run,
 and can take a significant amount of time to complete, so consider excluding `test_examples.py` from your test
 discovery.
 
-```shell
-# Unittest:
-$ python -m unittest discover -s tests/units # run unit tests
-$ python -m unittest tests/test_doctests.py # run doctests
-$ python -m unittest tests/test_examples.py # run example tests (slow)
 
-# Pytest:
+```shell
+$ pytest # run all tests (slow)
 $ pytest tests/units # run unit tests
+$ pytest tests/integration # run integration tests (slow)
 $ pytest tests/test_doctests.py # run doctests
 $ pytest tests/test_examples.py # run example tests (slow)
 ```
 
-Note that some tests are non-deterministic and as such may occasionally fail due to randomness.
-Please try running them again before raising an issue.
+Our PR workflows run our tests with the `pytest-beartype` plugin. This is a runtime type checker that ensures all
+our type hints are correct. In order to run with these checks locally, add
+`--beartype-packages="vanguard" -m "not no_beartype"` to your pytest invocation. You should then separately run pytest
+with `-m no_beartype` to ensure that all tests are run. The reason for this separation is that some of our tests check
+that our handling of inputs of invalid type are correct, but `beartype` catches these errors before we get a chance to
+look at them, causing the tests to fail; thus, these tests need to be run separately _without_ beartype.
+
+Since different Python versions have different versions of standard library and third-party modules, we can't guarantee
+that type hints are 100% correct on all Python versions. Type hints are only tested for correctness on the latest
+version of Python (3.12).
+
+For example, to run the unit tests with type checking:
+
+```shell
+$ pytest tests/units --beartype-packages="vanguard" -m "not no_beartype"  # run unit tests with type checking
+$ pytest tests/units -m no_beartype  # run unit tests that are incompatible with beartype
+```
