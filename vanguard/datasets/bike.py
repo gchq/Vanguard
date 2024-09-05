@@ -148,7 +148,7 @@ class BikeDataset(FileDataset):
         plt.xlabel("$y$", fontsize=15)
         plt.legend()
 
-    def _load_data(self) -> pd.DataFrame:
+    def _load_data(self) -> np.typing.NDArray:
         """Load the data."""
         file_path = self._get_data_path("bike.csv")
         try:
@@ -164,7 +164,7 @@ class BikeDataset(FileDataset):
         return data
 
     @staticmethod
-    def _get_n_samples(data: pd.DataFrame, n_samples: Optional[int]) -> int:
+    def _get_n_samples(data: np.typing.NDArray, n_samples: Optional[int]) -> int:
         """
         Verify the number of samples is valid for some given data.
 

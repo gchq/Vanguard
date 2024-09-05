@@ -20,6 +20,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from tests.cases import get_default_rng
 from vanguard.datasets.bike import BikeDataset
@@ -75,18 +76,19 @@ class TestBikeDataset(TestCase):
         assert self.dataset.num_testing_points == int(self.num_samples * (1 - self.training_proportion))
         assert self.dataset.num_points == self.num_samples
 
+    @pytest.mark.no_beartype
     def test_get_n_samples(self) -> None:
         """Test the various possible outcomes of getting a number of samples."""
-        df = pd.DataFrame([{"a": 1.0, "b": 10.0}, {"a": 2.0, "b": 20.0}, {"a": 3.0, "b": 30.0}])
+        data = np.array([1.0, 2.0, 3.0])
 
         # pylint: disable=protected-access
         # If we request a valid number of samples, we should just get out what we put in
-        assert self.dataset._get_n_samples(df, n_samples=1) == 1
+        assert self.dataset._get_n_samples(data, n_samples=1) == 1
 
         # If we request too many samples, we should just use all data points but get a warning that this
         # is being done
         with warnings.catch_warnings(record=True) as warn:
-            assert self.dataset._get_n_samples(df, n_samples=10) == self.mocked_data.shape[0]
+            assert self.dataset._get_n_samples(data, n_samples=10) == self.mocked_data.shape[0]
         assert len(warn) == 1
         assert (
             str(warn[0].message)
@@ -95,14 +97,14 @@ class TestBikeDataset(TestCase):
 
         # If we request a negative number of samples, we should not be able to proceed
         with self.assertRaisesRegex(ValueError, "A negative number of samples has been requested."):
-            self.dataset._get_n_samples(df, n_samples=-2)
+            self.dataset._get_n_samples(data, n_samples=-2)
 
         # If we don't specify how many samples we want, we should use them all
-        assert self.dataset._get_n_samples(df, n_samples=None) == self.mocked_data.shape[0]
+        assert self.dataset._get_n_samples(data, n_samples=None) == self.mocked_data.shape[0]
 
         # If we request a non-integer number of samples, we should not be able to proceed
         with self.assertRaisesRegex(ValueError, "A non-integer number of samples has been requested."):
-            self.dataset._get_n_samples(df, n_samples=2.0)
+            self.dataset._get_n_samples(data, n_samples=2.0)
 
         # pylint: enable=protected-access
 
