@@ -74,9 +74,12 @@ version = "v" + vanguard.__version__
 # -- General configuration ---------------------------------------------------
 
 show_warning_types = True
-suppress_warnings = ["config.cache"]  # TODO: Remove this if/when Sphinx fix the caching issue
-# https://github.com/gchq/Vanguard/issues/196
-
+suppress_warnings = [
+    "config.cache",  # TODO: Remove this if/when Sphinx fix the caching issue
+    # https://github.com/gchq/Vanguard/issues/196
+    "misc.copy_overwrite",  # TODO: Explore why this is only an issue with notebooks
+    # https://github.com/gchq/Vanguard/issues/398
+]
 
 extensions = [
     "sphinx.ext.coverage",
@@ -298,7 +301,7 @@ confutils.copy_filtered_files(examples_source, examples_dest, file_types={".ipyn
 
 notebooks_file_paths = [os.path.join(examples_dest, notebook_path) for notebook_path in os.listdir(examples_dest)]
 confutils.process_notebooks(
-    notebooks_file_paths,
+    notebook_file_paths=notebooks_file_paths,
     notebooks_to_skip=[
         "distributed_gp",
         "laplace_hierarchical",
