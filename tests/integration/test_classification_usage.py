@@ -251,7 +251,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0.0,
             mean_class=gpytorch.means.ZeroMean,
             likelihood_class=DirichletKernelClassifierLikelihood,
-            likelihood_kwargs={"learn_alpha": False, "alpha": 5},
+            likelihood_kwargs={"learn_alpha": False, "alpha": 5.0},
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
             optim_kwargs={"lr": 0.1, "early_stop_patience": 5},
             rng=self.rng,
