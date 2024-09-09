@@ -40,16 +40,39 @@ class DummyKernelDistribution:
         """
         Initialise self.
 
-        :param labels: The one-hot labels.
+        :param labels: The one-hot labels, shape: torch.Size([n_points, num_classes]).
         :param kernel: The kernel matrix.
         """
         self.labels = labels
         self.kernel = kernel
-        self.mean = self.kernel @ self.labels.to_dense()
-        self.covariance_matrix = torch.zeros_like(self.mean)
+        # self.mean = self.kernel @ self.labels.to_dense()
+        # self.covariance_matrix = torch.zeros_like(self.mean)
+
+        try:
+            self.mean = self.kernel @ self.labels.to_dense()
+            self.covariance_matrix = torch.zeros(self.mean.shape[-1], self.mean.shape[-1], self.kernel.shape[0],
+                                                 self.kernel.shape[0])
+            # The last two dimensions represent the pairwise covariances between the test points
+            # The first two dimensions represent the covariances between the classes for each pair of test points.
+        except RuntimeError:
+            self.mean = labels
+            self.covariance_matrix = kernel
 
     # pylint: disable-next=unused-argument
-    def add_jitter(self, *args: Any, **kwargs: Any):
+    def add_jitter(self, jitter: float = 1e-3):
+        """
+        Adds a small constant diagonal to the covariance matrix for numerical stability.
+
+        :param jitter: The size of the constant diagonal.
+        :return: The instance with the updated covariance matrix.
+        """
+        # Create a tensor of shape [100, 100, 4] filled with the jitter value
+        jitter_matrix = torch.eye(self.covariance_matrix.shape[-1]) * jitter
+        jitter_matrix = jitter_matrix.unsqueeze(0).unsqueeze(0).expand(self.covariance_matrix.shape)
+
+        assert jitter_matrix.shape == self.covariance_matrix.shape
+        # Add jitter to the diagonal elements
+        self.covariance_matrix += jitter_matrix
         return self
 
 
@@ -150,4 +173,7 @@ class InertKernelModel(ExactGPModel):
 
         # TODO: This will fail if train_targets is None. (AttributeError: 'NoneType' object has no attribute 'long')
         # https://github.com/gchq/Vanguard/issues/291
-        return DummyKernelDistribution(self._label_tensor(self.train_targets), kernel_matrix)
+        labels = self._label_tensor(self.train_targets)
+        assert labels.shape == torch.Size([kernel_matrix.shape[-1], self.n_classes])
+        assert kernel_matrix.shape == torch.Size([inputs[0].shape[0], train_inputs[0].shape[0]])
+        return DummyKernelDistribution(labels=labels, kernel=kernel_matrix)

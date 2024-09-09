@@ -19,6 +19,7 @@ Tests for the DirichletKernelMulticlassClassification decorator.
 from unittest import expectedFailure
 
 from gpytorch import kernels, means
+import torch
 
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
@@ -58,14 +59,40 @@ class MulticlassTests(ClassificationTestCase):
         )
         self.controller.fit(10)
 
+    def test_get_posterior_over_point_in_eval_mode(self) -> None:
+        """
+        Check the dimensions of mean and covariance objects returned by _get_posterior_over_point_in_eval_mode().
+        """
+        num_test_points = self.dataset.test_x.shape[0]
+        num_classes = self.dataset.num_classes
+
+        prediction_output = self.controller._get_posterior_over_point_in_eval_mode(self.dataset.test_x)
+        mean, covar = prediction_output.distribution.mean, prediction_output.distribution.covariance_matrix
+        self.assertEqual(mean.shape, torch.Size([num_test_points, num_classes]))
+        self.assertEqual(covar.shape, torch.Size([num_classes, num_classes, num_test_points, num_test_points]))
+
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
-    # TODO: This test fails as the distribution covariance_matrix is the wrong shape.
+    def test_get_posterior_over_fuzzy_point_in_eval_mode(self) -> None:
+        """
+        Check the dimensions of mean and covariance objects returned by _get_posterior_over_fuzzy_point_in_eval_mode().
+        """
+        test_x_std = 0.005
+        num_test_points = self.dataset.test_x.shape[0]
+        num_classes = self.dataset.num_classes
+        default_group_size = 100 # in infinite_x_samples()
+
+        prediction_output = self.controller._get_posterior_over_fuzzy_point_in_eval_mode(self.dataset.test_x,test_x_std)
+        mean, covar = prediction_output.distribution.mean, prediction_output.distribution.covariance_matrix
+        self.assertEqual(mean.shape, torch.Size([default_group_size, num_test_points, num_classes]))
+        self.assertEqual(covar.shape, torch.Size([default_group_size, num_classes, num_classes, num_test_points, num_test_points]))
+
+    # TODO: The test below fails as the distribution covariance_matrix is an unexpected shape.
     # https://github.com/gchq/Vanguard/issues/288
-    @expectedFailure
+    # @expectedFailure
     def test_fuzzy_predictions(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.
