@@ -16,7 +16,9 @@
 
 import warnings
 
-from tests.cases import VanguardTestCase
+import pytest
+
+from tests.cases import assert_not_warns
 
 
 class OtherWarningSubclass(Warning):
@@ -27,26 +29,33 @@ class SubclassOfUserWarning(UserWarning):
     """Warning subclass used for testing."""
 
 
-class TestNotWarns(VanguardTestCase):
+class TestNotWarns:
+    """Tests for the assert_not_warns() context manager."""
+
     def test_with_no_warnings(self):
-        with self.assertNotWarns():
+        """Test that code that raises no warnings does not cause any error."""
+        with assert_not_warns():
             pass
 
     def test_fails_with_warning(self):
-        with self.assertRaises(self.failureException):
-            with self.assertNotWarns():
+        """Test that if a warning is raised, it is caught and raised as an error instead."""
+        with pytest.raises(AssertionError):
+            with assert_not_warns():
                 warnings.warn("A warning!", UserWarning)
 
     def test_passes_with_warning_not_of_given_type(self):
-        with self.assertNotWarns(UserWarning):
+        """Test that if a warning type is passed, warnings not of that type do not cause any error."""
+        with assert_not_warns(UserWarning):
             warnings.warn("A warning!", OtherWarningSubclass)
 
     def test_fails_with_warning_of_given_type(self):
-        with self.assertRaises(self.failureException):
-            with self.assertNotWarns(OtherWarningSubclass):
+        """Test that if a warning type is passed, warnings of that type are caught and raised as an error instead."""
+        with pytest.raises(AssertionError):
+            with assert_not_warns(OtherWarningSubclass):
                 warnings.warn("A warning!", OtherWarningSubclass)
 
     def test_fails_with_warning_of_descendant_of_given_type(self):
-        with self.assertRaises(self.failureException):
-            with self.assertNotWarns(UserWarning):
+        """Test that if a warning type is passed, warnings of a subtype of that type are raised as an error instead."""
+        with pytest.raises(AssertionError):
+            with assert_not_warns(UserWarning):
                 warnings.warn("A warning!", SubclassOfUserWarning)
