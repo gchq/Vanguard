@@ -151,9 +151,8 @@ class VanguardTestCase(unittest.TestCase):
         return lower, upper
 
 
-# Ignore invalid-name: we're conforming to the unittest name scheme here, so using camelCase
 @contextlib.contextmanager
-def assert_not_warns(expected_warning_type: Type[Warning] = Warning) -> None:  # pylint: disable=invalid-name
+def assert_not_warns(expected_warning_type: Type[Warning] = Warning) -> None:
     """Assert that enclosed code raises no warnings, or no warnings of a given type."""
     with warnings.catch_warnings(record=True) as ws:
         yield
