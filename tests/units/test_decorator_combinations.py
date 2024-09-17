@@ -502,8 +502,8 @@ def _create_decorator(
     [
         pytest.param(None, id="full"),
         # TODO(rg): Many test failures when running with a batch_size set! Often "You must train on the training
-        #  inputs". To be investigated. See for a similar example:
-        # https://github.com/gchq/Vanguard/issues/377
+        #  inputs". To be investigated.
+        # https://github.com/gchq/Vanguard/issues/402
         # pytest.param(2, id="batch"),
     ],
 )

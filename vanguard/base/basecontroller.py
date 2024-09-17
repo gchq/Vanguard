@@ -171,13 +171,8 @@ class BaseGPController:
         class SafeMarginalLogLikelihoodClass(marginal_log_likelihood_class):
             pass
 
-        if self.batch_size is not None:
-            # then the training data will be updated at each training iteration
-            gp_train_x = None
-            gp_train_y = None
-        else:
-            gp_train_x = self.train_x
-            gp_train_y = self.train_y.squeeze(dim=-1)
+        gp_train_x = self.train_x
+        gp_train_y = self.train_y.squeeze(dim=-1)
 
         self._gp = SafeGPModelClass(
             gp_train_x,
