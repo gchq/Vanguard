@@ -373,6 +373,7 @@ class PositiveAffineWarpTests(unittest.TestCase):
     def test_feasible_region_no_points(self) -> None:
         """Test behaviour when the feasible region has no points in it."""
         # TODO: better error message here?
+        # https://github.com/gchq/Vanguard/issues/400
         with pytest.raises(ValueError, match="Cannot process empty iterable"):
             # pylint: disable=protected-access
             warpfunctions.PositiveAffineWarpFunction._get_constraint_slopes(np.array([]))

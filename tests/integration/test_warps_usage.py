@@ -164,6 +164,7 @@ class VanguardTestCase(unittest.TestCase):
             rng=self.rng,
         )
         # TODO: check for something more specific than just `Exception`!
+        # https://github.com/gchq/Vanguard/issues/401
         with self.assertRaises(Exception):
             gp_invalid.fit(n_sgd_iters=self.n_sgd_iters)
 
@@ -224,6 +225,8 @@ class VanguardTestCase(unittest.TestCase):
             y_std=self.small_noise * np.ones_like(y[train_indices]),
             rng=self.rng,
         )
+        # TODO: check for something more specific than just `Exception`!
+        # https://github.com/gchq/Vanguard/issues/401
         with self.assertRaises(Exception):
             gp_invalid.fit(n_sgd_iters=self.n_sgd_iters)
 
