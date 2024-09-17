@@ -134,6 +134,7 @@ relazifying
 reraised
 rpds
 rsample
+rtol
 rtype
 seealso
 setdiff
