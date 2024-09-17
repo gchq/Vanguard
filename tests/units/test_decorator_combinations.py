@@ -303,6 +303,22 @@ EXCLUDED_COMBINATIONS = {
     (HigherRankFeatures, LaplaceHierarchicalHyperparameters),
 }
 
+# Combinations that are not tested at all in batch mode. Note that these are not skipped, they are just not provided
+# as parameter combinations in the first place. This list is checked after `EXCLUDED_COMBINATIONS`, so anything that
+# appears in that list is also excluded. Unlike `EXCLUDED_COMBINATIONS`, this is a set of ordered (upper, lower) pairs.
+BATCH_EXCLUDED_COMBINATIONS = {
+    # TODO: These are all excluded as a *temporary measure*. Eventually this list should be empty. For each pair,
+    #  either raise an informative exception we can test for, or ensure that it runs without error.
+    # https://github.com/gchq/Vanguard/issues/386
+    (Distributed, DirichletMulticlassClassification),
+    (Distributed, SetWarp),
+    (VariationalHierarchicalHyperparameters, Multitask),
+    (LaplaceHierarchicalHyperparameters, Multitask),
+    (Multitask, VariationalHierarchicalHyperparameters),
+    (Multitask, LaplaceHierarchicalHyperparameters),
+    (Multitask, Multitask),
+}
+
 # (upper, lower) -> (error type, message regex)
 # Errors we expect to be raised on initialisation of the decorated class.
 EXPECTED_COMBINATION_INIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
@@ -389,20 +405,26 @@ DATASET_CONFLICT_OVERRIDES = {
 def _initialise_decorator_pair(
     upper_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
     lower_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
-) -> Tuple[Decorator, List[Decorator], Decorator, List[Decorator], Dict[str, Any], Optional[Dataset]]:
+    *,
+    batch_mode: bool,
+) -> Tuple[Decorator, List[Decorator], Decorator, List[Decorator], List[Decorator], Dict[str, Any], Optional[Dataset]]:
     """
     Initialise a pair of decorators for testing.
 
     :param upper_decorator_details: (key, value) entry from `DECORATORS` for the upper decorator.
     :param upper_decorator_details: (key, value) entry from `DECORATORS` for the lower decorator.
+    :param batch_mode: True if the controller will be created in batch mode. Ensures `VariationalInference` decorator
+        is present.
     :return: Tuple (upper_decorator, upper_requirement_decorators, lower_decorator, lower_requirement_decorators,
-        controller_kwargs, dataset):
+        batch_decorators, controller_kwargs, dataset):
         - `upper_decorator`: the instantiated upper decorator
         - `upper_requirement_decorators`: list of instantiated decorators to be applied before `upper_decorator` to
             fulfil its requirements
         - `lower_decorator`: the instantiated upper decorator
         - `lower_requirement_decorators`: list of instantiated decorators to be applied before `lower_decorator` to
             fulfil its requirements
+        - `batch_decorators`: possibly contains an instantiated `VariationalInference` decorator if running in batch
+            mode and one is not already present in the previous tuple elements
         - `controller_kwargs`: additional keyword arguments to provide to the `GPController` on instantiation. In case
             multiple decorators provide values for the same keyword argument, if a value is given in
             `COMBINATION_CONTROLLER_KWARGS`, that value is used; if not the value from the topmost decorator is used.
@@ -431,14 +453,33 @@ def _initialise_decorator_pair(
         # Pass whichever dataset we have, or a default.
         dataset = upper_dataset or lower_dataset or DEFAULT_DATASET
 
+    if batch_mode and not any(
+        isinstance(decorator, VariationalInference)
+        for decorator in [
+            upper_decorator,
+            lower_decorator,
+            *upper_requirement_decorators,
+            *lower_requirement_decorators,
+        ]
+    ):
+        # then we need to add variational inference ourselves
+        variational_decorator, _, controller_kwargs, _ = _create_decorator(
+            (VariationalInference, DECORATORS[VariationalInference])
+        )
+        batch_decorators = [variational_decorator]
+    else:
+        batch_decorators = []
+        controller_kwargs = {}
+
     # For controller arguments, ones on higher decorators override those on lower decorators
-    controller_kwargs = lower_controller_kwargs
+    controller_kwargs.update(lower_controller_kwargs)
     controller_kwargs.update(upper_controller_kwargs)
     return (
         upper_decorator,
         upper_requirement_decorators,
         lower_decorator,
         lower_requirement_decorators,
+        batch_decorators,
         controller_kwargs,
         dataset,
     )
@@ -497,16 +538,7 @@ def _create_decorator(
         and not issubclass(lower_details[0], TopMostDecorator)
     ],
 )
-@pytest.mark.parametrize(
-    "batch_size",
-    [
-        pytest.param(None, id="full"),
-        # TODO(rg): Many test failures when running with a batch_size set! Often "You must train on the training
-        #  inputs". To be investigated.
-        # https://github.com/gchq/Vanguard/issues/402
-        # pytest.param(2, id="batch"),
-    ],
-)
+@pytest.mark.parametrize("batch_size", [pytest.param(None, id="full"), pytest.param(2, id="batch")])
 def test_combinations(
     upper_details: Tuple[Type[Decorator], DecoratorDetails],
     lower_details: Tuple[Type[Decorator], DecoratorDetails],
@@ -533,10 +565,21 @@ def test_combinations(
 
     and check that none of the above operations raise any unexpected errors.
     """
-    upper_decorator, upper_requirements, lower_decorator, lower_requirements, controller_kwargs, dataset = (
-        _initialise_decorator_pair(upper_details, lower_details)
-    )
-    all_decorators = [upper_decorator, *upper_requirements, lower_decorator, *lower_requirements]
+    (
+        upper_decorator,
+        upper_requirements,
+        lower_decorator,
+        lower_requirements,
+        batch_requirements,
+        controller_kwargs,
+        dataset,
+    ) = _initialise_decorator_pair(upper_details, lower_details, batch_mode=batch_size is not None)
+    all_decorators = [upper_decorator, *upper_requirements, lower_decorator, *lower_requirements, *batch_requirements]
+
+    if batch_size is not None and any(isinstance(d, DirichletKernelMulticlassClassification) for d in all_decorators):
+        pytest.skip("DirichletKernelMulticlassClassification is not compatible with VariationalInference")
+    if batch_size is not None and (upper_details[0], lower_details[0]) in BATCH_EXCLUDED_COMBINATIONS:
+        pytest.skip("Combination is excluded from batch mode testing")
 
     combination = (type(upper_decorator), type(lower_decorator))
     expected_warning_class, expected_warning_message = EXPECTED_COMBINATION_APPLY_WARNINGS.get(

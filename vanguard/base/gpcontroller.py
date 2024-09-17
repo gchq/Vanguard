@@ -22,6 +22,7 @@ from typing import List, Optional, Type, Union
 import numpy as np
 import numpy.typing
 import torch
+from gpytorch.models import ExactGP
 from torch import Tensor
 from typing_extensions import Self
 
@@ -143,6 +144,13 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
                     " and replaced by 1."
                 )
             gradient_every = 1
+
+            if issubclass(self.gp_model_class, ExactGP):
+                msg = (
+                    "Batched training is not supported for exact GPs. "
+                    "Consider using the `@VariationalInference` decorator, or setting `batch_size=None`."
+                )
+                raise RuntimeError(msg)
 
         gradient_every = n_sgd_iters if gradient_every is None else gradient_every
 

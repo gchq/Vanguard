@@ -350,12 +350,6 @@ class BaseGPController:
 
         for iter_num, (train_x, train_y, train_y_noise) in enumerate(islice(self.train_data_generator, n_iters)):
             self.likelihood_noise = train_y_noise
-            if self.batch_size is not None:
-                # update the training data to the current train_x and train_y, to avoid "You must train on the
-                # training data!"
-                self._gp.set_train_data(train_x, train_y.squeeze(dim=-1), strict=False)
-                # TODO: consider using get_fantasy_model() instead if possible, when using ExactGP?
-                # https://github.com/gchq/Vanguard/issues/352
             try:
                 loss = self._single_optimisation_step(train_x, train_y, retain_graph=iter_num < n_iters - 1)
 
