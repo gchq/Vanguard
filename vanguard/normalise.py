@@ -45,6 +45,11 @@ class NormaliseY(Decorator):
 
     The inverse transformation is then applied to the return values of posterior methods.
 
+    .. note::
+        The empirical variance is the _sample_ empirical variance, not the population empirical variance (that is, it
+        is :math:`\frac{1}{n-1}\sum_{y \in \bf y} (y - \overline{Y})^2`, where :math:`n` is the number of data points
+        in ``train_y``).
+
     :Example:
         >>> import numpy as np
         >>> from vanguard.kernels import ScaledRBFKernel
@@ -62,7 +67,11 @@ class NormaliseY(Decorator):
         ...                     kernel_class=ScaledRBFKernel
         ...                     )
         >>> controller.train_y.T
-        tensor([[-1.0000, -0.7143,  0.1429,  1.5714]])
+        tensor([[-0.8660, -0.6186,  0.1237,  1.3609]])
+        >>> controller.train_y.mean().item()
+        0.0
+        >>> controller.train_y.std().item()
+        1.0
     """
 
     def __init__(self, **kwargs: Any) -> None:
