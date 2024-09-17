@@ -29,6 +29,8 @@ import torch.testing
 from scipy import stats
 from torch import Tensor
 
+import vanguard.utils
+
 DEFAULT_RNG_SEED = 1234
 
 
@@ -64,6 +66,14 @@ def get_default_rng_override_seed(seed: int) -> np.random.Generator:
     :return: A random number generator.
     """
     return np.random.default_rng(seed)
+
+
+def get_default_torch_rng_override_seed(seed: int):
+    return torch.Generator(device=vanguard.utils.default_device).manual_seed(seed)
+
+
+def get_default_torch_rng() -> torch.Generator:
+    return get_default_torch_rng_override_seed(DEFAULT_RNG_SEED)
 
 
 @contextlib.contextmanager
@@ -121,10 +131,8 @@ def assert_mock_called_once_with(mock: Mock, *expected_args: Any, **expected_kwa
 
 def assert_equal_safe(actual: Any, expected: Any) -> None:
     """Version of assert_equal that correctly handles `Tensor`/`ndarray` inputs."""
-    if isinstance(actual, Tensor) or isinstance(expected, Tensor):
-        torch.testing.assert_close(actual, expected)
-    elif isinstance(actual, np.ndarray) or isinstance(expected, np.ndarray):
-        np.testing.assert_array_almost_equal(actual, expected)
+    if isinstance(actual, (Tensor, np.ndarray)) or isinstance(expected, (Tensor, np.ndarray)):
+        torch.testing.assert_close(torch.as_tensor(actual), torch.as_tensor(expected))
     else:
         assert actual == expected
 

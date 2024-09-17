@@ -28,6 +28,7 @@ import numpy as np
 import numpy.typing
 import torch
 from gpytorch import constraints
+from gpytorch.likelihoods import _OneDimensionalLikelihood
 from gpytorch.models import ApproximateGP, ExactGP
 from linear_operator.utils.errors import NanError
 from torch import Tensor
@@ -86,10 +87,7 @@ class BaseGPController:
     """
 
     _default_tensor_dtype = torch.float
-    if torch.cuda.is_available():
-        _default_tensor_device = torch.device("cuda")
-    else:
-        _default_tensor_device = torch.device("cpu")
+    _default_tensor_device = utils.default_device
 
     torch.set_default_device(_default_tensor_device)
     torch.set_default_dtype(_default_tensor_dtype)
@@ -153,6 +151,11 @@ class BaseGPController:
         self.likelihood: gpytorch.likelihoods.Likelihood = instantiate_with_subset_of_kwargs(
             likelihood_class, **all_likelihood_params_as_kwargs
         )
+
+        # janky fix for gpytorch bug(?)
+        if isinstance(self.likelihood, _OneDimensionalLikelihood):
+            self.likelihood.quadrature.locations = self.likelihood.quadrature.locations.to(self.device)
+            self.likelihood.quadrature.weights = self.likelihood.quadrature.weights.to(self.device)
 
         mean_class, kernel_class = self._input_standardise_modules(mean_class, kernel_class)
 
@@ -368,7 +371,7 @@ class BaseGPController:
             except NoImprovementError:
                 loss = self._smart_optimiser.last_n_losses[-1]
                 break
-            except RuntimeError as err:
+            except RuntimeError:
                 warnings.warn(f"Hit a numerical error after {iter_num} iterations of training.")
                 if self.auto_restart is True:
                     warnings.warn(f"Re-running training from scratch for {iter_num-1} iterations.")
@@ -380,7 +383,7 @@ class BaseGPController:
                             "Pass auto_restart=True to the controller to automatically restart"
                             " training up to the last stable iterations."
                         )
-                    raise err
+                    raise
             finally:
                 try:
                     detached_loss = loss.detach().cpu().item()

@@ -129,7 +129,9 @@ class MulticlassGaussianClassificationDataset(Dataset):
 
         Note that if there are exactly two classes, this returns `train_y.reshape((-1, 1))` instead.
         """
-        return torch.as_tensor(sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y))
+        numpy_train_y = self.train_y.detach().cpu().numpy()
+        one_hot = sklearn.preprocessing.LabelBinarizer().fit_transform(numpy_train_y)
+        return torch.as_tensor(one_hot, device=self.train_y.device)
 
     def plot(self, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5) -> None:  # pragma: no cover
         """

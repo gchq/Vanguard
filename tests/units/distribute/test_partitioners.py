@@ -199,7 +199,7 @@ class MockedPartitionTests(unittest.TestCase):
         # Check output matches expected - note that pylint flags access to a private method, but we
         # want to test it gives sensible results here
         # pylint: disable-next=protected-access
-        np.testing.assert_array_equal(expected_distance_matrix, partitioner._construct_distance_matrix())
+        np.testing.assert_allclose(expected_distance_matrix, partitioner._construct_distance_matrix())
 
     @patch.object(sklearn.manifold, "TSNE")
     @patch.object(matplotlib.pyplot, "scatter")

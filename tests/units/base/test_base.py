@@ -53,8 +53,8 @@ class DefaultTensorTypeTests(unittest.TestCase):
             self.skipTest("Skipping this test because the default tensor dtype would not be changed.")
 
         original_tensor = torch.tensor([])
-        self.assertEqual(original_tensor.dtype, self.original_dtype)
-        self.assertEqual(original_tensor.device, self.original_device)
+        assert original_tensor.dtype == self.original_dtype
+        assert original_tensor.device.type == self.original_device.type
 
         class NewController(GaussianGPController):
             pass
@@ -67,8 +67,8 @@ class DefaultTensorTypeTests(unittest.TestCase):
         # Set the NewController's default tensor type as the original GaussianGPController's
         self.new_controller_class.set_default_tensor_dtype(self.original_dtype)
         tensor = torch.tensor([])
-        self.assertEqual(tensor.dtype, self.original_dtype)
-        self.assertEqual(tensor.device, self.original_device)
+        assert tensor.dtype == self.original_dtype
+        assert tensor.device.type == self.original_device.type
 
     def test_class_default_tensor(self) -> None:
         """Test that the new controller's default tensor dtype was set correctly to torch.DoubleTensor in setUp()."""
@@ -125,8 +125,7 @@ class InputTests(VanguardTestCase):
             smart_optimiser_class=SmartOptimiser,
             rng=get_default_rng(),
         )
-        # Convert train_y on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
-        np.testing.assert_array_almost_equal(squeezed_train_y, gp.train_y, decimal=5)
+        torch.testing.assert_close(squeezed_train_y, gp.train_y, check_dtype=False)
 
     def test_unsqueeze_x(self) -> None:
         """
@@ -148,8 +147,7 @@ class InputTests(VanguardTestCase):
             smart_optimiser_class=SmartOptimiser,
             rng=get_default_rng(),
         )
-        # Convert train_x on GPController to a NumPy array, ensuring it's on CPU and detached from the computation graph
-        np.testing.assert_array_almost_equal(self.DATASET.train_x, gp.train_x, decimal=5)
+        torch.testing.assert_close(self.DATASET.train_x, gp.train_x, check_dtype=False)
 
     def test_error_handling_of_higher_rank_features(self) -> None:
         """Test that shape errors, due to incorrectly treated high-rank features, are caught and explained."""
@@ -237,11 +235,17 @@ class NLLTests(unittest.TestCase):
         white_kernel = WhiteKernel(noise_level=1e-2, noise_level_bounds=(1e-10, 1e1))
         kernel = rbf_kernel + white_kernel
 
+        # convert all dataset tensors to numpy for sklearn
+        self.train_x_numpy = self.dataset.train_x.detach().cpu().numpy()
+        self.train_y_numpy = self.dataset.train_x.detach().cpu().numpy()
+        self.test_x_numpy = self.dataset.train_x.detach().cpu().numpy()
+        self.test_y_numpy = self.dataset.train_x.detach().cpu().numpy()
+
         gpr = GaussianProcessRegressor(kernel=kernel, alpha=0)
-        gpr.fit(self.dataset.train_x, self.dataset.train_y)
+        gpr.fit(self.train_x_numpy, self.train_y_numpy)
 
         # Generate a test set and predict on that (with sklearn)
-        z, z_std = gpr.predict(self.dataset.test_x, return_std=True)
+        z, z_std = gpr.predict(self.test_x_numpy, return_std=True)
 
         # Get the learned hyperparameters
         params = gpr.kernel_.get_params()
@@ -251,10 +255,10 @@ class NLLTests(unittest.TestCase):
 
         # Get the NLL for this test set
         self.sklearn_nll = self.predictive_nll(
-            mean=z.flatten(), variance=z_std**2, noise_variance=self.noise_variance, y=self.dataset.test_y.flatten()
+            mean=z.flatten(), variance=z_std**2, noise_variance=self.noise_variance, y=self.test_y_numpy
         )
         # Get the MSE for this test set
-        self.sklearn_mse = self.predictive_mse(mu_pred=z.flatten(), y=self.dataset.test_y.flatten())
+        self.sklearn_mse = self.predictive_mse(mu_pred=z.flatten(), y=self.test_y_numpy)
 
     def test_gpytorch_nll(self) -> None:
         """Test that the NLL calculated with GPyTorch agrees with sklearn."""
@@ -272,10 +276,10 @@ class NLLTests(unittest.TestCase):
                 covar_x = self.covar_module(x)
                 return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
-        # Flatten and tensor-ify the test data
-        train_x = torch.tensor(self.dataset.train_x.flatten())
-        train_y = torch.tensor(self.dataset.train_y.flatten())
-        test_x = torch.tensor(self.dataset.test_x.flatten())
+        # Flatten the test data
+        train_x = self.dataset.train_x.flatten()
+        train_y = self.dataset.train_y.flatten()
+        test_x = self.dataset.test_x.flatten()
 
         likelihood = gpytorch.likelihoods.GaussianLikelihood()
         model = ExactGPModel(train_x, train_y, likelihood)

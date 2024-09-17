@@ -75,7 +75,7 @@ class InitialisationTests(unittest.TestCase):
     @pytest.mark.no_beartype
     def test_cannot_pass_array_as_y_std(self) -> None:
         """
-        Test that if `train_y_std` is provided as an array, this input is rejected.
+        Test that if `train_y_std` is provided as an array of dimension > 0, this input is rejected.
 
         When a controller has been distributed, noise on the outputs can only take the
         form of an int or float. Here we check that a TypeError is raised if the noise
@@ -83,12 +83,13 @@ class InitialisationTests(unittest.TestCase):
         """
         dataset = HeteroskedasticSyntheticDataset(rng=self.rng)
 
-        if isinstance(dataset.train_y_std, (float, int)):
-            self.skipTest(f"The standard deviation should be an array, not '{type(dataset.train_y_std).__name__}'.")
-
-        with self.assertRaises(TypeError):
+        with self.assertRaisesRegex(
+            TypeError,
+            "class has been distributed, and can only accept a "
+            "number or 0-dimensional array as the argument to 'y_std'",
+        ):
             DistributedGaussianGPController(
-                dataset.train_x, dataset.train_y, ScaledRBFKernel, dataset.train_y_std, rng=self.rng
+                dataset.train_x, dataset.train_y, ScaledRBFKernel, torch.ones(dataset.train_y.shape[0]), rng=self.rng
             )
 
     def test_no_kernel_with_k_medoids(self) -> None:
@@ -244,7 +245,7 @@ class SharedDataTests(unittest.TestCase):
 
         # Check we reject the invalid noise from the kernel
         with self.assertRaises(RuntimeError) as exc:
-            gp.posterior_over_point(np.arange(3, dtype=np.floating))
+            gp.posterior_over_point(torch.arange(3, dtype=torch.float))
         self.assertEqual(
             str(exc.exception), "Cannot distribute using this kernel - try using a non-BCM aggregator instead."
         )

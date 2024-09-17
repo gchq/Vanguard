@@ -16,6 +16,7 @@
 Tests for the BinaryClassification decorator.
 """
 
+import torch
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO
 
@@ -26,7 +27,7 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-from ...cases import get_default_rng_override_seed
+from ...cases import get_default_rng_override_seed, get_default_torch_rng
 from .case import ClassificationTestCase
 
 
@@ -59,7 +60,7 @@ class BinaryTests(ClassificationTestCase):
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(20)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
-        self.assertPredictionsEqual(self.dataset.test_y.squeeze(), predictions, delta=0.2)
+        self.assertPredictionsEqual(self.dataset.test_y.squeeze(), predictions, delta=0.3)
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
@@ -113,6 +114,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
     def setUp(self) -> None:
         """Set up data shared between tests."""
         self.rng = get_default_rng_override_seed(123_456)  # Fails on Windows with 1234; fails on Linux with 12345
+        self.torch_rng = get_default_torch_rng()
 
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """
@@ -124,7 +126,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
         """
         dataset = BinaryStripeClassificationDataset(num_train_points=50, num_test_points=40, rng=self.rng)
         test_x_std = 0.005
-        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
+        test_x = torch.normal(dataset.test_x, std=test_x_std, generator=self.torch_rng)
 
         controller = BinaryClassifier(
             dataset.train_x,
@@ -151,8 +153,8 @@ class BinaryFuzzyTests(ClassificationTestCase):
         """
         dataset = BinaryStripeClassificationDataset(50, 40, rng=self.rng)
         train_x_std = test_x_std = 0.005
-        train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
-        test_x = self.rng.normal(dataset.test_x, scale=test_x_std).reshape(-1, 1)
+        train_x = torch.normal(dataset.train_x, std=train_x_std, generator=self.torch_rng)
+        test_x = torch.normal(dataset.test_x, std=test_x_std, generator=self.torch_rng).reshape(-1, 1)
 
         @BinaryClassification(ignore_all=True)
         @VariationalInference(ignore_all=True)

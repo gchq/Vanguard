@@ -27,6 +27,11 @@ import torch
 
 from vanguard.warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
+if torch.cuda.is_available():
+    default_device = torch.device("cuda")
+else:
+    default_device = torch.device("cpu")
+
 
 def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.typing.NDArray:
     """

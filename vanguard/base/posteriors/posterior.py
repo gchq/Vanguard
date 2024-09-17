@@ -122,7 +122,7 @@ class Posterior:
         variance = (upper - mean) ** 2
         sigma = variance + noise_variance
         rss = (y - mean) ** 2
-        const = 0.5 * np.log(2 * np.pi * sigma)
+        const = 0.5 * torch.log(2 * np.pi * sigma)
         p_nll = const + rss / (2 * sigma)
         return p_nll.mean().item()
 
