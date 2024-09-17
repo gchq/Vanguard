@@ -223,7 +223,7 @@ class NLLTests(unittest.TestCase):
                     test_x=scaled_test_x,
                     test_x_std=0.0,
                     test_y=test_y,
-                    test_y_std=y_std,
+                    test_y_std=0.0,
                     significance=0.1,
                 )
 
@@ -237,9 +237,9 @@ class NLLTests(unittest.TestCase):
 
         # convert all dataset tensors to numpy for sklearn
         self.train_x_numpy = self.dataset.train_x.detach().cpu().numpy()
-        self.train_y_numpy = self.dataset.train_x.detach().cpu().numpy()
-        self.test_x_numpy = self.dataset.train_x.detach().cpu().numpy()
-        self.test_y_numpy = self.dataset.train_x.detach().cpu().numpy()
+        self.train_y_numpy = self.dataset.train_y.detach().cpu().numpy()
+        self.test_x_numpy = self.dataset.test_x.detach().cpu().numpy()
+        self.test_y_numpy = self.dataset.test_y.detach().cpu().numpy()
 
         gpr = GaussianProcessRegressor(kernel=kernel, alpha=0)
         gpr.fit(self.train_x_numpy, self.train_y_numpy)
@@ -255,10 +255,10 @@ class NLLTests(unittest.TestCase):
 
         # Get the NLL for this test set
         self.sklearn_nll = self.predictive_nll(
-            mean=z.flatten(), variance=z_std**2, noise_variance=self.noise_variance, y=self.test_y_numpy
+            mean=z.flatten(), variance=z_std**2, noise_variance=self.noise_variance, y=self.test_y_numpy.flatten()
         )
         # Get the MSE for this test set
-        self.sklearn_mse = self.predictive_mse(mu_pred=z.flatten(), y=self.test_y_numpy)
+        self.sklearn_mse = self.predictive_mse(mu_pred=z.flatten(), y=self.test_y_numpy.flatten())
 
     def test_gpytorch_nll(self) -> None:
         """Test that the NLL calculated with GPyTorch agrees with sklearn."""
@@ -336,7 +336,7 @@ class NLLTests(unittest.TestCase):
     def predictive_nll(
         mean: Union[np.typing.NDArray[np.floating], Tensor],
         variance: Union[np.typing.NDArray[np.floating], Tensor],
-        noise_variance: Union[np.typing.NDArray[np.floating], float],
+        noise_variance: Union[np.typing.NDArray[np.floating], Tensor, float],
         y: Union[np.typing.NDArray[np.floating], Tensor],
     ) -> float:
         """

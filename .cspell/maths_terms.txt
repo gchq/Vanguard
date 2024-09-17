@@ -10,6 +10,7 @@ latents
 logit
 medoids
 nanmean
+NLL
 nonlinear
 nonparametric
 parsable
