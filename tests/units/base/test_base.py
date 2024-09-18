@@ -366,7 +366,7 @@ class TestBatchMode:
     @pytest.fixture(scope="class")
     def dataset(self):
         """Return a dataset for testing."""
-        return SyntheticDataset(n_train_points=10, n_test_points=10)
+        return SyntheticDataset(n_train_points=10, n_test_points=10, rng=get_default_rng())
 
     def test_batch_mode_exact_fails(self, dataset: Dataset):
         """Test that trying to perform batched training on an exact GP fails with an informative message."""
@@ -376,6 +376,7 @@ class TestBatchMode:
             kernel_class=ScaledRBFKernel,
             y_std=dataset.train_y_std,
             batch_size=10,
+            rng=get_default_rng(),
         )
 
         with pytest.raises(RuntimeError, match="Batched training is not supported for exact GPs"):
