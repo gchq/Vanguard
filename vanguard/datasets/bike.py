@@ -24,6 +24,7 @@ from typing import Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import torch
 from scipy import stats
 
 import vanguard.utils as utils
@@ -90,10 +91,10 @@ class BikeDataset(FileDataset):
 
     def plot_prediction(
         self,
-        pred_y_mean: np.typing.NDArray[np.floating],
-        pred_y_lower: np.typing.NDArray[np.floating],
-        pred_y_upper: np.typing.NDArray[np.floating],
-        y_upper_bound: Optional[np.typing.NDArray[np.floating]] = None,
+        pred_y_mean: torch.Tensor,
+        pred_y_lower: torch.Tensor,
+        pred_y_upper: torch.Tensor,
+        y_upper_bound: Optional[torch.Tensor] = None,
         error_width: float = 0.3,
     ) -> None:  # pragma: no cover
         """
@@ -112,7 +113,12 @@ class BikeDataset(FileDataset):
         plot_lower = pred_y_lower[keep_indices]
         plot_mean = pred_y_mean[keep_indices]
 
-        rmse = np.sqrt(np.mean((plot_y - plot_mean) ** 2))
+        rmse = torch.sqrt(torch.mean((plot_y - plot_mean) ** 2))
+
+        # Plotting can require numpy operations so convert here
+        plot_mean = plot_mean.detach().cpu().numpy()
+        plot_lower = plot_lower.detach().cpu().numpy()
+        plot_upper = plot_upper.detach().cpu().numpy()
 
         plt.errorbar(
             plot_y,
