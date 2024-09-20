@@ -27,6 +27,7 @@ import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 from numpy.typing import NDArray
+from torch import Tensor
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -47,10 +48,10 @@ class GaussianUncertaintyGPController(GPController):
 
     def __init__(
         self,
-        train_x: numpy.typing.NDArray[np.floating],
-        train_x_std: Optional[Union[numpy.typing.NDArray[np.floating], float]],
-        train_y: Union[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]],
-        y_std: Union[numpy.typing.NDArray[np.floating], float],
+        train_x: Union[Tensor, numpy.typing.NDArray[np.floating]],
+        train_x_std: Optional[Union[Tensor, numpy.typing.NDArray[np.floating], float]],
+        train_y: Union[Tensor, numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]],
+        y_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
         kernel_class: Type[gpytorch.kernels.Kernel],
         mean_class: Type[gpytorch.means.Mean] = gpytorch.means.ConstantMean,
         likelihood_class: Type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
@@ -253,7 +254,9 @@ class GaussianUncertaintyGPController(GPController):
         return predictions.detach(), covar.detach(), root_var
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
-        self, x: numpy.typing.NDArray[np.floating], x_std: Union[numpy.typing.NDArray[np.floating], float]
+        self,
+        x: Union[Tensor, numpy.typing.NDArray[np.floating]],
+        x_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
     ) -> Posterior:
         """
         Obtain posterior predictive mean and covariance at a point with variance.
@@ -279,7 +282,7 @@ class GaussianUncertaintyGPController(GPController):
 
         return self.posterior_class.from_mean_and_covariance(predictions.squeeze(), covar + jitter)
 
-    def _process_x_std(self, std: Optional[Union[numpy.typing.NDArray[float], float]]) -> torch.Tensor:
+    def _process_x_std(self, std: Optional[Union[Tensor, numpy.typing.NDArray[float], float]]) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
 

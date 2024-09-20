@@ -24,6 +24,7 @@ import numpy.typing
 import torch
 from gpytorch.kernels import RBFKernel, ScaleKernel
 from gpytorch.means import ZeroMean
+from torch import Tensor
 
 
 class BatchScaledRBFKernel(ScaleKernel):
@@ -53,7 +54,9 @@ class ClassificationTestCase(unittest.TestCase):
 
     @staticmethod
     def assertPredictionsEqual(  # pylint: disable=invalid-name
-        x: numpy.typing.NDArray[np.floating], y: numpy.typing.NDArray[np.floating], delta: Union[float, int] = 0
+        x: Union[Tensor, numpy.typing.NDArray[np.floating]],
+        y: Union[Tensor, numpy.typing.NDArray[np.floating]],
+        delta: Union[float, int] = 0,
     ) -> None:
         """
         Assert true if predictions are correct.
@@ -62,9 +65,12 @@ class ClassificationTestCase(unittest.TestCase):
         :param y: The second set of predictions.
         :param delta: The proportion of elements which can be outside of the interval.
         """
+        x = torch.as_tensor(x)
+        y = torch.as_tensor(y)
+
         if x.shape != y.shape:
             raise RuntimeError(f"Shape {x.shape} does not match {y.shape}")
-        number_incorrect = np.sum(x != y)
+        number_incorrect = torch.sum(x != y)
         proportion_incorrect = number_incorrect / len(x)
         if proportion_incorrect > delta:
             error_message = (

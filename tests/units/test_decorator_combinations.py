@@ -23,6 +23,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 import sklearn
+import torch
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.means import ZeroMean
@@ -92,8 +93,12 @@ class OneHotMulticlassGaussianClassificationDataset(MulticlassGaussianClassifica
         super().__init__(
             num_train_points=num_train_points, num_test_points=num_test_points, num_classes=num_classes, rng=rng
         )
-        self.train_y = sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y)
-        self.test_y = sklearn.preprocessing.LabelBinarizer().fit_transform(self.test_y)
+        self.train_y = torch.as_tensor(
+            sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y.detach().cpu().numpy())
+        )
+        self.test_y = torch.as_tensor(
+            sklearn.preprocessing.LabelBinarizer().fit_transform(self.test_y.detach().cpu().numpy())
+        )
 
 
 class RequirementDetails(TypedDict, total=False):

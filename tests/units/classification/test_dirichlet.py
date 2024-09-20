@@ -27,7 +27,7 @@ from vanguard.datasets.classification import MulticlassGaussianClassificationDat
 from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 
-from ...cases import get_default_rng_override_seed
+from ...cases import get_default_rng_override_seed, get_default_torch_rng
 from .case import BatchScaledMean, BatchScaledRBFKernel, ClassificationTestCase
 
 NUM_CLASSES = 4
@@ -134,6 +134,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         """Set up data shared across tests."""
         # test_fuzzy_predictions_uncertainty() fails with seed 1234
         self.rng = get_default_rng_override_seed(12345)
+        self.torch_rng = get_default_torch_rng()
 
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """
@@ -147,7 +148,7 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
             num_train_points=60, num_test_points=20, num_classes=4, rng=self.rng
         )
         test_x_std = 0.005
-        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
+        test_x = torch.normal(dataset.test_x, std=test_x_std, generator=self.torch_rng)
 
         controller = DirichletMulticlassClassifier(
             dataset.train_x,
@@ -181,8 +182,8 @@ class DirichletMulticlassFuzzyTests(ClassificationTestCase):
         )
 
         train_x_std = test_x_std = 0.005
-        train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
-        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
+        train_x = torch.normal(dataset.train_x, std=train_x_std, generator=self.torch_rng)
+        test_x = torch.normal(dataset.test_x, std=test_x_std, generator=self.torch_rng)
 
         @DirichletMulticlassClassification(num_classes=4, ignore_all=True)
         class UncertaintyDirichletMulticlassClassifier(GaussianUncertaintyGPController):

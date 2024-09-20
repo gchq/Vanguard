@@ -19,6 +19,7 @@ Basic end to end functionality test for warping of Gaussian processes in Vanguar
 import unittest
 
 import numpy as np
+import torch
 
 from tests.cases import get_default_rng_override_seed
 from vanguard.kernels import ScaledRBFKernel
@@ -103,8 +104,8 @@ class VanguardTestCase(unittest.TestCase):
             ).confidence_interval()
 
             # Sense check the outputs
-            self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
-            self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
+            self.assertTrue(torch.all(prediction_medians <= prediction_ci_upper))
+            self.assertTrue(torch.all(prediction_medians >= prediction_ci_lower))
 
     def test_soft_plus_warp(self) -> None:
         """
@@ -150,8 +151,8 @@ class VanguardTestCase(unittest.TestCase):
         ).confidence_interval()
 
         # Sense check the outputs
-        self.assertTrue(np.all(prediction_medians <= prediction_ci_upper))
-        self.assertTrue(np.all(prediction_medians >= prediction_ci_lower))
+        self.assertTrue(torch.all(prediction_medians <= prediction_ci_upper))
+        self.assertTrue(torch.all(prediction_medians >= prediction_ci_lower))
 
         # Also try to specify the gp with invalid `y` data that should not allow such warping,
         # and check an appropriate error is raised
@@ -162,6 +163,8 @@ class VanguardTestCase(unittest.TestCase):
             y_std=self.small_noise * np.ones_like(y[train_indices]),
             rng=self.rng,
         )
+        # TODO: check for something more specific than just `Exception`!
+        # https://github.com/gchq/Vanguard/issues/401
         with self.assertRaises(Exception):
             gp_invalid.fit(n_sgd_iters=self.n_sgd_iters)
 
@@ -222,6 +225,8 @@ class VanguardTestCase(unittest.TestCase):
             y_std=self.small_noise * np.ones_like(y[train_indices]),
             rng=self.rng,
         )
+        # TODO: check for something more specific than just `Exception`!
+        # https://github.com/gchq/Vanguard/issues/401
         with self.assertRaises(Exception):
             gp_invalid.fit(n_sgd_iters=self.n_sgd_iters)
 

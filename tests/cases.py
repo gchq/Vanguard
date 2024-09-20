@@ -19,12 +19,17 @@ Contains test cases for Vanguard testing.
 import contextlib
 import unittest
 import warnings
-from typing import Optional, Tuple, Type, Union
+from typing import Any, Optional, Tuple, Type, Union
+from unittest.mock import Mock
 
 import numpy as np
 import numpy.typing
 import pytest
+import torch.testing
 from scipy import stats
+from torch import Tensor
+
+import vanguard.utils
 
 DEFAULT_RNG_SEED = 1234
 
@@ -63,6 +68,14 @@ def get_default_rng_override_seed(seed: int) -> np.random.Generator:
     return np.random.default_rng(seed)
 
 
+def get_default_torch_rng_override_seed(seed: int):
+    return torch.Generator(device=vanguard.utils.default_device).manual_seed(seed)
+
+
+def get_default_torch_rng() -> torch.Generator:
+    return get_default_torch_rng_override_seed(DEFAULT_RNG_SEED)
+
+
 @contextlib.contextmanager
 def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
     """
@@ -95,6 +108,33 @@ def maybe_warns(category: Optional[Type[Warning]], match: Optional[str] = None) 
         with pytest.warns(category, match=match) as caught_warnings:
             yield
         return caught_warnings
+
+
+def assert_mock_called_once_with(mock: Mock, *expected_args: Any, **expected_kwargs: Any) -> None:
+    """
+    Version of `Mock.assert_called_once_with` that correctly handles `Tensor`/`ndarray` inputs.
+    """
+    mock.assert_called_once()
+
+    # assert number of arguments is the same
+    assert len(mock.call_args.args) == len(expected_args)
+    assert mock.call_args.kwargs.keys() == expected_kwargs.keys()
+
+    # assert the actual arguments are the same
+    for mock_arg, expected_arg in zip(mock.call_args.args, expected_args):
+        assert_equal_safe(mock_arg, expected_arg)
+
+    for key, expected_arg in expected_kwargs.items():
+        mock_arg = mock.call_args.kwargs[key]
+        assert_equal_safe(mock_arg, expected_arg)
+
+
+def assert_equal_safe(actual: Any, expected: Any) -> None:
+    """Version of assert_equal that correctly handles `Tensor`/`ndarray` inputs."""
+    if isinstance(actual, (Tensor, np.ndarray)) or isinstance(expected, (Tensor, np.ndarray)):
+        torch.testing.assert_close(torch.as_tensor(actual), torch.as_tensor(expected))
+    else:
+        assert actual == expected
 
 
 class VanguardTestCase(unittest.TestCase):

@@ -27,6 +27,11 @@ import torch
 
 from vanguard.warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
+if torch.cuda.is_available():
+    default_device = torch.device("cuda")
+else:
+    default_device = torch.device("cpu")
+
 
 def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.typing.NDArray:
     """
@@ -149,10 +154,13 @@ def infinite_tensor_generator(
         batch_indices = indices[index : index + batch_size]
         batch_tensors = []
         for tensor, axis in tensor_axis_pairs:
-            multi_axis_slice = [slice(None, None, None) for _ in tensor.shape]
-            multi_axis_slice[min(axis, len(tensor.shape) - 1)] = batch_indices
-            batch_tensor = tensor[tuple(multi_axis_slice)]
-            batch_tensors.append(batch_tensor.to(device))
+            if tensor.ndim == 0:
+                raise ValueError(tensor)
+            else:
+                multi_axis_slice = [slice(None, None, None) for _ in tensor.shape]
+                multi_axis_slice[min(axis, max(0, tensor.ndim - 1))] = batch_indices
+                batch_tensor = tensor[tuple(multi_axis_slice)]
+                batch_tensors.append(batch_tensor.to(device))
 
         batch_tensors = tuple(batch_tensors)
         index += batch_size

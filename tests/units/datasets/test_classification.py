@@ -16,7 +16,7 @@
 
 from unittest import TestCase
 
-import numpy as np
+import torch
 from typing_extensions import override
 
 from tests.cases import get_default_rng
@@ -70,8 +70,8 @@ class TestMulticlassGaussianClassificationDataset(TestCase):
 
     def test_num_classes(self) -> None:
         """Test that there are no more than `num_classes` classes."""
-        assert np.all(np.isin(self.dataset.train_y, np.arange(self.num_classes)))
-        assert np.all(np.isin(self.dataset.test_y, np.arange(self.num_classes)))
+        assert torch.all(torch.isin(self.dataset.train_y, torch.arange(self.num_classes)))
+        assert torch.all(torch.isin(self.dataset.test_y, torch.arange(self.num_classes)))
 
     def test_num_features(self) -> None:
         """Test that `num_features` is set correctly."""
@@ -81,9 +81,9 @@ class TestMulticlassGaussianClassificationDataset(TestCase):
         """Test that `one_hot_train_y` returns a correct one-hot encoding of the training labels."""
         assert self.dataset.one_hot_train_y.shape[:-1] == self.dataset.train_y.shape
         assert self.dataset.one_hot_train_y.shape[-1] == self.num_classes
-        assert np.all(self.dataset.one_hot_train_y.argmax(axis=-1) == self.dataset.train_y)
-        assert np.all(self.dataset.one_hot_train_y.sum(axis=-1) == np.ones_like(self.dataset.train_y))
-        assert np.all(np.isin(self.dataset.one_hot_train_y, [0, 1]))
+        assert torch.all(self.dataset.one_hot_train_y.argmax(axis=-1) == self.dataset.train_y)
+        assert torch.all(self.dataset.one_hot_train_y.sum(axis=-1) == torch.ones_like(self.dataset.train_y))
+        assert torch.all(torch.isin(self.dataset.one_hot_train_y, torch.tensor([0, 1])))
 
 
 class TestBinaryGaussianClassificationDataset(TestMulticlassGaussianClassificationDataset):
@@ -101,8 +101,8 @@ class TestBinaryGaussianClassificationDataset(TestMulticlassGaussianClassificati
 
     def test_num_classes(self) -> None:
         """Test that there are no more than `num_classes` classes."""
-        assert np.all(np.isin(self.dataset.train_y, [0, 1]))
-        assert np.all(np.isin(self.dataset.test_y, [0, 1]))
+        assert torch.all(torch.isin(self.dataset.train_y, torch.tensor([0, 1])))
+        assert torch.all(torch.isin(self.dataset.test_y, torch.tensor([0, 1])))
 
     def test_num_features(self) -> None:
         """Test that `num_features` is set correctly."""
@@ -110,4 +110,4 @@ class TestBinaryGaussianClassificationDataset(TestMulticlassGaussianClassificati
 
     def test_one_hot_train_y(self):
         """Test that `one_hot_train_y` returns a correct one-hot encoding of the training labels."""
-        assert np.all(self.dataset.one_hot_train_y == self.dataset.train_y.reshape((-1, 1)))
+        assert torch.all(self.dataset.one_hot_train_y == self.dataset.train_y.reshape((-1, 1)))

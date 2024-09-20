@@ -20,7 +20,9 @@ from typing import Any, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing
+import torch
 from gpytorch.likelihoods import BernoulliLikelihood
+from torch import Tensor
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -77,8 +79,8 @@ class BinaryClassification(Decorator):
         >>>
         >>> test_x = np.array([0.05, 0.95])
         >>> predictions, probs = gp.classify_points(test_x)
-        >>> predictions
-        array([0, 1])
+        >>> predictions.tolist()
+        [0, 1]
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -111,33 +113,33 @@ class BinaryClassification(Decorator):
                 super().__init__(likelihood_class=likelihood_class, rng=self.rng, **all_parameters_as_kwargs)
 
             def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating]]
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+                self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
+            ) -> Tuple[Tensor, Tensor]:
                 """Classify points."""
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             def classify_fuzzy_points(
                 self,
-                x: Union[float, numpy.typing.NDArray[np.floating]],
-                x_std: Union[float, numpy.typing.NDArray[np.floating]],
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+                x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+            ) -> Tuple[Tensor, Tensor]:
                 """Classify fuzzy points."""
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             @staticmethod
             def _get_predictions_from_prediction_means(
-                means: Union[float, numpy.typing.NDArray[np.floating]],
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+                means: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+            ) -> Tuple[Tensor, Tensor]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 
                 :param means: The prediction means in the range [0, 1].
                 :returns: The predicted class labels, and the certainty probabilities.
                 """
-                prediction = means.round().astype(int)
-                certainty = np.maximum(means, 1 - means)
+                prediction = torch.as_tensor(means).round().to(torch.int)
+                certainty = torch.maximum(means, 1 - means)
                 return prediction, certainty
 
             @staticmethod

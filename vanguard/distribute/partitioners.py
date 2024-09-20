@@ -28,6 +28,7 @@ import sklearn.manifold
 import torch
 from matplotlib.colors import Colormap
 from numpy.typing import NDArray
+from torch import Tensor
 
 from vanguard import utils
 
@@ -51,7 +52,7 @@ class BasePartitioner:
 
     def __init__(
         self,
-        train_x: Union[NDArray[np.floating], NDArray[np.integer]],
+        train_x: Union[Tensor, NDArray[np.floating], NDArray[np.integer]],
         n_experts: int = 3,
         communication: bool = False,
         rng: Optional[np.random.Generator] = None,
@@ -59,7 +60,7 @@ class BasePartitioner:
         """
         Initialise the BasePartitioner class.
         """
-        self.train_x = train_x
+        self.train_x = torch.as_tensor(train_x)
         self.n_experts = n_experts
         self.communication = communication
         self.rng = utils.optional_random_generator(rng)
@@ -176,7 +177,7 @@ class KMeansPartitioner(BasePartitioner):
         :return: A partition of shape (``n_clusters``, ``self.n_examples`` // ``n_clusters``).
         """
         clusterer = sklearn.cluster.KMeans(n_clusters=n_clusters, random_state=self.rng.integers(0, (2**32 - 1)))
-        labels = clusterer.fit(self.train_x).labels_
+        labels = clusterer.fit(self.train_x.detach().cpu().numpy()).labels_
         partition = self._group_indices_by_label(labels)
         return partition
 
@@ -216,7 +217,7 @@ class KMedoidsPartitioner(BasePartitioner):
 
     def __init__(
         self,
-        train_x: NDArray[np.floating],
+        train_x: Union[Tensor, NDArray[np.floating]],
         n_experts: int = 2,
         communication: bool = False,
         rng: Optional[np.random.Generator] = None,
@@ -257,11 +258,14 @@ class KMedoidsPartitioner(BasePartitioner):
         """
         Construct the distance matrix, where distance is judged by the kernel set at creation time.
 
-        :return dist_matrix: The distance matrix.
+        :return dist_matrix: The distance matrix. Note that this is returned as an `NDArray` as it is only ever used in
+            the KMedoids clusterer; this is an exception to the usual rule of only returning `Tensor`s.
 
         .. warning::
             The affinity matrix takes up O(N^2) memory so can't be used for large ``train_x``.
         """
-        affinity_matrix = self.kernel(torch.from_numpy(self.train_x)).cpu().to_dense().detach().cpu().numpy()
-        dist_matrix = np.exp(-affinity_matrix)
-        return dist_matrix
+        # code is a bit ugly here as we have to accept both Tensors and NDArrays, and then return only NDArrays
+        x = torch.as_tensor(self.train_x)
+        affinity_matrix = self.kernel(x).to_dense()  # to_dense as it may return a lazy LinearOperator
+        dist_matrix = torch.exp(-affinity_matrix)
+        return dist_matrix.detach().cpu().numpy()

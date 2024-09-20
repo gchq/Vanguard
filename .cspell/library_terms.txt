@@ -28,6 +28,7 @@ bikeshare
 bmatrix
 booktitle
 bysource
+cdist
 cmap
 codemirror
 colorbar
@@ -149,6 +150,7 @@ relazifying
 reraised
 rpds
 rsample
+rtol
 rtype
 seealso
 setdiff
