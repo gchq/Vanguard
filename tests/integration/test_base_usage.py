@@ -16,7 +16,6 @@
 Basic end to end functionality test for Vanguard.
 """
 
-import unittest
 from typing import Optional
 
 import numpy as np
@@ -46,7 +45,8 @@ class TestBaseUsage:
     expected_percent_outside_one_sided = (100.0 * (1 - confidence_interval_alpha)) / 2
 
     @pytest.mark.parametrize("batch_size", [None, 100])
-    def test_basic_gp(self, batch_size: Optional[int]) -> None:
+    @pytest.mark.parametrize("input_type", ["tensor", "ndarray"])
+    def test_basic_gp(self, batch_size: Optional[int], input_type: str) -> None:
         """
         Verify Vanguard usage on a simple, single variable regression problem.
 
@@ -67,12 +67,33 @@ class TestBaseUsage:
         train_indices = rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
         test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
+        # Set up inputs (NDArray and Tensor versions)
+        if input_type == "ndarray":
+            train_x_input = x[train_indices]
+            train_y_input = y[train_indices]
+            y_std_input = self.small_noise * np.ones_like(y[train_indices])
+            predictive_likelihood_x_input = x
+            assert isinstance(train_x_input, np.ndarray)
+            assert isinstance(train_y_input, np.ndarray)
+            assert isinstance(y_std_input, np.ndarray)
+            assert isinstance(predictive_likelihood_x_input, np.ndarray)
+        else:
+            assert input_type == "tensor"
+            train_x_input = torch.as_tensor(x[train_indices])
+            train_y_input = torch.as_tensor(y[train_indices])
+            y_std_input = torch.as_tensor(self.small_noise * np.ones_like(y[train_indices]))
+            predictive_likelihood_x_input = torch.as_tensor(x)
+            assert isinstance(train_x_input, torch.Tensor)
+            assert isinstance(train_y_input, torch.Tensor)
+            assert isinstance(y_std_input, torch.Tensor)
+            assert isinstance(predictive_likelihood_x_input, torch.Tensor)
+
         # Define the controller object, with an assumed small amount of noise
         gp = GaussianGPController(
-            train_x=x[train_indices],
-            train_y=y[train_indices],
+            train_x=train_x_input,
+            train_y=train_y_input,
             kernel_class=ScaledRBFKernel,
-            y_std=self.small_noise * np.ones_like(y[train_indices]),
+            y_std=y_std_input,
             rng=rng,
             batch_size=batch_size,
         )
@@ -81,7 +102,7 @@ class TestBaseUsage:
         gp.fit(n_sgd_iters=self.n_sgd_iters)
 
         # Get predictions from the controller object
-        posterior = gp.predictive_likelihood(x)
+        posterior = gp.predictive_likelihood(predictive_likelihood_x_input)
         prediction_means, _prediction_covariances = posterior.prediction()
         _prediction_ci_median, prediction_ci_lower, prediction_ci_upper = posterior.confidence_interval(
             alpha=self.confidence_interval_alpha
@@ -114,7 +135,3 @@ class TestBaseUsage:
             pct_below_ci_lower_test,
         ]:
             assert pct_check <= self.expected_percent_outside_one_sided + self.accepted_confidence_interval_error
-
-
-if __name__ == "__main__":
-    unittest.main()

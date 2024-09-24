@@ -16,11 +16,15 @@
 Basic end to end functionality test for hierarchical code in Vanguard.
 """
 
-import unittest
+from typing import Tuple, Union
 
 import numpy as np
+import pytest
 import torch
 from gpytorch.kernels import RBFKernel
+from numpy._typing import NDArray
+from pytest import FixtureRequest
+from torch import Tensor
 
 from tests.cases import get_default_rng
 from vanguard.hierarchical import (
@@ -28,44 +32,77 @@ from vanguard.hierarchical import (
     LaplaceHierarchicalHyperparameters,
     VariationalHierarchicalHyperparameters,
 )
+from vanguard.hierarchical.base import BaseHierarchicalHyperparameters
 from vanguard.vanilla import GaussianGPController
 
+TrainTestData = Union[Tuple[NDArray, NDArray, NDArray, NDArray], Tuple[Tensor, Tensor, Tensor, Tensor]]
 
-class VanguardTestCase(unittest.TestCase):
+
+class TestHierarchicalUsage:
     """
     A subclass of TestCase designed to check end-to-end usage of hierarchical code.
     """
 
-    def setUp(self) -> None:
-        """
-        Define data shared across tests.
-        """
-        self.rng = get_default_rng()
-        self.num_train_points = 100
-        self.num_test_points = 100
-        self.n_sgd_iters = 100
-        self.small_noise = 0.05
-        self.num_mc_samples = 50
+    num_train_points = 100
+    num_test_points = 100
+    n_sgd_iters = 100
+    small_noise = 0.05
+    num_mc_samples = 50
+
+    @pytest.fixture(scope="class", params=["ndarray", "tensor"])
+    def train_test_data(self, request: FixtureRequest) -> TrainTestData:
+        rng = get_default_rng()
 
         # Define data for the tests
-        self.x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        self.y = np.squeeze(self.x * np.sin(self.x))
+        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        y = np.squeeze(x * np.sin(x))
 
         # Split data into training and testing
-        self.train_indices = self.rng.choice(np.arange(self.y.shape[0]), size=self.num_train_points, replace=False)
-        self.test_indices = np.setdiff1d(np.arange(self.y.shape[0]), self.train_indices)
+        train_indices = rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
 
-    def test_gp_laplace_hierarchical(self) -> None:
+        x_train = x[train_indices]
+        y_train = y[train_indices]
+        x_test = x[test_indices]
+        y_test = y[test_indices]
+
+        if request.param == "ndarray":
+            assert isinstance(x_train, np.ndarray)
+            assert isinstance(x_test, np.ndarray)
+            assert isinstance(y_train, np.ndarray)
+            assert isinstance(x_test, np.ndarray)
+        else:
+            assert request.param == "tensor"
+            x_train = torch.as_tensor(x_train)
+            y_train = torch.as_tensor(y_train)
+            x_test = torch.as_tensor(x_test)
+            y_test = torch.as_tensor(y_test)
+
+        return x_train, y_train, x_test, y_test
+
+    @pytest.mark.parametrize(
+        "hierarchical_decorator",
+        [
+            pytest.param(LaplaceHierarchicalHyperparameters(num_mc_samples=num_mc_samples), id="laplace"),
+            pytest.param(VariationalHierarchicalHyperparameters(num_mc_samples=num_mc_samples), id="variational"),
+        ],
+    )
+    def test_hierarchical(
+        self, train_test_data: TrainTestData, hierarchical_decorator: BaseHierarchicalHyperparameters
+    ) -> None:
         """
-        Verify Vanguard usage on a simple, single variable regression problem when using
-        hierarchical hyperparameters with the LaplaceHierarchicalHyperparameters decorator.
+        Verify Vanguard usage on a simple, single variable regression problem when using hierarchical hyperparameters.
+
+        We test with the LaplaceHierarchicalHyperparameters and VariationalHierarchicalHyperparameters decorators
+        separately.
 
         We generate a single feature `x` and a continuous target `y`, and verify that a
         GP can be fit to this data.
         """
+        train_x, train_y, test_x, _ = train_test_data
 
         # Create a hierarchical controller and a kernel that has Bayesian hyperparameters to estimate
-        @LaplaceHierarchicalHyperparameters(num_mc_samples=self.num_mc_samples)
+        @hierarchical_decorator
         class HierarchicalController(GaussianGPController):
             pass
 
@@ -75,11 +112,11 @@ class VanguardTestCase(unittest.TestCase):
 
         # Define the controller object
         gp = HierarchicalController(
-            train_x=self.x[self.train_indices],
-            train_y=self.y[self.train_indices],
+            train_x=train_x,
+            train_y=train_y,
             kernel_class=BayesianRBFKernel,
             y_std=self.small_noise,
-            rng=self.rng,
+            rng=get_default_rng(),
         )
 
         # Fit the GP
@@ -87,54 +124,10 @@ class VanguardTestCase(unittest.TestCase):
 
         # Get predictions from the controller object
         prediction_medians, prediction_ci_lower, prediction_ci_upper = gp.posterior_over_point(
-            self.x[self.test_indices]
+            test_x
         ).confidence_interval()
 
         # Sense check the outputs. Note that we do not check confidence interval quality here,
         # just that they can be created, due to highly varying quality of the resulting intervals,
-        self.assertTrue(torch.all(prediction_medians <= prediction_ci_upper))
-        self.assertTrue(torch.all(prediction_medians >= prediction_ci_lower))
-
-    def test_gp_variational_hierarchical(self):
-        """
-        Verify Vanguard usage on a simple, single variable regression problem when using
-        hierarchical hyperparameters with the VariationalHierarchicalHyperparameters decorator.
-
-        We generate a single feature `x` and a continuous target `y`, and verify that a
-        GP can be fit to this data.
-        """
-
-        # Create a hierarchical controller and a kernel that has Bayesian hyperparameters to estimate
-        @VariationalHierarchicalHyperparameters(num_mc_samples=self.num_mc_samples)
-        class HierarchicalController(GaussianGPController):
-            pass
-
-        @BayesianHyperparameters()
-        class BayesianRBFKernel(RBFKernel):
-            pass
-
-        # Define the controller object
-        gp = HierarchicalController(
-            train_x=self.x[self.train_indices],
-            train_y=self.y[self.train_indices],
-            kernel_class=BayesianRBFKernel,
-            y_std=self.small_noise,
-            rng=self.rng,
-        )
-
-        # Fit the GP
-        gp.fit(n_sgd_iters=self.n_sgd_iters)
-
-        # Get predictions from the controller object
-        prediction_medians, prediction_ci_lower, prediction_ci_upper = gp.posterior_over_point(
-            self.x[self.test_indices]
-        ).confidence_interval()
-
-        # Sense check the outputs. Note that we do not check confidence interval quality here,
-        # just that they can be created, due to highly varying quality of the resulting intervals,
-        self.assertTrue(torch.all(prediction_medians <= prediction_ci_upper))
-        self.assertTrue(torch.all(prediction_medians >= prediction_ci_lower))
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert torch.all(prediction_medians <= prediction_ci_upper)
+        assert torch.all(prediction_medians >= prediction_ci_lower)

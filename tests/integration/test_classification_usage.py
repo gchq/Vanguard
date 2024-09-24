@@ -16,12 +16,16 @@
 Basic end to end functionality test for classification problems in Vanguard.
 """
 
-import unittest
+from typing import Literal, Tuple, Union
 
 import numpy as np
+import pytest
+import torch
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood
 from gpytorch.mlls import VariationalELBO
+from numpy.typing import NDArray
 from sklearn.metrics import f1_score
+from torch import Tensor
 
 from tests.cases import get_default_rng
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
@@ -31,44 +35,78 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
+TrainTestData = Union[Tuple[NDArray, NDArray, NDArray, NDArray], Tuple[Tensor, Tensor, Tensor, Tensor]]
 
-class VanguardTestCase(unittest.TestCase):
+
+class TestClassification:
     """
     A subclass of TestCase designed to check end-to-end usage of classification code.
     """
 
-    def setUp(self) -> None:
-        """
-        Define data shared across tests.
-        """
-        self.rng = get_default_rng()
-        self.num_train_points = 100
-        self.num_test_points = 100
-        self.n_sgd_iters = 50
-        # How high of an F1 score do we need to consider the test a success (and a fit
-        # successful?)
-        self.required_f1_score = 0.9
+    num_train_points = 100
+    num_test_points = 100
+    n_sgd_iters = 50
+    # How high of an F1 score do we need to consider the test a success (and a fit
+    # successful?)
+    required_f1_score = 0.9
 
-    def test_gp_binary_classification(self) -> None:
+    @pytest.fixture(scope="class", params=["ndarray", "tensor"])
+    def train_test_data_multiclass(self, request: pytest.FixtureRequest) -> TrainTestData:
+        return self.make_data(request.param, "multiclass")
+
+    @pytest.fixture(scope="class", params=["ndarray", "tensor"])
+    def train_test_data_binary(self, request: pytest.FixtureRequest) -> TrainTestData:
+        return self.make_data(request.param, "binary")
+
+    def make_data(
+        self, array_type: Literal["ndarray", "tensor"], classification_type: Literal["binary", "multiclass"]
+    ) -> TrainTestData:
+        rng = get_default_rng()
+
+        # Define some data for the test
+        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        y = np.zeros_like(x, dtype=np.integer)
+
+        # Set some non-trivial classification target, with either 2 or 3 classes depending on `classification_type`
+        third_class_value = 1 if classification_type == "binary" else 2
+        for index, x_val in enumerate(x):
+            if 0.25 < x_val < 0.5:
+                y[index, 0] = 1
+            if x_val > 0.8:
+                y[index, 0] = third_class_value
+
+        # Split data into training and testing
+        train_indices = rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
+        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
+
+        x_train = x[train_indices]
+        y_train = y[train_indices]
+        x_test = x[test_indices]
+        y_test = y[test_indices]
+
+        if array_type == "ndarray":
+            assert isinstance(x_train, np.ndarray)
+            assert isinstance(x_test, np.ndarray)
+            assert isinstance(y_train, np.ndarray)
+            assert isinstance(x_test, np.ndarray)
+        else:
+            assert array_type == "tensor"
+            x_train = torch.as_tensor(x_train)
+            y_train = torch.as_tensor(y_train)
+            x_test = torch.as_tensor(x_test)
+            y_test = torch.as_tensor(y_test)
+
+        return x_train, y_train, x_test, y_test
+
+    def test_gp_binary_classification(self, train_test_data_binary: TrainTestData) -> None:
         """
         Verify Vanguard usage on a simple, single variable binary classification problem.
 
         We generate a single feature `x` and a binary target `y`, and verify that a
         GP can be fit to this data.
         """
-        # Define some data for the test
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.zeros_like(x)
-        for index, x_val in enumerate(x):
-            # Set some non-trivial classification target
-            if 0.25 < x_val < 0.5:
-                y[index, 0] = 1
-            if x_val > 0.8:
-                y[index, 0] = 1
-
-        # Split data into training and testing
-        train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
+        # Unpack train/test data
+        train_x, train_y, test_x, test_y = train_test_data_binary
 
         # We have a binary classification problem, so we apply the BinaryClassification
         # decorator and will need to use VariationalInference to perform inference on
@@ -80,27 +118,27 @@ class VanguardTestCase(unittest.TestCase):
 
         # Define the controller object
         gp = BinaryClassifier(
-            train_x=x[train_indices],
-            train_y=y[train_indices],
+            train_x=train_x,
+            train_y=train_y,
             kernel_class=ScaledRBFKernel,
             y_std=0.0,
             likelihood_class=BernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
-            rng=self.rng,
+            rng=get_default_rng(),
         )
 
         # Fit the GP
         gp.fit(n_sgd_iters=self.n_sgd_iters)
 
         # Get predictions from the controller object
-        predictions_train, _ = gp.classify_points(x[train_indices])
-        predictions_test, _ = gp.classify_points(x[test_indices])
+        predictions_train, _ = gp.classify_points(train_x)
+        predictions_test, _ = gp.classify_points(test_x)
 
         # Sense check outputs
-        self.assertGreaterEqual(f1_score(predictions_train, y[train_indices]), self.required_f1_score)
-        self.assertGreaterEqual(f1_score(predictions_test, y[test_indices]), self.required_f1_score)
+        assert f1_score(predictions_train, train_y) >= self.required_f1_score
+        assert f1_score(predictions_test, test_y) >= self.required_f1_score
 
-    def test_gp_categorical_classification_exact(self) -> None:
+    def test_gp_categorical_classification_exact(self, train_test_data_multiclass: TrainTestData) -> None:
         """
         Verify Vanguard usage on a simple, single variable categorical classification problem
         using exact inference.
@@ -108,19 +146,8 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a categorical target `y`, and verify that a
         GP can be fit to this data.
         """
-        # Define some data for the test
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.zeros_like(x, dtype=np.integer)
-        for index, x_val in enumerate(x):
-            # Set some non-trivial classification target with 3 classes (0, 1 and 2)
-            if 0.25 < x_val < 0.5:
-                y[index, 0] = 1
-            if x_val > 0.8:
-                y[index, 0] = 2
-
-        # Split data into training and testing
-        train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
+        # Unpack train/test data
+        train_x, train_y, test_x, test_y = train_test_data_multiclass
 
         # We have a multi-class classification problem, so we apply the DirichletMulticlassClassification
         # decorator to perform exact inference
@@ -130,27 +157,27 @@ class VanguardTestCase(unittest.TestCase):
 
         # Define the controller object
         gp = CategoricalClassifier(
-            train_x=x[train_indices],
-            train_y=y[train_indices, 0],
+            train_x=train_x,
+            train_y=train_y[:, 0],
             kernel_class=ScaledRBFKernel,
             y_std=0.0,
             kernel_kwargs={"batch_shape": (3,)},
             likelihood_class=DirichletClassificationLikelihood,
-            rng=self.rng,
+            rng=get_default_rng(),
         )
 
         # Fit the GP
         gp.fit(n_sgd_iters=self.n_sgd_iters)
 
         # Get predictions from the controller object
-        predictions_train, _ = gp.classify_points(x[train_indices])
-        predictions_test, _ = gp.classify_points(x[test_indices])
+        predictions_train, _ = gp.classify_points(train_x)
+        predictions_test, _ = gp.classify_points(test_x)
 
         # Sense check outputs
-        self.assertGreaterEqual(f1_score(predictions_train, y[train_indices], average="micro"), self.required_f1_score)
-        self.assertGreaterEqual(f1_score(predictions_test, y[test_indices], average="micro"), self.required_f1_score)
+        assert f1_score(predictions_train, train_y, average="micro") >= self.required_f1_score
+        assert f1_score(predictions_test, test_y, average="micro") >= self.required_f1_score
 
-    def test_gp_categorical_classification_dirichlet_kernel(self) -> None:
+    def test_gp_categorical_classification_dirichlet_kernel(self, train_test_data_multiclass: TrainTestData) -> None:
         """
         Verify Vanguard usage on a simple, single variable categorical classification problem
         using DirichletKernelMulticlassClassification.
@@ -158,19 +185,8 @@ class VanguardTestCase(unittest.TestCase):
         We generate a single feature `x` and a categorical target `y`, and verify that a
         GP can be fit to this data.
         """
-        # Define some data for the test
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.zeros_like(x)
-        for index, x_val in enumerate(x):
-            # Set some non-trivial classification target with 3 classes (0, 1 and 2)
-            if 0.25 < x_val < 0.5:
-                y[index, 0] = 1
-            if x_val > 0.8:
-                y[index, 0] = 2
-
-        # Split data into training and testing
-        train_indices = self.rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
+        # Unpack train/test data
+        train_x, train_y, test_x, test_y = train_test_data_multiclass
 
         # We have a multi-class classification problem, so we apply the DirichletKernelMulticlassClassification
         # decorator
@@ -180,26 +196,22 @@ class VanguardTestCase(unittest.TestCase):
 
         # Define the controller object
         gp = CategoricalClassifier(
-            train_x=x[train_indices],
-            train_y=y[train_indices, 0],
+            train_x=train_x,
+            train_y=train_y[:, 0],
             kernel_class=ScaledRBFKernel,
             y_std=0.0,
             likelihood_class=DirichletKernelClassifierLikelihood,
             marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
-            rng=self.rng,
+            rng=get_default_rng(),
         )
 
         # Fit the GP
         gp.fit(n_sgd_iters=self.n_sgd_iters)
 
         # Get predictions from the controller object
-        predictions_train, _ = gp.classify_points(x[train_indices])
-        predictions_test, _ = gp.classify_points(x[test_indices])
+        predictions_train, _ = gp.classify_points(train_x)
+        predictions_test, _ = gp.classify_points(test_x)
 
         # Sense check outputs
-        self.assertGreaterEqual(f1_score(predictions_train, y[train_indices], average="micro"), self.required_f1_score)
-        self.assertGreaterEqual(f1_score(predictions_test, y[test_indices], average="micro"), self.required_f1_score)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert f1_score(predictions_train, train_y, average="micro") >= self.required_f1_score
+        assert f1_score(predictions_test, test_y, average="micro") >= self.required_f1_score
