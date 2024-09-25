@@ -39,6 +39,8 @@ jobs:
         pip freeze --exclude-editable | xargs pip uninstall -y
     - name: Install latest test dependencies
       run: pip install -e .[test] --upgrade
+    - name: Debug - pip freeze
+      run: pip freeze
     - name: Run tests incompatible with type checking
       run: >
         pytest
