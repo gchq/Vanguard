@@ -134,7 +134,6 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self._full_train_x = torch.as_tensor(all_parameters_as_kwargs.pop("train_x"))
                 self._full_train_y = torch.as_tensor(all_parameters_as_kwargs.pop("train_y"))
                 full_y_std = torch.as_tensor(all_parameters_as_kwargs.pop("y_std"))
-                print(full_y_std)
                 try:
                     self._full_y_std = full_y_std.item()
                 except RuntimeError:

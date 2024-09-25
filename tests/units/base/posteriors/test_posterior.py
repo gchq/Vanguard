@@ -83,8 +83,6 @@ class BasicTests(unittest.TestCase):
         torch.testing.assert_close(ci_median[:, 0], mean1.squeeze(), atol=1e-4, rtol=1e-3)
         torch.testing.assert_close(ci_upper[:, 0], mean1.squeeze() + CONF_FAC * std1, atol=1e-4, rtol=1e-3)
         # assert results are as expected for task 2
-        print(ci_lower[:, 1] - (mean2.squeeze() - CONF_FAC * std2))
-        print(ci_lower[:, 1] / (mean2.squeeze() - CONF_FAC * std2))
         torch.testing.assert_close(ci_lower[:, 1], mean2.squeeze() - CONF_FAC * std2, atol=1e-4, rtol=1e-3)
         torch.testing.assert_close(ci_median[:, 1], mean2.squeeze(), atol=1e-4, rtol=1e-3)
         torch.testing.assert_close(ci_upper[:, 1], mean2.squeeze() + CONF_FAC * std2, atol=1e-4, rtol=1e-3)
