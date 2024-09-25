@@ -44,7 +44,7 @@ class TestSmartOptimiser(unittest.TestCase):
         """Test that the `SmartOptimiser` doesn't stop early if patience is unset."""
         smart_optimiser = SmartOptimiser(torch.optim.Adam, Linear(2, 2), early_stop_patience=None)
         with patch.object(smart_optimiser, "_step", return_value=1.0):
-            # assertion: we don't hit any NoImprovementError
+            # Assertion: we don't hit any NoImprovementError
             for _ in range(100):
                 smart_optimiser.step(1.0)
 
@@ -79,13 +79,13 @@ class TestSmartOptimiser(unittest.TestCase):
         module2 = torch.nn.Linear(2, 3)
         smart_optimiser = SmartOptimiser(torch.optim.Adam, module1)
 
-        # optimiser knows about module1 but not module2
+        # Optimiser knows about module1 but not module2
         assert module1 in smart_optimiser._stored_initial_state_dicts  # pylint: disable=protected-access
         assert module2 not in smart_optimiser._stored_initial_state_dicts  # pylint: disable=protected-access
 
         smart_optimiser.register_module(module2)
 
-        # optimiser knows about both module1 and module2
+        # Optimiser knows about both module1 and module2
         assert module1 in smart_optimiser._stored_initial_state_dicts  # pylint: disable=protected-access
         assert module2 in smart_optimiser._stored_initial_state_dicts  # pylint: disable=protected-access
 

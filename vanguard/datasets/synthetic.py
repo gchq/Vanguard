@@ -250,7 +250,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
             rng=rng,
         )
 
-        # slightly hacky conversion of numpy generator to torch generator
+        # Slightly hacky conversion of numpy generator to torch generator
         torch_rng = torch.Generator(device=self.train_x.device).manual_seed(self.rng.integers(2**32).item())
         self.train_y_std = torch.normal(self.train_y_std, output_noise_std, generator=torch_rng).clamp(min=0)
         self.test_y_std = torch.normal(self.test_y_std, output_noise_std, generator=torch_rng).clamp(min=0)
@@ -319,7 +319,7 @@ class HigherRankSyntheticDataset(Dataset):
         :param interval_length: Use to scale the exact image of the function, defaults to 1.
         :return: The output and the mean and standard deviation of the input, in the form ``(x_mean, x_std), y``.
         """
-        # pylint is getting a false positive from `reshape` twice here
+        # Pylint is getting a false positive from `reshape` twice here
         x_mean = np.linspace(0, interval_length, n_points)
         x_mean = self.rng.standard_normal((n_points, 2, 2)) + x_mean.reshape((-1, 1, 1))
 

@@ -235,7 +235,7 @@ class NLLTests(unittest.TestCase):
         white_kernel = WhiteKernel(noise_level=1e-2, noise_level_bounds=(1e-10, 1e1))
         kernel = rbf_kernel + white_kernel
 
-        # convert all dataset tensors to numpy for sklearn
+        # Convert all dataset tensors to numpy for sklearn
         self.train_x_numpy = self.dataset.train_x.detach().cpu().numpy()
         self.train_y_numpy = self.dataset.train_y.detach().cpu().numpy()
         self.test_x_numpy = self.dataset.test_x.detach().cpu().numpy()
@@ -348,13 +348,13 @@ class NLLTests(unittest.TestCase):
         :param y: The observed values.
         :returns: The mean negative log-likelihood of the predictive distribution.
         """
-        # convert to tensors
+        # Convert to tensors
         mean = torch.as_tensor(mean)
         variance = torch.as_tensor(variance)
         noise_variance = torch.as_tensor(noise_variance)
         y = torch.as_tensor(y)
 
-        # compute
+        # ...and compute
         sigma = variance + noise_variance
         rss = (y - mean) ** 2
         const = 0.5 * torch.log(2 * np.pi * sigma)
@@ -372,9 +372,9 @@ class NLLTests(unittest.TestCase):
         :param y: The observed values.
         :returns: The mean squared error of the predictive distribution.
         """
-        # convert to tensors
+        # Convert to tensors
         mu_pred = torch.as_tensor(mu_pred)
         y = torch.as_tensor(y)
 
-        # compute
+        # ...and compute
         return ((mu_pred - y) ** 2).mean().item()

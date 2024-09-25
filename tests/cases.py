@@ -116,11 +116,11 @@ def assert_mock_called_once_with(mock: Mock, *expected_args: Any, **expected_kwa
     """
     mock.assert_called_once()
 
-    # assert number of arguments is the same
+    # Assert number of arguments is the same
     assert len(mock.call_args.args) == len(expected_args)
     assert mock.call_args.kwargs.keys() == expected_kwargs.keys()
 
-    # assert the actual arguments are the same
+    # Assert the actual arguments are the same
     for mock_arg, expected_arg in zip(mock.call_args.args, expected_args):
         assert_equal_safe(mock_arg, expected_arg)
 

@@ -150,7 +150,7 @@ class WarpFunction(gpytorch.Module):
         :Example:
             >>> warp_1, warp_2 = WarpFunction(), WarpFunction()
             >>>
-            >>> # this will be the equivalent of warp_1(warp_2(...))
+            >>> # This will be the equivalent of warp_1(warp_2(...))
             >>> composed_warp = warp_1 @ warp_2
         """
         new_warp = WarpFunction()
@@ -308,7 +308,7 @@ class MultitaskWarpFunction(WarpFunction):
         :Example:
             >>> warp_1, warp_2 = MultitaskWarpFunction(), MultitaskWarpFunction()
             >>>
-            >>> # this will be the equivalent of warp_1(warp_2(...)) task-wise.
+            >>> # This will be the equivalent of warp_1(warp_2(...)) task-wise.
             >>> composed_warp = warp_1 @ warp_2
         """
         try:

@@ -67,13 +67,13 @@ class BasicTests(unittest.TestCase):
         with patch.object(lr_finder, "_run_learning_rate", side_effect=random_record_output) as mock_learning_rate:
             lr_finder.find(num_divisions=num_divisions, start_lr=min_lr, end_lr=max_lr)
 
-        # check we tried the given number of learning rates
+        # Check we tried the given number of learning rates
         assert mock_learning_rate.call_count == 25
 
-        # check that the best learning rate is in between the min and max
+        # Check that the best learning rate is in between the min and max
         assert min_lr <= lr_finder.best_learning_rate <= max_lr
 
-        # check that our best learning rate is in fact the smallest one we found
+        # Check that our best learning rate is in fact the smallest one we found
         assert lr_finder.best_learning_rate in learning_rate_losses
         assert learning_rate_losses[lr_finder.best_learning_rate] == min(learning_rate_losses.values())
 
