@@ -24,7 +24,7 @@ import torch
 from numpy.typing import NDArray
 from torch import Tensor
 
-from tests.cases import get_default_rng, get_default_rng_override_seed
+from tests.cases import get_default_rng
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.warps import SetWarp, WarpFunction
@@ -52,9 +52,7 @@ class TestWarpsUsage:
     small_noise = 0.1
 
     def make_data(self, array_type: Literal["ndarray", "tensor"], warp: Optional[WarpFunction]) -> TrainTestData:
-        # fails on previous seed values of 1_234, 1_989 - TODO: This is a BUG, see linked issue
-        # https://github.com/gchq/Vanguard/issues/273
-        rng = get_default_rng_override_seed(1_000_000_000)
+        rng = get_default_rng()
         # Define some data.
         if isinstance(warp, SoftPlusWarpFunction):
             # For numerical reasons, we must avoid certain values of `y`. This is due to SoftPlusWarpFunction,
