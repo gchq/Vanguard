@@ -27,6 +27,7 @@ from pytest import FixtureRequest
 from torch import Tensor
 
 from tests.cases import get_default_rng
+from tests.integration.util import train_test_split_convert
 from vanguard.hierarchical import (
     BayesianHyperparameters,
     LaplaceHierarchicalHyperparameters,
@@ -57,26 +58,9 @@ class TestHierarchicalUsage:
         x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
         y = np.squeeze(x * np.sin(x))
 
-        # Split data into training and testing
-        train_indices = rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
-
-        x_train = x[train_indices]
-        y_train = y[train_indices]
-        x_test = x[test_indices]
-        y_test = y[test_indices]
-
-        if request.param == "ndarray":
-            assert isinstance(x_train, np.ndarray)
-            assert isinstance(x_test, np.ndarray)
-            assert isinstance(y_train, np.ndarray)
-            assert isinstance(x_test, np.ndarray)
-        else:
-            assert request.param == "tensor"
-            x_train = torch.as_tensor(x_train)
-            y_train = torch.as_tensor(y_train)
-            x_test = torch.as_tensor(x_test)
-            y_test = torch.as_tensor(y_test)
+        x_train, x_test, y_train, y_test = train_test_split_convert(
+            x, y, n_test_points=self.num_test_points, array_type=request.param, rng=rng
+        )
 
         return x_train, y_train, x_test, y_test
 

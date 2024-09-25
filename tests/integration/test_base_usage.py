@@ -16,13 +16,14 @@
 Basic end to end functionality test for Vanguard.
 """
 
-from typing import Optional
+from typing import Literal, Optional
 
 import numpy as np
 import pytest
 import torch
 
 from tests.cases import get_default_rng
+from tests.integration.util import convert_array_type, train_test_split_convert
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 
@@ -45,8 +46,8 @@ class TestBaseUsage:
     expected_percent_outside_one_sided = (100.0 * (1 - confidence_interval_alpha)) / 2
 
     @pytest.mark.parametrize("batch_size", [None, 100])
-    @pytest.mark.parametrize("input_type", ["tensor", "ndarray"])
-    def test_basic_gp(self, batch_size: Optional[int], input_type: str) -> None:
+    @pytest.mark.parametrize("array_type", ["tensor", "ndarray"])
+    def test_basic_gp(self, batch_size: Optional[int], array_type: Literal["tensor", "ndarray"]) -> None:
         """
         Verify Vanguard usage on a simple, single variable regression problem.
 
@@ -64,36 +65,17 @@ class TestBaseUsage:
         y = np.squeeze(x * np.sin(x))
 
         # Split data into training and testing
-        train_indices = rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
-
-        # Set up inputs (NDArray and Tensor versions)
-        if input_type == "ndarray":
-            train_x_input = x[train_indices]
-            train_y_input = y[train_indices]
-            y_std_input = self.small_noise * np.ones_like(y[train_indices])
-            predictive_likelihood_x_input = x
-            assert isinstance(train_x_input, np.ndarray)
-            assert isinstance(train_y_input, np.ndarray)
-            assert isinstance(y_std_input, np.ndarray)
-            assert isinstance(predictive_likelihood_x_input, np.ndarray)
-        else:
-            assert input_type == "tensor"
-            train_x_input = torch.as_tensor(x[train_indices])
-            train_y_input = torch.as_tensor(y[train_indices])
-            y_std_input = torch.as_tensor(self.small_noise * np.ones_like(y[train_indices]))
-            predictive_likelihood_x_input = torch.as_tensor(x)
-            assert isinstance(train_x_input, torch.Tensor)
-            assert isinstance(train_y_input, torch.Tensor)
-            assert isinstance(y_std_input, torch.Tensor)
-            assert isinstance(predictive_likelihood_x_input, torch.Tensor)
+        x_train, x_test, y_train, y_test = train_test_split_convert(
+            x, y, n_test_points=self.num_test_points, array_type=array_type, rng=rng
+        )
+        y_train_std = convert_array_type(self.small_noise * np.ones_like(y_train), array_type)
 
         # Define the controller object, with an assumed small amount of noise
         gp = GaussianGPController(
-            train_x=train_x_input,
-            train_y=train_y_input,
+            train_x=x_train,
+            train_y=y_train,
             kernel_class=ScaledRBFKernel,
-            y_std=y_std_input,
+            y_std=y_train_std,
             rng=rng,
             batch_size=batch_size,
         )
@@ -102,32 +84,32 @@ class TestBaseUsage:
         gp.fit(n_sgd_iters=self.n_sgd_iters)
 
         # Get predictions from the controller object
-        posterior = gp.predictive_likelihood(predictive_likelihood_x_input)
-        prediction_means, _prediction_covariances = posterior.prediction()
-        _prediction_ci_median, prediction_ci_lower, prediction_ci_upper = posterior.confidence_interval(
+        posterior_train = gp.predictive_likelihood(x_train)
+        prediction_means_train, _ = posterior_train.prediction()
+        _, prediction_ci_lower_train, prediction_ci_upper_train = posterior_train.confidence_interval(
+            alpha=self.confidence_interval_alpha
+        )
+        posterior_test = gp.predictive_likelihood(x_test)
+        prediction_means_test, _ = posterior_test.prediction()
+        _, prediction_ci_lower_test, prediction_ci_upper_test = posterior_test.confidence_interval(
             alpha=self.confidence_interval_alpha
         )
 
         # Sense check the outputs
-        assert torch.all(prediction_means <= prediction_ci_upper)
-        assert torch.all(prediction_means >= prediction_ci_lower)
+        assert torch.all(prediction_means_train <= prediction_ci_upper_train)
+        assert torch.all(prediction_means_train >= prediction_ci_lower_train)
+        assert torch.all(prediction_means_test <= prediction_ci_upper_test)
+        assert torch.all(prediction_means_test >= prediction_ci_lower_test)
 
-        x = torch.as_tensor(x)
-        y = torch.as_tensor(y)
+        # Convert inputs to tensor to avoid device confusion issues on comparison here
+        y_train = torch.as_tensor(y_train)
+        y_test = torch.as_tensor(y_test)
 
         # Are the prediction intervals reasonable?
-        pct_above_ci_upper_train = (
-            100.0 * torch.sum(y[train_indices] >= prediction_ci_upper[train_indices]) / x[train_indices].shape[0]
-        )
-        pct_above_ci_upper_test = (
-            100.0 * torch.sum(y[test_indices] >= prediction_ci_upper[test_indices]) / x[test_indices].shape[0]
-        )
-        pct_below_ci_lower_train = (
-            100.0 * torch.sum(y[train_indices] <= prediction_ci_lower[train_indices]) / x[train_indices].shape[0]
-        )
-        pct_below_ci_lower_test = (
-            100.0 * torch.sum(y[test_indices] <= prediction_ci_lower[test_indices]) / x[test_indices].shape[0]
-        )
+        pct_above_ci_upper_train = 100.0 * torch.sum(y_train >= prediction_ci_upper_train) / self.num_train_points
+        pct_above_ci_upper_test = 100.0 * torch.sum(y_test >= prediction_ci_upper_test) / self.num_test_points
+        pct_below_ci_lower_train = 100.0 * torch.sum(y_train <= prediction_ci_lower_train) / self.num_train_points
+        pct_below_ci_lower_test = 100.0 * torch.sum(y_test <= prediction_ci_lower_test) / self.num_test_points
         for pct_check in [
             pct_above_ci_upper_train,
             pct_above_ci_upper_test,

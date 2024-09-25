@@ -25,6 +25,7 @@ from numpy.typing import NDArray
 from torch import Tensor
 
 from tests.cases import get_default_rng
+from tests.integration.util import convert_array_type, train_test_split_convert
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.warps import SetWarp, WarpFunction
@@ -72,29 +73,10 @@ class TestWarpsUsage:
             x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
             y = np.squeeze(x * np.sin(x)) + rng.normal(scale=self.small_noise, size=x.shape[0])
 
-        # Split data into training and testing
-        train_indices = rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
-
-        x_train = x[train_indices]
-        y_train = y[train_indices]
-        y_train_std = np.ones_like(y_train) * self.small_noise
-        x_test = x[test_indices]
-        y_test = y[test_indices]
-
-        if array_type == "ndarray":
-            assert isinstance(x_train, np.ndarray)
-            assert isinstance(x_test, np.ndarray)
-            assert isinstance(y_train, np.ndarray)
-            assert isinstance(y_train_std, np.ndarray)
-            assert isinstance(y_test, np.ndarray)
-        else:
-            assert array_type == "tensor"
-            x_train = torch.as_tensor(x_train)
-            y_train = torch.as_tensor(y_train)
-            y_train_std = torch.as_tensor(y_train_std)
-            x_test = torch.as_tensor(x_test)
-            y_test = torch.as_tensor(y_test)
+        x_train, x_test, y_train, y_test = train_test_split_convert(
+            x, y, n_test_points=self.num_test_points, array_type=array_type, rng=rng
+        )
+        y_train_std = convert_array_type(np.ones_like(y_train) * self.small_noise, array_type)
 
         return x_train, y_train, y_train_std, x_test, y_test
 

@@ -20,7 +20,6 @@ from typing import Literal, Tuple, Union
 
 import numpy as np
 import pytest
-import torch
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood
 from gpytorch.mlls import VariationalELBO
 from numpy.typing import NDArray
@@ -28,6 +27,7 @@ from sklearn.metrics import f1_score
 from torch import Tensor
 
 from tests.cases import get_default_rng
+from tests.integration.util import train_test_split_convert
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
@@ -75,26 +75,9 @@ class TestClassification:
             if x_val > 0.8:
                 y[index, 0] = third_class_value
 
-        # Split data into training and testing
-        train_indices = rng.choice(np.arange(y.shape[0]), size=self.num_train_points, replace=False)
-        test_indices = np.setdiff1d(np.arange(y.shape[0]), train_indices)
-
-        x_train = x[train_indices]
-        y_train = y[train_indices]
-        x_test = x[test_indices]
-        y_test = y[test_indices]
-
-        if array_type == "ndarray":
-            assert isinstance(x_train, np.ndarray)
-            assert isinstance(x_test, np.ndarray)
-            assert isinstance(y_train, np.ndarray)
-            assert isinstance(x_test, np.ndarray)
-        else:
-            assert array_type == "tensor"
-            x_train = torch.as_tensor(x_train)
-            y_train = torch.as_tensor(y_train)
-            x_test = torch.as_tensor(x_test)
-            y_test = torch.as_tensor(y_test)
+        x_train, x_test, y_train, y_test = train_test_split_convert(
+            x, y, n_test_points=self.num_test_points, array_type=array_type, rng=rng
+        )
 
         return x_train, y_train, x_test, y_test
 
