@@ -24,6 +24,9 @@ jobs:
         # cache-dependency-path: requirements.txt
     - name: Upgrade pip
       run: python -m pip install --upgrade pip
+    - name: Clean installation
+      run: |
+        pip freeze --exclude-editable | xargs pip uninstall -y
     - name: Install test dependencies
       run: pip install -r requirements.txt --no-deps --upgrade
     - name: Run tests
