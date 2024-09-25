@@ -53,6 +53,17 @@ class TestWarpsUsage:
     small_noise = 0.1
 
     def make_data(self, array_type: Literal["ndarray", "tensor"], warp: Optional[WarpFunction]) -> TrainTestData:
+        """
+        Generate data for testing.
+
+        For SoftPlus and Logit warp functions, there are some numerical restrictions on the y-value in place, so we
+        provide different data.
+
+        :param array_type: One of "ndarray" or "tensor", depending on the desired output type.
+        :param warp: An instance of WarpFunction that the data is to be generated for use with; if a SoftPlus or
+            Logit warp is provided, a different set of y-values is provided to avoid numerical issues.
+        :return: Tuple (x_train, y_train, y_train_std, x_test, y_test)
+        """
         rng = get_default_rng()
         # Define some data.
         if isinstance(warp, SoftPlusWarpFunction):
@@ -101,7 +112,7 @@ class TestWarpsUsage:
         PositiveAffineWarpFunction, BoxCoxWarpFunction, ArcSinhWarpFunction SinhWarpFunction, and SoftPlusWarpFunction.
 
         Note that SoftPlusWarpFunction is tested on a different dataset to the rest, due to numerical requirements -
-        see the docstring of `make_data`.
+        see comments in `make_data`.
 
         We generate a single feature `x` and a continuous target `y`, and verify that a
         warped GP can be fit to this data.

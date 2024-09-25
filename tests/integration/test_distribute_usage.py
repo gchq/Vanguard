@@ -70,6 +70,7 @@ class TestDistributeUsage:
 
     @pytest.fixture(scope="class", params=["ndarray", "tensor"])
     def binary_classification_data(self, request: FixtureRequest) -> TrainTestData:
+        """Generate binary classification data for testing."""
         rng = get_default_rng()
 
         # Define some data for the test

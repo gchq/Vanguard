@@ -52,15 +52,24 @@ class TestClassification:
 
     @pytest.fixture(scope="class", params=["ndarray", "tensor"])
     def train_test_data_multiclass(self, request: pytest.FixtureRequest) -> TrainTestData:
+        """Create multiclass train/test data."""
         return self.make_data(request.param, "multiclass")
 
     @pytest.fixture(scope="class", params=["ndarray", "tensor"])
     def train_test_data_binary(self, request: pytest.FixtureRequest) -> TrainTestData:
+        """Create binary train/test data."""
         return self.make_data(request.param, "binary")
 
     def make_data(
         self, array_type: Literal["ndarray", "tensor"], classification_type: Literal["binary", "multiclass"]
     ) -> TrainTestData:
+        """
+        Create classification data for testing.
+
+        :param array_type: either "ndarray" or "tensor", depending on the desired output type
+        :param classification_type: either "binary" or "multiclass", depending on the desired number of output classes
+        :return: Tuple (x_train, y_train, x_test, y_test)
+        """
         rng = get_default_rng()
 
         # Define some data for the test

@@ -52,6 +52,7 @@ class TestHierarchicalUsage:
 
     @pytest.fixture(scope="class", params=["ndarray", "tensor"])
     def train_test_data(self, request: FixtureRequest) -> TrainTestData:
+        """Generate a single-feature, continuous target problem for testing."""
         rng = get_default_rng()
 
         # Define data for the tests
@@ -80,8 +81,7 @@ class TestHierarchicalUsage:
         We test with the LaplaceHierarchicalHyperparameters and VariationalHierarchicalHyperparameters decorators
         separately.
 
-        We generate a single feature `x` and a continuous target `y`, and verify that a
-        GP can be fit to this data.
+        We generate a single feature `x` and a continuous target `y`, and verify that a GP can be fit to this data.
         """
         train_x, train_y, test_x, _ = train_test_data
 
