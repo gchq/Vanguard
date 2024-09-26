@@ -27,7 +27,7 @@ import torch
 
 from vanguard.warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
-if torch.cuda.is_available():
+if torch.cuda.is_available():  # pragma: no cover
     default_device = torch.device("cuda")
 else:
     default_device = torch.device("cpu")

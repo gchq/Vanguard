@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 import torch
 from gpytorch.kernels import RBFKernel
-from numpy._typing import NDArray
+from numpy.typing import NDArray
 from pytest import FixtureRequest
 from torch import Tensor
 

@@ -121,10 +121,12 @@ class BaseGPController:
         else:
             self.train_x = torch.tensor(train_x, dtype=self.dtype, device=self.device)
 
+        # We don't set the dtype for targets, since for continuous problems they will be floats, but for classification
+        # problems they will be integers
         if train_y.ndim == 1:
-            self.train_y = torch.tensor(train_y, dtype=self.dtype, device=self.device).unsqueeze(1)
+            self.train_y = torch.tensor(train_y, device=self.device).unsqueeze(1)
         else:
-            self.train_y = torch.tensor(train_y, dtype=self.dtype, device=self.device)
+            self.train_y = torch.tensor(train_y, device=self.device)
 
         # pylint: disable-next=invalid-name
         self.N, self.dim, *_ = self.train_x.shape
