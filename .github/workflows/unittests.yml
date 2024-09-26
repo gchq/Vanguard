@@ -34,8 +34,13 @@ jobs:
         # cache-dependency-path: requirements.txt
     - name: Upgrade pip
       run: python -m pip install --upgrade pip
+    - name: Clean installation
+      run: |
+        pip freeze --exclude-editable | xargs pip uninstall -y
     - name: Install latest test dependencies
-      run: pip install -e .[test] --upgrade --upgrade-strategy eager
+      run: pip install -e .[test] --upgrade
+    - name: Debug - pip freeze
+      run: pip freeze
     - name: Run tests incompatible with type checking
       run: >
         pytest
