@@ -23,6 +23,7 @@ import torch
 import gpytorch
 
 from vanguard.base.posteriors.posterior import Posterior
+from vanguard.classification.models import DummyKernelDistribution
 
 
 class MonteCarloPosteriorCollection(Posterior):
@@ -51,8 +52,11 @@ class MonteCarloPosteriorCollection(Posterior):
         self._posteriors_skipped = 0
         distribution = self._create_updated_distribution(self.INITIAL_NUMBER_OF_SAMPLES)
         super().__init__(distribution)
-        # _tensor_sample() isn't a method for dummy distributions
-        if isinstance(distribution, gpytorch.distributions.Distribution):
+        # _tensor_sample() isn't a method for DummyKernelDistribution
+        if isinstance(distribution, DummyKernelDistribution):
+            # Don't cache the samples
+            pass
+        else:
             self._cached_samples = self._tensor_sample()
 
     @property
