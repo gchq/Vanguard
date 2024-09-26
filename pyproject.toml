@@ -56,6 +56,7 @@ doc = [
     "pillow",
     "pybtex",
     "ipython",
+    "ipykernel",
     "setuptools; python_version>='3.12'",  # TODO: Remove once pybtex releases > 0.24.0
     # https://github.com/gchq/Vanguard/issues/246
     "sphinx>=8",
