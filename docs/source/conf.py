@@ -119,8 +119,6 @@ plot_rcparams = {
     "legend.framealpha": 0,  # transparent
 }
 
-autodoc_mock_imports = ["pandas", "sklearn_extra"]
-
 intersphinx_mapping = {
     "gpytorch": ("https://docs.gpytorch.ai/en/stable", None),
     "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable", None),

@@ -12,25 +12,82 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Contains tests for the decorators.
-"""
+"""Contains tests for the decorators."""
 
-import inspect
-import unittest
-from typing import Any, Type, TypeVar, Union
+import contextlib
+from typing import Any, List, Type, TypeVar, Union
 
-from tests.cases import VanguardTestCase
+import pytest
+
+from tests.cases import assert_not_warns
 from vanguard.base import GPController
-from vanguard.decoratorutils import Decorator, errors, process_args, wraps_class
+from vanguard.decoratorutils import Decorator, TopMostDecorator, errors, wraps_class
+from vanguard.decoratorutils.errors import TopmostDecoratorError
+from vanguard.vanilla import GaussianGPController
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
+T = TypeVar("T")
 
 
-class DummyDecorator1(Decorator):
-    """
-    A dummy decorator used for testing.
-    """
+class SimpleNumber:
+    """An example class for a real number."""
+
+    __decorators__ = []
+
+    def __init__(self, number: Union[int, float]) -> None:
+        self.number = number
+
+    def add_5(self) -> Union[int, float]:
+        """Add 5 to a number."""
+        return self.number + 5
+
+    def function_with_no_annotations_or_docstring(self, t):
+        # This function deliberately has no docstring, to check that one is not somehow added by the decorator.
+        return [t, t]
+
+
+class SquareResult(Decorator):
+    """Square the result of a SimpleNumber class."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
+
+    def _decorate_class(self, cls: Type[SimpleNumber]) -> Type[SimpleNumber]:
+        @wraps_class(cls)
+        class InnerClass(cls):
+            """A wrapper for normalising y inputs and variance."""
+
+            # Note: we intentionally don't annotate this function here; this is to test that the annotations from the
+            # base `SimpleNumber` class are copied over correctly.
+            def add_5(self):
+                """Square the result of this method."""
+                result = super().add_5()
+                return result**2
+
+            def do_nothing(self) -> None:
+                """Do nothing. Note that this method is not on the base class."""
+
+            def function_with_no_annotations_or_docstring(self, t: T) -> List[T]:
+                """
+                Return three of whatever was passed in.
+
+                The function actually has annotations and a docstring here! However, they'll be overwritten by
+                :func:`wraps_class`.
+                """
+                return [t, t, t]
+
+        return InnerClass
+
+
+class RequiresSquareResult(Decorator):
+    """A decorator with a requirement."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(framework_class=SimpleNumber, required_decorators={SquareResult}, **kwargs)
+
+
+class DummyDecorator(Decorator):
+    """A dummy `Decorator` used for testing."""
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
@@ -43,10 +100,8 @@ class DummyDecorator1(Decorator):
         return super()._decorate_class(InnerClass)
 
 
-class DummyDecorator2(Decorator):
-    """
-    A dummy decorator used for testing.
-    """
+class OtherDummyDecorator(Decorator):
+    """A dummy `Decorator` used for testing. Identical to `DummyDecorator` in all but name."""
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
@@ -59,10 +114,8 @@ class DummyDecorator2(Decorator):
         return super()._decorate_class(InnerClass)
 
 
-class DummySubclass(DummyDecorator1):
-    """
-    A subclass of a decorator.
-    """
+class DummySubclassDecorator(DummyDecorator):
+    """A cooperative subclass of `DummyDecorator`, used for testing."""
 
     def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
         super_decorated = super()._decorate_class(cls)
@@ -74,448 +127,272 @@ class DummySubclass(DummyDecorator1):
         return super()._decorate_class(InnerClass)
 
 
-class TrackingTests(unittest.TestCase):
-    """
-    Testing the __decorators__ attribute.
-    """
+class DummyTopmostDecorator(TopMostDecorator):
+    """A dummy `TopmostDecorator` used for testing."""
 
-    def setUp(self) -> None:
-        """Code to run before each test."""
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-        @DummyDecorator1()
-        class DecoratedOnceGPController(GPController):
-            """A dummy decorated class."""
+    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+        @wraps_class(cls)
+        class InnerClass(cls):
+            """A subclass which adds no functionality."""
 
-        @DummyDecorator2()
-        @DummyDecorator1()
-        class DecoratedTwiceGPController(GPController):
-            """A dummy decorated class."""
+        return super()._decorate_class(InnerClass)
 
-        @DummySubclass()
-        class DecoratedWithSubclassController(GPController):
-            """A dummy class decorated with a controller."""
 
-        self.decorated_once_controller_class = DecoratedOnceGPController
-        self.decorated_twice_controller_class = DecoratedTwiceGPController
-        self.decorated_with_subclass_controller = DecoratedWithSubclassController
+class TestDecoratorList:
+    """Testing the __decorators__ attribute."""
 
     def test_initial_value(self) -> None:
-        """List should be empty."""
-        self.assertListEqual([], GPController.__decorators__)
+        """On an undecorated controller, `__decorators__` should be empty."""
+        assert not GPController.__decorators__
 
     def test_once_decorated_value(self) -> None:
-        """List should contain the decorator."""
-        self.assertListEqual([DummyDecorator1], self.decorated_once_controller_class.__decorators__)
+        """On a decorated controller, `__decorators__` should contain each decorator that decorates the controller."""
+
+        @DummyDecorator()
+        class DecoratedController(GPController):
+            """Decorated GP controller class for testing."""
+
+        assert DecoratedController.__decorators__ == [DummyDecorator]
 
     def test_twice_decorated_value(self) -> None:
-        """List should contain both decorator."""
-        self.assertListEqual([DummyDecorator1, DummyDecorator2], self.decorated_twice_controller_class.__decorators__)
+        """On a decorated controller, `__decorators__` should contain each decorator that decorates the controller."""
+
+        @DummyDecorator()
+        @OtherDummyDecorator()
+        class DoubleDecoratedController(GPController):
+            """Decorated GP controller class for testing."""
+
+        # note that the order here is the order the decorators are actually applied in - lowest first
+        assert DoubleDecoratedController.__decorators__ == [OtherDummyDecorator, DummyDecorator]
 
     def test_subclass_decorated_value(self) -> None:
-        """Should only contain one decorator."""
-        self.assertEqual([DummySubclass], self.decorated_with_subclass_controller.__decorators__)
+        """
+        Check that when decorated once, `__decorators__` only contains one decorator.
+
+        This test is to check for a possible failure mode when using subclasses - even if a cooperative subclass of a
+        decorator calls `super()._decorate_class()` in its own implementation of `_decorate_class`, we want to ensure
+        that only one decorator is added to `__decorators`.
+        """
+
+        @DummySubclassDecorator()
+        class SubclassDecoratedController(GPController):
+            """Decorated GP controller class for testing."""
+
+        assert SubclassDecoratedController.__decorators__ == [DummySubclassDecorator]
 
 
-class AttributeTests(unittest.TestCase):
-    """
-    Tests that the attributes have been properly updated.
-    """
-
-    def setUp(self) -> None:
-        """Code to run before each test."""
-
-        class SimpleNumber:
-            """
-            An example class for a real number.
-            """
-
-            __decorators__ = []
-
-            def __init__(self, number: Union[float, int]) -> None:
-                self.number = number
-
-            def add_5(self) -> Union[float, int]:
-                """Add 5 to a number."""
-                return self.number + 5
-
-        class SquareResult(Decorator):
-            """
-            Square the result of a SimpleNumber class.
-            """
-
-            def __init__(self, **kwargs: Any) -> None:
-                super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
-
-            def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
-                @wraps_class(cls)
-                class InnerClass(cls):
-                    """
-                    A wrapper for normalising y inputs and variance.
-                    """
-
-                    def add_5(self) -> Union[float, int]:
-                        """Square the result of this method."""
-                        result = super().add_5()
-                        return result**2
-
-                return InnerClass
-
-        class SimilarNumber(SimpleNumber):
-            """
-            A superfluous subclass.
-            """
-
-        # Ignore the invalid-name warnings, these are classes!
-        self.SimilarNumberBefore = SimilarNumber  # pylint: disable=invalid-name
-        self.SimilarNumberAfter = SquareResult()(SimilarNumber)  # pylint: disable=invalid-name
-        self.number = self.SimilarNumberAfter(10)
+class TestWrapping:
+    """Tests for the `wraps_class` decorator."""
 
     def test_answer(self) -> None:
-        """Test that the subclass has actually been applied."""
-        self.assertEqual(15**2, self.number.add_5())
+        """Test that the decorator modifies the `add_5` function as intended."""
 
-    def test_docstrings_of_class(self) -> None:
-        """Test that the class docstrings are all correct."""
-        self.assertEqual(self.SimilarNumberBefore.__doc__, self.SimilarNumberAfter.__doc__)
+        @SquareResult()
+        class DecoratedNumber(SimpleNumber):
+            """Decorated class for testing."""
 
-    def test_docstrings_of_instance(self) -> None:
-        """Test that the instance docstrings are all correct."""
-        self.assertEqual(self.SimilarNumberBefore.__doc__, self.number.__doc__)
-        self.assertEqual(self.SimilarNumberBefore.add_5.__doc__, self.number.add_5.__doc__)
+        number = DecoratedNumber(10)
+        assert 15**2 == number.add_5()
 
-    def test_names_of_class(self) -> None:
-        """Test that the class names are all correct."""
-        self.assertEqual(self.SimilarNumberBefore.__name__, self.SimilarNumberAfter.__name__)
-        self.assertEqual(self.SimilarNumberBefore.add_5.__name__, self.SimilarNumberAfter.add_5.__name__)
+    @pytest.mark.parametrize("attr", ["__doc__", "__name__", "__qualname__", "__annotations__"])
+    @pytest.mark.parametrize("which", ["self", "__init__", "add_5", "function_with_no_annotations_or_docstring"])
+    @pytest.mark.parametrize("where", ["class", "instance"])
+    def test_dunder_attributes_equal(self, attr: str, where: str, which: str):
+        """Test that dunder attributes are correctly copied from the decorated class."""
+        if where == "class":
+            before = SimpleNumber
+            after = SquareResult()(SimpleNumber)
+        elif where == "instance":
+            before = SimpleNumber(10)
+            after = SquareResult()(SimpleNumber)(10)
+        else:
+            raise ValueError(where)
 
-    def test_qualnames_of_class(self) -> None:
-        """Test that the class qualnames are all correct."""
-        self.assertEqual(self.SimilarNumberBefore.__qualname__, self.SimilarNumberAfter.__qualname__)
-        self.assertEqual(self.SimilarNumberBefore.add_5.__qualname__, self.SimilarNumberAfter.add_5.__qualname__)
+        if which != "self":
+            # i.e. if `which` is "__init__" or "add_5" etc
+            before = getattr(before, which)
+            after = getattr(after, which)
 
-    def test_names_of_instance(self) -> None:
-        """Test that the instance names are all correct."""
-        self.assertEqual(self.SimilarNumberBefore.__name__, self.number.__class__.__name__)
-        self.assertEqual(self.SimilarNumberBefore.add_5.__name__, self.number.add_5.__name__)
-
-    def test_qualnames_of_instance(self) -> None:
-        """Test that the instance qualnames are all correct."""
-        self.assertEqual(self.SimilarNumberBefore.__qualname__, self.number.__class__.__qualname__)
-        self.assertEqual(self.SimilarNumberBefore.add_5.__qualname__, self.number.add_5.__qualname__)
+        # check that the attribute is set on one iff it's set on the other
+        assert hasattr(before, attr) == hasattr(after, attr)
+        if hasattr(before, attr):
+            # and if it is set, check that it's equal
+            assert getattr(before, attr) == getattr(after, attr)
 
     def test_wrapped_attribute(self) -> None:
-        """Test that the instance names are all correct."""
-        try:
-            self.assertEqual(self.SimilarNumberBefore, self.SimilarNumberAfter.__wrapped__)
-        except AttributeError:
-            self.fail("Wrapped class does not have '__wrapped__' attribute.")
+        """Test that the `__wrapped__` attribute is set correctly."""
+        assert SquareResult()(SimpleNumber).__wrapped__ is SimpleNumber
+
+    def test_decoration_changes_class(self) -> None:
+        """Test that the decorated class is different from the original class."""
+        assert SquareResult()(SimpleNumber) is not SimpleNumber
+
+    def test_new_methods_are_not_wrapped(self):
+        """Test that `wraps_class` only replaces attributes on methods that exist on the base class."""
+        assert SquareResult()(SimpleNumber).do_nothing.__doc__ == (
+            "Do nothing. Note that this method is not on the base class."
+        )
 
 
-class TestErrorsWhenOverwriting(VanguardTestCase):
-    """
-    Testing breaking the decorator by overwriting or extending.
-    """
+class TestErrorsWhenOverwriting:
+    """Testing breaking the decorator by overwriting or extending parts of the base class."""
 
-    def setUp(self) -> None:
-        """Code to run before each test."""
+    @pytest.mark.parametrize("mode", ["new_method", "override_method"])
+    @pytest.mark.parametrize("raise_instead", [True, False])
+    @pytest.mark.parametrize("ignore", ["specific", "all", "other", "none"])
+    @pytest.mark.parametrize("who_is_wrong", ["subclass", "superclass", "both"])
+    def test_unexpected_method_change(self, *, mode: str, ignore: str, raise_instead: bool, who_is_wrong: str):
+        """
+        Test what happens if the decorated class's methods are different from those of the framework class.
 
-        class SimpleNumber:
-            """
-            An example class for a real number.
-            """
+        We test in two modes:
+         - `new_method`: Adding a new method not present on the base class
+         - `override_method`: Overriding a method that was present on the base class
 
-            __decorators__ = []
+        We test with the `raise_instead` flag set to both true and false, testing for an exception or warning as
+        appropriate.
 
-            def __init__(self, number: Union[int, float]) -> None:
-                self.number = number
+        We test with three "ignore" settings:
+         - Don't do any ignores (and check that the correct warning/error is raised)
+         - Specify some other name to be ignored (and check the correct warning/error is still raised)
+         - Ignore by specifying the name (and check no error/warning is raised)
+         - Ignore by setting `ignore_all = True` (and check no error/warning is raised)
 
-            def add_5(self) -> Union[int, float]:
-                """Add 5 to a number."""
-                return self.number + 5
+        We test with the error in three locations:
+         - Unexpected method change is in the class being decorated (class being decorated is blamed)
+         - Unexpected method change is in a superclass of the class being decorated (superclass is blamed)
+         - Both the class being decorated and a superclass have an unexpected method change (superclass is blamed)
+        """
+        # Set up the classes.
+        if who_is_wrong == "subclass":
 
-        class SquareResult(Decorator):
-            """
-            Square the result of a SimpleNumber class.
-            """
+            class MiddleNumber(SimpleNumber):
+                """Transparent subclass."""
+        else:
+            if mode == "new_method":
 
-            def __init__(self, **kwargs: Any) -> None:
-                super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
+                class MiddleNumber(SimpleNumber):
+                    """Subclass that adds a new method."""
 
-            def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
-                @wraps_class(cls)
-                class InnerClass(cls):
-                    """
-                    A wrapper for normalising y inputs and variance.
-                    """
+                    def something_new(self) -> None:
+                        pass
+            elif mode == "override_method":
+
+                class MiddleNumber(SimpleNumber):
+                    """Subclass that overrides an existing method."""
 
                     def add_5(self) -> Union[int, float]:
-                        """Square the result of this method."""
-                        result = super().add_5()
-                        return result**2
+                        return super().add_5() + 1
+            else:
+                raise ValueError("mode")
 
-                return InnerClass
+        if who_is_wrong == "superclass":
 
-        # Ignore the invalid-name warnings, these are classes!
-        self.SimpleNumber = SimpleNumber  # pylint: disable=invalid-name
-        self.SquareResult = SquareResult  # pylint: disable=invalid-name
+            class NewNumber(MiddleNumber):
+                """Transparent subclass."""
+        else:
+            if mode == "new_method":
 
-    def test_overwrite_method_with_raise(self) -> None:
-        """Test that overwriting a method throws an error instead."""
-        expected_error_message = "The class 'NewNumber' has overwritten the following methods: {'add_5'}."
-        with self.assertRaisesRegex(errors.OverwrittenMethodError, expected_error_message):
+                class NewNumber(MiddleNumber):
+                    """Subclass that adds a new method."""
 
-            @self.SquareResult(raise_instead=True)
-            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should throw an error.
-                """
+                    def something_new(self) -> None:
+                        pass
+            elif mode == "override_method":
 
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 1
+                class NewNumber(MiddleNumber):
+                    """Subclass that overrides an existing method."""
 
-    def test_overwrite_method(self) -> None:
-        """Test that overwriting a method throws a warning."""
-        expected_error_message = "The class 'NewNumber' has overwritten the following methods: {'add_5'}."
-        with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
+                    def add_5(self) -> Union[int, float]:
+                        return super().add_5() + 1
+            else:
+                raise ValueError("mode")
 
-            @self.SquareResult()
-            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should raise a warning.
-                """
+        # Set up the test itself.
+        kwargs = {"raise_instead": raise_instead}
+        if ignore == "none" or ignore == "other":
+            if ignore == "other":
+                kwargs["ignore_methods"] = ["some_other_method"]
 
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 1
+            # If we're not ignoring the errors, then specify what the expected error/warning is.
+            if who_is_wrong == "subclass":
+                blame_class = "NewNumber"
+            elif who_is_wrong == "superclass" or who_is_wrong == "both":
+                blame_class = "MiddleNumber"
+            else:
+                raise ValueError(who_is_wrong)
 
-    def test_overwrite_method_with_ignore(self) -> None:
-        """Test that such an error can be avoided."""
-        with self.assertNotWarns(errors.OverwrittenMethodWarning):
+            if mode == "new_method":
+                expected_message = (
+                    f"The class '{blame_class}' has added the following unexpected methods: {{'something_new'}}."
+                )
+                expected_types = errors.UnexpectedMethodError, errors.UnexpectedMethodWarning
+            elif mode == "override_method":
+                expected_message = f"The class '{blame_class}' has overwritten the following methods: {{'add_5'}}."
+                expected_types = errors.OverwrittenMethodError, errors.OverwrittenMethodWarning
+            else:
+                raise ValueError(mode)
 
-            @self.SquareResult(ignore_methods=("add_5",))
-            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should not raise OverwrittenMethodWarning.
-                """
+            if raise_instead:
+                context = pytest.raises(expected_types[0], match=expected_message)
+            else:
+                context = pytest.warns(expected_types[1], match=expected_message)
+        elif ignore == "specific":
+            # Ignore by setting `ignore_methods`.
+            if mode == "new_method":
+                kwargs["ignore_methods"] = ["something_new"]
+            elif mode == "override_method":
+                kwargs["ignore_methods"] = ["add_5"]
+            else:
+                raise ValueError(mode)
+            context = contextlib.nullcontext() if raise_instead else assert_not_warns()
+        elif ignore == "all":
+            # Ignore by setting `ignore_all`.
+            kwargs["ignore_all"] = True
+            context = contextlib.nullcontext() if raise_instead else assert_not_warns()
+        else:
+            raise ValueError(ignore)
 
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 1
+        # Actually perform the decoration, and check for errors/warnings as appropriate
+        with context:
+            SquareResult(**kwargs)(NewNumber)
 
-    def test_unexpected_method_with_raise(self) -> None:
-        """Test that creating a new method throws an error instead."""
-        expected_error_message = "The class 'NewNumber' has added the following unexpected methods: {'something_new'}."
-        with self.assertRaisesRegex(errors.UnexpectedMethodError, expected_error_message):
 
-            @self.SquareResult(raise_instead=True)
-            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should throw an error.
-                """
+class TestInvalidDecoration:
+    """Test that decorators do not allow invalid classes to be decorated."""
 
-                def something_new(self) -> None:
-                    pass
+    def test_can_decorate_correct_framework_class(self):
+        """Test that we can decorate subclasses of the framework class without error."""
+        DummyDecorator()(GaussianGPController)
 
-    def test_unexpected_method_with_warn(self) -> None:
-        """Test that creating a new method throws a warning."""
-        expected_error_message = "The class 'NewNumber' has added the following unexpected methods: {'something_new'}."
-        with self.assertWarnsRegex(errors.UnexpectedMethodWarning, expected_error_message):
+    def test_cannot_decorate_incorrect_framework_class(self):
+        """Test that we can decorate subclasses of the framework class without error."""
+        with pytest.raises(TypeError, match=f"Can only apply decorator to subclasses of {GPController.__name__}"):
+            DummyDecorator()(object)
 
-            @self.SquareResult()
-            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should raise a warning.
-                """
-
-                def something_new(self) -> None:
-                    pass
-
-    def test_unexpected_method_with_ignore(self) -> None:
-        """Test that such an error can be avoided."""
-        with self.assertNotWarns(errors.UnexpectedMethodWarning):
-
-            @self.SquareResult(ignore_methods=["something_new"])
-            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should not raise UnexpectedMethodWarning.
-                """
-
-                def something_new(self) -> None:
-                    pass
-
-    def test_overwrite_method_with_superclass_subclass_wrong(self) -> None:
-        """Warning should reference the SUBCLASS."""
-        expected_error_message = "The class 'NewNumber' has overwritten the following methods: {'add_5'}."
-
-        class MiddleNumber(self.SimpleNumber):
-            """An intermediate number."""
-
-        with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
-
-            @self.SquareResult()
-            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should raise a warning.
-                """
-
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 1
-
-    def test_overwrite_method_with_superclass_superclass_wrong(self) -> None:
-        """Warning should reference the SUPERCLASS."""
-        expected_error_message = "The class 'MiddleNumber' has overwritten the following methods: {'add_5'}."
-
-        class MiddleNumber(self.SimpleNumber):
-            """An intermediate number."""
-
-            def add_5(self) -> Union[int, float]:
-                return super().add_5() + 1
-
-        with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
-
-            @self.SquareResult()
-            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should raise a warning.
-                """
-
-    def test_overwrite_method_with_superclass_both_wrong(self) -> None:
-        """Warning should reference the SUPERCLASS."""
-        expected_error_message = "The class 'MiddleNumber' has overwritten the following methods: {'add_5'}."
-
-        class MiddleNumber(self.SimpleNumber):
-            """An intermediate number."""
-
-            def add_5(self) -> Union[int, float]:
-                return super().add_5() + 1
-
-        with self.assertWarnsRegex(errors.OverwrittenMethodWarning, expected_error_message):
-
-            @self.SquareResult()
-            class NewNumber(MiddleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should raise a warning.
-                """
-
-                def add_5(self) -> Union[int, float]:
-                    return super().add_5() + 2
+    def test_topmost_decorator_error(self):
+        """Test that we get an appropriate error if we try to decorate on top of a `TopmostDecorator`."""
+        # decorating once is fine
+        decorated_once = DummyTopmostDecorator()(GaussianGPController)
+        # but twice raises an error
+        with pytest.raises(TopmostDecoratorError):
+            DummyDecorator()(decorated_once)
 
     def test_missing_requirements(self) -> None:
-        """Should throw an error."""
-        simple_number_class = self.SimpleNumber
-        square_result_class = self.SquareResult
+        """Test that we get an appropriate error if we are missing requirements for a decorator."""
+        with pytest.raises(errors.MissingRequirementsError, match=SquareResult.__name__):
 
-        class RequirementDecorator(Decorator):
-            """A decorator with a requirement."""
-
-            def __init__(self, **kwargs: Any) -> None:
-                super().__init__(
-                    framework_class=simple_number_class, required_decorators={square_result_class}, **kwargs
-                )
-
-        with self.assertRaises(errors.MissingRequirementsError):
-
-            @RequirementDecorator()
-            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should throw an error.
-                """
+            @RequiresSquareResult()
+            class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
+                """Declaring this class should throw an error, as we're missing a required decorator."""
 
     def test_passed_requirements(self) -> None:
-        """Should not throw an error."""
-        simple_number_class = self.SimpleNumber
-        square_result_class = self.SquareResult
+        """Test that when all requirements for a decorator are satisfied, no error is thrown."""
 
-        class RequirementDecorator(Decorator):
-            """A decorator with a requirement."""
-
-            def __init__(self, **kwargs: Any) -> None:
-                super().__init__(
-                    framework_class=simple_number_class, required_decorators={square_result_class}, **kwargs
-                )
-
-        try:
-
-            @RequirementDecorator(ignore_methods=("__init__", "add_5"))
-            @self.SquareResult()
-            class NewNumber(self.SimpleNumber):  # pylint: disable=unused-variable
-                """
-                Declaring this class should throw an error.
-                """
-
-        except errors.MissingRequirementsError as error:
-            self.fail(f"Should not have thrown {str(error)}")
-
-
-class SignatureTests(unittest.TestCase):
-    """
-    Test that the signatures have been properly updated.
-    """
-
-    def setUp(self) -> None:
-        """Code to run before each test."""
-
-        class SimpleNumber:
-            """
-            An example class for a real number.
-            """
-
-            __decorators__ = []
-
-            def __init__(self, number: Union[int, float]) -> None:
-                self.number = number
-
-            def add_5(self) -> Union[int, float]:
-                """Add 5 to a number."""
-                return self.number + 5
-
-        class SquareResult(Decorator):
-            """
-            Square the result of a SimpleNumber class.
-            """
-
-            def __init__(self, **kwargs: Any) -> None:
-                super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
-
-            def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
-                @wraps_class(cls)
-                class InnerClass(cls):
-                    """
-                    A wrapper for normalising y inputs and variance.
-                    """
-
-                    def add_5(self) -> Union[int, float]:
-                        """Square the result of this method."""
-                        result = super().add_5()
-                        return result**2
-
-                return InnerClass
-
-        class SimilarNumber(SimpleNumber):
-            """
-            A superfluous subclass.
-            """
-
-        # Ignore the invalid-name warnings - these are classes!
-        self.SimilarNumberBefore = SimilarNumber  # pylint: disable=invalid-name
-        self.SimilarNumberAfter = SquareResult()(self.SimilarNumberBefore)  # pylint: disable=invalid-name
-
-    def test_signature_before(self) -> None:
-        """Signature should contain number."""
-        self.assertEqual(
-            "(self, number: Union[int, float]) -> None", str(inspect.signature(self.SimilarNumberBefore.__init__))
-        )
-
-    def test_signature_after(self) -> None:
-        """Signature should contain number."""
-        self.assertEqual(
-            "(self, number: Union[int, float]) -> None", str(inspect.signature(self.SimilarNumberAfter.__init__))
-        )
-
-    def test_arg_spec_before(self) -> None:
-        """Signature should contain number."""
-        processed_args = process_args(self.SimilarNumberBefore.__init__, None, 1)
-        self.assertDictEqual({"self": None, "number": 1}, processed_args)
-
-    def test_arg_spec_after(self) -> None:
-        """Signature should contain number."""
-        processed_args = process_args(self.SimilarNumberAfter.__init__, None, 1)
-        self.assertDictEqual({"self": None, "number": 1}, processed_args)
+        @RequiresSquareResult(ignore_methods=("__init__", "add_5"))
+        @SquareResult()
+        class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
+            """Declaring this class should not throw any error, as all requirements are satisfied."""

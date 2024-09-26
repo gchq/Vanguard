@@ -48,6 +48,7 @@ doctests
 dteday
 dtype
 dtypes
+dunder
 eigh
 elinewidth
 ename
