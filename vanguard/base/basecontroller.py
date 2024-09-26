@@ -284,7 +284,14 @@ class BaseGPController:
         prediction_output = self._get_posterior_over_fuzzy_point_in_eval_mode(x, x_std)
         shape = self._decide_noise_shape(prediction_output, x)
         noise = torch.zeros(shape, dtype=self.dtype, device=self.device)
-        output = self._likelihood(prediction_output.condensed_distribution, noise=noise)
+        try:
+            output = self._likelihood(prediction_output.condensed_distribution, noise=noise)
+        except AttributeError:
+            # In DirichletKernelMulticlassClassification for fuzzy points, prediction_output is a
+            # MonteCarloPosteriorCollection object. This has no attribute '_cached_samples', so .condensed_distribution
+            # errors. The '_cached_samples' attribute doesn't exist because self._cached_samples = self._tensor_sample()
+            # but _tensor_sample() is not a method for DummyKernelDistribution.
+            output = self._likelihood(prediction_output.distribution, noise=noise)
         return self.posterior_class(output)
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
@@ -546,7 +553,8 @@ class BaseGPController:
             (2, 2): (x.shape[0], mean.shape[-1]),  # single MultitaskMultivariateNormal
             (2, 3): (x.shape[0],),  # batch of MultivariateNormals
             (3, 3): (x.shape[0], mean.shape[-1]),  # batch of MultitaskMultivariateNormals
-            (2, 4): (x.shape[0], mean.shape[-1]), # batch of ... (this is the noise shape in DirichletKernelMulticlassClassification)
+            (2, 4): (x.shape[0], mean.shape[-1]), # ? this is the shape in DirichletKernelMulticlassClassification
+            (3, 5): (x.shape[0], mean.shape[-1]), # ? this is the shape in fuzzy DirichletKernelMulticlassClassification
         }
 
         try:
