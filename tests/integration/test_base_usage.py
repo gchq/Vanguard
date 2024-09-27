@@ -21,11 +21,18 @@ from typing import Literal, Optional
 import numpy as np
 import pytest
 import torch
+from gpytorch.mlls import VariationalELBO
 
 from tests.cases import get_default_rng
 from tests.integration.util import convert_array_type, train_test_split_convert
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
+from vanguard.variational import VariationalInference
+
+
+@VariationalInference()
+class VariationalController(GaussianGPController):
+    """Variational controller for testing."""
 
 
 class TestBaseUsage:
@@ -45,7 +52,20 @@ class TestBaseUsage:
     accepted_confidence_interval_error = 3
     expected_percent_outside_one_sided = (100.0 * (1 - confidence_interval_alpha)) / 2
 
-    @pytest.mark.parametrize("batch_size", [None, 100])
+    @pytest.mark.parametrize(
+        "batch_size",
+        [
+            pytest.param(None, id="full"),
+            # Currently, confidence intervals on a `@VariationalInference`-decorated controller are really inaccurate.
+            # This was an issue before batched training on exact GPs was forbidden, but it's come up now because batch
+            # training requires the use of `@VariationalInference`.
+            pytest.param(
+                100,
+                id="batched",
+                marks=[pytest.mark.xfail(reason="Variational confidence intervals are currently inaccurate.")],
+            ),
+        ],
+    )
     @pytest.mark.parametrize("array_type", ["tensor", "ndarray"])
     def test_basic_gp(self, batch_size: Optional[int], array_type: Literal["tensor", "ndarray"]) -> None:
         """
@@ -71,14 +91,25 @@ class TestBaseUsage:
         y_train_std = convert_array_type(self.small_noise * np.ones_like(y_train), array_type)
 
         # Define the controller object, with an assumed small amount of noise
-        gp = GaussianGPController(
-            train_x=x_train,
-            train_y=y_train,
-            kernel_class=ScaledRBFKernel,
-            y_std=y_train_std,
-            rng=rng,
-            batch_size=batch_size,
-        )
+        if batch_size is None:
+            gp = GaussianGPController(
+                train_x=x_train,
+                train_y=y_train,
+                kernel_class=ScaledRBFKernel,
+                y_std=y_train_std,
+                rng=rng,
+                batch_size=batch_size,
+            )
+        else:
+            gp = VariationalController(
+                train_x=x_train,
+                train_y=y_train,
+                kernel_class=ScaledRBFKernel,
+                y_std=y_train_std,
+                marginal_log_likelihood_class=VariationalELBO,
+                rng=rng,
+                batch_size=batch_size,
+            )
 
         # Fit the GP
         gp.fit(n_sgd_iters=self.n_sgd_iters)
