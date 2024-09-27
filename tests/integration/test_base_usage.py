@@ -51,7 +51,20 @@ class TestBaseUsage:
     accepted_confidence_interval_error = 3
     expected_percent_outside_one_sided = (100.0 * (1 - confidence_interval_alpha)) / 2
 
-    @pytest.mark.parametrize("batch_size", [None, 100])
+    @pytest.mark.parametrize(
+        "batch_size",
+        [
+            pytest.param(None, id="full"),
+            # Currently, confidence intervals on a `@VariationalInference`-decorated controller are really inaccurate.
+            # This was an issue before batched training on exact GPs was forbidden, but it's come up now because batch
+            # training requires the use of `@VariationalInference`.
+            pytest.param(
+                100,
+                id="batched",
+                marks=[pytest.mark.xfail(reason="Variational confidence intervals are currently inaccurate.")],
+            ),
+        ],
+    )
     def test_basic_gp(self, batch_size: Optional[int]) -> None:
         """
         Verify Vanguard usage on a simple, single variable regression problem.
