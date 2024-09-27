@@ -383,6 +383,7 @@ class TestBatchMode:
             controller.fit(2)
 
     def test_batch_mode_variational_succeeds(self, dataset: Dataset):
+        """Test that performing batched training on an approximate (variational) GP succeeds without error."""
         controller = VariationalController(
             train_x=dataset.train_x,
             train_y=dataset.train_y,
