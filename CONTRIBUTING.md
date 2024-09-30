@@ -333,6 +333,38 @@ Having complete documentation is important to easy usage of Vanguard.
 Please ensure that any new code appears in the documentation, and is rendered correctly.
 You should be warned of any broken internal links during the build process, and these will cause your pull request to be rejected.
 
+### Documentation dependencies
+
+Building the documentation yourself requires the additional documentation dependencies. Install these with
+
+```shell
+pip install -e .[doc]
+```
+
+from the repo root. Alternatively, we maintain a set of pinned dependencies that should allow the documentation to
+be built without error on Linux - to install these, run
+
+```shell
+pip install -r requirements-docs.txt --no-deps
+```
+
+from the repo root. Note that the pinned dependencies are not guaranteed to work on Windows or macOS.
+
+In both cases, these commands should be run in a fresh virtual environment (to avoid any issues with already-existing
+packages), and on Python 3.12.
+
+### Building the documentation
+
+To build the documentation, run
+
+```shell
+python -m sphinx -b html -WEan --keep-going docs/source docs/build
+```
+
+from the repo root. This is the same command that is used in the CI pipeline to check that the documentation builds
+correctly, so if it builds without error in an isolated environment containing only the required dependencies, it should
+also build without error in the CI pipeline.
+
 ## Releases
 
 Releases are made on an ad-hoc basis. When the maintainers decide the codebase is ready
