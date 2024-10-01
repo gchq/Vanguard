@@ -196,4 +196,3 @@ class PrintingTests(unittest.TestCase):
                 self.controller.fit(10)
         output = self.new_stdout.getvalue()
         self.assertEqual(3, len(output.splitlines()))
- 
