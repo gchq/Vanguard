@@ -39,6 +39,9 @@ class DirichletKernelMulticlassClassification(Decorator):
 
     Based on the paper :cite:`MacKenzie14`.
 
+    .. warning::
+        Fuzzy classification (with `classify_fuzzy_points`) is not supported.
+
     :Example:
         >>> from gpytorch.kernels import RBFKernel, ScaleKernel
         >>> import numpy as np
@@ -123,7 +126,7 @@ class DirichletKernelMulticlassClassification(Decorator):
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
-            # TODO: throws an error - see linked issue
+            # TODO: original code throws an error - see linked issue
             # https://github.com/gchq/Vanguard/issues/288
             def classify_fuzzy_points(
                 self,
@@ -131,8 +134,10 @@ class DirichletKernelMulticlassClassification(Decorator):
                 x_std: Union[float, numpy.typing.NDArray[np.floating]],
             ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
                 """Classify fuzzy points."""
-                means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
-                return self._get_predictions_from_prediction_means(means_as_floats)
+                msg = "Fuzzy classification is not supported for DirichletKernelMulticlassClassification."
+                raise NotImplementedError(msg)
+                # means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
+                # return self._get_predictions_from_prediction_means(means_as_floats)
 
             @staticmethod
             def _get_predictions_from_prediction_means(

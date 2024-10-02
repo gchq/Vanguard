@@ -16,8 +16,9 @@
 Tests for the DirichletKernelMulticlassClassification decorator.
 """
 
-from unittest import expectedFailure
+from unittest import skip
 
+import pytest
 import torch
 from gpytorch import kernels, means
 
@@ -96,9 +97,10 @@ class MulticlassTests(ClassificationTestCase):
             covar.shape, torch.Size([default_group_size, num_classes, num_classes, num_test_points, num_test_points])
         )
 
-    # TODO: The test below fails as the distribution covariance_matrix is an unexpected shape.
+    # TODO: When using the original code for classify_fuzzy_points, the test below fails, as the distribution
+    #  covariance_matrix is an unexpected shape.
     # https://github.com/gchq/Vanguard/issues/288
-    @expectedFailure
+    @skip
     def test_fuzzy_predictions(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.
@@ -111,6 +113,11 @@ class MulticlassTests(ClassificationTestCase):
         test_x = self.rng.normal(self.dataset.test_x, test_x_std)
         predictions, _ = self.controller.classify_fuzzy_points(test_x, test_x_std)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
+
+    def test_fuzzy_predictions_not_implemented(self):
+        """Check that calling classify_fuzzy_points raises an error informing the user that it's not supported."""
+        with pytest.raises(NotImplementedError, match="Fuzzy classification is not supported"):
+            self.controller.classify_fuzzy_points(self.dataset.test_x, 0.1)
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
