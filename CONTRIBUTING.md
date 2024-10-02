@@ -362,7 +362,7 @@ for another release:
 
 Vanguard is an academic project and therefore all work should be referenced.
 New references should be placed in the file [`references.bib`](references.bib).
-An entry with the keyword `Doe99` can then be referenced within a docstring anywhere with `[Doe99]_`.
+An entry with the keyword `Doe99` can then be referenced within a docstring anywhere with ``:cite:`Doe99` ``.
 
 [cla]: https://github.com/gchq/Vanguard/issues/230
 [conventional_commits]: https://www.conventionalcommits.org
