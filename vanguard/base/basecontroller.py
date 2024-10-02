@@ -542,7 +542,10 @@ class BaseGPController:
             (2, 2): (x.shape[0], mean.shape[-1]),  # single MultitaskMultivariateNormal
             (2, 3): (x.shape[0],),  # batch of MultivariateNormals
             (3, 3): (x.shape[0], mean.shape[-1]),  # batch of MultitaskMultivariateNormals
-            (2, 4): (x.shape[0], mean.shape[-1]), # batch of ... (this is the noise shape in DirichletKernelMulticlassClassification)
+            (2, 4): (
+                x.shape[0],
+                mean.shape[-1],
+            ),  # batch of ... (this is the noise shape in DirichletKernelMulticlassClassification)
         }
 
         try:

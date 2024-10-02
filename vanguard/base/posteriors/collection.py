@@ -18,12 +18,11 @@ Contains the MonteCarloPosteriorCollection class.
 
 from typing import Generator, NoReturn, Tuple
 
+import gpytorch
 import numpy.typing
 import torch
-import gpytorch
 
 from vanguard.base.posteriors.posterior import Posterior
-from vanguard.classification.models import DummyKernelDistribution
 
 
 class MonteCarloPosteriorCollection(Posterior):

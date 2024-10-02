@@ -56,8 +56,9 @@ class DummyKernelDistribution:
 
         try:
             self.mean = self.kernel @ self.labels.to_dense()
-            self.covariance_matrix = torch.zeros(self.mean.shape[-1], self.mean.shape[-1], self.kernel.shape[0],
-                                                 self.kernel.shape[0])
+            self.covariance_matrix = torch.zeros(
+                self.mean.shape[-1], self.mean.shape[-1], self.kernel.shape[0], self.kernel.shape[0]
+            )
             # The last two dimensions represent the pairwise covariances between the test points
             # The first two dimensions represent the covariances between the classes for each pair of test points.
         except RuntimeError:

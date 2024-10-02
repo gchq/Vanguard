@@ -16,10 +16,8 @@
 Tests for the DirichletKernelMulticlassClassification decorator.
 """
 
-from unittest import expectedFailure
-
-from gpytorch import kernels, means
 import torch
+from gpytorch import kernels, means
 
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
@@ -66,6 +64,7 @@ class MulticlassTests(ClassificationTestCase):
         num_test_points = self.dataset.test_x.shape[0]
         num_classes = self.dataset.num_classes
 
+        # pylint: disable-next=protected-access
         prediction_output = self.controller._get_posterior_over_point_in_eval_mode(self.dataset.test_x)
         mean, covar = prediction_output.distribution.mean, prediction_output.distribution.covariance_matrix
         self.assertEqual(mean.shape, torch.Size([num_test_points, num_classes]))
@@ -83,12 +82,17 @@ class MulticlassTests(ClassificationTestCase):
         test_x_std = 0.005
         num_test_points = self.dataset.test_x.shape[0]
         num_classes = self.dataset.num_classes
-        default_group_size = 100 # in infinite_x_samples()
+        default_group_size = 100  # in infinite_x_samples()
 
-        prediction_output = self.controller._get_posterior_over_fuzzy_point_in_eval_mode(self.dataset.test_x,test_x_std)
+        # pylint: disable-next=protected-access
+        prediction_output = self.controller._get_posterior_over_fuzzy_point_in_eval_mode(
+            self.dataset.test_x, test_x_std
+        )
         mean, covar = prediction_output.distribution.mean, prediction_output.distribution.covariance_matrix
         self.assertEqual(mean.shape, torch.Size([default_group_size, num_test_points, num_classes]))
-        self.assertEqual(covar.shape, torch.Size([default_group_size, num_classes, num_classes, num_test_points, num_test_points]))
+        self.assertEqual(
+            covar.shape, torch.Size([default_group_size, num_classes, num_classes, num_test_points, num_test_points])
+        )
 
     # TODO: The test below fails as the distribution covariance_matrix is an unexpected shape.
     # https://github.com/gchq/Vanguard/issues/288
