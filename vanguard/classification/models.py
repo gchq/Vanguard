@@ -17,7 +17,7 @@ Contains model classes to enable classification in Vanguard.
 """
 
 import warnings
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import gpytorch
 import torch
@@ -28,11 +28,13 @@ from gpytorch.models import ExactGP
 from gpytorch.utils.warnings import GPInputWarning
 from linear_operator import LinearOperator
 from linear_operator.operators import DiagLinearOperator
+from torch import Tensor
 
 from vanguard.models import ExactGPModel
+from vanguard.utils import DummyDistribution
 
 
-class DummyKernelDistribution:
+class DummyKernelDistribution(DummyDistribution):
     """
     A dummy distribution to hold a kernel matrix and some one-hot labels.
     """
@@ -42,7 +44,7 @@ class DummyKernelDistribution:
     # https://github.com/gchq/Vanguard/issues/394
     __class__ = MultivariateNormal
 
-    def __init__(self, labels: LinearOperator, kernel: LinearOperator) -> None:
+    def __init__(self, labels: Union[Tensor, LinearOperator], kernel: Union[Tensor, LinearOperator]) -> None:
         """
         Initialise self.
 
@@ -65,7 +67,6 @@ class DummyKernelDistribution:
             self.mean = labels
             self.covariance_matrix = kernel
 
-    # pylint: disable-next=unused-argument
     def add_jitter(self, jitter: float = 1e-3):
         """
         Adds a small constant diagonal to the covariance matrix for numerical stability.

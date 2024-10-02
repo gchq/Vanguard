@@ -16,6 +16,8 @@
 Tests for the DirichletKernelMulticlassClassification decorator.
 """
 
+from unittest import expectedFailure
+
 import torch
 from gpytorch import kernels, means
 
@@ -96,7 +98,7 @@ class MulticlassTests(ClassificationTestCase):
 
     # TODO: The test below fails as the distribution covariance_matrix is an unexpected shape.
     # https://github.com/gchq/Vanguard/issues/288
-    # @expectedFailure
+    @expectedFailure
     def test_fuzzy_predictions(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.

@@ -18,11 +18,11 @@ Contains the MonteCarloPosteriorCollection class.
 
 from typing import Generator, NoReturn, Tuple
 
-import gpytorch
 import numpy.typing
 import torch
 
 from vanguard.base.posteriors.posterior import Posterior
+from vanguard.utils import DummyDistribution
 
 
 class MonteCarloPosteriorCollection(Posterior):
@@ -52,7 +52,7 @@ class MonteCarloPosteriorCollection(Posterior):
         distribution = self._create_updated_distribution(self.INITIAL_NUMBER_OF_SAMPLES)
         super().__init__(distribution)
         # _tensor_sample() isn't a method for dummy distributions
-        if isinstance(distribution, gpytorch.distributions.Distribution):
+        if not isinstance(distribution, DummyDistribution):
             self._cached_samples = self._tensor_sample()
 
     @property

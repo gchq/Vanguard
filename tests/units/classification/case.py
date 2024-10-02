@@ -20,10 +20,10 @@ import unittest
 from typing import Union
 
 import numpy as np
-import numpy.typing
 import torch
 from gpytorch.kernels import RBFKernel, ScaleKernel
 from gpytorch.means import ZeroMean
+from numpy.typing import NDArray
 
 
 class BatchScaledRBFKernel(ScaleKernel):
@@ -53,7 +53,9 @@ class ClassificationTestCase(unittest.TestCase):
 
     @staticmethod
     def assertPredictionsEqual(  # pylint: disable=invalid-name
-        x: numpy.typing.NDArray[np.floating], y: numpy.typing.NDArray[np.floating], delta: Union[float, int] = 0
+        x: Union[NDArray[np.integer], NDArray[np.floating]],
+        y: Union[NDArray[np.integer], NDArray[np.floating]],
+        delta: Union[float, int] = 0,
     ) -> None:
         """
         Assert true if predictions are correct.

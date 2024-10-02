@@ -28,6 +28,10 @@ import torch
 from vanguard.warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
 
+class DummyDistribution:
+    """Empty mixin class for dummy distributions, used for isinstance() checks."""
+
+
 def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.typing.NDArray:
     """
     Add an equal sample spacing dummy time dimension to some time series data.
