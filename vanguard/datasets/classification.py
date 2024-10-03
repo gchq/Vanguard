@@ -22,9 +22,11 @@ from typing import Optional, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import sklearn
+import torch
 from matplotlib.colors import Colormap
 from numpy.typing import NDArray
 from sklearn.datasets import make_gaussian_quantiles
+from torch import Tensor
 
 from vanguard import utils
 from vanguard.datasets.basedataset import Dataset
@@ -121,13 +123,15 @@ class MulticlassGaussianClassificationDataset(Dataset):
         super().__init__(train_x, 0.0, train_y, 0.0, test_x, 0.0, test_y, 0.0, 0.0)
 
     @property
-    def one_hot_train_y(self) -> NDArray[int]:
+    def one_hot_train_y(self) -> Tensor:
         """
         Return the training data as a one-hot encoded array.
 
         Note that if there are exactly two classes, this returns `train_y.reshape((-1, 1))` instead.
         """
-        return sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y)
+        numpy_train_y = self.train_y.detach().cpu().numpy()
+        one_hot = sklearn.preprocessing.LabelBinarizer().fit_transform(numpy_train_y)
+        return torch.as_tensor(one_hot, device=self.train_y.device)
 
     def plot(self, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5) -> None:  # pragma: no cover
         """

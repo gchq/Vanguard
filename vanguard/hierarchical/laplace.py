@@ -338,7 +338,9 @@ def _posterior_to_likelihood_samples(
     :return: Generator object that provides likelihood samples.
     """
 
-    def generator(controller: ControllerT, x: NDArray[np.floating], *args) -> Generator[torch.Tensor, None, None]:
+    def generator(
+        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], *args
+    ) -> Generator[Tensor, None, None]:
         """
         Yield likelihood samples forever.
 

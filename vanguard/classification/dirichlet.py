@@ -23,6 +23,7 @@ import numpy as np
 import numpy.typing
 import torch
 from gpytorch.likelihoods import DirichletClassificationLikelihood
+from torch import Tensor
 from typing_extensions import Self
 
 from vanguard import utils
@@ -173,7 +174,7 @@ class DirichletMulticlassClassification(Decorator):
                 self.posterior_class = TransposedPosterior
                 self.posterior_collection_class = TransposedMonteCarloPosteriorCollection
                 super().__init__(
-                    train_y=transformed_targets.detach().cpu().numpy(),
+                    train_y=transformed_targets,
                     likelihood_class=likelihood_class,
                     likelihood_kwargs=likelihood_kwargs,
                     rng=self.rng,
@@ -181,8 +182,8 @@ class DirichletMulticlassClassification(Decorator):
                 )
 
             def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating]], *, n_posterior_samples: int = 256
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+                self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor], *, n_posterior_samples: int = 256
+            ) -> Tuple[Tensor, Tensor]:
                 """
                 Classify points.
 
@@ -195,21 +196,21 @@ class DirichletMulticlassClassification(Decorator):
                     :attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
+                x = torch.as_tensor(x)
                 posterior = super().posterior_over_point(x)
                 samples = posterior._tensor_sample(torch.Size((n_posterior_samples,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)
-                detached_probs = probs.detach().cpu().numpy()
-                predictions = detached_probs.argmax(axis=1)
-                return predictions, detached_probs.max(axis=1)
+                prediction_values, predictions = probs.max(dim=1)
+                return predictions, prediction_values
 
             def classify_fuzzy_points(
                 self,
-                x: Union[float, numpy.typing.NDArray[np.floating]],
-                x_std: Union[float, numpy.typing.NDArray[np.floating]],
+                x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
                 *,
                 n_posterior_samples: int = 256,
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+            ) -> Tuple[Tensor, Tensor]:
                 """
                 Classify fuzzy points.
 
@@ -221,13 +222,14 @@ class DirichletMulticlassClassification(Decorator):
                     :attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
+                x = torch.as_tensor(x)
+                x_std = torch.as_tensor(x_std)
                 posterior = super().posterior_over_fuzzy_point(x, x_std)
                 samples = posterior._tensor_sample_condensed(torch.Size((n_posterior_samples,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)
-                detached_probs = probs.detach().cpu().numpy()
-                predictions = detached_probs.argmax(axis=1)
-                return predictions, detached_probs.max(axis=1)
+                prediction_values, predictions = probs.max(dim=1)
+                return predictions, prediction_values
 
             def _loss(self, train_x: torch.Tensor, train_y: torch.Tensor) -> torch.Tensor:
                 """Accounting for multiple values."""

@@ -21,6 +21,7 @@ from typing import Any, Tuple, Type, TypeVar, Union
 import numpy as np
 import numpy.typing
 import torch
+from torch import Tensor
 from typing_extensions import Self
 
 from vanguard import utils
@@ -83,8 +84,8 @@ class SetWarp(Decorator):
                 self.train_y = self.train_y.to(self.device)
 
                 def _unwarp_values(
-                    *values: Union[torch.Tensor, numpy.typing.NDArray[np.floating]],
-                ) -> Tuple[Union[torch.Tensor, numpy.typing.NDArray[np.floating]], ...]:
+                    *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
+                ) -> Tuple[Tensor, ...]:
                     """
                     Map values back through the warp.
 
@@ -95,14 +96,11 @@ class SetWarp(Decorator):
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )
                     unwarped_values_as_tensors = (warp_copy.inverse(tensor).squeeze() for tensor in values_as_tensors)
-                    unwarped_values_as_arrays = tuple(
-                        tensor.detach().cpu().numpy() for tensor in unwarped_values_as_tensors
-                    )
-                    return unwarped_values_as_arrays
+                    return tuple(unwarped_values_as_tensors)
 
                 def _warp_values(
-                    *values: numpy.typing.NDArray[np.floating],
-                ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
+                    *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
+                ) -> Tuple[Tensor, ...]:
                     """
                     Map values through the warp.
 
@@ -113,14 +111,11 @@ class SetWarp(Decorator):
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )
                     warped_values_as_tensors = (warp_copy(tensor).squeeze() for tensor in values_as_tensors)
-                    warped_values_as_arrays = tuple(
-                        tensor.detach().cpu().numpy() for tensor in warped_values_as_tensors
-                    )
-                    return warped_values_as_arrays
+                    return tuple(warped_values_as_tensors)
 
                 def _warp_derivative_values(
-                    *values: numpy.typing.NDArray[np.floating],
-                ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
+                    *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
+                ) -> Tuple[Tensor, ...]:
                     """
                     Map values through the derivative of the warp.
 
@@ -131,10 +126,7 @@ class SetWarp(Decorator):
                         torch.as_tensor(value, dtype=self.dtype, device=self.device) for value in values
                     )
                     warped_values_as_tensors = (warp_copy.deriv(tensor).squeeze() for tensor in values_as_tensors)
-                    warped_values_as_arrays = tuple(
-                        tensor.detach().cpu().numpy() for tensor in warped_values_as_tensors
-                    )
-                    return warped_values_as_arrays
+                    return tuple(warped_values_as_tensors)
 
                 def warp_posterior_class(posterior_class: Type[Posterior]) -> Type[Posterior]:
                     """Wrap a posterior class to enable warping."""
@@ -190,16 +182,11 @@ class SetWarp(Decorator):
                 self._gp.train_targets = warped_train_y
                 return loss
 
-            def _unwarp_values(
-                self, *values: numpy.typing.NDArray[np.floating]
-            ) -> Tuple[numpy.typing.NDArray[np.floating], ...]:
+            def _unwarp_values(self, *values: Union[Tensor, numpy.typing.NDArray[np.floating]]) -> Tuple[Tensor, ...]:
                 """Map values back through the warp."""
                 values_as_tensors = (torch.as_tensor(value) for value in values)
                 unwarped_values_as_tensors = (self.warp.inverse(tensor).reshape(-1) for tensor in values_as_tensors)
-                unwarped_values_as_arrays = tuple(
-                    tensor.detach().cpu().numpy() for tensor in unwarped_values_as_tensors
-                )
-                return unwarped_values_as_arrays
+                return tuple(unwarped_values_as_tensors)
 
             def _loss(self, train_x: torch.Tensor, train_y: torch.Tensor) -> torch.Tensor:
                 """Subtract additional derivative term from the mll."""

@@ -32,8 +32,8 @@ class StandardiseXModule:
 
     def __init__(
         self,
-        mean: Union[torch.FloatTensor, numpy.typing.NDArray[float], float],
-        scale: Union[torch.FloatTensor, numpy.typing.NDArray[float], float],
+        mean: Union[torch.Tensor, numpy.typing.NDArray[float], float],
+        scale: Union[torch.Tensor, numpy.typing.NDArray[float], float],
         device: Optional[torch.device],
         dtype: Optional[torch.dtype],
     ) -> None:

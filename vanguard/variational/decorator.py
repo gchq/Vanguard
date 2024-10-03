@@ -24,6 +24,7 @@ from typing import Any, Generic, Optional, Type, TypeVar, Union
 import gpytorch.settings
 import numpy as np
 import numpy.typing
+import torch
 from torch import Tensor
 
 from vanguard import utils
@@ -149,14 +150,14 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
-                train_x = all_parameters_as_kwargs.pop("train_x")
-                train_y = all_parameters_as_kwargs.pop("train_y")
+                train_x = torch.as_tensor(all_parameters_as_kwargs.pop("train_x"))
+                train_y = torch.as_tensor(all_parameters_as_kwargs.pop("train_y"))
 
                 gp_kwargs = all_parameters_as_kwargs.pop("gp_kwargs", {})
                 gp_kwargs["n_inducing_points"] = n_inducing_points or train_x.shape[0]
 
                 mll_kwargs = all_parameters_as_kwargs.pop("mll_kwargs", {})
-                mll_kwargs["num_data"] = train_y.size
+                mll_kwargs["num_data"] = train_y.numel()
 
                 try:
                     super().__init__(
@@ -188,6 +189,6 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                 with gpytorch.settings.num_likelihood_samples(decorator.n_likelihood_samples):
                     return super()._fuzzy_predictive_likelihood(x, x_std)
 
-        # ignore type errors here - static type checkers don't understand that we dynamically inherit from `cls`, so
+        # Ignore type errors here - static type checkers don't understand that we dynamically inherit from `cls`, so
         # `InnerClass` is always a subtype of `cls`
         return InnerClass  # pyright: ignore[reportReturnType]

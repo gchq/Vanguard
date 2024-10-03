@@ -275,7 +275,7 @@ class TestMulticlassModels(unittest.TestCase):
             # pylint: disable-next=protected-access
             MultitaskModel._get_num_latents(mean_module)
 
-        # if batch shape is empty, we should get an index error, but this should then be transformed into a type
+        # If batch_shape is empty, we should get an index error, but this should then be transformed into a type
         # error inside the code detailing to the user the issue
         mean_module.batch_shape = []
         with self.assertRaisesRegex(TypeError, "a one-dimensional, non-zero length batch shape is required"):

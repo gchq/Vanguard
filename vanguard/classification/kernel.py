@@ -21,6 +21,7 @@ from typing import Any, Tuple, Type, TypeVar, Union
 import numpy as np
 import numpy.typing
 import torch
+from torch import Tensor
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -117,9 +118,10 @@ class DirichletKernelMulticlassClassification(Decorator):
                 )
 
             def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating]]
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+                self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
+            ) -> Tuple[Tensor, Tensor]:
                 """Classify points."""
+                x = torch.as_tensor(x)
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
@@ -127,25 +129,27 @@ class DirichletKernelMulticlassClassification(Decorator):
             # https://github.com/gchq/Vanguard/issues/288
             def classify_fuzzy_points(
                 self,
-                x: Union[float, numpy.typing.NDArray[np.floating]],
-                x_std: Union[float, numpy.typing.NDArray[np.floating]],
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+                x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+            ) -> Tuple[Tensor, Tensor]:
                 """Classify fuzzy points."""
+                x = torch.as_tensor(x)
+                x_std = torch.as_tensor(x_std)
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
             @staticmethod
             def _get_predictions_from_prediction_means(
-                means: Union[float, numpy.typing.NDArray[np.floating]],
-            ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+                means: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+            ) -> Tuple[Tensor, Tensor]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 
                 :param means: The prediction means in the range [0, 1].
                 :returns: The predicted class labels, and the certainty probabilities.
                 """
-                prediction = np.argmax(means, axis=1)
-                certainty = np.max(means, axis=1)
+                means = torch.as_tensor(means)
+                certainty, prediction = torch.max(means, dim=1)
                 return prediction, certainty
 
         return InnerClass

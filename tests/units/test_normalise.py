@@ -48,8 +48,8 @@ class BasicTests(unittest.TestCase):
             cls.dataset.train_x, cls.dataset.train_y, ScaledRBFKernel, cls.dataset.train_y_std, rng=rng
         )
 
-        cls.train_y_mean = cls.dataset.train_y.mean()
-        cls.train_y_std = cls.dataset.train_y.std()
+        cls.train_y_mean = cls.dataset.train_y.mean().item()
+        cls.train_y_std = cls.dataset.train_y.std().item()
         cls.controller.fit(10)
 
     def test_pre_normalisation(self) -> None:
@@ -66,7 +66,7 @@ class BasicTests(unittest.TestCase):
         """Test that internal and external predictions are properly scaled."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_mean, internal_covar = posterior._tensor_prediction()
         # pylint: enable=protected-access
@@ -79,7 +79,7 @@ class BasicTests(unittest.TestCase):
         """Test that internal and external fuzzy predictions are properly scaled."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_mean, internal_covar = posterior._tensor_prediction()
         # pylint: enable=protected-access
@@ -92,7 +92,7 @@ class BasicTests(unittest.TestCase):
         """Test that internal and external confidence interval predictions are properly scaled."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         # pylint: enable=protected-access
@@ -112,7 +112,7 @@ class BasicTests(unittest.TestCase):
         """Test that internal and external fuzzy confidence interval predictions are properly scaled."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         # pylint: enable=protected-access
@@ -165,9 +165,9 @@ class BasicTests(unittest.TestCase):
         samples = posterior.sample(n_samples=10_000)
 
         # Samples should be on the scale of the original data (pre-scaling)
-        sample_ranges = np.quantile(samples, axis=0, q=[0.0, 1.0])
-        self.assertTrue(np.all(sample_ranges[0, :] <= self.dataset.test_y))
-        self.assertTrue(np.all(sample_ranges[1, :] >= self.dataset.test_y))
+        sample_ranges = torch.quantile(samples, dim=0, q=torch.tensor([0.0, 1.0]))
+        self.assertTrue(torch.all(sample_ranges[0, :] <= self.dataset.test_y))
+        self.assertTrue(torch.all(sample_ranges[1, :] >= self.dataset.test_y))
 
     def test_with_no_y_std(self) -> None:
         """Test normalisation functionality when no `y_std` is provided."""
@@ -186,7 +186,7 @@ class BasicTests(unittest.TestCase):
         # data when performing computations, so check this
         posterior_test = controller.posterior_over_point(dataset.test_x)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_mean, internal_covar = posterior_test._tensor_prediction()
         # pylint: enable=protected-access

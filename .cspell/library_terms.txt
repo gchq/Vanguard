@@ -26,6 +26,7 @@ bigg
 bmatrix
 booktitle
 bysource
+cdist
 cmap
 codemirror
 confutils
@@ -134,6 +135,7 @@ relazifying
 reraised
 rpds
 rsample
+rtol
 rtype
 seealso
 setdiff

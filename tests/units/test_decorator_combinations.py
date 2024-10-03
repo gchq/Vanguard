@@ -23,6 +23,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 import sklearn
+import torch
 from gpytorch.kernels import RBFKernel
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood, FixedNoiseGaussianLikelihood
 from gpytorch.means import ZeroMean
@@ -92,8 +93,12 @@ class OneHotMulticlassGaussianClassificationDataset(MulticlassGaussianClassifica
         super().__init__(
             num_train_points=num_train_points, num_test_points=num_test_points, num_classes=num_classes, rng=rng
         )
-        self.train_y = sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y)
-        self.test_y = sklearn.preprocessing.LabelBinarizer().fit_transform(self.test_y)
+        self.train_y = torch.as_tensor(
+            sklearn.preprocessing.LabelBinarizer().fit_transform(self.train_y.detach().cpu().numpy())
+        )
+        self.test_y = torch.as_tensor(
+            sklearn.preprocessing.LabelBinarizer().fit_transform(self.test_y.detach().cpu().numpy())
+        )
 
 
 class RequirementDetails(TypedDict, total=False):
@@ -251,23 +256,23 @@ COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dic
 #  are incompatible, we should raise an exception saying so, and then we should test for that exception here.
 # https://github.com/gchq/Vanguard/issues/386
 EXCLUDED_COMBINATIONS = {
-    # multitask classification generally doesn't work:
+    # Multitask classification generally doesn't work:
     # TODO(rg): these mainly fail due to dataset conflicts - we should provide datasets that work with these
     #  combinations
     # https://github.com/gchq/Vanguard/issues/385
-    (Multitask, BinaryClassification),  # likelihood contradiction
-    (Multitask, CategoricalClassification),  # multiple datasets - unnecessary as Multitask is already a requirement
-    (Multitask, DirichletMulticlassClassification),  # multiple datasets
-    (Multitask, DirichletKernelMulticlassClassification),  # multiple datasets
-    # nor does classification with variational inference:
+    (Multitask, BinaryClassification),  # Likelihood contradiction
+    (Multitask, CategoricalClassification),  # Multiple datasets - unnecessary as Multitask is already a requirement
+    (Multitask, DirichletMulticlassClassification),  # Multiple datasets
+    (Multitask, DirichletKernelMulticlassClassification),  # Multiple datasets
+    # Nor does classification with variational inference:
     # TODO(rg): if this is an accepted incompatibility, we should raise an exception saying so
     # https://github.com/gchq/Vanguard/issues/386
     (VariationalInference, DirichletKernelMulticlassClassification),  # MLL/likelihood class contradiction
-    # conflicts with Distributed:
+    # Conflicts with Distributed:
     # TODO(rg): if this is an accepted incompatibility, we should raise an exception saying so
     # https://github.com/gchq/Vanguard/issues/386
-    (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
-    # can't aggregate multitask predictions:
+    (Distributed, Multitask),  # Cannot aggregate multitask predictions (shape errors)
+    # Can't aggregate multitask predictions:
     # TODO(rg): Commenting out either the (VHH, DMC) or (LHH, DMC) pair below causes several unrelated combinations
     #  DirichletMulticlassClassification to fail. This indicates a failure of test isolation.
     # https://github.com/gchq/Vanguard/issues/378
@@ -284,10 +289,10 @@ EXCLUDED_COMBINATIONS = {
     # TODO(rg): We should provide some datasets that work with these combinations.
     # https://github.com/gchq/Vanguard/issues/385
     # HigherRankFeatures has dataset conflicts with several other decorators:
-    (HigherRankFeatures, DirichletMulticlassClassification),  # two datasets
-    (HigherRankFeatures, DirichletKernelMulticlassClassification),  # two datasets
-    (HigherRankFeatures, CategoricalClassification),  # two datasets
-    (HigherRankFeatures, Multitask),  # two datasets
+    (HigherRankFeatures, DirichletMulticlassClassification),  # Two datasets
+    (HigherRankFeatures, DirichletKernelMulticlassClassification),  # Two datasets
+    (HigherRankFeatures, CategoricalClassification),  # Two datasets
+    (HigherRankFeatures, Multitask),  # Two datasets
     # TEMPORARY - TO FIX:
     # TODO(rg): Fails with an "index out of bounds" error - seems to be because the warp function moves the class
     #  indices out of the expected range. `DirichletMulticlassClassification` seems to work fine though. Unsure on
@@ -336,7 +341,7 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
         ".* cannot handle higher-rank features. Consider moving the `@Distributed` decorator "
         "below the `@HigherRankFeatures` decorator.",
     ),
-    # can only use one hyperparameter decorator at once:
+    # Can only use one hyperparameter decorator at once:
     **{
         (upper, lower): (
             TypeError,
@@ -347,7 +352,7 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
             [VariationalHierarchicalHyperparameters, LaplaceHierarchicalHyperparameters], repeat=2
         )
     },
-    # can only use one classification decorator at a time:
+    # Can only use one classification decorator at a time:
     **{
         (upper, lower): (
             TypeError,
@@ -441,7 +446,7 @@ def _initialise_decorator_pair(
         # Decorator application *must* fail, so passing dataset=None doesn't matter as we'll never reach initialisation
         dataset = DATASET_CONFLICT_OVERRIDES[type(upper_decorator), type(lower_decorator)]
     elif upper_decorator_details == lower_decorator_details:
-        # the same details means the dataset is identical, so pass it if present, or a default if not
+        # The same details means the dataset is identical, so pass it if present, or a default if not
         dataset = upper_dataset or DEFAULT_DATASET
     elif upper_dataset and lower_dataset:
         # Passing two datasets is ambiguous!
@@ -529,7 +534,7 @@ def _create_decorator(
             ),
         )
         for upper_details, lower_details in itertools.product(DECORATORS.items(), repeat=2)
-        # don't test combinations which we've excluded above
+        # Don't test combinations which we've excluded above
         if (upper_details[0], lower_details[0]) not in EXCLUDED_COMBINATIONS
         and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
         # NoDecorator should only be on bottom, to avoid cluttering the test log
@@ -613,14 +618,14 @@ def test_combinations(
     final_kwargs.update(controller_kwargs)
     final_kwargs.update(combination_controller_kwargs)
 
-    # instantiate the controller
+    # Instantiate the controller
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_INIT_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
         controller = controller_class(**final_kwargs)
     if expected_error_class is not None:
         return
 
-    # fit the controller
+    # Fit the controller
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
         controller.fit(2)
@@ -683,7 +688,7 @@ def test_combinations(
         posterior.confidence_interval(dataset.significance)
 
         # Lower the number of MC samples to speed up testing. Again, we don't care about accuracy here, so just pick
-        # the # minimum number that doesn't cause numerical errors.
+        # the minimum number that doesn't cause numerical errors.
         with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 4):
             fuzzy_posterior = controller.posterior_over_fuzzy_point(dataset.test_x, dataset.test_x_std)
 

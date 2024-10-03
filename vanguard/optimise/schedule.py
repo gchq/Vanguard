@@ -50,7 +50,7 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
         scheduler_args = self.scheduler_args
         scheduler_step_func = self._step_scheduler_with_loss if self.scheduler_takes_loss else self._step_scheduler
 
-        # can't use @wraps_class here as it causes a unit test failure?
+        # Can't use @wraps_class here as it causes a unit test failure?
         class InnerClass(cls):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 super().__init__(*args, **kwargs)
