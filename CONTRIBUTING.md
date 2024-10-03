@@ -365,6 +365,12 @@ from the repo root. This is the same command that is used in the CI pipeline to 
 correctly, so if it builds without error in an isolated environment containing only the required dependencies, it should
 also build without error in the CI pipeline.
 
+After building, you should then run the external link checker with
+
+```shell
+python -m sphinx -b linkcheck docs/source docs/build
+```
+
 ## Releases
 
 Releases are made on an ad-hoc basis. When the maintainers decide the codebase is ready
