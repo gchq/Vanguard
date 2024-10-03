@@ -39,10 +39,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ env.UV_CACHE_DIR }}
-        key: uv-${{ runner.os }}-test-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
+        key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}-${{ matrix.python-version }}-test
         restore-keys: |
-          uv-${{ runner.os }}-test-${{ hashFiles('pyproject.toml') }}
-          uv-${{ runner.os }}-test
+          uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}-${{ matrix.python-version }}
+          uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
           uv-${{ runner.os }}
     - name: Upgrade pip
       run: python -m pip install --upgrade pip
@@ -51,10 +51,10 @@ jobs:
         pip freeze --exclude-editable | xargs pip uninstall -y || pip freeze
     - name: Install uv
       run: pip install uv
-    - name: Install latest test dependencies
-      run: uv sync --extras test --python ${{ matrix.python-version }}
+    - name: Install test dependencies
+      run: uv sync --extras test --python ${{ matrix.python-version }} --locked
     - name: Debug - uv pip freeze
-      run: pip freeze
+      run: uv pip freeze
     - name: Run tests incompatible with type checking
       run: >
         uv run pytest
