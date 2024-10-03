@@ -22,7 +22,7 @@ jobs:
       run: python -m pip install --upgrade pip
     - name: Clean installation
       run: |
-        pip freeze --exclude-editable | xargs pip uninstall -y
+        pip freeze --exclude-editable | xargs pip uninstall -y || pip freeze
     - name: Install Ruff
       run: pip install ruff
     - name: Check for unlinked TODOs

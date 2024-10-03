@@ -32,10 +32,12 @@ dependencies = [
     "gpytorch>=1.11",
     "kmedoids",
     "matplotlib",
-    "numpy>=1.20",
+    "numpy>=1.25; python_version>='3.10'",
+    "numpy>=1.20; python_version<'3.10'",
     "pandas",
     "scikit-learn",
-    "scipy",
+    "scipy>=1.13; python_version>='3.12'",
+    "scipy; python_version<'3.12'",
     "torch>=1.7.0",
     "typing_extensions",
     "urllib3>=2.2.1",
@@ -58,7 +60,8 @@ doc = [
     "ipython",
     "setuptools; python_version>='3.12'",  # TODO: Remove once pybtex releases > 0.24.0
     # https://github.com/gchq/Vanguard/issues/246
-    "sphinx>=8",
+    "sphinx>=8; python_version>='3.10'",
+    "sphinx; python_version<'3.10'",
     "sphinx-autodoc-typehints",
     "sphinxcontrib-bibtex",
 ]

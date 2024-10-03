@@ -55,7 +55,7 @@ jobs:
         run: python -m pip install --upgrade pip
       - name: Clean installation
         run: |
-          pip freeze --exclude-editable | xargs pip uninstall -y
+          pip freeze --exclude-editable | xargs pip uninstall -y || pip freeze
       - name: Install pre-commit
         run: pip install pre-commit
       - name: Store hash of baseline pre-commit config for comparison
