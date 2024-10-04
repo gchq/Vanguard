@@ -80,13 +80,14 @@ class BaseHierarchicalHyperparameters(Decorator):
                 new_instance.hyperparameter_collection = instance.hyperparameter_collection
                 return new_instance
 
-            def _get_posterior_over_point(self, x: NDArray[np.floating]) -> Type[PosteriorT]:
+            def _get_posterior_over_point(self, x: Union[Tensor, NDArray[np.floating]]) -> Type[PosteriorT]:
                 """
                 Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
 
                 :param x: (n_predictions, n_features) The predictive inputs.
                 :returns: The prior distribution.
                 """
+                x = torch.as_tensor(x)
                 posteriors = (
                     self.posterior_class(posterior_sample)
                     # pylint: disable=protected-access
@@ -95,13 +96,14 @@ class BaseHierarchicalHyperparameters(Decorator):
                 posterior_collection = self.posterior_collection_class(posteriors)
                 return posterior_collection
 
-            def _predictive_likelihood(self, x: NDArray[np.floating]) -> Type[PosteriorT]:
+            def _predictive_likelihood(self, x: Union[Tensor, NDArray[np.floating]]) -> Type[PosteriorT]:
                 """
                 Predict the likelihood value of a single point. The mode (eval vs train) of the model is not changed.
 
                 :param x: (n_predictions, n_features) The predictive inputs.
                 :returns: The prior distribution.
                 """
+                x = torch.as_tensor(x)
                 likelihoods = (
                     self.posterior_class(posterior_sample)
                     # pylint: disable=protected-access
@@ -111,7 +113,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 return likelihood_collection
 
             def _get_posterior_over_fuzzy_point_in_eval_mode(
-                self, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+                self, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating], float]
             ) -> Type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
@@ -127,6 +129,8 @@ class BaseHierarchicalHyperparameters(Decorator):
 
                 :returns: The prior distribution.
                 """
+                x = torch.as_tensor(x)
+                x_std = torch.as_tensor(x_std)
                 self.set_to_evaluation_mode()
                 posteriors = (
                     self.posterior_class(x_sample)
@@ -137,7 +141,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 return posterior_collection
 
             def _fuzzy_predictive_likelihood(
-                self, x: NDArray[np.floating], x_std: Union[NDArray[np.floating], float]
+                self, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating], float]
             ) -> Type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive likelihood with Gaussian input noise.
@@ -153,6 +157,8 @@ class BaseHierarchicalHyperparameters(Decorator):
 
                 :returns: The prior distribution.
                 """
+                x = torch.as_tensor(x)
+                x_std = torch.as_tensor(x_std)
                 self.set_to_evaluation_mode()
                 likelihoods = (
                     self.posterior_class(posterior_sample)
@@ -169,6 +175,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 Overloading is necessary to remove fast_pred_var.
                 See here: https://github.com/cornellius-gp/gpytorch/issues/864
                 """
+                x = torch.as_tensor(x)
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=NumericalWarning, message=_JITTER_WARNING)
 

@@ -28,8 +28,10 @@ import numpy as np
 import numpy.typing
 import torch
 from gpytorch import constraints
+from gpytorch.likelihoods import _OneDimensionalLikelihood
 from gpytorch.models import ApproximateGP, ExactGP
 from linear_operator.utils.errors import NanError
+from torch import Tensor
 from torch.distributions import Distribution
 
 from vanguard import utils
@@ -85,10 +87,7 @@ class BaseGPController:
     """
 
     _default_tensor_dtype = torch.float
-    if torch.cuda.is_available():
-        _default_tensor_device = torch.device("cuda")
-    else:
-        _default_tensor_device = torch.device("cpu")
+    _default_tensor_device = utils.default_device
 
     torch.set_default_device(_default_tensor_device)
     torch.set_default_dtype(_default_tensor_dtype)
@@ -118,20 +117,23 @@ class BaseGPController:
         self.rng = utils.optional_random_generator(rng)
 
         if train_x.ndim == 1:
-            self.train_x = torch.tensor(train_x, dtype=self.dtype, device="cpu").unsqueeze(1)
+            self.train_x = torch.tensor(train_x, dtype=self.dtype, device=self.device).unsqueeze(1)
         else:
-            self.train_x = torch.tensor(train_x, dtype=self.dtype, device="cpu")
+            self.train_x = torch.tensor(train_x, dtype=self.dtype, device=self.device)
 
+        # We don't set the dtype for targets, since for continuous problems they will be floats, but for classification
+        # problems they will be integers
+        y_dtype = torch.int if torch.as_tensor(train_y).dtype == torch.int else torch.float
         if train_y.ndim == 1:
-            self.train_y = torch.tensor(train_y, dtype=self.dtype, device="cpu").unsqueeze(1)
+            self.train_y = torch.tensor(train_y, dtype=y_dtype, device=self.device).unsqueeze(1)
         else:
-            self.train_y = torch.tensor(train_y, dtype=self.dtype, device="cpu")
+            self.train_y = torch.tensor(train_y, dtype=y_dtype, device=self.device)
 
         # pylint: disable-next=invalid-name
         self.N, self.dim, *_ = self.train_x.shape
 
         self._original_y_variance_as_tensor = torch.as_tensor(y_std**2, dtype=self.dtype)
-        if isinstance(y_std, (float, int)):
+        if isinstance(y_std, (float, int)) or y_std.ndim == 0:
             self._y_variance = torch.ones_like(self.train_y, dtype=self.dtype).squeeze(dim=-1) * (y_std**2)
         else:
             self._y_variance = torch.as_tensor(y_std**2, dtype=self.dtype)
@@ -153,6 +155,11 @@ class BaseGPController:
             likelihood_class, **all_likelihood_params_as_kwargs
         )
 
+        # Janky fix for gpytorch bug(?)
+        if isinstance(self.likelihood, _OneDimensionalLikelihood):
+            self.likelihood.quadrature.locations = self.likelihood.quadrature.locations.to(self.device)
+            self.likelihood.quadrature.weights = self.likelihood.quadrature.weights.to(self.device)
+
         mean_class, kernel_class = self._input_standardise_modules(mean_class, kernel_class)
 
         kernel_kwargs = kwargs.get("kernel_kwargs", {})
@@ -171,13 +178,8 @@ class BaseGPController:
         class SafeMarginalLogLikelihoodClass(marginal_log_likelihood_class):
             pass
 
-        if self.batch_size is not None:
-            # then the training data will be updated at each training iteration
-            gp_train_x = None
-            gp_train_y = None
-        else:
-            gp_train_x = self.train_x
-            gp_train_y = self.train_y.squeeze(dim=-1)
+        gp_train_x = self.train_x
+        gp_train_y = self.train_y.squeeze(dim=-1)
 
         self._gp = SafeGPModelClass(
             gp_train_x,
@@ -248,7 +250,7 @@ class BaseGPController:
 
     def _predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
+        x: Union[Tensor, numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -271,8 +273,8 @@ class BaseGPController:
 
     def _fuzzy_predictive_likelihood(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
-        x_std: Union[numpy.typing.NDArray[float], float],
+        x: Union[Tensor, numpy.typing.NDArray[float], float],
+        x_std: Union[Tensor, numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.
@@ -289,8 +291,8 @@ class BaseGPController:
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
         self,
-        x: Union[numpy.typing.NDArray[float], float],
-        x_std: Union[numpy.typing.NDArray[float], float],
+        x: Union[Tensor, numpy.typing.NDArray[float], float],
+        x_std: Union[Tensor, numpy.typing.NDArray[float], float],
     ) -> Posterior:
         """
         Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
@@ -306,7 +308,7 @@ class BaseGPController:
 
         :returns: The prior distribution.
         """
-        tx = torch.tensor(x, dtype=self.dtype, device=self.device)
+        tx = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         tx_std = self._process_x_std(x_std).to(self.device)
 
         def infinite_x_samples(
@@ -355,19 +357,13 @@ class BaseGPController:
 
         for iter_num, (train_x, train_y, train_y_noise) in enumerate(islice(self.train_data_generator, n_iters)):
             self.likelihood_noise = train_y_noise
-            if self.batch_size is not None:
-                # update the training data to the current train_x and train_y, to avoid "You must train on the
-                # training data!"
-                self._gp.set_train_data(train_x, train_y.squeeze(dim=-1), strict=False)
-                # TODO: consider using get_fantasy_model() instead if possible, when using ExactGP?
-                # https://github.com/gchq/Vanguard/issues/352
             try:
                 loss = self._single_optimisation_step(train_x, train_y, retain_graph=iter_num < n_iters - 1)
 
             except NoImprovementError:
                 loss = self._smart_optimiser.last_n_losses[-1]
                 break
-            except RuntimeError as err:
+            except RuntimeError:
                 warnings.warn(f"Hit a numerical error after {iter_num} iterations of training.")
                 if self.auto_restart is True:
                     warnings.warn(f"Re-running training from scratch for {iter_num-1} iterations.")
@@ -379,7 +375,7 @@ class BaseGPController:
                             "Pass auto_restart=True to the controller to automatically restart"
                             " training up to the last stable iterations."
                         )
-                    raise err
+                    raise
             finally:
                 try:
                     detached_loss = loss.detach().cpu().item()
@@ -412,7 +408,7 @@ class BaseGPController:
         self,
         train_x: torch.Tensor,
         train_y: torch.Tensor,
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """
         Compute the training loss (negative marginal log likelihood).
 
@@ -424,7 +420,8 @@ class BaseGPController:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=NumericalWarning, message=_JITTER_WARNING)
             warnings.filterwarnings("ignore", category=NumericalWarning, message=_CHOLESKY_WARNING)
-            return -self._mll(output, train_y.squeeze(dim=-1))
+            loss = -self._mll(output, train_y.squeeze(dim=-1))
+            return loss
 
     def _get_posterior_over_point_in_eval_mode(
         self,
@@ -469,7 +466,7 @@ class BaseGPController:
 
     def _process_x_std(
         self,
-        std: Union[numpy.typing.NDArray[float], float],
+        std: Union[Tensor, numpy.typing.NDArray[float], float],
     ) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
@@ -542,10 +539,10 @@ class BaseGPController:
         mean, covar = posterior.distribution.mean, posterior.distribution.covariance_matrix
 
         shape_mapping = {
-            (1, 2): (x.shape[0],),  # single MultivariateNormal
-            (2, 2): (x.shape[0], mean.shape[-1]),  # single MultitaskMultivariateNormal
-            (2, 3): (x.shape[0],),  # batch of MultivariateNormals
-            (3, 3): (x.shape[0], mean.shape[-1]),  # batch of MultitaskMultivariateNormals
+            (1, 2): (x.shape[0],),  # Single MultivariateNormal
+            (2, 2): (x.shape[0], mean.shape[-1]),  # Single MultitaskMultivariateNormal
+            (2, 3): (x.shape[0],),  # Batch of MultivariateNormals
+            (3, 3): (x.shape[0], mean.shape[-1]),  # Batch of MultitaskMultivariateNormals
         }
 
         try:
@@ -601,7 +598,7 @@ def _catch_and_check_module_errors(
             def __call__(self, *args, **kwargs):
                 try:
                     result = super().__call__(*args, **kwargs)
-                except NanError:  # otherwise we catch this as a RuntimeError
+                except NanError:  # Otherwise we catch this as a RuntimeError
                     raise
                 except RuntimeError as exc:
                     decorator_names = {decorator.__name__ for decorator in controller.__decorators__}

@@ -90,7 +90,7 @@ class BasicTests(unittest.TestCase):
             rng=self.rng,
         )
 
-        # assertion: this doesn't fail due to some "unexpected argument" or "argument missing" error
+        # Assertion: this doesn't fail due to some "unexpected argument" or "argument missing" error
         controller.fit(10)
 
     def test_scheduler_handles_only_expected_type_errors(self):

@@ -24,6 +24,7 @@ import numpy as np
 import torch
 from gpytorch.utils.warnings import GPInputWarning
 from numpy.typing import NDArray
+from torch import Tensor
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -130,20 +131,25 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
-                self._full_train_x: NDArray = all_parameters_as_kwargs.pop("train_x")
-                self._full_train_y: NDArray = all_parameters_as_kwargs.pop("train_y")
-                self._full_y_std: Union[int, float] = all_parameters_as_kwargs.pop("y_std")
-
-                if not isinstance(self._full_y_std, (float, int)):
-                    raise TypeError(
-                        f"The {type(self).__name__} class has been distributed, and can only accept a "
-                        f"number as the argument to 'y_std', not '{type(self._full_y_std).__name__}'."
-                    )
+                self._full_train_x = torch.as_tensor(all_parameters_as_kwargs.pop("train_x"))
+                self._full_train_y = torch.as_tensor(all_parameters_as_kwargs.pop("train_y"))
+                full_y_std = torch.as_tensor(all_parameters_as_kwargs.pop("y_std"))
+                try:
+                    self._full_y_std = full_y_std.item()
+                except RuntimeError:
+                    if full_y_std.ndim > 0:
+                        raise TypeError(
+                            f"The {type(self).__name__} class has been distributed, and can only accept a "
+                            f"number or 0-dimensional array as the argument to 'y_std'. "
+                            f"Got an array of shape {full_y_std.shape}."
+                        ) from None
+                    else:
+                        raise
 
                 self.aggregator_class = decorator.aggregator_class
 
                 partitioner_class = decorator.partitioner_class
-                partitioner_kwargs = dict(decorator.partitioner_kwargs)  # copy
+                partitioner_kwargs = dict(decorator.partitioner_kwargs)  # Copy so we don't change the original
                 partitioner_kwargs.update(all_parameters_as_kwargs.pop("partitioner_kwargs", {}))
                 communications_expert = issubclass(self.aggregator_class, (GRBCMAggregator, XGRBCMAggregator))
                 self.partitioner = partitioner_class(
@@ -318,10 +324,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
 
 def _create_subset(
-    *arrays: Union[NDArray[np.floating], NDArray[np.integer], float, int],
+    *arrays: Union[Tensor, NDArray[np.floating], NDArray[np.integer], float, int],
     subset_fraction: float = 0.1,
     rng: Optional[np.random.Generator] = None,
-) -> List[Union[NDArray[np.floating], NDArray[np.integer], float]]:
+) -> List[Union[Tensor, NDArray[np.floating], NDArray[np.integer], float]]:
     """
     Return subsets of the arrays along the same random indices.
 

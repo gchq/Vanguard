@@ -200,7 +200,7 @@ class DisableStandardiseModuleTests(StandardiseModuleTests):
         class DisableStandardScalingController(GaussianGPController):
             pass
 
-        torch.manual_seed(self.seed)  # reset the seed to reproduce the random parameters
+        torch.manual_seed(self.seed)  # Reset the seed to reproduce the random parameters
         gp = DisableStandardScalingController(
             train_x=self.data,
             train_y=self.rng.standard_normal(self.data.shape[0]),

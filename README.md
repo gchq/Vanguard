@@ -23,6 +23,13 @@ $ pip install .
 
 If the code is not running properly, recreate the environment with `pip install -r requirements.txt --no-deps`.
 
+## Documentation
+
+Vanguard's documentation can be found online at [TODO: LINK GOES HERE].
+
+Alternatively, you can build the documentation from source - instructions for doing so can be found in
+[`CONTRIBUTING.md`](CONTRIBUTING.md#documentation).
+
 ## Tests
 
 Vanguard's tests are contained in the `tests/` directory, and can be run with `pytest`. The tests are arranged
