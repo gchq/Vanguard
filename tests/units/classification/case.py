@@ -71,4 +71,7 @@ class ClassificationTestCase(unittest.TestCase):
                 f"Incorrect predictions: {number_incorrect} / {len(x)} "
                 f"({100 * proportion_incorrect:.2f}%) -- delta = {100 * delta:.2f}%"
             )
-            raise AssertionError(error_message) from None
+            if __debug__:
+                raise AssertionError(error_message) from None
+            else:
+                raise AssertionError("Proportion of incorrect predictions bigger than the threshold value.") from None
