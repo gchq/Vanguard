@@ -21,7 +21,6 @@ import sys
 
 import bibtexparser
 
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 def _import_bibliography(bibtex_file_path, encoding="utf8"):
     """Import a .bib file as a dictionary."""
@@ -37,7 +36,7 @@ def _import_bibliography(bibtex_file_path, encoding="utf8"):
                 try:
                     entry["url"] = "https://arxiv.org/abs/" + entry["eprint"]
                 except KeyError as exc:
-                    if DEBUG:
+                    if __debug__:
                         raise ValueError(f"Cannot calculate arXiv URL for {reference_id}: missing 'eprint'.") from exc
                     else:
                         raise ValueError("Cannot calculate arXiv URL: missing 'eprint'.") from exc
