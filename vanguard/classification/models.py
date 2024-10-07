@@ -53,8 +53,6 @@ class DummyKernelDistribution(DummyDistribution):
         """
         self.labels = labels
         self.kernel = kernel
-        # self.mean = self.kernel @ self.labels.to_dense()
-        # self.covariance_matrix = torch.zeros_like(self.mean)
 
         try:
             self.mean = self.kernel @ self.labels.to_dense()
