@@ -121,10 +121,13 @@ class BaseGPController:
         else:
             self.train_x = torch.tensor(train_x, dtype=self.dtype, device=self.device)
 
+        # We don't set the dtype for targets, since for continuous problems they will be floats, but for classification
+        # problems they will be integers
+        y_dtype = torch.int if torch.as_tensor(train_y).dtype == torch.int else torch.float
         if train_y.ndim == 1:
-            self.train_y = torch.tensor(train_y, dtype=self.dtype, device=self.device).unsqueeze(1)
+            self.train_y = torch.tensor(train_y, dtype=y_dtype, device=self.device).unsqueeze(1)
         else:
-            self.train_y = torch.tensor(train_y, dtype=self.dtype, device=self.device)
+            self.train_y = torch.tensor(train_y, dtype=y_dtype, device=self.device)
 
         # pylint: disable-next=invalid-name
         self.N, self.dim, *_ = self.train_x.shape
@@ -152,7 +155,7 @@ class BaseGPController:
             likelihood_class, **all_likelihood_params_as_kwargs
         )
 
-        # janky fix for gpytorch bug(?)
+        # Janky fix for gpytorch bug(?)
         if isinstance(self.likelihood, _OneDimensionalLikelihood):
             self.likelihood.quadrature.locations = self.likelihood.quadrature.locations.to(self.device)
             self.likelihood.quadrature.weights = self.likelihood.quadrature.weights.to(self.device)
@@ -175,13 +178,8 @@ class BaseGPController:
         class SafeMarginalLogLikelihoodClass(marginal_log_likelihood_class):
             pass
 
-        if self.batch_size is not None:
-            # then the training data will be updated at each training iteration
-            gp_train_x = None
-            gp_train_y = None
-        else:
-            gp_train_x = self.train_x
-            gp_train_y = self.train_y.squeeze(dim=-1)
+        gp_train_x = self.train_x
+        gp_train_y = self.train_y.squeeze(dim=-1)
 
         self._gp = SafeGPModelClass(
             gp_train_x,
@@ -359,12 +357,6 @@ class BaseGPController:
 
         for iter_num, (train_x, train_y, train_y_noise) in enumerate(islice(self.train_data_generator, n_iters)):
             self.likelihood_noise = train_y_noise
-            if self.batch_size is not None:
-                # update the training data to the current train_x and train_y, to avoid "You must train on the
-                # training data!"
-                self._gp.set_train_data(train_x, train_y.squeeze(dim=-1), strict=False)
-                # TODO: consider using get_fantasy_model() instead if possible, when using ExactGP?
-                # https://github.com/gchq/Vanguard/issues/352
             try:
                 loss = self._single_optimisation_step(train_x, train_y, retain_graph=iter_num < n_iters - 1)
 
@@ -547,10 +539,10 @@ class BaseGPController:
         mean, covar = posterior.distribution.mean, posterior.distribution.covariance_matrix
 
         shape_mapping = {
-            (1, 2): (x.shape[0],),  # single MultivariateNormal
-            (2, 2): (x.shape[0], mean.shape[-1]),  # single MultitaskMultivariateNormal
-            (2, 3): (x.shape[0],),  # batch of MultivariateNormals
-            (3, 3): (x.shape[0], mean.shape[-1]),  # batch of MultitaskMultivariateNormals
+            (1, 2): (x.shape[0],),  # Single MultivariateNormal
+            (2, 2): (x.shape[0], mean.shape[-1]),  # Single MultitaskMultivariateNormal
+            (2, 3): (x.shape[0],),  # Batch of MultivariateNormals
+            (3, 3): (x.shape[0], mean.shape[-1]),  # Batch of MultitaskMultivariateNormals
         }
 
         try:
@@ -606,7 +598,7 @@ def _catch_and_check_module_errors(
             def __call__(self, *args, **kwargs):
                 try:
                     result = super().__call__(*args, **kwargs)
-                except NanError:  # otherwise we catch this as a RuntimeError
+                except NanError:  # Otherwise we catch this as a RuntimeError
                     raise
                 except RuntimeError as exc:
                     decorator_names = {decorator.__name__ for decorator in controller.__decorators__}

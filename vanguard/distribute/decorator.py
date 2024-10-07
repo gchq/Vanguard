@@ -134,7 +134,6 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self._full_train_x = torch.as_tensor(all_parameters_as_kwargs.pop("train_x"))
                 self._full_train_y = torch.as_tensor(all_parameters_as_kwargs.pop("train_y"))
                 full_y_std = torch.as_tensor(all_parameters_as_kwargs.pop("y_std"))
-                print(full_y_std)
                 try:
                     self._full_y_std = full_y_std.item()
                 except RuntimeError:
@@ -150,7 +149,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 self.aggregator_class = decorator.aggregator_class
 
                 partitioner_class = decorator.partitioner_class
-                partitioner_kwargs = dict(decorator.partitioner_kwargs)  # copy
+                partitioner_kwargs = dict(decorator.partitioner_kwargs)  # Copy so we don't change the original
                 partitioner_kwargs.update(all_parameters_as_kwargs.pop("partitioner_kwargs", {}))
                 communications_expert = issubclass(self.aggregator_class, (GRBCMAggregator, XGRBCMAggregator))
                 self.partitioner = partitioner_class(

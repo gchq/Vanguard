@@ -113,7 +113,7 @@ class PosteriorCollectionTests(unittest.TestCase):
         collection = MonteCarloPosteriorCollection(infinite_generator())
         distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=get_default_rng())
 
-        # for 10 random points, check that the log-pdf calculated by the collection is the same as that for the
+        # For 10 random points, check that the log-pdf calculated by the collection is the same as that for the
         # single distribution
         for _ in range(10):
             point = distribution.rvs(1)
@@ -140,7 +140,7 @@ class PosteriorCollectionTests(unittest.TestCase):
         collection = MonteCarloPosteriorCollection(infinite_generator())
         distribution = multivariate_normal(np.zeros((2,)), np.eye(2), seed=get_default_rng())
 
-        # for 10 random points, check that the log-pdf calculated by the collection is the same as that for the
+        # For 10 random points, check that the log-pdf calculated by the collection is the same as that for the
         # single distribution
         for _ in range(10):
             points = distribution.rvs([1, 5])
@@ -184,7 +184,7 @@ class YieldPosteriorsTests(unittest.TestCase):
         class MockDistribution:
             """Mock of Distribution class."""
 
-            __class__ = MultivariateNormal  # lying to the type checker
+            __class__ = MultivariateNormal  # Lying to the type checker!
 
             def __init__(self, mean: torch.Tensor, covariance: torch.Tensor):
                 self.mean = mean
@@ -205,11 +205,11 @@ class YieldPosteriorsTests(unittest.TestCase):
         failure_count = 0
         while True:
             if failure_count >= num_failures_between_successes:
-                # return a posterior with a positive definite covariance matrix
+                # Return a posterior with a positive definite covariance matrix.
                 yield MockPosterior(torch.zeros(3), torch.eye(3))
                 failure_count = 0
             else:
-                # return a posterior with a negative definite covariance matrix
+                # Return a posterior with a negative definite covariance matrix.
                 yield MockPosterior(torch.zeros(3), -torch.eye(3))
                 failure_count += 1
 
@@ -245,6 +245,6 @@ class YieldPosteriorsTests(unittest.TestCase):
                     )
                 )
 
-            # check that we've had enough errors that we would have raised if they were in a row
+            # Check that we've had enough errors that we would have raised if they were in a row.
             # pylint: disable-next=protected-access
             self.assertGreater(collection._posteriors_skipped, collection.MAX_POSTERIOR_ERRORS_BEFORE_RAISE)

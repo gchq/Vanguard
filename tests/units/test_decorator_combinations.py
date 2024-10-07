@@ -256,23 +256,23 @@ COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dic
 #  are incompatible, we should raise an exception saying so, and then we should test for that exception here.
 # https://github.com/gchq/Vanguard/issues/386
 EXCLUDED_COMBINATIONS = {
-    # multitask classification generally doesn't work:
+    # Multitask classification generally doesn't work:
     # TODO(rg): these mainly fail due to dataset conflicts - we should provide datasets that work with these
     #  combinations
     # https://github.com/gchq/Vanguard/issues/385
-    (Multitask, BinaryClassification),  # likelihood contradiction
-    (Multitask, CategoricalClassification),  # multiple datasets - unnecessary as Multitask is already a requirement
-    (Multitask, DirichletMulticlassClassification),  # multiple datasets
-    (Multitask, DirichletKernelMulticlassClassification),  # multiple datasets
-    # nor does classification with variational inference:
+    (Multitask, BinaryClassification),  # Likelihood contradiction
+    (Multitask, CategoricalClassification),  # Multiple datasets - unnecessary as Multitask is already a requirement
+    (Multitask, DirichletMulticlassClassification),  # Multiple datasets
+    (Multitask, DirichletKernelMulticlassClassification),  # Multiple datasets
+    # Nor does classification with variational inference:
     # TODO(rg): if this is an accepted incompatibility, we should raise an exception saying so
     # https://github.com/gchq/Vanguard/issues/386
     (VariationalInference, DirichletKernelMulticlassClassification),  # MLL/likelihood class contradiction
-    # conflicts with Distributed:
+    # Conflicts with Distributed:
     # TODO(rg): if this is an accepted incompatibility, we should raise an exception saying so
     # https://github.com/gchq/Vanguard/issues/386
-    (Distributed, Multitask),  # cannot aggregate multitask predictions (shape errors)
-    # can't aggregate multitask predictions:
+    (Distributed, Multitask),  # Cannot aggregate multitask predictions (shape errors)
+    # Can't aggregate multitask predictions:
     # TODO(rg): Commenting out either the (VHH, DMC) or (LHH, DMC) pair below causes several unrelated combinations
     #  DirichletMulticlassClassification to fail. This indicates a failure of test isolation.
     # https://github.com/gchq/Vanguard/issues/378
@@ -289,10 +289,10 @@ EXCLUDED_COMBINATIONS = {
     # TODO(rg): We should provide some datasets that work with these combinations.
     # https://github.com/gchq/Vanguard/issues/385
     # HigherRankFeatures has dataset conflicts with several other decorators:
-    (HigherRankFeatures, DirichletMulticlassClassification),  # two datasets
-    (HigherRankFeatures, DirichletKernelMulticlassClassification),  # two datasets
-    (HigherRankFeatures, CategoricalClassification),  # two datasets
-    (HigherRankFeatures, Multitask),  # two datasets
+    (HigherRankFeatures, DirichletMulticlassClassification),  # Two datasets
+    (HigherRankFeatures, DirichletKernelMulticlassClassification),  # Two datasets
+    (HigherRankFeatures, CategoricalClassification),  # Two datasets
+    (HigherRankFeatures, Multitask),  # Two datasets
     # TEMPORARY - TO FIX:
     # TODO(rg): Fails with an "index out of bounds" error - seems to be because the warp function moves the class
     #  indices out of the expected range. `DirichletMulticlassClassification` seems to work fine though. Unsure on
@@ -306,6 +306,22 @@ EXCLUDED_COMBINATIONS = {
     # https://github.com/gchq/Vanguard/issues/375
     (HigherRankFeatures, VariationalHierarchicalHyperparameters),
     (HigherRankFeatures, LaplaceHierarchicalHyperparameters),
+}
+
+# Combinations that are not tested at all in batch mode. Note that these are not skipped, they are just not provided
+# as parameter combinations in the first place. This list is checked after `EXCLUDED_COMBINATIONS`, so anything that
+# appears in that list is also excluded. Unlike `EXCLUDED_COMBINATIONS`, this is a set of ordered (upper, lower) pairs.
+BATCH_EXCLUDED_COMBINATIONS = {
+    # TODO: These are all excluded as a *temporary measure*. Eventually this list should be empty. For each pair,
+    #  either raise an informative exception we can test for, or ensure that it runs without error.
+    # https://github.com/gchq/Vanguard/issues/386
+    (Distributed, DirichletMulticlassClassification),
+    (Distributed, SetWarp),
+    (VariationalHierarchicalHyperparameters, Multitask),
+    (LaplaceHierarchicalHyperparameters, Multitask),
+    (Multitask, VariationalHierarchicalHyperparameters),
+    (Multitask, LaplaceHierarchicalHyperparameters),
+    (Multitask, Multitask),
 }
 
 # (upper, lower) -> (error type, message regex)
@@ -325,7 +341,7 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
         ".* cannot handle higher-rank features. Consider moving the `@Distributed` decorator "
         "below the `@HigherRankFeatures` decorator.",
     ),
-    # can only use one hyperparameter decorator at once:
+    # Can only use one hyperparameter decorator at once:
     **{
         (upper, lower): (
             TypeError,
@@ -336,7 +352,7 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
             [VariationalHierarchicalHyperparameters, LaplaceHierarchicalHyperparameters], repeat=2
         )
     },
-    # can only use one classification decorator at a time:
+    # Can only use one classification decorator at a time:
     **{
         (upper, lower): (
             TypeError,
@@ -394,20 +410,26 @@ DATASET_CONFLICT_OVERRIDES = {
 def _initialise_decorator_pair(
     upper_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
     lower_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
-) -> Tuple[Decorator, List[Decorator], Decorator, List[Decorator], Dict[str, Any], Optional[Dataset]]:
+    *,
+    batch_mode: bool,
+) -> Tuple[Decorator, List[Decorator], Decorator, List[Decorator], List[Decorator], Dict[str, Any], Optional[Dataset]]:
     """
     Initialise a pair of decorators for testing.
 
     :param upper_decorator_details: (key, value) entry from `DECORATORS` for the upper decorator.
     :param upper_decorator_details: (key, value) entry from `DECORATORS` for the lower decorator.
+    :param batch_mode: True if the controller will be created in batch mode. Ensures `VariationalInference` decorator
+        is present.
     :return: Tuple (upper_decorator, upper_requirement_decorators, lower_decorator, lower_requirement_decorators,
-        controller_kwargs, dataset):
+        batch_decorators, controller_kwargs, dataset):
         - `upper_decorator`: the instantiated upper decorator
         - `upper_requirement_decorators`: list of instantiated decorators to be applied before `upper_decorator` to
             fulfil its requirements
         - `lower_decorator`: the instantiated upper decorator
         - `lower_requirement_decorators`: list of instantiated decorators to be applied before `lower_decorator` to
             fulfil its requirements
+        - `batch_decorators`: possibly contains an instantiated `VariationalInference` decorator if running in batch
+            mode and one is not already present in the previous tuple elements
         - `controller_kwargs`: additional keyword arguments to provide to the `GPController` on instantiation. In case
             multiple decorators provide values for the same keyword argument, if a value is given in
             `COMBINATION_CONTROLLER_KWARGS`, that value is used; if not the value from the topmost decorator is used.
@@ -424,7 +446,7 @@ def _initialise_decorator_pair(
         # Decorator application *must* fail, so passing dataset=None doesn't matter as we'll never reach initialisation
         dataset = DATASET_CONFLICT_OVERRIDES[type(upper_decorator), type(lower_decorator)]
     elif upper_decorator_details == lower_decorator_details:
-        # the same details means the dataset is identical, so pass it if present, or a default if not
+        # The same details means the dataset is identical, so pass it if present, or a default if not
         dataset = upper_dataset or DEFAULT_DATASET
     elif upper_dataset and lower_dataset:
         # Passing two datasets is ambiguous!
@@ -436,14 +458,33 @@ def _initialise_decorator_pair(
         # Pass whichever dataset we have, or a default.
         dataset = upper_dataset or lower_dataset or DEFAULT_DATASET
 
+    if batch_mode and not any(
+        isinstance(decorator, VariationalInference)
+        for decorator in [
+            upper_decorator,
+            lower_decorator,
+            *upper_requirement_decorators,
+            *lower_requirement_decorators,
+        ]
+    ):
+        # then we need to add variational inference ourselves
+        variational_decorator, _, controller_kwargs, _ = _create_decorator(
+            (VariationalInference, DECORATORS[VariationalInference])
+        )
+        batch_decorators = [variational_decorator]
+    else:
+        batch_decorators = []
+        controller_kwargs = {}
+
     # For controller arguments, ones on higher decorators override those on lower decorators
-    controller_kwargs = lower_controller_kwargs
+    controller_kwargs.update(lower_controller_kwargs)
     controller_kwargs.update(upper_controller_kwargs)
     return (
         upper_decorator,
         upper_requirement_decorators,
         lower_decorator,
         lower_requirement_decorators,
+        batch_decorators,
         controller_kwargs,
         dataset,
     )
@@ -493,7 +534,7 @@ def _create_decorator(
             ),
         )
         for upper_details, lower_details in itertools.product(DECORATORS.items(), repeat=2)
-        # don't test combinations which we've excluded above
+        # Don't test combinations which we've excluded above
         if (upper_details[0], lower_details[0]) not in EXCLUDED_COMBINATIONS
         and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
         # NoDecorator should only be on bottom, to avoid cluttering the test log
@@ -502,16 +543,7 @@ def _create_decorator(
         and not issubclass(lower_details[0], TopMostDecorator)
     ],
 )
-@pytest.mark.parametrize(
-    "batch_size",
-    [
-        pytest.param(None, id="full"),
-        # TODO(rg): Many test failures when running with a batch_size set! Often "You must train on the training
-        #  inputs". To be investigated. See for a similar example:
-        # https://github.com/gchq/Vanguard/issues/377
-        # pytest.param(2, id="batch"),
-    ],
-)
+@pytest.mark.parametrize("batch_size", [pytest.param(None, id="full"), pytest.param(2, id="batch")])
 def test_combinations(
     upper_details: Tuple[Type[Decorator], DecoratorDetails],
     lower_details: Tuple[Type[Decorator], DecoratorDetails],
@@ -538,10 +570,21 @@ def test_combinations(
 
     and check that none of the above operations raise any unexpected errors.
     """
-    upper_decorator, upper_requirements, lower_decorator, lower_requirements, controller_kwargs, dataset = (
-        _initialise_decorator_pair(upper_details, lower_details)
-    )
-    all_decorators = [upper_decorator, *upper_requirements, lower_decorator, *lower_requirements]
+    (
+        upper_decorator,
+        upper_requirements,
+        lower_decorator,
+        lower_requirements,
+        batch_requirements,
+        controller_kwargs,
+        dataset,
+    ) = _initialise_decorator_pair(upper_details, lower_details, batch_mode=batch_size is not None)
+    all_decorators = [upper_decorator, *upper_requirements, lower_decorator, *lower_requirements, *batch_requirements]
+
+    if batch_size is not None and any(isinstance(d, DirichletKernelMulticlassClassification) for d in all_decorators):
+        pytest.skip("DirichletKernelMulticlassClassification is not compatible with VariationalInference")
+    if batch_size is not None and (upper_details[0], lower_details[0]) in BATCH_EXCLUDED_COMBINATIONS:
+        pytest.skip("Combination is excluded from batch mode testing")
 
     combination = (type(upper_decorator), type(lower_decorator))
     expected_warning_class, expected_warning_message = EXPECTED_COMBINATION_APPLY_WARNINGS.get(
@@ -575,14 +618,14 @@ def test_combinations(
     final_kwargs.update(controller_kwargs)
     final_kwargs.update(combination_controller_kwargs)
 
-    # instantiate the controller
+    # Instantiate the controller
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_INIT_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
         controller = controller_class(**final_kwargs)
     if expected_error_class is not None:
         return
 
-    # fit the controller
+    # Fit the controller
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_FIT_ERRORS.get(combination, (None, None))
     with maybe_throws(expected_error_class, expected_error_message):
         controller.fit(2)
@@ -645,7 +688,7 @@ def test_combinations(
         posterior.confidence_interval(dataset.significance)
 
         # Lower the number of MC samples to speed up testing. Again, we don't care about accuracy here, so just pick
-        # the # minimum number that doesn't cause numerical errors.
+        # the minimum number that doesn't cause numerical errors.
         with patch.object(MonteCarloPosteriorCollection, "INITIAL_NUMBER_OF_SAMPLES", 4):
             fuzzy_posterior = controller.posterior_over_fuzzy_point(dataset.test_x, dataset.test_x_std)
 

@@ -66,7 +66,7 @@ class BasicTests(unittest.TestCase):
         """Test that internal and external predictions are properly scaled."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_mean, internal_covar = posterior._tensor_prediction()
         # pylint: enable=protected-access
@@ -79,7 +79,7 @@ class BasicTests(unittest.TestCase):
         """Test that internal and external fuzzy predictions are properly scaled."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_mean, internal_covar = posterior._tensor_prediction()
         # pylint: enable=protected-access
@@ -92,7 +92,7 @@ class BasicTests(unittest.TestCase):
         """Test that internal and external confidence interval predictions are properly scaled."""
         posterior = self.controller.posterior_over_point(self.dataset.test_x)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         # pylint: enable=protected-access
@@ -112,7 +112,7 @@ class BasicTests(unittest.TestCase):
         """Test that internal and external fuzzy confidence interval predictions are properly scaled."""
         posterior = self.controller.posterior_over_fuzzy_point(self.dataset.test_x, self.dataset.test_x_std)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_median, internal_upper, internal_lower = posterior._tensor_confidence_interval(0.05)
         # pylint: enable=protected-access
@@ -186,7 +186,7 @@ class BasicTests(unittest.TestCase):
         # data when performing computations, so check this
         posterior_test = controller.posterior_over_point(dataset.test_x)
 
-        # protected access is ok - we're specifically reaching in to test the internals
+        # Protected access is ok - we're specifically reaching in to test the internals
         # pylint: disable=protected-access
         internal_mean, internal_covar = posterior_test._tensor_prediction()
         # pylint: enable=protected-access

@@ -264,7 +264,7 @@ class KMedoidsPartitioner(BasePartitioner):
         .. warning::
             The affinity matrix takes up O(N^2) memory so can't be used for large ``train_x``.
         """
-        # code is a bit ugly here as we have to accept both Tensors and NDArrays, and then return only NDArrays
+        # Code is a bit ugly here as we have to accept both Tensors and NDArrays, and then return only NDArrays
         x = torch.as_tensor(self.train_x)
         affinity_matrix = self.kernel(x).to_dense()  # to_dense as it may return a lazy LinearOperator
         dist_matrix = torch.exp(-affinity_matrix)

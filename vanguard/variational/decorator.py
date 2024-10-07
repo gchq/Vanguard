@@ -189,6 +189,6 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                 with gpytorch.settings.num_likelihood_samples(decorator.n_likelihood_samples):
                     return super()._fuzzy_predictive_likelihood(x, x_std)
 
-        # ignore type errors here - static type checkers don't understand that we dynamically inherit from `cls`, so
+        # Ignore type errors here - static type checkers don't understand that we dynamically inherit from `cls`, so
         # `InnerClass` is always a subtype of `cls`
         return InnerClass  # pyright: ignore[reportReturnType]

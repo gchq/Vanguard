@@ -121,6 +121,7 @@ class DirichletKernelMulticlassClassification(Decorator):
                 self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
             ) -> Tuple[Tensor, Tensor]:
                 """Classify points."""
+                x = torch.as_tensor(x)
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 
@@ -132,6 +133,8 @@ class DirichletKernelMulticlassClassification(Decorator):
                 x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
             ) -> Tuple[Tensor, Tensor]:
                 """Classify fuzzy points."""
+                x = torch.as_tensor(x)
+                x_std = torch.as_tensor(x_std)
                 means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
                 return self._get_predictions_from_prediction_means(means_as_floats)
 

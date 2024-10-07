@@ -199,7 +199,7 @@ class MonteCarloPosteriorCollection(Posterior):
                 )
                 raise RuntimeError(msg) from None
             try:
-                # pylint false positive
+                # Pylint false positive
                 torch.linalg.cholesky(posterior.distribution.covariance_matrix)  # pylint: disable=not-callable
             except RuntimeError as exc:
                 self._posteriors_skipped += 1

@@ -196,7 +196,8 @@ class DirichletMulticlassClassification(Decorator):
                     :attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
-                posterior = super().posterior_over_point(torch.as_tensor(x))
+                x = torch.as_tensor(x)
+                posterior = super().posterior_over_point(x)
                 samples = posterior._tensor_sample(torch.Size((n_posterior_samples,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)
@@ -221,7 +222,9 @@ class DirichletMulticlassClassification(Decorator):
                     :attr:`~vanguard.base.posterior.Posterior.condensed_distribution` property of the posterior
                     in order to be consistent across collections.
                 """
-                posterior = super().posterior_over_fuzzy_point(torch.as_tensor(x), torch.as_tensor(x_std))
+                x = torch.as_tensor(x)
+                x_std = torch.as_tensor(x_std)
+                posterior = super().posterior_over_fuzzy_point(x, x_std)
                 samples = posterior._tensor_sample_condensed(torch.Size((n_posterior_samples,)))  # pylint: disable=protected-access
                 pred_samples = samples.exp()
                 probs = (pred_samples / pred_samples.sum(TASK_DIM, keepdim=True)).mean(SAMPLE_DIM)

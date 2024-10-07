@@ -21,22 +21,29 @@ from typing import Callable, Union
 
 import gpytorch
 import numpy as np
+import pytest
 import torch
 from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from gpytorch.means import ConstantMean
-from gpytorch.mlls import ExactMarginalLogLikelihood
+from gpytorch.mlls import ExactMarginalLogLikelihood, VariationalELBO
 from numpy.typing import NDArray
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from torch import Tensor
 
-from tests.cases import VanguardTestCase, get_default_rng
+from tests.cases import VanguardTestCase, assert_not_warns, get_default_rng
 from vanguard.base import GPController
 from vanguard.datasets import Dataset
 from vanguard.datasets.synthetic import SyntheticDataset
 from vanguard.kernels import PeriodicRBFKernel, ScaledRBFKernel
 from vanguard.optimise import SmartOptimiser
 from vanguard.vanilla import GaussianGPController
+from vanguard.variational import VariationalInference
+
+
+@VariationalInference()
+class VariationalController(GaussianGPController):
+    """Variational controller for testing."""
 
 
 class DefaultTensorTypeTests(unittest.TestCase):
@@ -102,7 +109,7 @@ class InputTests(VanguardTestCase):
     GP controllers are forgiving about the shape of data arrays, where possible. These tests check this behaviour.
     """
 
-    DATASET = SyntheticDataset(rng=get_default_rng())
+    DATASET = SyntheticDataset(rng=get_default_rng(), n_train_points=10, n_test_points=10)
 
     def test_unsqueeze_y(self) -> None:
         """
@@ -173,18 +180,20 @@ class InputTests(VanguardTestCase):
 
     def test_error_handling_of_batch_size(self) -> None:
         """Test that a UserWarning is raised when both batch_size and gradient_every are not None."""
-        gp = GaussianGPController(
+        gp = VariationalController(
             train_x=self.DATASET.train_x,
             train_y=self.DATASET.train_y,
             kernel_class=PeriodicRBFKernel,
+            marginal_log_likelihood_class=VariationalELBO,
             y_std=self.DATASET.train_y_std,
-            batch_size=20,
+            batch_size=5,
             rng=get_default_rng(),
         )
+        with assert_not_warns(UserWarning):
+            gp.fit(n_sgd_iters=2)
         gradient_every = 2
-        gp.fit()
         with self.assertWarns(UserWarning):
-            gp.fit(n_sgd_iters=10, gradient_every=gradient_every)
+            gp.fit(n_sgd_iters=2, gradient_every=gradient_every)
 
 
 class NLLTests(unittest.TestCase):
@@ -235,7 +244,7 @@ class NLLTests(unittest.TestCase):
         white_kernel = WhiteKernel(noise_level=1e-2, noise_level_bounds=(1e-10, 1e1))
         kernel = rbf_kernel + white_kernel
 
-        # convert all dataset tensors to numpy for sklearn
+        # Convert all dataset tensors to numpy for sklearn
         self.train_x_numpy = self.dataset.train_x.detach().cpu().numpy()
         self.train_y_numpy = self.dataset.train_y.detach().cpu().numpy()
         self.test_x_numpy = self.dataset.test_x.detach().cpu().numpy()
@@ -348,13 +357,13 @@ class NLLTests(unittest.TestCase):
         :param y: The observed values.
         :returns: The mean negative log-likelihood of the predictive distribution.
         """
-        # convert to tensors
+        # Convert to tensors
         mean = torch.as_tensor(mean)
         variance = torch.as_tensor(variance)
         noise_variance = torch.as_tensor(noise_variance)
         y = torch.as_tensor(y)
 
-        # compute
+        # ...and compute
         sigma = variance + noise_variance
         rss = (y - mean) ** 2
         const = 0.5 * torch.log(2 * np.pi * sigma)
@@ -372,9 +381,45 @@ class NLLTests(unittest.TestCase):
         :param y: The observed values.
         :returns: The mean squared error of the predictive distribution.
         """
-        # convert to tensors
+        # Convert to tensors
         mu_pred = torch.as_tensor(mu_pred)
         y = torch.as_tensor(y)
 
-        # compute
+        # ...and compute
         return ((mu_pred - y) ** 2).mean().item()
+
+
+class TestBatchMode:
+    @pytest.fixture(scope="class")
+    def dataset(self):
+        """Return a dataset for testing."""
+        return SyntheticDataset(n_train_points=10, n_test_points=10, rng=get_default_rng())
+
+    def test_batch_mode_exact_fails(self, dataset: Dataset):
+        """Test that trying to perform batched training on an exact GP fails with an informative message."""
+        controller = GaussianGPController(
+            train_x=dataset.train_x,
+            train_y=dataset.train_y,
+            kernel_class=ScaledRBFKernel,
+            y_std=dataset.train_y_std,
+            batch_size=10,
+            rng=get_default_rng(),
+        )
+
+        with pytest.raises(RuntimeError, match="Batched training is not supported for exact GPs"):
+            controller.fit(2)
+
+    def test_batch_mode_variational_succeeds(self, dataset: Dataset):
+        """Test that performing batched training on an approximate (variational) GP succeeds without error."""
+        controller = VariationalController(
+            train_x=dataset.train_x,
+            train_y=dataset.train_y,
+            kernel_class=ScaledRBFKernel,
+            marginal_log_likelihood_class=VariationalELBO,
+            y_std=dataset.train_y_std,
+            batch_size=10,
+            rng=get_default_rng(),
+        )
+
+        # Check that we can fit this controller without issue.
+        controller.fit(2)

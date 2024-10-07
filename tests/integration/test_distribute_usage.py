@@ -16,17 +16,23 @@
 Basic end to end functionality test for distributed decorators in Vanguard.
 """
 
-import unittest
+from typing import Tuple, Type, Union
 
 import numpy as np
+import pytest
+from _pytest.fixtures import FixtureRequest
 from gpytorch.likelihoods import BernoulliLikelihood
 from gpytorch.mlls import VariationalELBO
+from numpy.typing import NDArray
 from sklearn.metrics import f1_score
+from torch import Tensor
 
 from tests.cases import get_default_rng
+from tests.integration.util import train_test_split_convert
 from vanguard.classification import BinaryClassification
 from vanguard.distribute import Distributed
 from vanguard.distribute.aggregators import (
+    BaseAggregator,
     BCMAggregator,
     EKPOEAggregator,
     GPOEAggregator,
@@ -37,6 +43,7 @@ from vanguard.distribute.aggregators import (
     XGRBCMAggregator,
 )
 from vanguard.distribute.partitioners import (
+    BasePartitioner,
     KMeansPartitioner,
     KMedoidsPartitioner,
     MiniBatchKMeansPartitioner,
@@ -46,50 +53,45 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
+TrainTestData = Union[Tuple[NDArray, NDArray, NDArray, NDArray], Tuple[Tensor, Tensor, Tensor, Tensor]]
 
-class VanguardTestCase(unittest.TestCase):
+
+class TestDistributeUsage:
     """
     A subclass of TestCase designed to check end-to-end usage of distributed code.
     """
 
-    def setUp(self) -> None:
-        """
-        Define data shared across tests.
-        """
-        self.rng = get_default_rng()
-        self.num_train_points = 100
-        self.num_test_points = 100
-        self.n_sgd_iters = 50
-        # How high of an F1 score do we need to consider the test a success (and a fit
-        # successful?)
-        self.required_f1_score = 0.9
+    num_train_points = 100
+    num_test_points = 100
+    n_sgd_iters = 50
+    # How high of an F1 score do we need to consider the test a success (and a fit
+    # successful?)
+    required_f1_score = 0.9
+
+    @pytest.fixture(scope="class", params=["ndarray", "tensor"])
+    def binary_classification_data(self, request: FixtureRequest) -> TrainTestData:
+        """Generate binary classification data for testing."""
+        rng = get_default_rng()
 
         # Define some data for the test
-        self.x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        self.y = np.zeros_like(self.x)
-        for index, x_val in enumerate(self.x):
+        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        y = np.zeros_like(x)
+        for index, x_val in enumerate(x):
             # Set some non-trivial classification target
             if 0.25 < x_val < 0.5:
-                self.y[index, 0] = 1
+                y[index, 0] = 1
             if x_val > 0.8:
-                self.y[index, 0] = 1
+                y[index, 0] = 1
 
-        # Split data into training and testing
-        self.train_indices = self.rng.choice(np.arange(self.y.shape[0]), size=self.num_train_points, replace=False)
-        self.test_indices = np.setdiff1d(np.arange(self.y.shape[0]), self.train_indices)
+        x_train, x_test, y_train, y_test = train_test_split_convert(
+            x, y, n_test_points=self.num_test_points, array_type=request.param, rng=rng
+        )
 
-    def test_distributed_gp_vary_aggregator_fix_partition(self) -> None:
-        """
-        Verify Vanguard usage on a simple, single variable distributed binary classification problem
-        using the various aggregators but a fixed partition method.
+        return x_train, y_train, x_test, y_test
 
-        We generate a single feature `x` and a binary target `y`, and verify that a
-        GP can be fit to this data.
-        """
-        # We have a binary classification problem, so we apply the BinaryClassification
-        # decorator and will need to use VariationalInference to perform inference on
-        # data. We try each aggregation method to ensure they are all functional.
-        for aggregator in [
+    @pytest.mark.parametrize(
+        "aggregator",
+        [
             EKPOEAggregator,
             GPOEAggregator,
             BCMAggregator,
@@ -98,93 +100,67 @@ class VanguardTestCase(unittest.TestCase):
             GRBCMAggregator,
             XGRBCMAggregator,
             POEAggregator,
-        ]:
-
-            @Distributed(
-                n_experts=3, aggregator_class=aggregator, partitioner_class=KMeansPartitioner, rng=get_default_rng()
-            )
-            @BinaryClassification()
-            @VariationalInference()
-            class BinaryClassifier(GaussianGPController):
-                pass
-
-            # Define the controller object
-            gp = BinaryClassifier(
-                train_x=self.x[self.train_indices],
-                train_y=self.y[self.train_indices],
-                kernel_class=ScaledRBFKernel,
-                y_std=0.0,
-                likelihood_class=BernoulliLikelihood,
-                marginal_log_likelihood_class=VariationalELBO,
-                rng=self.rng,
-            )
-
-            # Fit the GP
-            gp.fit(n_sgd_iters=self.n_sgd_iters)
-
-            # Get predictions from the controller object
-            predictions_train, _ = gp.classify_points(self.x[self.train_indices])
-            predictions_test, _ = gp.classify_points(self.x[self.test_indices])
-
-            # Sense check outputs
-            self.assertGreaterEqual(f1_score(predictions_train, self.y[self.train_indices]), self.required_f1_score)
-            self.assertGreaterEqual(f1_score(predictions_test, self.y[self.test_indices]), self.required_f1_score)
-
-    def test_distributed_gp_vary_partition_fix_aggregator(self) -> None:
-        """
-        Verify Vanguard usage on a simple, single variable distributed binary classification problem
-        using the various partition methods but a fixed aggregation method.
-
-        We generate a single feature `x` and a binary target `y`, and verify that a
-        GP can be fit to this data.
-        """
-        # We have a binary classification problem, so we apply the BinaryClassification
-        # decorator and will need to use VariationalInference to perform inference on
-        # data. We try each partition method to ensure they are all functional.
-        for partitioner in [
+        ],
+    )
+    @pytest.mark.parametrize(
+        "partitioner",
+        [
             RandomPartitioner,
             KMeansPartitioner,
             MiniBatchKMeansPartitioner,
             KMedoidsPartitioner,
-        ]:
+        ],
+    )
+    def test_distributed_gp_vary_aggregator_and_partitioner(
+        self,
+        binary_classification_data: TrainTestData,
+        aggregator: Type[BaseAggregator],
+        partitioner: Type[BasePartitioner],
+    ) -> None:
+        """
+        Verify Vanguard usage on a simple, single variable distributed binary classification problem
+        using the various aggregators and partition methods.
 
-            @Distributed(
-                n_experts=3, aggregator_class=EKPOEAggregator, partitioner_class=partitioner, rng=get_default_rng()
-            )
-            @BinaryClassification()
-            @VariationalInference()
-            class BinaryClassifier(GaussianGPController):
-                pass
+        We generate a single feature `x` and a binary target `y`, and verify that a
+        GP can be fit to this data.
+        """
+        train_x, train_y, test_x, test_y = binary_classification_data
 
-            if partitioner is KMedoidsPartitioner:
-                # KMedoids requires a kernel to be passed to the partitioner
-                partitioner_kwargs = {"kernel": ScaledRBFKernel()}
-            else:
-                partitioner_kwargs = {}
+        # We have a binary classification problem, so we apply the BinaryClassification
+        # decorator and will need to use VariationalInference to perform inference on
+        # data. We try each aggregation method to ensure they are all functional.
 
-            # Define the controller object
-            gp = BinaryClassifier(
-                train_x=self.x[self.train_indices],
-                train_y=self.y[self.train_indices],
-                kernel_class=ScaledRBFKernel,
-                y_std=0.0,
-                likelihood_class=BernoulliLikelihood,
-                marginal_log_likelihood_class=VariationalELBO,
-                partitioner_kwargs=partitioner_kwargs,
-                rng=self.rng,
-            )
+        @Distributed(n_experts=3, aggregator_class=aggregator, partitioner_class=partitioner, rng=get_default_rng())
+        @BinaryClassification()
+        @VariationalInference()
+        class BinaryClassifier(GaussianGPController):
+            pass
 
-            # Fit the GP
-            gp.fit(n_sgd_iters=self.n_sgd_iters)
+        if partitioner is KMedoidsPartitioner:
+            # KMedoids requires a kernel to be passed to the partitioner
+            partitioner_kwargs = {"kernel": ScaledRBFKernel()}
+        else:
+            partitioner_kwargs = {}
 
-            # Get predictions from the controller object
-            predictions_train, _ = gp.classify_points(self.x[self.train_indices])
-            predictions_test, _ = gp.classify_points(self.x[self.test_indices])
+        # Define the controller object
+        gp = BinaryClassifier(
+            train_x=train_x,
+            train_y=train_y,
+            kernel_class=ScaledRBFKernel,
+            y_std=0.0,
+            likelihood_class=BernoulliLikelihood,
+            marginal_log_likelihood_class=VariationalELBO,
+            partitioner_kwargs=partitioner_kwargs,
+            rng=get_default_rng(),
+        )
 
-            # Sense check outputs
-            self.assertGreaterEqual(f1_score(predictions_train, self.y[self.train_indices]), self.required_f1_score)
-            self.assertGreaterEqual(f1_score(predictions_test, self.y[self.test_indices]), self.required_f1_score)
+        # Fit the GP
+        gp.fit(n_sgd_iters=self.n_sgd_iters)
 
+        # Get predictions from the controller object
+        predictions_train, _ = gp.classify_points(train_x)
+        predictions_test, _ = gp.classify_points(test_x)
 
-if __name__ == "__main__":
-    unittest.main()
+        # Sense check outputs
+        assert f1_score(predictions_train, train_y) >= self.required_f1_score
+        assert f1_score(predictions_test, test_y) >= self.required_f1_score

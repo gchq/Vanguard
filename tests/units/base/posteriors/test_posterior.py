@@ -25,7 +25,7 @@ from gpytorch.distributions import MultivariateNormal
 from scipy import stats
 from scipy.stats import multivariate_normal
 
-from tests.cases import get_default_rng
+from tests.cases import get_default_rng, get_default_torch_rng
 from vanguard import utils
 from vanguard.base.posteriors import Posterior
 
@@ -59,8 +59,8 @@ class BasicTests(unittest.TestCase):
                 posterior = Posterior.from_mean_and_covariance(posterior_mean, covar)
                 ci_median, ci_lower, ci_upper = posterior.confidence_interval(CONF_INTERVAL_SIZE)
 
-                # we lose quite a lot of precision in squaring and square rooting the variance, so we have to allow a
-                # higher tolerance on the check here
+                # We lose quite a lot of precision in squaring and square rooting the variance, so we have to allow a
+                # higher tolerance on the check here.
                 torch.testing.assert_close(ci_lower, self.mean - CONF_FAC * self.std, atol=1e-4, rtol=1e-3)
                 torch.testing.assert_close(ci_median, self.mean, atol=1e-4, rtol=1e-3)
                 torch.testing.assert_close(ci_upper, self.mean + CONF_FAC * self.std, atol=1e-4, rtol=1e-3)
@@ -75,16 +75,14 @@ class BasicTests(unittest.TestCase):
         posterior = Posterior.from_mean_and_covariance(torch.stack([mean1, mean2], -1), covar)
         ci_median, ci_lower, ci_upper = posterior.confidence_interval(0.05)
 
-        # we lose quite a lot of precision in squaring and square rooting the variance, so we have to allow a
-        # higher tolerance on the check here
+        # We lose quite a lot of precision in squaring and square rooting the variance, so we have to allow a
+        # higher tolerance on the check here.
 
-        # assert results are as expected for task 1
+        # Assert results are as expected for task 1
         torch.testing.assert_close(ci_lower[:, 0], mean1.squeeze() - CONF_FAC * std1, atol=1e-4, rtol=1e-3)
         torch.testing.assert_close(ci_median[:, 0], mean1.squeeze(), atol=1e-4, rtol=1e-3)
         torch.testing.assert_close(ci_upper[:, 0], mean1.squeeze() + CONF_FAC * std1, atol=1e-4, rtol=1e-3)
-        # assert results are as expected for task 2
-        print(ci_lower[:, 1] - (mean2.squeeze() - CONF_FAC * std2))
-        print(ci_lower[:, 1] / (mean2.squeeze() - CONF_FAC * std2))
+        # Assert results are as expected for task 2
         torch.testing.assert_close(ci_lower[:, 1], mean2.squeeze() - CONF_FAC * std2, atol=1e-4, rtol=1e-3)
         torch.testing.assert_close(ci_median[:, 1], mean2.squeeze(), atol=1e-4, rtol=1e-3)
         torch.testing.assert_close(ci_upper[:, 1], mean2.squeeze() + CONF_FAC * std2, atol=1e-4, rtol=1e-3)
@@ -110,7 +108,7 @@ class BasicTests(unittest.TestCase):
         covar = torch.diag(self.std**2)
         posterior = Posterior.from_mean_and_covariance(self.mean, covar)
 
-        generator = torch.Generator(device=utils.default_device).manual_seed(1234)  # seeded for consistency
+        generator = get_default_torch_rng()
 
         for _ in range(10):
             random_point = torch.randn(*self.mean.shape, generator=generator)
