@@ -274,13 +274,13 @@ class SubsetCreationTests(unittest.TestCase):
         # Regardless of random seed, package version and so on, we expect the results to have the following properties:
         # Each of the two resulting subset arrays has exactly 2 elements, both taken from the corresponding input array
         # with no duplicates
-        self.assertEqual(len(subset_arrays), 2)
-        self.assertEqual(len(subset_arrays[0]), 2)
-        self.assertEqual(len(subset_arrays[1]), 2)
-        self.assertTrue(set(subset_arrays[0]) <= set(first_array))
-        self.assertTrue(set(subset_arrays[1]) <= set(second_array))
-        self.assertTrue(len(set(subset_arrays[0])) == 2)
-        self.assertTrue(len(set(subset_arrays[1])) == 2)
+        assert len(subset_arrays) == 2
+        assert len(subset_arrays[0]) == 2
+        assert len(subset_arrays[1]) == 2
+        assert set(subset_arrays[0]) <= set(first_array)
+        assert set(subset_arrays[1]) <= set(second_array)
+        assert len(set(subset_arrays[0])) == 2
+        assert len(set(subset_arrays[1])) == 2
 
     @pytest.mark.no_beartype
     def test_create_subset_unexpected_inputs(self):
