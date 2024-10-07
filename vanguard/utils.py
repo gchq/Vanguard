@@ -27,6 +27,11 @@ import torch
 
 from vanguard.warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
+if torch.cuda.is_available():  # pragma: no cover
+    default_device = torch.device("cuda")
+else:
+    default_device = torch.device("cpu")
+
 
 class DummyDistribution:
     """
@@ -137,6 +142,12 @@ def infinite_tensor_generator(
     :returns: A tensor generator.
     """
     rng = optional_random_generator(rng)
+
+    # Validation - can't handle 0-dimensional tensors
+    for tensor, axis in tensor_axis_pairs:
+        if tensor.ndim == 0:
+            raise ValueError(f"0-dimensional tensors are incompatible with infinite_tensor_generator. Got {tensor}")
+
     first_tensor, first_axis = tensor_axis_pairs[0]
     first_tensor_length = first_tensor.shape[first_axis]
 
@@ -159,7 +170,7 @@ def infinite_tensor_generator(
         batch_tensors = []
         for tensor, axis in tensor_axis_pairs:
             multi_axis_slice = [slice(None, None, None) for _ in tensor.shape]
-            multi_axis_slice[min(axis, len(tensor.shape) - 1)] = batch_indices
+            multi_axis_slice[min(axis, max(0, tensor.ndim - 1))] = batch_indices
             batch_tensor = tensor[tuple(multi_axis_slice)]
             batch_tensors.append(batch_tensor.to(device))
 

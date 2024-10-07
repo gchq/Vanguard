@@ -32,7 +32,7 @@ dependencies = [
     "gpytorch>=1.11",
     "kmedoids",
     "matplotlib",
-    "numpy>=1.20,<2",
+    "numpy>=1.20",
     "pandas",
     "scikit-learn",
     "scipy",
@@ -79,8 +79,7 @@ dev = [
 # https://github.com/gchq/Vanguard/issues/254
 Repository = "https://github.com/gchq/Vanguard"
 Issues = "https://github.com/gchq/Vanguard/issues"
-#Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md" # TODO: Create CHANGELOG
-# https://github.com/gchq/Vanguard/issues/255
+Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["vanguard"]

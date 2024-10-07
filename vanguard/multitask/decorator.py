@@ -89,7 +89,7 @@ class Multitask(Decorator):
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
-                # it's OK to access self.gp_model_class as it's set in super().__init__ above
+                # It's OK to access self.gp_model_class here as it's set in super().__init__ above
                 original_gp_model_class = self.gp_model_class  # pylint: disable=access-member-before-definition
                 if is_variational:
                     if decorator.lmc_dimension is not None:

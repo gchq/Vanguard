@@ -172,7 +172,7 @@ class AbstractTests:
     Test hierarchical functionality with an abstract controller.
     """
 
-    # namespace the test case ABCs below so they don't get run by unittest
+    # Namespace the test case ABCs below so they don't get run by unittest
     class TrainingTests(unittest.TestCase, Generic[GPControllerT], metaclass=abc.ABCMeta):
         """
         Basic tests for a hierarchical controller and BayesianHyperparameters decorators.

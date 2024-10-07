@@ -20,6 +20,7 @@ import unittest
 
 import numpy as np
 import numpy.typing
+import pytest
 import torch
 
 from tests.cases import get_default_rng
@@ -267,3 +268,21 @@ class TestGenerators(unittest.TestCase):
         self.assertEqual(len(output), 3)
         for index in range(3):
             np.testing.assert_array_equal(output[index], expected_output[index])
+
+    def test_generator_zero_dimensional(self):
+        """Test that an appropriate error is raised if 0-dimensional tensors are passed to infinite_tensor_generator."""
+        batch_size = 2
+        device = torch.device("cpu")
+        rng = get_default_rng()
+        tensor = torch.tensor(1)  # 0-dimensional
+
+        # Create an infinite tensor generator and sample the first tensor from it
+        generator = infinite_tensor_generator(
+            batch_size,
+            device,
+            (tensor, 0),
+            rng=rng,
+        )
+
+        with pytest.raises(ValueError, match="0-dimensional tensors are incompatible"):
+            next(generator)

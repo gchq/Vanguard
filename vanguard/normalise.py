@@ -19,7 +19,6 @@ The :class:`NormaliseY` decorator will scale the y-inputs to a unit normal distr
 import warnings
 from typing import Any, Tuple, Type, TypeVar
 
-import numpy as np
 import torch
 
 from vanguard import utils
@@ -46,6 +45,11 @@ class NormaliseY(Decorator):
 
     The inverse transformation is then applied to the return values of posterior methods.
 
+    .. note::
+        The empirical variance is the _sample_ empirical variance, not the population empirical variance (that is, it
+        is :math:`\frac{1}{n-1}\sum_{y \in \bf y} (y - \overline{Y})^2`, where :math:`n` is the number of data points
+        in ``train_y``).
+
     :Example:
         >>> import numpy as np
         >>> from vanguard.kernels import ScaledRBFKernel
@@ -63,7 +67,11 @@ class NormaliseY(Decorator):
         ...                     kernel_class=ScaledRBFKernel
         ...                     )
         >>> controller.train_y.T
-        tensor([[-1.0000, -0.7143,  0.1429,  1.5714]])
+        tensor([[-0.8660, -0.6186,  0.1237,  1.3609]])
+        >>> controller.train_y.mean().item()
+        0.0
+        >>> controller.train_y.std().item()
+        1.0
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -94,14 +102,14 @@ class NormaliseY(Decorator):
                 self.rng = utils.optional_random_generator(all_parameters_as_kwargs.pop("rng", None))
 
                 y_std = all_parameters_as_kwargs.pop("y_std")
-                train_x = all_parameters_as_kwargs.pop("train_x")
-                train_y = all_parameters_as_kwargs.pop("train_y")
+                train_x = torch.as_tensor(all_parameters_as_kwargs.pop("train_x"))
+                train_y = torch.as_tensor(all_parameters_as_kwargs.pop("train_y"))
 
                 if y_std is None:
                     n, *_ = train_x.shape
                     y_std = torch.zeros(n, dtype=self.dtype, device=self.device)
 
-                _normalising_mean, _normalising_std = train_y.mean(), train_y.std()
+                _normalising_mean, _normalising_std = train_y.float().mean(), train_y.float().std()
                 train_y = (train_y - _normalising_mean) / _normalising_std
                 y_std = y_std / _normalising_std
 
@@ -149,8 +157,8 @@ class NormaliseY(Decorator):
                             :return: The log-probability of some data-point ``y``
                             """
                             normalised_y = (y - _normalising_mean) / _normalising_std
-                            norm_map_deriv_values = np.ones_like(y) / _normalising_std
-                            jacobian = np.sum(np.log(np.abs(norm_map_deriv_values)))
+                            norm_map_deriv_values = torch.ones_like(y) / _normalising_std
+                            jacobian = torch.sum(torch.log(torch.abs(norm_map_deriv_values)))
                             return jacobian + super().log_probability(normalised_y)
 
                         def sample(self, n_samples: int = 1) -> torch.Tensor:

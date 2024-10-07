@@ -19,6 +19,7 @@ Synthetic data is particularly useful when running tests, as the data can be spe
 from typing import Callable, Iterable, Optional, Tuple, Union
 
 import numpy as np
+import torch
 from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
 
@@ -187,14 +188,14 @@ class MultidimensionalSyntheticDataset(Dataset):
             for function in functions
         ]
 
-        train_x = np.stack([dataset.train_x.ravel() for dataset in one_dimensional_datasets], -1)
-        train_x_std = np.stack([dataset.train_x_std.ravel() for dataset in one_dimensional_datasets], -1)
-        train_y = np.mean(np.stack([dataset.train_y.ravel() for dataset in one_dimensional_datasets], -1), axis=-1)
+        train_x = torch.stack([dataset.train_x.ravel() for dataset in one_dimensional_datasets], -1)
+        train_x_std = torch.stack([dataset.train_x_std.ravel() for dataset in one_dimensional_datasets], -1)
+        train_y = torch.mean(torch.stack([dataset.train_y.ravel() for dataset in one_dimensional_datasets], -1), dim=-1)
         train_y_std = one_dimensional_datasets[0].train_y_std
 
-        test_x = np.stack([dataset.test_x.ravel() for dataset in one_dimensional_datasets], -1)
-        test_x_std = np.stack([dataset.test_x_std.ravel() for dataset in one_dimensional_datasets], -1)
-        test_y = np.mean(np.stack([dataset.test_y.ravel() for dataset in one_dimensional_datasets], -1), axis=-1)
+        test_x = torch.stack([dataset.test_x.ravel() for dataset in one_dimensional_datasets], -1)
+        test_x_std = torch.stack([dataset.test_x_std.ravel() for dataset in one_dimensional_datasets], -1)
+        test_y = torch.mean(torch.stack([dataset.test_y.ravel() for dataset in one_dimensional_datasets], -1), dim=-1)
         test_y_std = one_dimensional_datasets[0].test_y_std
 
         super().__init__(
@@ -248,12 +249,11 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
             significance,
             rng=rng,
         )
-        self.train_y_std = self.rng.normal(loc=self.train_y_std, scale=output_noise_std, size=n_train_points).clip(
-            0, None
-        )
-        self.test_y_std = self.rng.normal(loc=self.test_y_std, scale=output_noise_std, size=n_train_points).clip(
-            0, None
-        )
+
+        # Slightly hacky conversion of numpy generator to torch generator
+        torch_rng = torch.Generator(device=self.train_x.device).manual_seed(self.rng.integers(2**32).item())
+        self.train_y_std = torch.normal(self.train_y_std, output_noise_std, generator=torch_rng).clamp(min=0)
+        self.test_y_std = torch.normal(self.test_y_std, output_noise_std, generator=torch_rng).clamp(min=0)
 
 
 class HigherRankSyntheticDataset(Dataset):
@@ -319,7 +319,7 @@ class HigherRankSyntheticDataset(Dataset):
         :param interval_length: Use to scale the exact image of the function, defaults to 1.
         :return: The output and the mean and standard deviation of the input, in the form ``(x_mean, x_std), y``.
         """
-        # pylint is getting a false positive from `reshape` twice here
+        # Pylint is getting a false positive from `reshape` twice here
         x_mean = np.linspace(0, interval_length, n_points)
         x_mean = self.rng.standard_normal((n_points, 2, 2)) + x_mean.reshape((-1, 1, 1))
 

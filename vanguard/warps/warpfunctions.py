@@ -21,6 +21,8 @@ from typing import Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional
+from numpy.typing import NDArray
+from torch import Tensor
 
 from vanguard.warps.basefunction import WarpFunction
 from vanguard.warps.intermediate import require_controller_input
@@ -107,23 +109,24 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
         return -(self.weight**2 * self.lambda_1 - self.bias**2 * self.lambda_2)
 
     @staticmethod
-    def _get_constraint_slopes(y_values: np.typing.NDArray[np.floating]) -> Tuple[np.floating, np.floating]:
+    def _get_constraint_slopes(y_values: Union[Tensor, NDArray[np.floating]]) -> Tuple[float, float]:
         """
         Return the two constraint slopes needed for the y_values.
 
         :param y_values: A set of values for which :math:`ay + b` must ultimately hold.
         :returns: The two values needed to establish the same bounds on :math:`a` and :math:`b`.
         """
+        y_values = torch.as_tensor(y_values)
         try:
-            negative_contribution = min(y_values)
-            non_negative_contribution = max(y_values)
-        except ValueError:
-            raise ValueError("Cannot process empty iterable.") from None
+            negative_contribution = y_values.min().item()
+            non_negative_contribution = y_values.max().item()
+        except RuntimeError:
+            if y_values.numel() == 0:
+                raise ValueError("Cannot process empty iterable.") from None
+            else:
+                raise
         else:
-            try:
-                return negative_contribution[0], non_negative_contribution[0]
-            except IndexError:
-                return negative_contribution, non_negative_contribution
+            return negative_contribution, non_negative_contribution
 
 
 class BoxCoxWarpFunction(WarpFunction):

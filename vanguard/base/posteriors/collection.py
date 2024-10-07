@@ -18,8 +18,8 @@ Contains the MonteCarloPosteriorCollection class.
 
 from typing import Generator, NoReturn, Tuple
 
-import numpy.typing
 import torch
+from torch import Tensor
 
 from vanguard.base.posteriors.posterior import Posterior
 from vanguard.utils import DummyDistribution
@@ -56,7 +56,7 @@ class MonteCarloPosteriorCollection(Posterior):
             self._cached_samples = self._tensor_sample()
 
     @property
-    def condensed_distribution(self) -> torch.distributions.MultivariateNormal:
+    def condensed_distribution(self) -> torch.distributions.Distribution:
         """
         Return the condensed distribution.
 
@@ -67,14 +67,14 @@ class MonteCarloPosteriorCollection(Posterior):
         mean, covar = self._tensor_prediction()
         return self._add_jitter(self._make_multivariate_normal(mean, covar))
 
-    def sample(self, n_samples: int = 1) -> numpy.typing.NDArray:
+    def sample(self, n_samples: int = 1) -> Tensor:
         """
         Draw independent samples from the posterior.
 
         :param n_samples: An integer specifying the number of samples to draw.
         """
         new_distribution = self._create_updated_distribution(n_samples)
-        return new_distribution.sample().detach().cpu().numpy()[-n_samples:]
+        return new_distribution.sample()[-n_samples:]
 
     @classmethod
     def from_mean_and_covariance(cls, mean: torch.Tensor, covariance: torch.Tensor) -> NoReturn:
@@ -202,7 +202,7 @@ class MonteCarloPosteriorCollection(Posterior):
                 )
                 raise RuntimeError(msg) from None
             try:
-                # pylint false positive
+                # Pylint false positive
                 torch.linalg.cholesky(posterior.distribution.covariance_matrix)  # pylint: disable=not-callable
             except RuntimeError as exc:
                 self._posteriors_skipped += 1

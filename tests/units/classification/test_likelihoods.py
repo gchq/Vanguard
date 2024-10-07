@@ -62,13 +62,13 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
     @pytest.mark.no_beartype
     def test_illegal_input_type(self):
         """Test that we get an appropriate error when an illegal argument type is passed."""
-        # various illegal inputs
+        # Various illegal inputs
         illegal_inputs = [object(), np.array([1, 2, 3]), "string"]
 
         for illegal_input in illegal_inputs:
             with self.subTest(repr(illegal_input)):
                 with self.assertRaises(TypeError) as ctx:
-                    # ignore type: it's intentionally incorrect
+                    # Ignore type: it's intentionally incorrect
                     self.likelihood(illegal_input)  # type: ignore
                 self.assertEqual(
                     "Likelihoods expects a DummyKernelDistribution input to make marginal predictions, or a "
@@ -78,7 +78,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
     def test_alpha(self):
         """Test that when a value for `alpha` is provided to the initialiser, it's set correctly."""
-        alpha = self.rng.uniform(2, 10)  # ensuring alpha != 1
+        alpha = self.rng.uniform(2, 10)  # Ensuring alpha != 1
         likelihood = DirichletKernelClassifierLikelihood(num_classes=self.num_classes, alpha=alpha)
         torch.testing.assert_close(torch.ones(self.num_classes) * alpha, likelihood.alpha)
 
@@ -105,8 +105,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         controller.fit(1)
         fitted_alpha = controller.likelihood.alpha
 
-        # assert that alpha has changed
-        print(fitted_alpha)
+        # Assert that alpha has changed
         assert not torch.all(torch.isclose(fitted_alpha, starting_alpha))
 
     def test_learn_alpha_constrained(self):
@@ -149,9 +148,9 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
 
         constraint_limit = torch.ones_like(constrained_alpha) * constraint_value
 
-        # assert that when unconstrained, alpha drops below the constraint value
+        # Assert that when unconstrained, alpha drops below the constraint value
         assert torch.all(unconstrained_alpha < constraint_limit)
-        # assert that when constrained, alpha stays above the constraint value
+        # Assert that when constrained, alpha stays above the constraint value
         assert torch.all(constrained_alpha > constraint_limit)
 
     def test_log_marginal(self):

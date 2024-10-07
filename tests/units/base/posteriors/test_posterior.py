@@ -25,7 +25,8 @@ from gpytorch.distributions import MultivariateNormal
 from scipy import stats
 from scipy.stats import multivariate_normal
 
-from tests.cases import get_default_rng
+from tests.cases import get_default_rng, get_default_torch_rng
+from vanguard import utils
 from vanguard.base.posteriors import Posterior
 
 CONF_INTERVAL_SIZE = 0.05
@@ -57,11 +58,12 @@ class BasicTests(unittest.TestCase):
             with self.subTest(msg):
                 posterior = Posterior.from_mean_and_covariance(posterior_mean, covar)
                 ci_median, ci_lower, ci_upper = posterior.confidence_interval(CONF_INTERVAL_SIZE)
-                mean, std = self.mean.detach().cpu().numpy(), self.std.detach().cpu().numpy()
 
-                np.testing.assert_array_almost_equal(ci_lower, mean - CONF_FAC * std, decimal=4)
-                np.testing.assert_array_almost_equal(ci_median, mean, decimal=4)
-                np.testing.assert_array_almost_equal(ci_upper, mean + CONF_FAC * std, decimal=4)
+                # We lose quite a lot of precision in squaring and square rooting the variance, so we have to allow a
+                # higher tolerance on the check here.
+                torch.testing.assert_close(ci_lower, self.mean - CONF_FAC * self.std, atol=1e-4, rtol=1e-3)
+                torch.testing.assert_close(ci_median, self.mean, atol=1e-4, rtol=1e-3)
+                torch.testing.assert_close(ci_upper, self.mean + CONF_FAC * self.std, atol=1e-4, rtol=1e-3)
 
     def test_2_task_confidence_interval(self) -> None:
         """
@@ -72,17 +74,18 @@ class BasicTests(unittest.TestCase):
         covar = torch.diag(torch.cat([std1, std2]) ** 2)
         posterior = Posterior.from_mean_and_covariance(torch.stack([mean1, mean2], -1), covar)
         ci_median, ci_lower, ci_upper = posterior.confidence_interval(0.05)
-        mean_1, std_1 = mean1.detach().cpu().numpy(), std1.detach().cpu().numpy()
-        mean_2, std_2 = mean2.detach().cpu().numpy(), std2.detach().cpu().numpy()
 
-        # assert results are as expected for task 1
-        np.testing.assert_array_almost_equal(ci_lower[:, 0], mean_1.squeeze() - CONF_FAC * std_1, decimal=3)
-        np.testing.assert_array_almost_equal(ci_median[:, 0], mean_1.squeeze(), decimal=3)
-        np.testing.assert_array_almost_equal(ci_upper[:, 0], mean_1.squeeze() + CONF_FAC * std_1, decimal=3)
-        # assert results are as expected for task 2
-        np.testing.assert_array_almost_equal(ci_lower[:, 1], mean_2.squeeze() - CONF_FAC * std_2, decimal=3)
-        np.testing.assert_array_almost_equal(ci_median[:, 1], mean_2.squeeze(), decimal=3)
-        np.testing.assert_array_almost_equal(ci_upper[:, 1], mean_2.squeeze() + CONF_FAC * std_2, decimal=3)
+        # We lose quite a lot of precision in squaring and square rooting the variance, so we have to allow a
+        # higher tolerance on the check here.
+
+        # Assert results are as expected for task 1
+        torch.testing.assert_close(ci_lower[:, 0], mean1.squeeze() - CONF_FAC * std1, atol=1e-4, rtol=1e-3)
+        torch.testing.assert_close(ci_median[:, 0], mean1.squeeze(), atol=1e-4, rtol=1e-3)
+        torch.testing.assert_close(ci_upper[:, 0], mean1.squeeze() + CONF_FAC * std1, atol=1e-4, rtol=1e-3)
+        # Assert results are as expected for task 2
+        torch.testing.assert_close(ci_lower[:, 1], mean2.squeeze() - CONF_FAC * std2, atol=1e-4, rtol=1e-3)
+        torch.testing.assert_close(ci_median[:, 1], mean2.squeeze(), atol=1e-4, rtol=1e-3)
+        torch.testing.assert_close(ci_upper[:, 1], mean2.squeeze() + CONF_FAC * std2, atol=1e-4, rtol=1e-3)
 
     def test_1_dim_mean_log_probability_size(self) -> None:
         """
@@ -105,7 +108,7 @@ class BasicTests(unittest.TestCase):
         covar = torch.diag(self.std**2)
         posterior = Posterior.from_mean_and_covariance(self.mean, covar)
 
-        generator = torch.Generator().manual_seed(1234)  # seeded for consistency
+        generator = get_default_torch_rng()
 
         for _ in range(10):
             random_point = torch.randn(*self.mean.shape, generator=generator)
@@ -123,7 +126,7 @@ class BasicTests(unittest.TestCase):
         # Define a function to generate and record random samples, and replace our mock distribution's `rsample`
         # method with it
         samples = []
-        generator = torch.Generator().manual_seed(1234)
+        generator = torch.Generator(device=utils.default_device).manual_seed(1234)
 
         def rsample(sample_shape: torch.Size):
             """Dummy sample function that generates and records random samples."""
@@ -140,7 +143,7 @@ class BasicTests(unittest.TestCase):
             with self.subTest(size=size):
                 sample = posterior.sample(size)
                 mock_sample = samples[-1]
-                np.testing.assert_array_equal(mock_sample, sample)
+                torch.testing.assert_close(mock_sample, sample)
 
     def test_log_probability_2d(self):
         """

@@ -21,6 +21,7 @@ from unittest import expectedFailure
 import sklearn
 import torch
 from gpytorch.mlls import VariationalELBO
+from torch import Tensor
 
 from vanguard.classification import CategoricalClassification
 from vanguard.classification.likelihoods import MultitaskBernoulliLikelihood, SoftmaxLikelihood
@@ -31,10 +32,15 @@ from vanguard.uncertainty import GaussianUncertaintyGPController
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-from ...cases import get_default_rng, get_default_rng_override_seed
+from ...cases import get_default_rng, get_default_rng_override_seed, get_default_torch_rng
 from .case import BatchScaledMean, ClassificationTestCase
 
-one_hot = sklearn.preprocessing.LabelBinarizer().fit_transform
+
+def one_hot(x: Tensor) -> Tensor:
+    x_numpy = x.detach().cpu().numpy()
+    x_one_hot = sklearn.preprocessing.LabelBinarizer().fit_transform(x_numpy)
+    return torch.as_tensor(x_one_hot, device=x.device)
+
 
 NUM_LATENTS = 10
 
@@ -103,7 +109,9 @@ class MulticlassFuzzyTests(ClassificationTestCase):
 
     def setUp(self) -> None:
         """Set up data shared between tests."""
-        self.rng = get_default_rng()
+        # Fails with default seed 1234
+        self.rng = get_default_rng_override_seed(12345)
+        self.torch_rng = get_default_torch_rng()
 
     # TODO: Seems too flaky on 3.8 and 3.9 but reliable on 3.12, especially when delta=0.5.
     # https://github.com/gchq/Vanguard/issues/128
@@ -119,7 +127,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
             num_train_points=60, num_test_points=20, num_classes=4, rng=self.rng
         )
         test_x_std = 0.005
-        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
+        test_x = torch.normal(dataset.test_x, std=test_x_std, generator=self.torch_rng)
 
         controller = MultitaskBernoulliClassifier(
             dataset.train_x,
@@ -148,8 +156,8 @@ class MulticlassFuzzyTests(ClassificationTestCase):
             num_train_points=60, num_test_points=20, num_classes=4, rng=self.rng
         )
         train_x_std = test_x_std = 0.005
-        train_x = self.rng.normal(dataset.train_x, scale=train_x_std)
-        test_x = self.rng.normal(dataset.test_x, scale=test_x_std)
+        train_x = torch.normal(dataset.train_x, std=train_x_std, generator=self.torch_rng)
+        test_x = torch.normal(dataset.test_x, std=test_x_std, generator=self.torch_rng)
 
         @CategoricalClassification(num_classes=4, ignore_all=True)
         @Multitask(num_tasks=4, ignore_all=True)
