@@ -86,11 +86,8 @@ class BaseGPController:
 
     """
 
-    _default_tensor_dtype = torch.float
-    _default_tensor_device = utils.default_device
-
-    torch.set_default_device(_default_tensor_device)
-    torch.set_default_dtype(_default_tensor_dtype)
+    _default_tensor_dtype = utils.DEFAULT_DTYPE
+    _default_tensor_device = utils.DEFAULT_DEVICE
 
     gp_model_class: Type[Union[ExactGP, ApproximateGP]] = ExactGPModel
     posterior_class = Posterior
