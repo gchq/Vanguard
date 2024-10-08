@@ -22,7 +22,7 @@ controller classes. These are calculated per iteration by the
 
 import itertools
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable, Iterator, Optional
 
 if TYPE_CHECKING:
     import vanguard.base.basecontroller
@@ -157,7 +157,7 @@ class MetricsTracker:
         self,
         every: int = 1,
         format_string: Optional[str] = None,
-    ) -> None:
+    ) -> Iterator[None]:
         """
         Temporarily enabling printing the metrics within a context manager.
 

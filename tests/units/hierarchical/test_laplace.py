@@ -151,7 +151,7 @@ class GeneratorTests(unittest.TestCase):
 
             # We expect the sample to be a MultivariateNormal distribution with a univariate mean since we only passed
             # a single test point to predict
-            self.assertTrue(isinstance(current_sample, gpytorch.distributions.multivariate_normal.MultivariateNormal))
+            assert isinstance(current_sample, gpytorch.distributions.multivariate_normal.MultivariateNormal)
             self.assertEqual(current_sample.loc.shape, torch.Size([1]))
 
     def test_infinite_likelihood_samples(self) -> None:
@@ -172,7 +172,7 @@ class GeneratorTests(unittest.TestCase):
 
             # We expect the sample to be a MultivariateNormal distribution with a univariate mean since we only passed
             # a single test point to predict
-            self.assertTrue(isinstance(current_sample, gpytorch.distributions.multivariate_normal.MultivariateNormal))
+            assert isinstance(current_sample, gpytorch.distributions.multivariate_normal.MultivariateNormal)
             self.assertEqual(current_sample.loc.shape, torch.Size([1]))
 
     def test_infinite_fuzzy_likelihood_samples(self) -> None:
@@ -193,5 +193,5 @@ class GeneratorTests(unittest.TestCase):
 
             # We expect the sample to be a MultivariateNormal distribution with a univariate mean since we only passed
             # a single test point to predict
-            self.assertTrue(isinstance(current_sample, gpytorch.distributions.multivariate_normal.MultivariateNormal))
+            assert isinstance(current_sample, gpytorch.distributions.multivariate_normal.MultivariateNormal)
             self.assertEqual(current_sample.loc.shape, torch.Size([1]))

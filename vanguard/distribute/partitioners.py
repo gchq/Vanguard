@@ -89,7 +89,7 @@ class BasePartitioner:
         :param partition: List of data partitions to plot.
         :param cmap: Colormap to use for plotting.
         """
-        embedding = sklearn.manifold.TSNE().fit_transform(self.train_x)
+        embedding = sklearn.manifold.TSNE(random_state=self.rng.integers(2**32)).fit_transform(self.train_x)
 
         colours = [-1 for _ in range(len(self.train_x))]
         for group_index, group in enumerate(partition):
