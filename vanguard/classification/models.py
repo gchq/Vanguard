@@ -72,7 +72,6 @@ class DummyKernelDistribution(DummyDistribution):
         :param jitter: The size of the constant diagonal.
         :return: The instance with the updated covariance matrix.
         """
-        # Create a tensor of shape [100, 100, 4] filled with the jitter value
         jitter_matrix = torch.eye(self.covariance_matrix.shape[-1]) * jitter
         jitter_matrix = jitter_matrix.unsqueeze(0).unsqueeze(0).expand(self.covariance_matrix.shape)
 
