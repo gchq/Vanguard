@@ -33,6 +33,15 @@ else:
     default_device = torch.device("cpu")
 
 
+class DummyDistribution:
+    """
+    Empty mixin class for dummy distributions, used for isinstance() checks.
+
+    Prefer checking against this rather than directly checking against e.g.
+    :class:`~vanguard.classification.models.DummyKernelDistribution`, to avoid circular import issues.
+    """
+
+
 def add_time_dimension(data: np.typing.NDArray, normalise: bool = True) -> np.typing.NDArray:
     """
     Add an equal sample spacing dummy time dimension to some time series data.

@@ -20,10 +20,10 @@ import unittest
 from typing import Union
 
 import numpy as np
-import numpy.typing
 import torch
 from gpytorch.kernels import RBFKernel, ScaleKernel
 from gpytorch.means import ZeroMean
+from numpy.typing import NDArray
 from torch import Tensor
 
 
@@ -54,8 +54,8 @@ class ClassificationTestCase(unittest.TestCase):
 
     @staticmethod
     def assertPredictionsEqual(  # pylint: disable=invalid-name
-        x: Union[Tensor, numpy.typing.NDArray[np.floating]],
-        y: Union[Tensor, numpy.typing.NDArray[np.floating]],
+        x: Union[Tensor, NDArray[np.integer], NDArray[np.floating]],
+        y: Union[Tensor, NDArray[np.integer], NDArray[np.floating]],
         delta: Union[float, int] = 0,
     ) -> None:
         """
