@@ -108,11 +108,17 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
         cell_source_lines = cell.source.split("\n")
         match_if_cell_expected_to_ignore = _RE_SPHINX_EXPECT.match(cell_source_lines[0])
         if not match_if_cell_expected_to_ignore:
-            self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: {output.evalue}")
+            if __debug__:
+                self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: {output.evalue}")
+            else:
+                self.fail(f"Got unexpected error in cell number {cell_no}")
         else:
             expected_error = match_if_cell_expected_to_ignore.group(1)
             if output.ename != expected_error:
-                self.fail(
-                    f"Expected {expected_error} in cell number {cell_no}, but {output.ename} was raised instead: "
-                    f"{output.evalue}"
-                )
+                if __debug__:
+                    self.fail(
+                        f"Expected {expected_error} in cell number {cell_no}, but {output.ename} was raised instead: "
+                        f"{output.evalue}"
+                    )
+                else:
+                    self.fail(f"Got unexpected error in cell number {cell_no}")

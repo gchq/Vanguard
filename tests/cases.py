@@ -164,7 +164,11 @@ class VanguardTestCase(unittest.TestCase):
                 f"Elements outside interval: {number_of_elements_outside_interval} / {len(data)} "
                 f"({100 * proportion_of_elements_outside_interval:.2f}%) -- delta = {100 * delta:.2f}%"
             )
-            raise AssertionError(error_message) from None
+
+            if __debug__:
+                raise AssertionError(error_message) from None
+            else:
+                raise AssertionError("Too many elements outside the interval!")
 
     @staticmethod
     def confidence_interval(
@@ -201,4 +205,7 @@ def assert_not_warns(expected_warning_type: Type[Warning] = Warning) -> None:
 
     if len(ws) > 0:
         msg = f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}"
-        raise AssertionError(msg)
+        if __debug__:
+            raise AssertionError(msg)
+        else:
+            raise AssertionError(f"Expected no warnings, caught {len(ws)}")

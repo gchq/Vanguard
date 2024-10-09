@@ -149,11 +149,14 @@ class PrintingTests(unittest.TestCase):
             self.controller.fit(2)
 
         output = self.new_stdout.getvalue()
-        try:
+        if __debug__:
+            try:
+                self.assertEqual(0, len(output.splitlines()))
+            except AssertionError:
+                print(output)
+                raise
+        else:
             self.assertEqual(0, len(output.splitlines()))
-        except AssertionError:
-            print(output)
-            raise
 
     def test_with_metrics(self) -> None:
         """Should print ten lines"""
@@ -161,11 +164,14 @@ class PrintingTests(unittest.TestCase):
             with self.controller.metrics_tracker.print_metrics():
                 self.controller.fit(10)
         output = self.new_stdout.getvalue()
-        try:
+        if __debug__:
+            try:
+                self.assertEqual(10, len(output.splitlines()))
+            except AssertionError:
+                print(output)
+                raise
+        else:
             self.assertEqual(10, len(output.splitlines()))
-        except AssertionError:
-            print(output)
-            raise
 
     def test_metrics_output(self) -> None:
         """Should match the string."""
@@ -202,8 +208,11 @@ class PrintingTests(unittest.TestCase):
             with self.controller.metrics_tracker.print_metrics(every=3):
                 self.controller.fit(10)
         output = self.new_stdout.getvalue()
-        try:
+        if __debug__:
+            try:
+                self.assertEqual(3, len(output.splitlines()))
+            except AssertionError:
+                print(output)
+                raise
+        else:
             self.assertEqual(3, len(output.splitlines()))
-        except AssertionError:
-            print(output)
-            raise
