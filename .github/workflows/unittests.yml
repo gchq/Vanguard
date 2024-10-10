@@ -57,7 +57,7 @@ jobs:
     - name: Install uv
       run: pip install uv
     - name: Install test dependencies
-      run: uv sync --extra test --locked
+      run: uv sync --extra test --no-dev --locked
     - name: Debug - uv pip freeze
       run: uv pip freeze
     - name: Run tests incompatible with type checking

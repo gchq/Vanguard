@@ -64,8 +64,9 @@ doc = [
     "sphinx-autodoc-typehints",
     "sphinxcontrib-bibtex",
 ]
-# All tools for a developer including those for running pylint
-dev = [
+
+[tool.uv]
+dev-dependencies = [
     "vanguard[test, doc]",
     "isort",
     "jupyterlab",

@@ -47,7 +47,7 @@ jobs:
       - name: Install uv
         run: pip install uv
       - name: Install latest dependencies
-        run: uv sync --extra dev --locked
+        run: uv sync --dev --locked
       - name: Debug - uv pip freeze
         run: uv pip freeze
       - name: Remove fail_fast from Pre-commit config
