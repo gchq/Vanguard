@@ -16,10 +16,20 @@ Vanguard implements many advanced Gaussian process techniques, as showcased in o
 ## Installation
 
 Vanguard can be installed directly from source:
-
+1. Clone the repository
+2. Navigate to the root of the repository
+3. Install the package using:
 ```shell
 $ pip install .
 ```
+
+Alternatively, you can install it directly via PyPI :
+
+```shell
+$ pip install vanguard-gp
+```
+Note that it is `vanguard-gp` and not `vanguard`. However, when using the package you should use
+`from vanguard import ...`.
 
 If the code is not running properly, recreate the environment with `pip install -r requirements.txt --no-deps`.
 
