@@ -14,6 +14,7 @@ Vanguard is designed for modularity to facilitate straightforward combinations o
 Vanguard implements many advanced Gaussian process techniques, as showcased in our `examples` folder. These techniques and others implemented within the Vanguard paradigm can be combined straightforwardly with minimal extra code, and without requiring specialist GP knowledge.
 
 ## Installation
+
 To install Vanguard:
 ```shell
 $ pip install vanguard-gp
