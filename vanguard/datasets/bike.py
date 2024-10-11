@@ -172,8 +172,7 @@ class BikeDataset(FileDataset):
         # Extract the day of the date and convert it to an integer
         df["dteday"] = df["dteday"].apply(lambda x: int(x.strftime("%d")))
         # Instant is just an index and casual+registered = count
-        df.drop(columns=["instant", "casual", "registered"], inplace=True)
-        return df.values
+        return df.drop(columns=["instant", "casual", "registered"]).values
 
     @staticmethod
     def _get_n_samples(data: np.typing.NDArray, n_samples: Optional[int]) -> int:
