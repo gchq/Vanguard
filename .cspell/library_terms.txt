@@ -33,6 +33,7 @@ codemirror
 confutils
 covar
 covars
+cuda
 currentmodule
 dateutil
 decoratorutils

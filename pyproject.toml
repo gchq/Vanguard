@@ -42,8 +42,8 @@ dependencies = [
     "scipy>=1.4",  # earlier versions fail to build with recent setuptools versions
     "scipy>=1.11; python_version>='3.12'",  # 1.10 and earlier appear to be incompatible with Python 3.12,
                                             # but this is not listed correctly in the metadata
-    "torch>=2.1.1",  # torch.optim.LRScheduler made public in 2.0.0;
-                     #   versions <2.2 have issues with C library dependencies in our CI
+    "torch>=2.2",  # torch.optim.LRScheduler made public in 2.0.0;
+                   #   versions <2.2 have issues with C library dependencies in our CI
     "typing_extensions>=4.4",  # @override introduced in 4.4
     "urllib3>=2.0.4",  # BaseHttpResponse added to urllib3.__all__ in 2.0.4
 ]
@@ -97,6 +97,7 @@ constraint-dependencies = [
     "distribute>=1",
     "python-json-logger>=1",
     "py>=1",
+    "nvidia-nvjitlink-cu12>=12.6.77",  # torch CUDA dependency
 ]
 
 [project.urls]
