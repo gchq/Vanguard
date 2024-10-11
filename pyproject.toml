@@ -45,8 +45,12 @@ dependencies = [
 
 [project.optional-dependencies]
 # These match the suffixes on the various requirements-*.txt files
-# Run unit tests
+# Run tests
 test = [
+    "ipykernel",  # for notebook tests
+    "nbconvert",  # for notebook tests
+    "nbformat",  # for notebook tests
+    "tqdm",  # for notebook tests
     "pytest-beartype",
     "pytest-cov",
 ]
@@ -55,6 +59,7 @@ doc = [
     "furo",
     "ipykernel",
     "ipython",
+    "nbconvert",
     "nbformat",
     "nbsphinx",
     "pillow",
@@ -69,7 +74,6 @@ doc = [
 ]
 # Run notebooks in the jupyter interface
 notebook = [
-    "jupyter",
     "jupyterlab",
     "tqdm",
 ]
