@@ -18,6 +18,7 @@ The bike dataset contains messy information about bike rentals, and is a good da
 Supplied by the UC Irvine Machine Learning Repository :cite:`FanaeeT2013`.
 """
 
+import math
 import warnings
 from typing import Optional
 
@@ -70,7 +71,10 @@ class BikeDataset(FileDataset):
 
         y /= y.mean()
 
-        n_train = int(training_proportion * x.shape[0])
+        if not 0 < training_proportion < 1:
+            raise ValueError("`training_proportion` must be between 0 and 1.")
+
+        n_train = math.ceil(training_proportion * x.shape[0])
         train_x, test_x = x[:n_train], x[n_train:]
         train_y, test_y = y[:n_train], y[n_train:]
 
