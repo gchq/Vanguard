@@ -212,10 +212,10 @@ class TestClassification:
 
     def test_multitask_dirichlet_classification_notebook_example(self) -> None:
         """
-        Explicitly test the multitask dirichlet classification example using Gaussian data.
+        Explicitly test the multitask Dirichlet classification example using Gaussian data.
 
         Here we recreate a minimal example based on the content of the notebook  ``multiclass_dirichlet_classification``
-        to ensure it is tested on all python versions rather than just a pinned package version and the latest.
+        to ensure it is tested on all supported python versions.
         """
         # Recreate the notebook example with specific data
         num_classes = 4
@@ -227,7 +227,7 @@ class TestClassification:
             rng=get_default_rng(),
         )
 
-        # Test the first controller can be created and fit
+        # Test the first controller can be created and fit without error
         @DirichletMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
         class MulticlassGaussianClassifierWithoutKernel(GaussianGPController):
             pass
@@ -247,7 +247,24 @@ class TestClassification:
         )
         gp.fit(1)
 
-        # Test the second controller can be created and fit
+    def test_multitask_dirichlet_kernel_classification_notebook_example(self):
+        """
+        Explicitly test the multitask Dirichlet kernel classification example using Gaussian data.
+
+        Here we recreate a minimal example based on the content of the notebook  ``multiclass_dirichlet_classification``
+        to ensure it is tested on all supported python versions.
+        """
+        # Recreate the notebook example with specific data
+        num_classes = 4
+        dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=100,
+            num_test_points=500,
+            num_classes=num_classes,
+            covariance_scale=1.0,
+            rng=get_default_rng(),
+        )
+
+        # Test the second controller can be created and fit without error
         @DirichletKernelMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
         class MulticlassGaussianClassifierWithKernel(GaussianGPController):
             pass
