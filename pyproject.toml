@@ -34,6 +34,7 @@ dependencies = [
     "matplotlib",
     "numpy>=1.25; python_version>='3.10'",
     "numpy>=1.20; python_version<'3.10'",
+    "pandas>=2",
     "scikit-learn",
     "scipy>=1.13; python_version>='3.12'",
     "scipy; python_version<'3.12'",
