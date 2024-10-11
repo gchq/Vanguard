@@ -48,7 +48,8 @@ class VanguardTestCase(unittest.TestCase):
         # successful?)
         self.required_f1_score = 0.5
 
-    @unittest.skip  # TODO: Investigate why this fails for e.g. seed=1234
+    @unittest.skip("Fails with default seed, seemingly due to numerical errors.")
+    # TODO: Investigate why this fails for e.g. seed=1234
     # https://github.com/gchq/Vanguard/issues/141
     def test_gp_multitask_binary_classification(self) -> None:
         """
@@ -88,6 +89,7 @@ class VanguardTestCase(unittest.TestCase):
             y_std=0.0,
             likelihood_class=MultitaskBernoulliLikelihood,
             marginal_log_likelihood_class=VariationalELBO,
+            rng=self.rng,
         )
 
         # Fit the GP

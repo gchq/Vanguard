@@ -112,7 +112,9 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
                 print("Traceback:")
                 for frame in output.traceback:
                     print(frame)
-            self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: {output.evalue}")
+                self.fail(f"Should not have raised {output.ename} in cell number {cell_no}: {output.evalue}")
+            else:
+                self.fail(f"Got unexpected error in cell number {cell_no}")
         else:
             expected_error = match_if_cell_expected_to_ignore.group(1)
             if output.ename != expected_error:
@@ -120,7 +122,9 @@ class NotebookTests(unittest.TestCase, metaclass=NotebookMetaClass):
                     print("Traceback:")
                     for frame in output.traceback:
                         print(frame)
-                self.fail(
-                    f"Expected {expected_error} in cell number {cell_no}, but {output.ename} was raised instead: "
-                    f"{output.evalue}"
-                )
+                    self.fail(
+                        f"Expected {expected_error} in cell number {cell_no}, but {output.ename} was raised instead: "
+                        f"{output.evalue}"
+                    )
+                else:
+                    self.fail(f"Got unexpected error in cell number {cell_no}")

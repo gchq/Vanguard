@@ -100,9 +100,14 @@ class SVGPModel(ApproximateGP):
                 except RuntimeError as exc:
                     cls = type(self)
                     full_path = ".".join((cls.__module__, cls.__qualname__))
-                    raise RuntimeError(
-                        f"{full_path} may not be the correct choice for a variational strategy."
-                    ) from exc
+                    if __debug__:
+                        raise RuntimeError(
+                            f"{full_path} may not be the correct choice for a variational strategy."
+                        ) from exc
+                    else:
+                        raise RuntimeError(
+                            "Unexpected Runtime Error! Potentially incorrect variational strategy."
+                        ) from exc
 
         variational_strategy.__class__ = SafeVariationalStrategy
         super().__init__(variational_strategy)

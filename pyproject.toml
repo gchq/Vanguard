@@ -32,10 +32,11 @@ dependencies = [
     "gpytorch>=1.11",
     "kmedoids",
     "matplotlib",
-    "numpy>=1.20",
-    "pandas",
+    "numpy>=1.25; python_version>='3.10'",
+    "numpy>=1.20; python_version<'3.10'",
     "scikit-learn",
-    "scipy",
+    "scipy>=1.13; python_version>='3.12'",
+    "scipy; python_version<'3.12'",
     "torch>=1.7.0",
     "typing_extensions",
     "urllib3>=2.2.1",
@@ -65,8 +66,16 @@ doc = [
     "sphinxcontrib-bibtex",
     "tqdm",
 ]
-# All tools for a developer including those for running pylint
-dev = [
+
+# Run notebooks in the jupyter interface
+notebook = [
+    "jupyter",
+    "jupyterlab",
+    "tqdm",
+]
+
+[tool.uv]
+dev-dependencies = [
     "vanguard[test, doc]",
     "isort",
     "jupyterlab",
@@ -76,12 +85,7 @@ dev = [
     "pyroma",
     "ruff",
 ]
-# Run notebooks in the jupyter interface
-notebook = [
-    "jupyter",
-    "jupyterlab",
-    "tqdm",
-]
+
 [project.urls]
 #Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved
 # https://github.com/gchq/Vanguard/issues/254

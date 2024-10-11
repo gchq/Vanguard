@@ -22,6 +22,7 @@ import torch
 from torch import Tensor
 
 from vanguard.base.posteriors.posterior import Posterior
+from vanguard.utils import DummyDistribution
 
 
 class MonteCarloPosteriorCollection(Posterior):
@@ -50,7 +51,9 @@ class MonteCarloPosteriorCollection(Posterior):
         self._posteriors_skipped = 0
         distribution = self._create_updated_distribution(self.INITIAL_NUMBER_OF_SAMPLES)
         super().__init__(distribution)
-        self._cached_samples = self._tensor_sample()
+        # _tensor_sample() isn't a method for dummy distributions
+        if not isinstance(distribution, DummyDistribution):
+            self._cached_samples = self._tensor_sample()
 
     @property
     def condensed_distribution(self) -> torch.distributions.Distribution:

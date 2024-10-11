@@ -59,7 +59,7 @@ class BaseAggregator:
             self.prior_var = torch.as_tensor(prior_var).type(torch.float32)
             if self.prior_var.dim() >= self.variances.dim() and self.prior_var.shape != self.variances.shape:
                 raise BadPriorVarShapeError(
-                    f"Prior var shape {self.prior_var.shape} " f"doesn't match variances shape {self.variances.shape}"
+                    f"Prior var shape {self.prior_var.shape} doesn't match variances shape {self.variances.shape}"
                 )
 
     def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:

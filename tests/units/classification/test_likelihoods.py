@@ -105,7 +105,7 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         controller.fit(1)
         fitted_alpha = controller.likelihood.alpha
 
-        # Assert that alpha has changed
+        # assert that alpha has changed
         assert not torch.all(torch.isclose(fitted_alpha, starting_alpha))
 
     def test_learn_alpha_constrained(self):

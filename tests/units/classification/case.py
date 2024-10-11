@@ -20,10 +20,10 @@ import unittest
 from typing import Union
 
 import numpy as np
-import numpy.typing
 import torch
 from gpytorch.kernels import RBFKernel, ScaleKernel
 from gpytorch.means import ZeroMean
+from numpy.typing import NDArray
 from torch import Tensor
 
 
@@ -54,8 +54,8 @@ class ClassificationTestCase(unittest.TestCase):
 
     @staticmethod
     def assertPredictionsEqual(  # pylint: disable=invalid-name
-        x: Union[Tensor, numpy.typing.NDArray[np.floating]],
-        y: Union[Tensor, numpy.typing.NDArray[np.floating]],
+        x: Union[Tensor, NDArray[np.integer], NDArray[np.floating]],
+        y: Union[Tensor, NDArray[np.integer], NDArray[np.floating]],
         delta: Union[float, int] = 0,
     ) -> None:
         """
@@ -77,4 +77,7 @@ class ClassificationTestCase(unittest.TestCase):
                 f"Incorrect predictions: {number_incorrect} / {len(x)} "
                 f"({100 * proportion_incorrect:.2f}%) -- delta = {100 * delta:.2f}%"
             )
-            raise AssertionError(error_message) from None
+            if __debug__:
+                raise AssertionError(error_message) from None
+            else:
+                raise AssertionError("Proportion of incorrect predictions bigger than the threshold value.") from None

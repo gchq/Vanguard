@@ -33,6 +33,23 @@ $ pre-commit install
   - This will make the issue a candidate for inclusion in future sprints, as-well as open to the community to address.
 - If you are able to fix the bug or implement the feature, [create a pull request](#pull-requests) with the relevant changes.
 
+## Getting set up
+We use [uv] for dependency management. Install it via the shell as described in the linked documentation, or
+simply with `pip install uv`.
+
+Once uv is installed, simply run `uv sync` in the repo root to set up your virtual environment.
+
+Once set up, you can use the virtual environment in a few ways:
+
+ - Run commands in the virtual environment with `uv run <command>`; for example `uv run pytest tests/units`
+ - Activate the virtual environment using the relevant activation script in `.venv/bin` (Linux)
+    or `.venv/Scripts` (Windows)
+ - (For IDEs) Set the Python executable in `.venv/bin` (Linux) or `.venv/Scripts` (Windows) as your active interpreter.
+
+To add new packages as dependencies, simply add them to `pyproject.toml` and then run `uv sync` again.
+
+For further details, see the [uv documentation][uv].
+
 ## Pull requests
 
 We are using a [GitHub Flow][github-flow] development approach, where the trunk branch
@@ -425,3 +442,4 @@ An entry with the keyword `Doe99` can then be referenced within a docstring anyw
 [sphinx-format]: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html
 [sphinx-rst]: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
 [unittest]: https://docs.python.org/3/library/unittest.html
+[uv]: https://docs.astral.sh/uv/

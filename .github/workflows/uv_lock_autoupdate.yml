@@ -1,15 +1,16 @@
-name: Autoupdate pre-commit config
+name: Autoupdate UV lock file
 
 on:
   schedule:
+    # Every Sunday at 00:00.
     - cron: "0 0 * * 0"
 
 jobs:
-  pre_commit_autoupdate:
+  uv_lock_autoupdate:
     env:
-      config_path: .pre-commit-config.yaml
+      lockfile_path: uv.lock
       update_message_path: /tmp/message.txt
-      update_branch: chore/pre-commit-autoupdate
+      update_branch: chore/uv-lock-autoupdate
     runs-on: ubuntu-latest
     steps:
       - name: Generate a token
@@ -44,7 +45,7 @@ jobs:
             git push origin ${{ env.update_branch }}
           fi
 
-      # Pre-commit setup and autoupdate steps
+      # uv setup and lockfile upgrading steps
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
@@ -56,45 +57,46 @@ jobs:
       - name: Clean installation
         run: |
           pip freeze --exclude-editable | xargs pip uninstall -y || pip freeze
-      - name: Install pre-commit
-        run: pip install pre-commit
-      - name: Store hash of baseline pre-commit config for comparison
+      - name: Install uv
+        run: pip install uv
+      - name: Store hash of baseline lockfile for comparison
         id: old_file
-        run: echo "hash=$( sha256sum $config_path )" >> $GITHUB_OUTPUT
+        run: echo "hash=$( sha256sum $lockfile_path )" >> $GITHUB_OUTPUT
       - name: Overwrite config on branch with version from develop
-        run: git checkout develop ${{ env.config_path }}
-      - name: Store hash of develop pre-commit config for comparison
+        run: git checkout develop ${{ env.lockfile_path }}
+      - name: Store hash of develop lockfile for comparison
         id: develop_file
-        run: echo "hash=$( sha256sum $config_path )" >> $GITHUB_OUTPUT
-      - name: Run pre-commit autoupdate on develop pre-commit config
+        run: echo "hash=$( sha256sum $lockfile_path )" >> $GITHUB_OUTPUT
+      - name: Run `uv lock --upgrade` on develop lockfile
         id: autoupdate
         run: |
-          pre-commit autoupdate > ${{ env.update_message_path }}
-          sed -i "/updating/!d" ${{ env.update_message_path }}
-      - name: Store hash of new pre-commit config for comparison
+          uv lock --upgrade > ${{ env.update_message_path }}
+          cat ${{ env.update_message_path }}
+          sed -i "/updated/!d" ${{ env.update_message_path }}
+      - name: Store hash of new lockfile for comparison
         id: new_file
-        run: echo "hash=$( sha256sum $config_path )" >> $GITHUB_OUTPUT
+        run: echo "hash=$( sha256sum $lockfile_path )" >> $GITHUB_OUTPUT
       # Commit authoring and pull-request creation/updating
-      - name: Commit (with signature) pre-commit config
+      - name: Commit (with signature) lockfile
         id: commit
         if: steps.old_file.outputs.hash != steps.new_file.outputs.hash
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
-          export message="chore(deps): autoupdate pre-commit hooks"
-          export sha=$( git rev-parse ${{ env.update_branch }}:${{ env.config_path }} )
-          export content=$( base64 -i ${{ env.config_path }} )
-          gh api --method PUT /repos/:owner/:repo/contents/${{ env.config_path }} \
+          export message="chore(deps): autoupdate uv.lock"
+          export sha=$( git rev-parse ${{ env.update_branch }}:${{ env.lockfile_path }} )
+          export content=$( base64 -i ${{ env.lockfile_path }} )
+          gh api --method PUT /repos/:owner/:repo/contents/${{ env.lockfile_path }} \
             --field message="$message" \
             --field content="$content" \
             --field branch=${{ env.update_branch }} \
             --field sha="$sha"
-      - name: Create or update pre-commit-autoupdate pull-request
+      - name: Create or update lockfile-autoupdate pull-request
         if: steps.commit.conclusion == 'success' || ( steps.develop_file.outputs.hash != steps.new_file.outputs.hash )
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run : |
-          export title="chore(deps): autoupdate pre-commit hooks"
+          export title="chore(deps): autoupdate uv.lock"
           export body=$( cat ${{ env.update_message_path }} )
           export pr_number=${{ steps.create_branch.outputs.pr_number }}
           export pr_state=${{ steps.create_branch.outputs.pr_state }}

@@ -131,6 +131,10 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
         self.kernel_matrix = kernel_matrix
         self.alpha = alpha
 
+        # In DirichletKernelMulticlassClassification of fuzzy points, in posterior-mode,
+        # self.label_matrix.shape = [default_group_size, num_test_points, num_classes], and
+        # self.kernel_matrix.shape = [default_group_size, num_classes, num_classes, num_test_points, num_test_points]
+        # so the line below errors due to mismatched sizes
         concentration = (self.kernel_matrix @ self.label_matrix + torch.unsqueeze(self.alpha, 0)).to_dense()
         super().__init__(concentration)
 
@@ -159,8 +163,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         Initialise self.
 
         :param num_classes: The number of classes in the data.
-        :param alpha: The Dirichlet prior concentration. If a float will be assumed
-            homogenous.
+        :param alpha: The Dirichlet prior concentration. If a float, this will be assumed homogenous.
         :param learn_alpha: If to learn the Dirichlet prior concentration as a parameter.
         :param alpha_prior: Only used if :param:learn_alpha = True. The noise prior to use when learning the Dirichlet
             prior concentration.
