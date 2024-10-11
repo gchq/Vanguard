@@ -29,24 +29,28 @@ class AirPassengers(FileDataset):
     Analysis of air passengers through time.
 
     Functionality to load the air passengers dataset, taken from :cite:`Jiang_KATS_2022`.
+
+    We do not need any functionality from the :class:`~vanguard.datasets.FileDataset` class so we instead just use null
+    values to initialise. The real value of subclassing here is loading and downloading data in the unified interface.
     """
 
-    def __init__(self):
-        """
-        Initialise self.
-
-        We do not need any functionality from the FileDataset class so we instead just use null values
-        to initialise. The real value of subclassing here is loading and downloading data in the unified
-        interface.
-        """
+    def __init__(self) -> None:
+        """Initialise self."""
         super().__init__(np.array([]), 0.0, np.array([]), 0.0, np.array([]), 0.0, np.array([]), 0.0, 0.0)
 
     def _load_data(self) -> pd.DataFrame:
-        """Load the data."""
+        """
+        Load the data.
+
+        :return: A data frame containing the air passengers data.
+        """
         file_path = self._get_data_path("air_passengers.csv")
         try:
             df = pd.read_csv(file_path)
         except FileNotFoundError as exc:
-            message = f"Could not find data at {file_path}."
+            if __debug__:
+                message = f"Could not find data at {file_path}."
+            else:
+                message = "Could not find data at `vanguard/datasets/data/air_passengers.csv`."
             raise FileNotFoundError(message) from exc
         return df

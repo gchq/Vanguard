@@ -214,7 +214,7 @@ class TestClassification:
         """
         Explicitly test the multitask dirichlet classification example using Gaussian data.
 
-        Here we recreate a minimal example based on the content of the notebook  ``multiclass_dirichlet_classification''
+        Here we recreate a minimal example based on the content of the notebook  ``multiclass_dirichlet_classification``
         to ensure it is tested on all python versions rather than just a pinned package version and the latest.
         """
         # Recreate the notebook example with specific data
@@ -227,15 +227,11 @@ class TestClassification:
             rng=get_default_rng(),
         )
 
-        @DirichletKernelMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
-        class MulticlassGaussianClassifierWithKernel(GaussianGPController):
-            pass
-
+        # Test the first controller can be created and fit
         @DirichletMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
         class MulticlassGaussianClassifierWithoutKernel(GaussianGPController):
             pass
 
-        # Test the first controller can be created and fit
         gp = MulticlassGaussianClassifierWithoutKernel(
             dataset.train_x,
             dataset.train_y,
@@ -252,6 +248,10 @@ class TestClassification:
         gp.fit(1)
 
         # Test the second controller can be created and fit
+        @DirichletKernelMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
+        class MulticlassGaussianClassifierWithKernel(GaussianGPController):
+            pass
+
         gp = MulticlassGaussianClassifierWithKernel(
             dataset.train_x,
             dataset.train_y,

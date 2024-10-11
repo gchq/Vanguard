@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for `vanguard.datasets.bike`."""
+"""Tests for :mod:`vanguard.datasets.bike`."""
 
+import math
 import warnings
 from unittest import TestCase
 from unittest.mock import patch
@@ -72,8 +73,8 @@ class TestBikeDataset(TestCase):
 
     def test_num_points(self) -> None:
         """Test that the dataset is generated with the correct number of points."""
-        assert self.dataset.num_training_points == int(self.num_samples * self.training_proportion)
-        assert self.dataset.num_testing_points == int(self.num_samples * (1 - self.training_proportion))
+        assert self.dataset.num_training_points == math.ceil(self.num_samples * self.training_proportion)
+        assert self.dataset.num_testing_points == math.ceil(self.num_samples * (1 - self.training_proportion))
         assert self.dataset.num_points == self.num_samples
 
     @pytest.mark.no_beartype

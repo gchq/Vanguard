@@ -100,6 +100,7 @@ class FileDataset(Dataset):
         Get the full path to the file name within the data folder.
 
         .. note::
+
             This will also create the ``data`` folder if it is missing, but the data should be
             placed there manually by the user.
         """

@@ -35,9 +35,16 @@ class BikeDataset(FileDataset):
     """
     Comparison of bike rentals to weather information.
 
-    Contains the hourly count of rental bikes between years 2011 and 2012 in Capital bikeshare system with the
+    Contains the hourly count of rental bikes between years 2011 and 2012 in Capital bike sharing system with the
     corresponding weather and seasonal information. Supplied by the UC Irvine Machine Learning Repository
     :cite:`FanaeeT2013`.
+
+    :param num_samples: The number of samples to use. If :data:`None`, all samples will be used.
+    :param training_proportion: The proportion of data used for training, defaults to 0.9.
+    :param significance: The significance used, defaults to 0.025.
+    :param noise_scale: The standard deviation of a given vector ``v`` is taken to be
+        `noise_scale * np.abs(v).mean()`. Defaults to 0.001.
+    :param rng: Generator instance used to generate random numbers.
     """
 
     def __init__(
@@ -47,17 +54,8 @@ class BikeDataset(FileDataset):
         significance: float = 0.025,
         noise_scale: float = 0.001,
         rng: Optional[np.random.Generator] = None,
-    ):
-        """
-        Initialise self.
-
-        :param num_samples: The number of samples to use. If :data:`None`, all samples will be used.
-        :param training_proportion: The proportion of data used for training, defaults to 0.9.
-        :param significance: The significance used, defaults to 0.025.
-        :param noise_scale: The standard deviation of a given vector v is taken to be
-            ``noise_scale * np.abs(v).mean()``. Defaults to 0.001.
-        :param rng: Generator instance used to generate random numbers.
-        """
+    ) -> None:
+        """Initialise self."""
         data = self._load_data()
 
         self.rng = utils.optional_random_generator(rng)
@@ -107,7 +105,9 @@ class BikeDataset(FileDataset):
         :param error_width: Error bar line width.
         """
         keep_indices = (
-            (self.test_y < y_upper_bound) if y_upper_bound else torch.ones_like(self.test_y, dtype=torch.bool)
+            (self.test_y < y_upper_bound)
+            if y_upper_bound is not None
+            else torch.ones_like(self.test_y, dtype=torch.bool)
         )
 
         plot_y = self.test_y[keep_indices]
@@ -141,7 +141,7 @@ class BikeDataset(FileDataset):
 
     def plot_y(self, start: int = 0, stop: int = 5, num_samples: int = 1_000) -> None:  # pragma: no cover
         """
-        Visualize the target variable.
+        Visualise the target variable.
 
         :param float start: The start of the y-values to be plotted, defaults to 0.
         :param float stop: The end of the y-values to be plotted, defaults to 5.
@@ -169,8 +169,7 @@ class BikeDataset(FileDataset):
         df["dteday"] = df["dteday"].apply(lambda x: int(x.strftime("%d")))
         # Instant is just an index and casual+registered = count
         df.drop(columns=["instant", "casual", "registered"], inplace=True)
-        data = df.values
-        return data
+        return df.values
 
     @staticmethod
     def _get_n_samples(data: np.typing.NDArray, n_samples: Optional[int]) -> int:
@@ -189,8 +188,8 @@ class BikeDataset(FileDataset):
                 "You requested more samples than there are data points in the data. Using all data points instead."
             )
             n_samples = data.shape[0]
+        if not isinstance(n_samples, int):
+            raise TypeError("A non-integer number of samples has been requested.")
         if n_samples < 0:
             raise ValueError("A negative number of samples has been requested.")
-        if not isinstance(n_samples, int):
-            raise ValueError("A non-integer number of samples has been requested.")
         return n_samples

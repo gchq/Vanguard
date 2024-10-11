@@ -24,7 +24,6 @@ bibtex
 bibtexparser
 biburl
 bigg
-bikeshare
 bmatrix
 booktitle
 bysource
@@ -123,7 +122,6 @@ numpages
 optim
 outputscale
 outputscales
-overfitting
 parameterised
 pred
 primaryclass
@@ -161,7 +159,6 @@ sphinxcontrib
 sphinxext
 sympy
 tensordot
-thresholding
 timesteps
 tinycss
 toctree

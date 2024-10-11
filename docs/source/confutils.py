@@ -18,11 +18,12 @@ Utility functions for the configuration file.
 
 import os
 import shutil
+from typing import Collection
 
 import nbformat
 
 
-def copy_filtered_files(source_folder, destination_folder, file_types=()):
+def copy_filtered_files(source_folder: str, destination_folder: str, file_types: Collection[str] = ()):
     """Copy the contents of a folder across if they have a particular type."""
     for root, dirs, files in os.walk(source_folder):
         for dr in dirs:
@@ -34,9 +35,12 @@ def copy_filtered_files(source_folder, destination_folder, file_types=()):
                 shutil.copyfile(source_filename, dest_filename)
 
 
-def process_notebooks(notebook_file_paths, notebooks_to_skip, encoding="utf8"):
+def process_notebooks(notebook_file_paths: Collection[str], notebooks_to_skip: Collection[str], encoding: str = "utf8"):
     """
     Remove empty cells from Jupyter notebook files, filter sphinx commands and set raw mimetype.
+
+    Note that empty cells shouldn't be committed to the repo in the first place (the `nbstripout` pre-commit hook
+    should remove them), but we strip again here to facilitate deployment.
 
     :param notebook_file_paths: Paths to notebooks that will be loaded and adjusted.
     :param notebooks_to_skip: List of notebooks to skip running during sphinx compile, e.g. due
@@ -51,9 +55,7 @@ def process_notebooks(notebook_file_paths, notebooks_to_skip, encoding="utf8"):
             notebook = nbformat.read(rf, as_version=4)
 
         notebook.cells = [
-            cell  #
-            for cell in notebook.cells
-            if cell.source and not cell["source"].startswith("# sphinx ignore")
+            cell for cell in notebook.cells if cell.source and not cell["source"].startswith("# sphinx ignore")
         ]
 
         # Apply any specific exclusions we want

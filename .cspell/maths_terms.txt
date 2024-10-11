@@ -23,6 +23,7 @@ probit
 regressand
 RMSE
 softmax
+thresholding
 unflatten
 unsqueeze
 unwarp

@@ -71,9 +71,9 @@ Vanguard was created by GCHQ.
     :maxdepth: 1
     :caption: Datasets
 
+    datasets/air_passengers
     datasets/base-datasets
     datasets/bike
-    datasets/air_passengers
     datasets/synthetic
 
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for `vanguard.datasets.air_passengers`."""
+"""Tests for :mod:`vanguard.datasets.air_passengers`."""
 
 from unittest import TestCase
 from unittest.mock import patch

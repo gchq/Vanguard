@@ -152,7 +152,7 @@ class BaseGPController:
             likelihood_class, **all_likelihood_params_as_kwargs
         )
 
-        # Janky fix for gpytorch bug(?)
+        # Possibly-dodgy fix for gpytorch bug(?)
         if isinstance(self.likelihood, _OneDimensionalLikelihood):
             self.likelihood.quadrature.locations = self.likelihood.quadrature.locations.to(self.device)
             self.likelihood.quadrature.weights = self.likelihood.quadrature.weights.to(self.device)
