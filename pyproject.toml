@@ -29,9 +29,10 @@ authors = [
 ]
 dependencies = [
     "bibtexparser>=1.1",  # 1.0 fails on import (?)
-    "gpytorch>=1.9.1",  # LinearOperator support added in 1.9;
-                        #   our SoftmaxLMC performance is improved in 1.9.1 (a unit test fails due to bad predictions
-                        #   on 1.9.0)
+    "gpytorch>=1.11",  # LinearOperator support added in 1.9;
+                       #   our SoftmaxLMC performance is improved in 1.9.1 (a unit test fails due to bad predictions
+                       #   on 1.9.0);
+                       #   one of our multitask tests fails on 1.10.
     "kmedoids>=0.3.3",  # prebuild wheels only exist for 3.3+;
                         #   earlier versions require rust toolchain
     "matplotlib>=3.2",  # earlier versions fail to build with recent setuptools versions
@@ -51,7 +52,9 @@ dependencies = [
 # Run unit tests
 test = [
     "pytest-cov>=5",
-    "pytest-beartype>=0.1"
+    "pytest>=8.3.3",
+    "pytest-beartype>=0.1",
+    "beartype>=0.19",
 ]
 # Compile documentation
 doc = [
@@ -79,6 +82,20 @@ dev-dependencies = [
     "pyright>=1",
     "pyroma>=4",
     "ruff>=0.6",
+]
+
+# Constraints on dependencies. These do *not* select a package to be installed, but if *another* package requires
+# one of these packages, then uv will respect these constraints. Note that pip does *not* respect these constraints,
+# however - they are only for ensuring that `--resolution lowest` only picks packages compatible with modern Python.
+constraint-dependencies = [
+    "networkx>=2",
+    "sympy>=1.5",
+    "appnope>=0.1",
+    "wcwidth>=0.2",
+    "cmdln>=2",
+    "distribute>=1",
+    "python-json-logger>=1",
+    "py>=1",
 ]
 
 [project.urls]

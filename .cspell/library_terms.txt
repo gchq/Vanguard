@@ -28,6 +28,7 @@ booktitle
 bysource
 cdist
 cmap
+cmdln
 codemirror
 confutils
 covar
