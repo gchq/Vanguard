@@ -69,7 +69,7 @@ def get_default_rng_override_seed(seed: int) -> np.random.Generator:
 
 
 def get_default_torch_rng_override_seed(seed: int):
-    return torch.Generator(device=vanguard.utils.default_device).manual_seed(seed)
+    return torch.Generator(device=vanguard.utils.DEFAULT_DEVICE).manual_seed(seed)
 
 
 def get_default_torch_rng() -> torch.Generator:

@@ -106,7 +106,9 @@ class BikeDataset(FileDataset):
         :param y_upper_bound: If provided, any points in the test set above this value will be discarded from plotting.
         :param error_width: Error bar line width.
         """
-        keep_indices = (self.test_y < y_upper_bound) if y_upper_bound else np.ones_like(self.test_y, dtype=bool)
+        keep_indices = (
+            (self.test_y < y_upper_bound) if y_upper_bound else torch.ones_like(self.test_y, dtype=torch.bool)
+        )
 
         plot_y = self.test_y[keep_indices]
         plot_upper = pred_y_upper[keep_indices]
@@ -116,6 +118,7 @@ class BikeDataset(FileDataset):
         rmse = torch.sqrt(torch.mean((plot_y - plot_mean) ** 2))
 
         # Plotting can require numpy operations so convert here
+        plot_y = plot_y.detach().cpu().numpy()
         plot_mean = plot_mean.detach().cpu().numpy()
         plot_lower = plot_lower.detach().cpu().numpy()
         plot_upper = plot_upper.detach().cpu().numpy()
@@ -146,8 +149,8 @@ class BikeDataset(FileDataset):
         """
         x = np.linspace(start, stop, num_samples)
 
-        plt.plot(x, stats.gaussian_kde(self.train_y)(x), label="train")
-        plt.plot(x, stats.gaussian_kde(self.test_y)(x), label="test")
+        plt.plot(x, stats.gaussian_kde(self.train_y.detach().cpu().numpy())(x), label="train")
+        plt.plot(x, stats.gaussian_kde(self.test_y.detach().cpu().numpy())(x), label="test")
 
         plt.grid(alpha=0.5)
         plt.ylabel("density", fontsize=15)

@@ -126,7 +126,7 @@ class BasicTests(unittest.TestCase):
         # Define a function to generate and record random samples, and replace our mock distribution's `rsample`
         # method with it
         samples = []
-        generator = torch.Generator(device=utils.default_device).manual_seed(1234)
+        generator = torch.Generator(device=utils.DEFAULT_DEVICE).manual_seed(1234)
 
         def rsample(sample_shape: torch.Size):
             """Dummy sample function that generates and records random samples."""

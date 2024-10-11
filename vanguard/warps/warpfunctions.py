@@ -41,8 +41,8 @@ class AffineWarpFunction(WarpFunction):
         :param b: The shift of the affine transformation.
         """
         super().__init__()
-        self.weight = torch.nn.Parameter(torch.Tensor([[float(a)]]))
-        self.bias = torch.nn.Parameter(torch.Tensor([[float(b)]]))
+        self.weight = torch.nn.Parameter(torch.as_tensor([[float(a)]]))
+        self.bias = torch.nn.Parameter(torch.as_tensor([[float(b)]]))
 
     @property
     def a(self) -> torch.nn.Parameter:

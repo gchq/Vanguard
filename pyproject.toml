@@ -59,7 +59,8 @@ doc = [
     "ipykernel",
     "setuptools; python_version>='3.12'",  # TODO: Remove once pybtex releases > 0.24.0
     # https://github.com/gchq/Vanguard/issues/246
-    "sphinx>=8",
+    "sphinx>=8; python_version>='3.10'",
+    "sphinx>=7; python_version<'3.10'",
     "sphinx-autodoc-typehints",
     "sphinxcontrib-bibtex",
     "tqdm",
