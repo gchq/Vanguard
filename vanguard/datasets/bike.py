@@ -40,6 +40,11 @@ class BikeDataset(FileDataset):
     corresponding weather and seasonal information. Supplied by the UC Irvine Machine Learning Repository
     :cite:`FanaeeT2013`.
 
+    .. note:
+
+        The y-values in this dataset are normalised by dividing them by their mean, so that the overall mean
+        is 1.
+
     :param num_samples: The number of samples to use. If :data:`None`, all samples will be used.
     :param training_proportion: The proportion of data used for training, defaults to 0.9.
     :param significance: The significance used, defaults to 0.025.
@@ -69,6 +74,9 @@ class BikeDataset(FileDataset):
         x_std = noise_scale * np.abs(x).mean()
         y_std = noise_scale * np.abs(y).mean()
 
+        # TODO: Why do we divide by the mean here? Should we instead subtract the mean and divide by y_std? Or should
+        #  we be using/demonstrating the @NormaliseY decorator instead?
+        # https://github.com/gchq/Vanguard/issues/437
         y /= y.mean()
 
         if not 0 < training_proportion < 1:
