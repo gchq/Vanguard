@@ -3730,6 +3730,7 @@ dev = [
     { name = "ipykernel" },
     { name = "ipython" },
     { name = "isort" },
+    { name = "jupyter" },
     { name = "jupyterlab" },
     { name = "nbformat" },
     { name = "nbsphinx" },
@@ -3793,7 +3794,7 @@ dev = [
     { name = "pyright" },
     { name = "pyroma" },
     { name = "ruff" },
-    { name = "vanguard", extras = ["test", "doc"] },
+    { name = "vanguard", extras = ["test", "doc", "notebook"] },
 ]
 
 [[package]]

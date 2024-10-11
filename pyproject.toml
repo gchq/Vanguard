@@ -66,7 +66,6 @@ doc = [
     "sphinxcontrib-bibtex",
     "tqdm",
 ]
-
 # Run notebooks in the jupyter interface
 notebook = [
     "jupyter",
@@ -76,7 +75,7 @@ notebook = [
 
 [tool.uv]
 dev-dependencies = [
-    "vanguard[test, doc]",
+    "vanguard[test, doc, notebook]",
     "isort",
     "jupyterlab",
     "pre-commit",
