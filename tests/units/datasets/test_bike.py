@@ -69,7 +69,7 @@ class TestBikeDataset:
         # Define inputs to the dataset and create the dataset using the mocked data
         with patch("pandas.read_csv", return_value=mocked_data.copy()):
             return BikeDataset(
-                self.num_samples, self.training_proportion, self.significance, self.noise_scale, get_default_rng()
+                self.num_samples, self.training_proportion, self.significance, self.noise_scale, rng=get_default_rng()
             )
 
     def test_num_points(self, dataset: BikeDataset) -> None:
@@ -83,7 +83,7 @@ class TestBikeDataset:
         """Test that setting a training proportion outside the range (0, 1) raises an appropriate error."""
         with patch("pandas.read_csv", return_value=mocked_data):
             with pytest.raises(ValueError, match="`training_proportion` must be between 0 and 1"):
-                BikeDataset(training_proportion=training_proportion)
+                BikeDataset(training_proportion=training_proportion, rng=get_default_rng())
 
     def test_data_loading(self, dataset: BikeDataset, mocked_data: pd.DataFrame) -> None:
         """Test loading a file and processing it."""
