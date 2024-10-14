@@ -194,6 +194,12 @@ Write a one-line descriptive sentence as an active command.
 
 As many paragraphs as is required to document the object.
 
+:Example:
+    >>> string_one = "Add some brief but informative examples"
+    >>> string_two = "they'll be automatically tested with doctest!"
+    >>> f"{string_one} - {string_two}"
+    "Add some brief but informative examples - they'll be automatically tested with doctest!"
+
 :param a: Description of parameter a.
 :param b: Description of parameter b.
 :raises SyntaxError: Description of why a SyntaxError might be raised.
