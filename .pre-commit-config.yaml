@@ -109,7 +109,7 @@ repos:
       - id: require-utf8
         name: Check file encoding
         description: Ensure file is valid UTF-8
-        entry: python pre_commit_hooks/require_ascii.py
+        entry: python pre_commit_hooks/require_utf8.py
         language: python
         exclude:
           (?x)^(
@@ -121,10 +121,10 @@ repos:
         entry: python pre_commit_hooks/check_copyright.py
         types: [ python ]
         language: python
-        # require_ascii is excluded as it's licensed under the Apache license, so has a different header
+        # require_utf8 is excluded as it's licensed under the Apache license, so has a different header
         exclude: |
           (?x)^(
-            pre_commit_hooks/require_ascii.py
+            pre_commit_hooks/require_utf8.py
           )$
       - id: markdown-cells
         name: forbid markdown cells
