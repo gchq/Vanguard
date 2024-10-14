@@ -116,7 +116,8 @@ is straightforward signposting for how users should change their code to use
 non-deprecated parts of the codebase instead.
 
 As an example, this is what the deprecation period for renaming `my_old_function` to
-`my_new_function` would look like:
+`my_new_function` would look like ([docstrings](#docstrings) have been omitted for
+brevity, but should be included in real code!):
 
 ```python
 # v0.1.0:
@@ -193,10 +194,10 @@ Write a one-line descriptive sentence as an active command.
 
 As many paragraphs as is required to document the object.
 
-:param a: Description of parameter a
-:param b: Description of parameter b
-:raises SyntaxError: Description of why a SyntaxError might be raised
-:return: Description of return from function
+:param a: Description of parameter a.
+:param b: Description of parameter b.
+:raises SyntaxError: Description of why a SyntaxError might be raised.
+:return: Description of return from function.
 """
 ```
 If the function does not return anything, the return line above can be omitted.
