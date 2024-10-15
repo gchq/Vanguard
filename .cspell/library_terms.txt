@@ -28,10 +28,12 @@ booktitle
 bysource
 cdist
 cmap
+cmdln
 codemirror
 confutils
 covar
 covars
+cuda
 currentmodule
 dateutil
 decoratorutils
