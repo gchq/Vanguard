@@ -138,9 +138,7 @@ class Decorator:
         extra_methods = cls_methods - super_methods - ignore_methods
         if extra_methods:
             if __debug__:
-                message = (
-                    f"The class {cls.__name__!r} has added the " f"following unexpected methods: {extra_methods!r}."
-                )
+                message = f"The class {cls.__name__!r} has added the following unexpected methods: {extra_methods!r}."
             else:
                 message = "Unexpected methods added to the class"
             if self.raise_instead:
@@ -151,9 +149,7 @@ class Decorator:
         overwritten_methods = {method for method in cls_methods if method in cls.__dict__} - ignore_methods
         if overwritten_methods:
             if __debug__:
-                message = (
-                    f"The class {cls.__name__!r} has overwritten the" f" following methods: {overwritten_methods!r}."
-                )
+                message = f"The class {cls.__name__!r} has overwritten the following methods: {overwritten_methods!r}."
             else:
                 message = "Unexpected methods overwritten by the class"
             if self.raise_instead:

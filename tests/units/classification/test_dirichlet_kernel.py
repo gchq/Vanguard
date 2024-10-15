@@ -100,7 +100,7 @@ class MulticlassTests(ClassificationTestCase):
     # TODO: When using the original code for classify_fuzzy_points, the test below fails, as the distribution
     #  covariance_matrix is an unexpected shape.
     # https://github.com/gchq/Vanguard/issues/288
-    @skip
+    @skip("Fails as distribution covariance_matrix is an unexpected shape - see linked issue")
     def test_fuzzy_predictions(self) -> None:
         """
         Predict on a noisy test dataset, and check the predictions are reasonably accurate.

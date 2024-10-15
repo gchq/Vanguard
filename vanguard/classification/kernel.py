@@ -135,11 +135,7 @@ class DirichletKernelMulticlassClassification(Decorator):
                 x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
                 x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
             ) -> Tuple[Tensor, Tensor]:
-                """Classify fuzzy points."""
-                # x = torch.as_tensor(x)
-                # x_std = torch.as_tensor(x_std)
-                # means_as_floats, _ = super().fuzzy_predictive_likelihood(x, x_std).prediction()
-                # return self._get_predictions_from_prediction_means(means_as_floats)
+                """Classify fuzzy points - not supported for this class."""
                 msg = "Fuzzy classification is not supported for DirichletKernelMulticlassClassification."
                 raise NotImplementedError(msg)
 
