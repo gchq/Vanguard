@@ -164,4 +164,4 @@ class TestParameters(unittest.TestCase):
         state_dict["testing"][0] = 2
 
         # The Parameters object should not reflect this change
-        torch.testing.assert_close(parameters.parameters[module]["testing"], original_tensor)
+        torch.testing.assert_close(parameters.module_state_dicts[module]["testing"], original_tensor)
