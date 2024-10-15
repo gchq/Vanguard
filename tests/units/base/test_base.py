@@ -250,7 +250,7 @@ class NLLTests(unittest.TestCase):
         self.test_x_numpy = self.dataset.test_x.detach().cpu().numpy()
         self.test_y_numpy = self.dataset.test_y.detach().cpu().numpy()
 
-        gpr = GaussianProcessRegressor(kernel=kernel, alpha=0)
+        gpr = GaussianProcessRegressor(kernel=kernel, alpha=0, random_state=self.rng.integers(2**32))
         gpr.fit(self.train_x_numpy, self.train_y_numpy)
 
         # Generate a test set and predict on that (with sklearn)
