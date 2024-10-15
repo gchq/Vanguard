@@ -88,6 +88,7 @@ class BayesianHyperparameters:
         self.prior_variances.update({f"raw_{param}": value for param, value in self.prior_variances.items()})
 
     def __call__(self, module_class: Type[ModuleT]) -> Type[ModuleT]:
+        """Decorate a class to convert its hyperparameters to Bayesian hyperparameters."""
         ignored_parameters = self.ignored_parameters
 
         process_hyperparameter = partial(

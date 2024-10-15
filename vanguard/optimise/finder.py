@@ -46,6 +46,7 @@ class LearningRateFinder:
 
     @property
     def best_learning_rate(self) -> float:
+        """Return the current best (lowest-loss) learning rate."""
         return self._learning_rates[np.argmin(self._losses)]
 
     def find(

@@ -60,6 +60,11 @@ class DoctestMetaClass(type):
     """
 
     def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
+        """
+        Prepare an instance for initialisation.
+
+        Creates a test for each doctest within the module.
+        """
         cls = super().__new__(mcs, name, bases, namespace)
 
         cls.names_to_suites = {}

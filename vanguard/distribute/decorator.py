@@ -25,6 +25,7 @@ import torch
 from gpytorch.utils.warnings import GPInputWarning
 from numpy.typing import NDArray
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -106,6 +107,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self.partitioner_kwargs = partitioner_kwargs if partitioner_kwargs is not None else {}
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
+    @override
     def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
         super().verify_decorated_class(cls)
         # pylint: disable-next=protected-access

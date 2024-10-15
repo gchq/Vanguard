@@ -38,6 +38,11 @@ class NotebookMetaClass(type):
     """
 
     def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
+        """
+        Prepare an instance for initialisation.
+
+        Creates a test for each notebook in the "examples" folder.
+        """
         cls = super().__new__(mcs, name, bases, namespace)
 
         examples_dir = os.path.join(os.path.dirname(__file__), "..", "examples", "notebooks")

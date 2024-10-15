@@ -80,6 +80,7 @@ class Decorator:
         self.raise_instead = raise_instead
 
     def __call__(self, cls: Type[T]) -> Type[T]:
+        """Decorate a class. Checks the class is appropriate before decorating."""
         self.verify_decorated_class(cls)
         decorated_class = self._decorate_class(cls)
         if decorated_class is not cls:

@@ -22,6 +22,7 @@ from gpytorch.kernels import MultitaskKernel
 from linear_operator import LinearOperator, to_linear_operator
 from linear_operator.operators import KroneckerProductLinearOperator
 from torch import Tensor
+from typing_extensions import override
 
 
 class BatchCompatibleMultitaskKernel(MultitaskKernel):
@@ -29,6 +30,7 @@ class BatchCompatibleMultitaskKernel(MultitaskKernel):
     A multitask kernel compatible with input uncertainty and hierarchical.
     """
 
+    @override
     def forward(
         self, x1: Tensor, x2: Tensor, diag: bool = False, last_dim_is_batch: bool = False, **params: Any
     ) -> LinearOperator:

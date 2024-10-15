@@ -23,6 +23,7 @@ import numpy as np
 import numpy.typing
 import pytest
 import torch
+from typing_extensions import override
 
 from tests.cases import get_default_rng
 from vanguard.warps import MultitaskWarpFunction, WarpFunction, warpfunctions
@@ -43,9 +44,11 @@ class AutogradAffineWarpFunction(WarpFunction):
         self.layer.weight.data.fill_(1.0)
         self.layer.bias.data.fill_(0.0)
 
+    @override
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return self.layer(y.reshape(-1, 1))
 
+    @override
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         return torch.div(x - self.layer.bias, self.layer.weight)
 
@@ -62,12 +65,14 @@ class AutogradBoxCoxWarpFunction(WarpFunction):
         super().__init__()
         self.lambda_ = lambda_
 
+    @override
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         if self.lambda_ == 0:
             return torch.log(y)
         else:
             return (torch.sign(y) * torch.abs(y) ** self.lambda_ - 1) / self.lambda_
 
+    @override
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         if self.lambda_ == 0:
             return torch.exp(x)

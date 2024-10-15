@@ -34,6 +34,7 @@ class MyLabelStyle(BaseLabelStyle):
     """
 
     def format_labels(self, sorted_entries: Iterable[Entry]) -> Generator[str, None, None]:
+        """Format the labels to use the original key in the .bib file."""
         for entry in sorted_entries:
             yield entry.key
 

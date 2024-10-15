@@ -29,6 +29,7 @@ from gpytorch.utils.warnings import GPInputWarning
 from linear_operator import LinearOperator
 from linear_operator.operators import DiagLinearOperator
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard.models import ExactGPModel
 from vanguard.utils import DummyDistribution
@@ -145,7 +146,9 @@ class InertKernelModel(ExactGPModel):
     def _label_tensor(self, targets: torch.Tensor) -> LinearOperator:
         return DiagLinearOperator(torch.ones(self.n_classes))[targets.long()]
 
+    @override
     def __call__(self, *args: Any, **kwargs: Any) -> DummyKernelDistribution:
+        """Perform training or inference, depending on the current mode."""
         # TODO: Why do we accept variable numbers of arguments here? It seems to throw errors if you provide too many
         #  arguments, and the GPyTorch documentation seems very thin here. Also, `kwargs` is ignored entirely.
         # https://github.com/gchq/Vanguard/issues/292

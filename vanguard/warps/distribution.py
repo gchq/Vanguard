@@ -22,7 +22,7 @@ import numpy as np
 import numpy.typing
 import torch
 from torch.distributions import Normal
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from vanguard.base.basecontroller import BaseGPController
 from vanguard.warps.basefunction import WarpFunction
@@ -114,5 +114,6 @@ class WarpedGaussian(Normal):
         log_jacobian = torch.log(warp.deriv(data).abs()).sum()
         return gaussian_log_prob + log_jacobian
 
+    @override
     def enumerate_support(self, expand: bool = True) -> torch.Tensor:
         raise NotImplementedError

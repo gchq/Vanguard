@@ -33,6 +33,7 @@ from linear_operator import LinearOperator
 from linear_operator.operators import DiagLinearOperator
 from torch import Tensor
 from torch.distributions import Distribution
+from typing_extensions import override
 
 from vanguard.classification.models import DummyKernelDistribution
 
@@ -52,6 +53,7 @@ class DummyNoise:
 
     @property
     def noise(self) -> Union[float, numpy.typing.NDArray[np.floating], Tensor]:
+        """Return the dummy noise value."""
         return self.value
 
 
@@ -138,6 +140,7 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
         concentration = (self.kernel_matrix @ self.label_matrix + torch.unsqueeze(self.alpha, 0)).to_dense()
         super().__init__(concentration)
 
+    @override
     def log_prob(self, value: torch.Tensor) -> torch.Tensor:
         one_hot_values = DiagLinearOperator(torch.ones(self.label_matrix.shape[1]))[value.long()]
         all_class_grouped_kernel_entries = self.kernel_matrix @ one_hot_values + torch.unsqueeze(self.alpha, 0)
@@ -188,13 +191,16 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
 
     @property
     def alpha(self) -> Optional[Union[float, numpy.typing.NDArray[np.floating], Tensor]]:
+        """Return the Dirichlet prior concentration :math:`\alpha`."""
         return self._alpha_var.noise
 
+    @override
     # pylint: disable=arguments-differ
     def forward(self, function_samples: torch.Tensor, **kwargs) -> Distribution:
         """Not implemented, but a concrete implementation is required by the abstract base class."""
         raise NotImplementedError
 
+    @override
     # pylint: disable=arguments-differ
     def log_marginal(
         self, observations: torch.Tensor, function_dist: DummyKernelDistribution, **kwargs
@@ -202,9 +208,11 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
         marginal = self.marginal(function_dist, **kwargs)
         return marginal.log_prob(observations)
 
+    @override
     def marginal(self, function_dist: DummyKernelDistribution, *args, **kwargs) -> DirichletKernelDistribution:
         return DirichletKernelDistribution(function_dist.labels, function_dist.kernel, self.alpha)
 
+    @override
     # The parameter `input` is taken from superclass method, so we can't rename it here.
     # pylint: disable=redefined-builtin
     def __call__(
