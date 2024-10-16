@@ -115,6 +115,7 @@ constraint-dependencies = [
     "nvidia-nvjitlink-cu12>=12.6.77",  # torch CUDA dependency
     "lxml>=2",
     "webencodings>=0.5",  # earlier versions fail to build on 3.12
+    "argon2-cffi>=16.3.0"  # prevents errors due to CFFI reinstallation
 ]
 
 # force the lockfile to be split by Python version, ensuring we get the latest dependencies for each version
