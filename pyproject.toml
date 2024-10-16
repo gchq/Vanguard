@@ -101,6 +101,8 @@ dev-dependencies = [
 # Constraints on dependencies. These do *not* select a package to be installed, but if *another* package requires
 # one of these packages, then uv will respect these constraints. Note that pip does *not* respect these constraints,
 # however - they are only for ensuring that `--resolution lowest` only picks packages compatible with modern Python.
+# Only include *transitive* dependencies in this list - to apply a constraint on a direct dependency, do so at the
+# actual dependency specification!
 constraint-dependencies = [
     "networkx>=2",
     "sympy>=1.5",
@@ -111,6 +113,8 @@ constraint-dependencies = [
     "python-json-logger>=1",
     "py>=1",
     "nvidia-nvjitlink-cu12>=12.6.77",  # torch CUDA dependency
+    "lxml>=2",
+    "webencodings>=0.5",  # earlier versions fail to build on 3.12
 ]
 
 [project.urls]

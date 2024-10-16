@@ -24,12 +24,14 @@ constraints = [
     { name = "appnope", specifier = ">=0.1" },
     { name = "cmdln", specifier = ">=2" },
     { name = "distribute", specifier = ">=1" },
+    { name = "lxml", specifier = ">=2" },
     { name = "networkx", specifier = ">=2" },
     { name = "nvidia-nvjitlink-cu12", specifier = ">=12.6.77" },
     { name = "py", specifier = ">=1" },
     { name = "python-json-logger", specifier = ">=1" },
     { name = "sympy", specifier = ">=1.5" },
     { name = "wcwidth", specifier = ">=0.2" },
+    { name = "webencodings", specifier = ">=0.5" },
 ]
 
 [[package]]
