@@ -53,10 +53,10 @@ dependencies = [
 # These match the suffixes on the various requirements-*.txt files
 # Run tests
 test = [
-    "ipykernel",  # for notebook tests
-    "nbconvert",  # for notebook tests
-    "nbformat",  # for notebook tests
-    "tqdm",  # for notebook tests
+    "ipykernel>=6",  # for notebook tests
+    "nbconvert>=7",  # for notebook tests
+    "nbformat>=5",  # for notebook tests
+    "tqdm>=4",  # for notebook tests
     "pytest-beartype>=0.1",
     "pytest-cov>=5",
     "pytest>=8.3.3",
@@ -65,9 +65,9 @@ test = [
 # Compile documentation
 doc = [
     "furo>=2024",
-    "ipykernel",
+    "ipykernel>=6",
     "ipython>=8",
-    "nbconvert",
+    "nbconvert>=7",
     "nbformat>=5",
     "nbsphinx>=0.9",
     "pillow>=10",
@@ -78,12 +78,12 @@ doc = [
     "sphinx>=7; python_version<'3.10'",
     "sphinx-autodoc-typehints>=2",
     "sphinxcontrib-bibtex>=2",
-    "tqdm",
+    "tqdm>=4",
 ]
 # Run notebooks in the jupyter interface
 notebook = [
-    "jupyterlab",
-    "tqdm",
+    "jupyterlab>=4",
+    "tqdm>=4",
 ]
 
 [tool.uv]
