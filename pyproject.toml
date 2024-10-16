@@ -117,6 +117,16 @@ constraint-dependencies = [
     "webencodings>=0.5",  # earlier versions fail to build on 3.12
 ]
 
+# force the lockfile to be split by Python version, ensuring we get the latest dependencies for each version
+environments = [
+    "python_version>='3.13'",
+    "python_version=='3.12.*'",
+    "python_version=='3.11.*'",
+    "python_version=='3.10.*'",
+    "python_version=='3.9.*'",
+    "python_version=='3.8.*'",
+]
+
 [project.urls]
 #Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved
 # https://github.com/gchq/Vanguard/issues/254
