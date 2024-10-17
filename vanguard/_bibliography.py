@@ -31,17 +31,22 @@ def _import_bibliography(bibtex_file_path, encoding="utf8"):
 
     for entry in bib_database.entries:
         reference_id = entry.pop("ID")
-        if "url" not in entry:
-            if entry.get("archiveprefix") == "arXiv":
-                try:
-                    entry["url"] = "https://arxiv.org/abs/" + entry["eprint"]
-                except KeyError as exc:
-                    if __debug__:
-                        raise ValueError(f"Cannot calculate arXiv URL for {reference_id}: missing 'eprint'.") from exc
-                    else:
-                        raise ValueError("Cannot calculate arXiv URL: missing 'eprint'.") from exc
-        else:
+
+        # Try and get a URL, if possible.
+        if "url" in entry:
+            # Either get one listed directly in the entry...
             entry["url"] = entry["url"].replace("\n", "")
+        elif entry.get("archiveprefix") == "arXiv":
+            # ...or for arXiv specifically, we can infer the URL from the "eprint" field.
+            try:
+                entry["url"] = "https://arxiv.org/abs/" + entry["eprint"]
+            except KeyError as exc:
+                # Only print the full reference_id if running without optimisations - printing unsanitised user inputs
+                # to the console presents a security risk.
+                if __debug__:
+                    raise ValueError(f"Cannot calculate arXiv URL for {reference_id}: missing 'eprint'.") from exc
+                else:
+                    raise ValueError("Cannot calculate arXiv URL: missing 'eprint'.") from exc
 
         references[reference_id] = entry
 

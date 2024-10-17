@@ -163,8 +163,7 @@ class ForwardTest(unittest.TestCase):
 
         # We should not be able to compose multitask and non-multitask warp functions
         with self.assertRaises(TypeError):
-            # pylint: disable=expression-not-assigned
-            MultitaskWarpFunction(warp1, warp2) @ warp3
+            _ = MultitaskWarpFunction(warp1, warp2) @ warp3
 
     def test_compose_multitask_with_self(self) -> None:
         """Test composition of a multitask warp with itself."""
