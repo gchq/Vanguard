@@ -33,6 +33,17 @@ from urllib3 import BaseHTTPResponse
 class Dataset:
     """
     Represents an experimental dataset used by Vanguard.
+
+    :param train_x: The training inputs.
+    :param train_x_std: The standard deviation(s) of the training inputs.
+    :param train_y: The training outputs.
+    :param train_y_std: The standard deviation(s) of the training outputs.
+    :param test_x: The test inputs.
+    :param test_x_std: The standard deviation(s) of the test inputs.
+    :param test_y: The test outputs.
+    :param test_y_std: The standard deviation(s) of the test outputs.
+    :param significance: The recommended significance value to be used for confidence intervals.
+        Note that this value does not necessarily have any bearing on the data.
     """
 
     def __init__(
@@ -47,20 +58,7 @@ class Dataset:
         test_y_std: Union[float, NDArray[np.floating], torch.Tensor],
         significance: float,
     ) -> None:
-        """
-        Initialise self.
-
-        :param train_x: The training inputs.
-        :param train_x_std: The standard deviation(s) of the training inputs.
-        :param train_y: The training outputs.
-        :param train_y_std: The standard deviation(s) of the training outputs.
-        :param test_x: The test inputs.
-        :param test_x_std: The standard deviation(s) of the test inputs.
-        :param test_y: The test outputs.
-        :param test_y_std: The standard deviation(s) of the test outputs.
-        :param significance: The recommended significance value to be used for confidence intervals.
-            Note that this value does not necessarily have any bearing on the data.
-        """
+        """Initialise self."""
         self.train_x = torch.as_tensor(train_x)
         self.train_x_std = torch.as_tensor(train_x_std)
         self.train_y = torch.as_tensor(train_y)
@@ -135,19 +133,17 @@ class FileDataset(Dataset):
 class EmptyDataset(Dataset):
     """
     Represents an empty dataset.
+
+    :param num_features: The number of features to give the dataset. (The dataset does not contain any points,
+        but the arrays `train_x` and `test_x` will have shape `(0, num_features)` to enable code that expects a
+        sensible `num_features` to work.)
+    :param significance: The recommended significance value to be used for confidence intervals.
+        Note that this value has no bearing on the data, as there is no data - this parameter is only provided
+        for compatibility with code that requires a certain significance level.
     """
 
     def __init__(self, num_features: int = 1, significance: float = 0.1) -> None:
-        """
-        Initialise an empty dataset.
-
-        :param num_features: The number of features to give the dataset. (The dataset does not contain any points,
-            but the arrays `train_x`, `test_y` etc. will have shape `(0, num_features)` to enable code that expects a
-            sensible `num_features` to work.
-        :param significance: The recommended significance value to be used for confidence intervals.
-            Note that this value has no bearing on the data, as there is no data - this parameter is only provided
-            for compatibility with code that requires a certain significance level.
-        """
+        """Initialise an empty dataset."""
         super().__init__(
             np.zeros((0, num_features)),
             np.zeros((0,)),
