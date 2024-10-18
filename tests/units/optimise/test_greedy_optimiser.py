@@ -81,32 +81,39 @@ class ParameterAgreementTests(unittest.TestCase):
         cls.greedy_controller.fit(100)
 
     def test_final_outputscales_are_different(self) -> None:
+        """Test that the final `outputscale` differs between the greedy and non-greedy controllers."""
         self.assertNotAlmostEqual(
             self.controller.kernel.outputscale.item(), self.greedy_controller.kernel.outputscale.item()
         )
 
     def test_final_lengthscales_are_different(self) -> None:
+        """Test that the final `lengthscale` differs between the greedy and non-greedy controllers."""
         self.assertNotAlmostEqual(
             self.controller.kernel.base_kernel.lengthscale.item(),
             self.greedy_controller.kernel.base_kernel.lengthscale.item(),
         )
 
     def test_final_means_are_different(self) -> None:
+        """Test that the final `mean` differs between the greedy and non-greedy controllers."""
         self.assertNotAlmostEqual(self.controller.mean.constant.item(), self.greedy_controller.mean.constant.item())
 
     def test_final_outputscales_are_same(self) -> None:
+        """Test that the final `outputscale` is the same for the two non-greedy controllers."""
         self.assertEqual(self.controller.kernel.outputscale.item(), self.controller2.kernel.outputscale.item())
 
     def test_final_lengthscales_are_same(self) -> None:
+        """Test that the final `lengthscale` is the same for the two non-greedy controllers."""
         self.assertEqual(
             self.controller.kernel.base_kernel.lengthscale.item(),
             self.controller2.kernel.base_kernel.lengthscale.item(),
         )
 
     def test_final_means_are_same(self) -> None:
+        """Test that the final `mean` is the same for the two non-greedy controllers."""
         self.assertEqual(self.controller.mean.constant.item(), self.controller2.mean.constant.item())
 
     def test_loss_is_best_greedy(self) -> None:
+        """Test that the `GreedySmartOptimiser` uses the best loss, even if it's not the most recent."""
         # pylint: disable=protected-access
         best_loss = min(np.nan_to_num(self.greedy_controller._smart_optimiser.last_n_losses, nan=np.inf))
         used_loss = -self.greedy_controller._smart_optimiser._top_n_parameters.best().priority_value

@@ -80,6 +80,16 @@ class Decorator:
         self.raise_instead = raise_instead
 
     def __call__(self, cls: Type[T]) -> Type[T]:
+        """
+        Decorate a class, checking that the class is appropriate before decorating.
+
+        :param cls: The class to decorate.
+        :return: The decorated class.
+        :raises TypeError: If cls is not a subclass of the framework_class.
+        :raises TopmostDecoratorError: If cls is already decorated with a
+            :class:`~vanguard.decoratorutils.basedecorator.TopMostDecorator`.
+        :raises MissingRequirementsError: If cls is missing a required decorator.
+        """
         self.verify_decorated_class(cls)
         decorated_class = self._decorate_class(cls)
         if decorated_class is not cls:
@@ -96,6 +106,9 @@ class Decorator:
 
         :param cls: The class to be decorated.
         :raises TypeError: If cls is not a subclass of the framework_class.
+        :raises TopmostDecoratorError: If cls is already decorated with a
+            :class:`~vanguard.decoratorutils.basedecorator.TopMostDecorator`.
+        :raises MissingRequirementsError: If cls is missing a required decorator.
         """
         if not issubclass(cls, self.framework_class):
             raise TypeError(f"Can only apply decorator to subclasses of {self.framework_class.__name__}.")

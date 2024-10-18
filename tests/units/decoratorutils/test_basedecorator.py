@@ -41,7 +41,7 @@ class SimpleNumber:
         """Add 5 to a number."""
         return self.number + 5
 
-    def function_with_no_annotations_or_docstring(self, t):
+    def function_with_no_annotations_or_docstring(self, t):  # noqa: D102
         # This function deliberately has no docstring, to check that one is not somehow added by the decorator.
         return [t, t]
 

@@ -31,7 +31,10 @@ class BasicTests(unittest.TestCase):
     Basic tests for the TimeSeriesKernel decorator.
     """
 
-    def test_trains_time_feature_only(self) -> None:
+    def test_trains_time_feature_only(self) -> None:  # noqa: D102
+        # TODO: Add a docstring explaining what this test is testing, then remove `noqa: D102`.
+        # https://github.com/gchq/Vanguard/issues/445
+
         rng = get_default_rng()
         dataset = SyntheticDataset(rng=rng)
         controller = GaussianGPController(

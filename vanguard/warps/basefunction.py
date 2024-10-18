@@ -266,6 +266,7 @@ class MultitaskWarpFunction(WarpFunction):
 
     @property
     def num_tasks(self) -> int:
+        """Return the number of tasks this warp function operates on."""
         return len(self.warps)
 
     def forward(self, y: torch.Tensor) -> torch.Tensor:

@@ -60,6 +60,15 @@ class DoctestMetaClass(type):
     """
 
     def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
+        """
+        Prepare a class object.
+
+        Creates a test function for each module with doctests, which will run all the doctests in that module.
+
+        :param name: The name of the class (i.e. the returned type's `__name__`).
+        :param bases: The base classes of the returned class (i.e. the returned type's `__bases__`).
+        :param namespace: The initial namespace of the returned class (i.e. the returned type's `__dict__`).
+        """
         cls = super().__new__(mcs, name, bases, namespace)
 
         cls.names_to_suites = {}
@@ -76,7 +85,7 @@ class DoctestMetaClass(type):
                 """
                 Should not throw any errors.
 
-                Notebook paths are established through a mapping in order to
+                Test suites are established through a mapping in order to
                 avoid unexpected behaviours which occur when using non-local
                 loop variables within a new function.
                 """

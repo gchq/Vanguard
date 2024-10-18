@@ -70,6 +70,7 @@ class InitialisationTests(unittest.TestCase):
     """
 
     def setUp(self) -> None:
+        """Set up data before each test."""
         self.rng = get_default_rng()
 
     @pytest.mark.no_beartype
