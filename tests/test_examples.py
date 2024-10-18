@@ -39,9 +39,14 @@ class NotebookMetaClass(type):
 
     def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
         """
-        Prepare an instance for initialisation.
+        Prepare a class object.
 
-        Creates a test for each notebook in the "examples" folder.
+        Creates a test function for each notebook in the examples folder, which will run that notebook and fail on
+        any errors.
+
+        :param name: The name of the class (i.e. the returned type's `__name__`).
+        :param bases: The base classes of the returned class (i.e. the returned type's `__bases__`).
+        :param namespace: The initial namespace of the returned class (i.e. the returned type's `__dict__`).
         """
         cls = super().__new__(mcs, name, bases, namespace)
 
