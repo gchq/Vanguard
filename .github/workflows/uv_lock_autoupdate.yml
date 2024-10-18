@@ -21,7 +21,7 @@ jobs:
           private-key: ${{ secrets.WRITE_CONTENTS_PR_KEY }}
       - uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: main
       - name: Create or checkout update branch
         id: create_branch
         env:
@@ -62,12 +62,12 @@ jobs:
       - name: Store hash of baseline lockfile for comparison
         id: old_file
         run: echo "hash=$( sha256sum $lockfile_path )" >> $GITHUB_OUTPUT
-      - name: Overwrite config on branch with version from develop
-        run: git checkout develop ${{ env.lockfile_path }}
-      - name: Store hash of develop lockfile for comparison
-        id: develop_file
+      - name: Overwrite config on branch with version from main
+        run: git checkout main ${{ env.lockfile_path }}
+      - name: Store hash of main lockfile for comparison
+        id: main_file
         run: echo "hash=$( sha256sum $lockfile_path )" >> $GITHUB_OUTPUT
-      - name: Run `uv lock --upgrade` on develop lockfile
+      - name: Run `uv lock --upgrade` on main lockfile
         id: autoupdate
         run: |
           uv lock --upgrade > ${{ env.update_message_path }}
@@ -92,7 +92,7 @@ jobs:
             --field branch=${{ env.update_branch }} \
             --field sha="$sha"
       - name: Create or update lockfile-autoupdate pull-request
-        if: steps.commit.conclusion == 'success' || ( steps.develop_file.outputs.hash != steps.new_file.outputs.hash )
+        if: steps.commit.conclusion == 'success' || ( steps.main_file.outputs.hash != steps.new_file.outputs.hash )
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run : |
@@ -108,5 +108,5 @@ jobs:
               --field body="$body"
           else
             # If a PR doesn't already exist, and no previous PR can be reopened, create a new PR.
-            gh pr create -t "$title" -b "$body" -l dependencies -B develop -H ${{ env.update_branch }}
+            gh pr create -t "$title" -b "$body" -l dependencies -B main -H ${{ env.update_branch }}
           fi
