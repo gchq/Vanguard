@@ -3,7 +3,6 @@ name: Check for unlinked TODOs
 on:
   push:
     branches:
-      - develop
       - main
   pull_request:
     branches:

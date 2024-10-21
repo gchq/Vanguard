@@ -53,12 +53,12 @@ For further details, see the [uv documentation][uv].
 ## Pull requests
 
 We are using a [GitHub Flow][github-flow] development approach, where the trunk branch
-is called `develop`.
+is called `main`.
 
 - To avoid duplicate work, [search existing pull requests][gh-prs].
 - All pull requests should relate to an existing issue.
   - If the pull request addresses something not currently covered by an issue, create a new issue first.
-- Make changes on a [feature branch][git-feature-branch] instead of the `develop`
+- Make changes on a [feature branch][git-feature-branch] instead of the `main`
   branch.
 - Branch names should take one of the following forms:
   - `feature/<feature-name>`: for adding, removing or refactoring a feature.
@@ -140,7 +140,7 @@ def my_new_function(x: int) -> int:
 ## Code
 
 Code must be documented, adequately tested and compliant with our [style guide](#style-guide) prior to merging
-into the `develop` branch.
+into the `main` branch.
 To facilitate code review, code should meet these standards prior to creating a pull request.
 
 Some of the following points are checked by pre-commit hooks, although others require
@@ -326,7 +326,7 @@ Please try running them again before raising an issue.
 
 Before a release is issued on PyPI, all tests for Vanguard will be run on a GPU machine.
 This avoids having to incorporate GPU runners into the CI/CD, but still tests issues that can arise with torch and gpytorch.
-However, note that code pushed to `develop` may not necessarily have been tested on a
+However, note that code pushed to `main` may not necessarily have been tested on a
 GPU machine until a release to PyPI is made.
 If you observe any issues on GPU machines using the code, please raise an issue detailing the behaviour, and create a PR with the relevant fix if possible.
 
@@ -401,10 +401,10 @@ Releases are made on an ad-hoc basis. When the maintainers decide the codebase i
 for another release:
 
 1. Create an issue for the release.
-2. Run additional release tests on `develop` including GPU testing, as described in
+2. Run additional release tests on `main` including GPU testing, as described in
    [Testing before releases to PyPI](#Testing-before-releases-to-PyPI).
-3. Fix any issues and merge into `develop`, iterating until we have a commit on
-   `develop` that is ready for release, except for housekeeping that does not affect the
+3. Fix any issues and merge into `main`, iterating until we have a commit on
+   `main` that is ready for release, except for housekeeping that does not affect the
    functionality of the code.
 4. Create a branch `release/#.#.#` off the identified commit, populating with the target
    version number.
@@ -418,7 +418,7 @@ for another release:
 8. Once approved, create a release in GitHub pointing at the final commit on the release
    branch.
 9. Build and publish to PyPI and ReadTheDocs.
-10. Merge the release branch into `develop`.
+10. Merge the release branch into `main`.
 
 ## References
 
