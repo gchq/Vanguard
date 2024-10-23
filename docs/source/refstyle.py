@@ -34,6 +34,12 @@ class MyLabelStyle(BaseLabelStyle):
     """
 
     def format_labels(self, sorted_entries: Iterable[Entry]) -> Generator[str, None, None]:
+        """
+        Format the labels to use the original key in the .bib file.
+
+        :param sorted_entries: An iterable returning each of the bibtex entries in order.
+        :return: A generator yielding the formatted labels.
+        """
         for entry in sorted_entries:
             yield entry.key
 

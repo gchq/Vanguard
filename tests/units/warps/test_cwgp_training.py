@@ -168,9 +168,11 @@ class ParameterTests(VanguardTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Set up data shared between tests."""
         cls.DATASET = SyntheticDataset(rng=get_default_rng())
 
     def setUp(self) -> None:
+        """Set up data before each test."""
         self.rng = get_default_rng()
 
     def test_simple_warp_functions_are_different(self) -> None:
@@ -365,6 +367,7 @@ class ConstraintTests(VanguardTestCase):
     DATASET = SyntheticDataset(rng=get_default_rng())
 
     def setUp(self) -> None:
+        """Set up data before each test."""
         self.rng = get_default_rng()
 
     def test_fitting_with_unconstrained_warp(self) -> None:

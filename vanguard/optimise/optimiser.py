@@ -272,7 +272,7 @@ class Parameters:
 
     def __init__(self, module_state_dicts: Dict[Module, Dict[str, Tensor]], value: float = np.inf) -> None:
         """Initialise self."""
-        self.parameters = {
+        self.module_state_dicts = {
             module: self._clone_state_dict(state_dict) for module, state_dict in module_state_dicts.items()
         }
         self.priority_value = value
@@ -345,7 +345,7 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
         **optimiser_kwargs: Any,
     ) -> None:
         super().__init__(optimiser_class, *initial_modules, early_stop_patience=early_stop_patience, **optimiser_kwargs)
-        self._top_n_parameters = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
+        self._top_n_parameters: MaxLengthHeapQ[Parameters] = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
 
     def step(self, loss: Union[float, torch.Tensor], closure: Optional[Callable[[], float]] = None) -> None:
         """Step the optimiser and update the record best parameters."""
@@ -357,8 +357,8 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
 
     def set_parameters(self) -> None:
         """Tidy up after optimisation by setting the parameters to the best."""
-        best_parameters = self._top_n_parameters.best().parameters
-        for module, state_dict in best_parameters.items():
+        best_parameters = self._top_n_parameters.best()
+        for module, state_dict in best_parameters.module_state_dicts.items():
             module.load_state_dict(state_dict)
 
     def reset(self) -> None:

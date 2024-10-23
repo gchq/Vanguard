@@ -25,7 +25,7 @@ import torch
 from gpytorch.kernels import ScaleKernel
 from numpy.typing import NDArray
 from torch import Tensor
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from vanguard.base import GPController
 from vanguard.base.posteriors import MonteCarloPosteriorCollection, Posterior
@@ -58,6 +58,7 @@ class BaseHierarchicalHyperparameters(Decorator):
         self.sample_shape = torch.Size([num_mc_samples])
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
+    @override
     def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
         super().verify_decorated_class(cls)
         for previous_decorator in cls.__decorators__:

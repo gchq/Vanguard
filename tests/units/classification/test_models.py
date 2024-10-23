@@ -65,6 +65,7 @@ class TestInertKernelModelFailures(TestCase):
 
 class TestInertKernelModel(TestCase):
     def setUp(self) -> None:
+        """Set up data before each test."""
         # Simple three-class training data.
         self.train_data = torch.tensor([0.0, 0.1, 0.4, 0.5, 0.9, 1.0])
         self.train_targets = torch.tensor([0, 0, 1, 1, 2, 2])

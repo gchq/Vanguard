@@ -60,6 +60,20 @@ def very_complicated_f(x: NDArray[np.floating]) -> NDArray[np.floating]:
 class SyntheticDataset(Dataset):
     """
     Synthetic data with homoskedastic noise for testing.
+
+    :param functions: The functions to be used to generate the synthetic data. If multiple functions are given,
+        a multidimensional output is generated.
+    :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1. Only applied
+        to the training data; the testing data has no output noise actually applied, but we still set
+        `test_y_std = output_noise`.
+    :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+        for the training input. Defaults to (0.01, 0.05).
+    :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+        for the testing input. Defaults to (0.01, 0.03).
+    :param n_train_points: The total number of training points.
+    :param n_test_points: The total number of testing points.
+    :param significance: The significance to be used.
+    :param rng: Generator instance used to generate random numbers.
     """
 
     def __init__(
@@ -73,23 +87,7 @@ class SyntheticDataset(Dataset):
         significance: float = 0.025,
         rng: Optional[np.random.Generator] = None,
     ) -> None:
-        """
-        Initialise self.
-
-        :param functions: The functions to be used to generate the synthetic data. If multiple functions are given,
-            a multidimensional output is generated.
-        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1. Only applied
-            to the training data; the testing data has no output noise actually applied, but we still set
-            `test_y_std = output_noise`.
-        :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
-            for the training input. Defaults to (0.01, 0.05).
-        :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
-            for the testing input. Defaults to (0.01, 0.03).
-        :param n_train_points: The total number of training points.
-        :param n_test_points: The total number of testing points.
-        :param significance: The significance to be used.
-        :param rng: Generator instance used to generate random numbers.
-        """
+        """Initialise self."""
         self.functions = list(functions)
 
         self.rng = utils.optional_random_generator(rng)
@@ -142,7 +140,23 @@ class SyntheticDataset(Dataset):
 
 
 class MultidimensionalSyntheticDataset(Dataset):
-    """Synthetic data with multiple input dimensions."""
+    """
+    Synthetic data with multiple input dimensions.
+
+    :param functions: The functions used on each input dimension
+        (they are combined linearly to make a single output).
+    :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1. Only applied
+        to the training data; the testing data has no output noise actually applied, but we still set
+        `test_y_std = output_noise`.
+    :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+        for the training input. Defaults to (0.01, 0.05).
+    :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+        for the testing input. Defaults to (0.01, 0.03).
+    :param n_train_points: The total number of training points.
+    :param n_test_points: The total number of testing points.
+    :param significance: The significance to be used.
+    :param rng: Generator instance used to generate random numbers.
+    """
 
     def __init__(
         self,
@@ -155,23 +169,7 @@ class MultidimensionalSyntheticDataset(Dataset):
         significance: float = 0.025,
         rng: Optional[np.random.Generator] = None,
     ) -> None:
-        """
-        Initialise self.
-
-        :param functions: The functions used on each input dimension
-            (they are combined linearly to make a single output).
-        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1. Only applied
-            to the training data; the testing data has no output noise actually applied, but we still set
-            `test_y_std = output_noise`.
-        :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
-            for the training input. Defaults to (0.01, 0.05).
-        :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
-            for the testing input. Defaults to (0.01, 0.03).
-        :param n_train_points: The total number of training points.
-        :param n_test_points: The total number of testing points.
-        :param significance: The significance to be used.
-        :param rng: Generator instance used to generate random numbers.
-        """
+        """Initialise self."""
         rng = utils.optional_random_generator(rng)
 
         one_dimensional_datasets = [
@@ -209,6 +207,18 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
 
     The ``train_y_std`` and ``test_y_std`` attributes are created by drawing from a normal distribution centred
     on the value of the ``output_noise`` parameter.
+
+    :param functions: The functions to be used to generate the synthetic data.
+    :param output_noise_mean: The mean for the output standard deviation, defaults to 0.1.
+    :param output_noise_std: The standard deviation for the output standard deviation, defaults to 0.01.
+    :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+        for the training input. Defaults to (0.01, 0.05).
+    :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+        for the testing input. Defaults to (0.01, 0.03).
+    :param n_train_points: The total number of training points.
+    :param n_test_points: The total number of testing points.
+    :param significance: The significance to be used.
+    :param rng: Generator instance used to generate random numbers.
     """
 
     def __init__(
@@ -223,21 +233,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         significance: float = 0.025,
         rng: Optional[np.random.Generator] = None,
     ) -> None:
-        """
-        Initialise self.
-
-        :param functions: The functions to be used to generate the synthetic data.
-        :param output_noise_mean: The mean for the output standard deviation, defaults to 0.1.
-        :param output_noise_std: The standard deviation for the output standard deviation, defaults to 0.01.
-        :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
-            for the training input. Defaults to (0.01, 0.05).
-        :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
-            for the testing input. Defaults to (0.01, 0.03).
-        :param n_train_points: The total number of training points.
-        :param n_test_points: The total number of testing points.
-        :param significance: The significance to be used.
-        :param rng: Generator instance used to generate random numbers.
-        """
+        """Initialise self."""
         rng = utils.optional_random_generator(rng)
         super().__init__(
             functions,
@@ -259,6 +255,17 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
 class HigherRankSyntheticDataset(Dataset):
     """
     Synthetic data with rank 2 input features. In this case each x is a 2x2 matrix.
+
+    :param functions: The functions to be used to generate the synthetic data.
+    :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
+    :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+        for the training input. Defaults to (0.01, 0.05).
+    :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
+        for the testing input. Defaults to (0.01, 0.03).
+    :param n_train_points: The total number of training points.
+    :param n_test_points: The total number of testing points.
+    :param significance: The significance to be used.
+    :param rng: Generator instance used to generate random numbers.
     """
 
     def __init__(
@@ -272,20 +279,7 @@ class HigherRankSyntheticDataset(Dataset):
         significance: float = 0.025,
         rng: Optional[np.random.Generator] = None,
     ) -> None:
-        """
-        Initialise self.
-
-        :param functions: The functions to be used to generate the synthetic data.
-        :param output_noise: The standard deviation for the output standard deviation, defaults to 0.1.
-        :param train_input_noise_bounds: The lower, upper bounds of the linearly varying noise
-            for the training input. Defaults to (0.01, 0.05).
-        :param test_input_noise_bounds: The lower, upper bounds of the linearly varying noise
-            for the testing input. Defaults to (0.01, 0.03).
-        :param n_train_points: The total number of training points.
-        :param n_test_points: The total number of testing points.
-        :param significance: The significance to be used.
-        :param rng: Generator instance used to generate random numbers.
-        """
+        """Initialise self."""
         self.functions = list(functions)
 
         self.rng = utils.optional_random_generator(rng)

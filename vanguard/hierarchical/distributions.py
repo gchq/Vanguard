@@ -21,6 +21,7 @@ from typing import NoReturn, Type, TypeVar
 import torch
 from torch.distributions import MultivariateNormal, constraints
 from torch.distributions.utils import lazy_property
+from typing_extensions import override
 
 T = TypeVar("T", bound="MultivariateNormal")
 
@@ -49,6 +50,7 @@ class SpectralRegularisedMultivariateNormal(MultivariateNormal):
     }
 
     @lazy_property
+    @override
     def precision_matrix(self) -> NoReturn:
         raise NotImplementedError("Precision is not available for spectral defined multivariate normals.")
 

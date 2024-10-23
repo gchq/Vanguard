@@ -23,6 +23,7 @@ import torch
 import torch.nn.functional
 from numpy.typing import NDArray
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard.warps.basefunction import WarpFunction
 from vanguard.warps.intermediate import require_controller_input
@@ -54,12 +55,15 @@ class AffineWarpFunction(WarpFunction):
         """Return the bias."""
         return self.bias
 
+    @override
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return y * self.a + self.b
 
+    @override
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         return torch.div(x - self.b, self.a)
 
+    @override
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         return torch.ones_like(y) * self.a
 
@@ -148,18 +152,21 @@ class BoxCoxWarpFunction(WarpFunction):
         super().__init__()
         self.lambda_ = lambda_
 
+    @override
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         if self.lambda_ == 0:
             return torch.log(y)
         else:
             return (torch.sign(y) * torch.abs(y) ** self.lambda_ - 1) / self.lambda_
 
+    @override
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         if self.lambda_ == 0:
             return torch.exp(x)
         else:
             return torch.sign(self.lambda_ * x + 1) * torch.abs(self.lambda_ * x + 1) ** (1 / self.lambda_)
 
+    @override
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         if self.lambda_ == 0:
             return 1 / y
@@ -172,12 +179,15 @@ class SinhWarpFunction(WarpFunction):
     A map of the form :math:`y\mapsto\sinh(y)`.
     """
 
+    @override
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return torch.sinh(y)
 
+    @override
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         return torch.asinh(x)
 
+    @override
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         return torch.cosh(y)
 
@@ -187,12 +197,15 @@ class ArcSinhWarpFunction(WarpFunction):
     A map of the form :math:`y\mapsto\sinh^{-1}(y)`.
     """
 
+    @override
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return torch.asinh(y)
 
+    @override
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         return torch.sinh(x)
 
+    @override
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         return 1 / torch.sqrt(y**2 + 1)
 
@@ -202,12 +215,15 @@ class LogitWarpFunction(WarpFunction):
     A map of the form :math:`y\mapsto\log\frac{y}{1-y}`.
     """
 
+    @override
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return torch.logit(y)
 
+    @override
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         return torch.sigmoid(x)
 
+    @override
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         return (1 - 2 * y) / (y * (1 - y))
 
@@ -217,12 +233,15 @@ class SoftPlusWarpFunction(WarpFunction):
     A map of the form :math:`y\mapsto\log(e^y - 1)`.
     """
 
+    @override
     def forward(self, y: torch.Tensor) -> torch.Tensor:
         return torch.log(torch.exp(y) - 1)
 
+    @override
     def inverse(self, x: torch.Tensor) -> torch.Tensor:
         return torch.log(torch.exp(x) + 1)
 
+    @override
     def deriv(self, y: torch.Tensor) -> torch.Tensor:
         return torch.sigmoid(y)
 

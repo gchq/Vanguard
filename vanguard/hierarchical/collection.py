@@ -193,6 +193,7 @@ class OnePointHyperparameterCollection:
 
     @property
     def hyperparameter_tensor(self) -> torch.Tensor:
+        """Return the representation of the hyperparameters as a single combined tensor."""
         tensor = torch.zeros(self.hyperparameter_dimension)
         for owner_module, hyperparameter in self.module_hyperparameter_pairs:
             index = self._hyperparameter_to_index[(owner_module, hyperparameter.raw_name)]
@@ -201,6 +202,7 @@ class OnePointHyperparameterCollection:
 
     @hyperparameter_tensor.setter
     def hyperparameter_tensor(self, value: torch.Tensor) -> None:
+        """Update the hyperparameters based from a single combined tensor."""
         for owner_module, hyperparameter in self.module_hyperparameter_pairs:
             index = self._hyperparameter_to_index[(owner_module, hyperparameter.raw_name)]
             shape = getattr(owner_module, hyperparameter.raw_name).shape

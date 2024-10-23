@@ -43,16 +43,14 @@ class BinaryStripeClassificationDataset(Dataset):
         DATASET = BinaryStripeClassificationDataset(30, 50)
         plt.plot(DATASET.train_x, DATASET.train_y, label="Truth")
         plt.show()
+
+    :param num_train_points: The number of training points.
+    :param num_test_points: The number of testing points.
+    :param rng: Generator instance used to generate random numbers.
     """
 
     def __init__(self, num_train_points: int, num_test_points: int, rng: Optional[np.random.Generator] = None) -> None:
-        """
-        Initialise self.
-
-        :param num_train_points: The number of training points.
-        :param num_test_points: The number of testing points.
-        :param rng: Generator instance used to generate random numbers.
-        """
+        """Initialise self."""
         self.rng = utils.optional_random_generator(rng)
         train_x = np.linspace(0, 1, num_train_points).reshape((-1, 1))
         test_x = self.rng.random(num_test_points).reshape((-1, 1))
@@ -79,6 +77,14 @@ class MulticlassGaussianClassificationDataset(Dataset):
         DATASET = MulticlassGaussianClassificationDataset(1000, 1000, num_classes=5)
         DATASET.plot()
         plt.show()
+
+    :param num_train_points: The number of training points.
+    :param num_test_points: The number of testing points.
+    :param num_classes: The number of classes.
+    :param num_features: The number of features to generate for the input data.
+    :param covariance_scale: The covariance matrix will be this value times the unit matrix.
+        Defaults to 1.0.
+    :param rng: Generator instance used to generate random numbers.
     """
 
     def __init__(
@@ -91,17 +97,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         num_features: int = 2,
         rng: Optional[np.random.Generator] = None,
     ) -> None:
-        """
-        Initialise self.
-
-        :param num_train_points: The number of training points.
-        :param num_test_points: The number of testing points.
-        :param num_classes: The number of classes.
-        :param num_features: The number of features to generate for the input data.
-        :param covariance_scale: The covariance matrix will be this value times the unit matrix.
-            Defaults to 1.0.
-        :param rng: Generator instance used to generate random numbers.
-        """
+        """Initialise self."""
         self.rng = utils.optional_random_generator(rng)
         self.num_classes = num_classes
 
@@ -229,6 +225,13 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         DATASET = BinaryGaussianClassificationDataset(50, 50)
         DATASET.plot()
         plt.show()
+
+    :param num_train_points: The number of training points.
+    :param num_test_points: The number of testing points.
+    :param covariance_scale: The covariance matrix will be this value times the unit matrix.
+        Defaults to 1.0.
+    :param num_features: The number of features to generate for the input data.
+    :param rng: Generator instance used to generate random numbers.
     """
 
     def __init__(
@@ -240,16 +243,7 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         num_features: int = 2,
         rng: Optional[np.random.Generator] = None,
     ) -> None:
-        """
-        Initialise self.
-
-        :param num_train_points: The number of training points.
-        :param num_test_points: The number of testing points.
-        :param covariance_scale: The covariance matrix will be this value times the unit matrix.
-            Defaults to 1.0.
-        :param num_features: The number of features to generate for the input data.
-        :param rng: Generator instance used to generate random numbers.
-        """
+        """Initialise self."""
         super().__init__(
             num_train_points,
             num_test_points,

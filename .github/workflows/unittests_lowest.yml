@@ -7,7 +7,6 @@ name: Test with lowest supported versions
 on:
   push:
     branches:
-      - develop
       - main
   pull_request:
     branches:

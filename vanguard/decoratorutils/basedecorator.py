@@ -80,6 +80,16 @@ class Decorator:
         self.raise_instead = raise_instead
 
     def __call__(self, cls: Type[T]) -> Type[T]:
+        """
+        Decorate a class, checking that the class is appropriate before decorating.
+
+        :param cls: The class to decorate.
+        :return: The decorated class.
+        :raises TypeError: If cls is not a subclass of the framework_class.
+        :raises TopmostDecoratorError: If cls is already decorated with a
+            :class:`~vanguard.decoratorutils.basedecorator.TopMostDecorator`.
+        :raises MissingRequirementsError: If cls is missing a required decorator.
+        """
         self.verify_decorated_class(cls)
         decorated_class = self._decorate_class(cls)
         if decorated_class is not cls:
@@ -96,6 +106,9 @@ class Decorator:
 
         :param cls: The class to be decorated.
         :raises TypeError: If cls is not a subclass of the framework_class.
+        :raises TopmostDecoratorError: If cls is already decorated with a
+            :class:`~vanguard.decoratorutils.basedecorator.TopMostDecorator`.
+        :raises MissingRequirementsError: If cls is missing a required decorator.
         """
         if not issubclass(cls, self.framework_class):
             raise TypeError(f"Can only apply decorator to subclasses of {self.framework_class.__name__}.")
@@ -138,9 +151,7 @@ class Decorator:
         extra_methods = cls_methods - super_methods - ignore_methods
         if extra_methods:
             if __debug__:
-                message = (
-                    f"The class {cls.__name__!r} has added the " f"following unexpected methods: {extra_methods!r}."
-                )
+                message = f"The class {cls.__name__!r} has added the following unexpected methods: {extra_methods!r}."
             else:
                 message = "Unexpected methods added to the class"
             if self.raise_instead:
@@ -151,9 +162,7 @@ class Decorator:
         overwritten_methods = {method for method in cls_methods if method in cls.__dict__} - ignore_methods
         if overwritten_methods:
             if __debug__:
-                message = (
-                    f"The class {cls.__name__!r} has overwritten the" f" following methods: {overwritten_methods!r}."
-                )
+                message = f"The class {cls.__name__!r} has overwritten the following methods: {overwritten_methods!r}."
             else:
                 message = "Unexpected methods overwritten by the class"
             if self.raise_instead:
