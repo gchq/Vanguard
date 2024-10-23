@@ -3,7 +3,7 @@
 ![version] ![python] ![coverage] ![pre-commit]
 
 [version]: https://img.shields.io/badge/version-2.1.0-informational
-[python]: https://img.shields.io/badge/python-3.8%7C3.9-informational
+[python]: https://img.shields.io/badge/python-3.9--3.12-informational
 [coverage]: https://img.shields.io/badge/coverage-91%25-brightgreen
 [pre-commit]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=orange
 
