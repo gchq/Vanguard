@@ -20,8 +20,9 @@ to a module will make its parameters Bayesian, so posteriors can be inferred
 over them rather than point estimates.
 """
 
+from collections.abc import Iterable
 from functools import partial
-from typing import Any, Iterable, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Optional, TypeVar
 
 import gpytorch
 import torch
@@ -87,7 +88,7 @@ class BayesianHyperparameters:
         self.prior_means.update({f"raw_{param}": value for param, value in self.prior_means.items()})
         self.prior_variances.update({f"raw_{param}": value for param, value in self.prior_variances.items()})
 
-    def __call__(self, module_class: Type[ModuleT]) -> Type[ModuleT]:
+    def __call__(self, module_class: type[ModuleT]) -> type[ModuleT]:
         """
         Decorate a class to convert its hyperparameters to Bayesian hyperparameters.
 
@@ -150,7 +151,7 @@ def _process_hyperparameter(
 
 def _discover_modules_and_parameters(
     top_module: torch.nn.Module, base_modules: Iterable[torch.nn.Module]
-) -> Tuple[List[str], List[Tuple[ModuleT, str]]]:
+) -> tuple[list[str], list[tuple[ModuleT, str]]]:
     """
     Recursively identify all recursive modules and corresponding parameters.
 
@@ -180,7 +181,7 @@ def _discover_modules_and_parameters(
     return top_level_parameter_names, lower_level_parameter_names
 
 
-def _descend_module_tree(top_module: ModuleT, parameter_ancestry: List[str]) -> Tuple[ModuleT, str]:
+def _descend_module_tree(top_module: ModuleT, parameter_ancestry: list[str]) -> tuple[ModuleT, str]:
     """
     Step through the submodules of a GPyTorch module to find the sub module in direct possession of a parameter.
 

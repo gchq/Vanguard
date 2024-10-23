@@ -16,7 +16,7 @@
 Contains the CategoricalClassification decorator.
 """
 
-from typing import Any, Tuple, Type, TypeVar, Union
+from typing import Any, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -84,7 +84,7 @@ class CategoricalClassification(Decorator):
         super().__init__(framework_class=GPController, required_decorators={VariationalInference, Multitask}, **kwargs)
         self.num_classes = num_classes
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
         @Classification()
@@ -110,7 +110,7 @@ class CategoricalClassification(Decorator):
 
             def classify_points(
                 self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
@@ -119,7 +119,7 @@ class CategoricalClassification(Decorator):
                 self,
                 x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
                 x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)
                 return self._get_predictions_from_posterior(predictive_likelihood)
@@ -127,7 +127,7 @@ class CategoricalClassification(Decorator):
             @staticmethod
             def _get_predictions_from_posterior(
                 posterior: Posterior,
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """
                 Get predictions from a posterior distribution.
 

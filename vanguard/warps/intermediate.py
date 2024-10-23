@@ -21,7 +21,7 @@ the :func:`require_controller_input` decorator will allow a warp function to be
 initialised lazily, only becoming a full warp function upon activation.
 """
 
-from typing import Any, Callable, Type, TypeVar
+from typing import Any, Callable, TypeVar
 
 from vanguard.decoratorutils import process_args, wraps_class
 from vanguard.warps.basefunction import WarpFunction
@@ -39,7 +39,7 @@ def is_intermediate_warp_function(func: WarpFunction) -> bool:
     return hasattr(func, "CACHED_PARAMS_AS_KWARGS") and hasattr(func, "activate") and isinstance(func, WarpFunction)
 
 
-def require_controller_input(cache_name: str) -> Callable[[Type[WarpFunctionT]], Type[WarpFunctionT]]:
+def require_controller_input(cache_name: str) -> Callable[[type[WarpFunctionT]], type[WarpFunctionT]]:
     """
     Force a warp function to wrap lazily, so that it may take controller class input.
 
@@ -80,7 +80,7 @@ def require_controller_input(cache_name: str) -> Callable[[Type[WarpFunctionT]],
         surrounding usage.
     """
 
-    def decorator(cls: Type[WarpFunctionT]) -> Type[WarpFunctionT]:
+    def decorator(cls: type[WarpFunctionT]) -> type[WarpFunctionT]:
         """Return the intermediate warp function class."""
 
         @wraps_class(cls)

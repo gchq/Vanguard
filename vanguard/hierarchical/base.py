@@ -17,7 +17,8 @@ Contains the BaseHierarchicalHyperparameters decorator.
 """
 
 import warnings
-from typing import Any, Generator, List, Tuple, Type, TypeVar, Union
+from collections.abc import Generator
+from typing import Any, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -59,7 +60,7 @@ class BaseHierarchicalHyperparameters(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     @override
-    def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
+    def verify_decorated_class(self, cls: type[ControllerT]) -> None:
         super().verify_decorated_class(cls)
         for previous_decorator in cls.__decorators__:
             if issubclass(previous_decorator, BaseHierarchicalHyperparameters):
@@ -69,7 +70,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 )
                 raise TypeError(msg)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
@@ -81,7 +82,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 new_instance.hyperparameter_collection = instance.hyperparameter_collection
                 return new_instance
 
-            def _get_posterior_over_point(self, x: Union[Tensor, NDArray[np.floating]]) -> Type[PosteriorT]:
+            def _get_posterior_over_point(self, x: Union[Tensor, NDArray[np.floating]]) -> type[PosteriorT]:
                 """
                 Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
 
@@ -97,7 +98,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 posterior_collection = self.posterior_collection_class(posteriors)
                 return posterior_collection
 
-            def _predictive_likelihood(self, x: Union[Tensor, NDArray[np.floating]]) -> Type[PosteriorT]:
+            def _predictive_likelihood(self, x: Union[Tensor, NDArray[np.floating]]) -> type[PosteriorT]:
                 """
                 Predict the likelihood value of a single point. The mode (eval vs train) of the model is not changed.
 
@@ -115,7 +116,7 @@ class BaseHierarchicalHyperparameters(Decorator):
 
             def _get_posterior_over_fuzzy_point_in_eval_mode(
                 self, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating], float]
-            ) -> Type[MonteCarloPosteriorCollection]:
+            ) -> type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
 
@@ -143,7 +144,7 @@ class BaseHierarchicalHyperparameters(Decorator):
 
             def _fuzzy_predictive_likelihood(
                 self, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating], float]
-            ) -> Type[MonteCarloPosteriorCollection]:
+            ) -> type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive likelihood with Gaussian input noise.
 
@@ -210,7 +211,7 @@ class BaseHierarchicalHyperparameters(Decorator):
         raise NotImplementedError
 
 
-def _get_bayesian_hyperparameters(module: ModuleT) -> Tuple[list, ...]:
+def _get_bayesian_hyperparameters(module: ModuleT) -> tuple[list, ...]:
     """
     Find the bayesian hyperparameters of a GPyTorch module (mean, kernel or likelihood).
 
@@ -246,7 +247,7 @@ def _get_bayesian_hyperparameters(module: ModuleT) -> Tuple[list, ...]:
     return module_hyperparameter_pairs, point_estimates_scale_kernels
 
 
-def extract_bayesian_hyperparameters(controller: ControllerT) -> Tuple[List, List]:
+def extract_bayesian_hyperparameters(controller: ControllerT) -> tuple[list, list]:
     """Pull hyperparameters and any point-estimate kernels from a controller's mean, kernel and likelihood."""
     hyperparameter_pairs = []
 
@@ -256,7 +257,7 @@ def extract_bayesian_hyperparameters(controller: ControllerT) -> Tuple[List, Lis
     return hyperparameter_pairs, point_estimate_kernels
 
 
-def set_batch_shape(kwargs: Any, module_name: str, batch_shape: Tuple[int, ...]) -> None:
+def set_batch_shape(kwargs: Any, module_name: str, batch_shape: tuple[int, ...]) -> None:
     """Set the batch shape in kwargs dictionary which may not exist."""
     kwargs_name = f"{module_name}_kwargs"
     module_kwargs = kwargs.pop(kwargs_name, {})

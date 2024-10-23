@@ -16,7 +16,7 @@
 Contains the SetWarp decorator.
 """
 
-from typing import Any, Tuple, Type, TypeVar, Union
+from typing import Any, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -57,7 +57,7 @@ class SetWarp(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.warp_function = warp_function
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         warp_function = self.warp_function
 
         @wraps_class(cls)
@@ -85,7 +85,7 @@ class SetWarp(Decorator):
 
                 def _unwarp_values(
                     *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
-                ) -> Tuple[Tensor, ...]:
+                ) -> tuple[Tensor, ...]:
                     """
                     Map values back through the warp.
 
@@ -100,7 +100,7 @@ class SetWarp(Decorator):
 
                 def _warp_values(
                     *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
-                ) -> Tuple[Tensor, ...]:
+                ) -> tuple[Tensor, ...]:
                     """
                     Map values through the warp.
 
@@ -115,7 +115,7 @@ class SetWarp(Decorator):
 
                 def _warp_derivative_values(
                     *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
-                ) -> Tuple[Tensor, ...]:
+                ) -> tuple[Tensor, ...]:
                     """
                     Map values through the derivative of the warp.
 
@@ -128,7 +128,7 @@ class SetWarp(Decorator):
                     warped_values_as_tensors = (warp_copy.deriv(tensor).squeeze() for tensor in values_as_tensors)
                     return tuple(warped_values_as_tensors)
 
-                def warp_posterior_class(posterior_class: Type[Posterior]) -> Type[Posterior]:
+                def warp_posterior_class(posterior_class: type[Posterior]) -> type[Posterior]:
                     """Wrap a posterior class to enable warping."""
 
                     @wraps_class(posterior_class)
@@ -143,7 +143,7 @@ class SetWarp(Decorator):
 
                         def confidence_interval(
                             self, alpha: float = 0.05
-                        ) -> Tuple[
+                        ) -> tuple[
                             numpy.typing.NDArray[np.floating],
                             numpy.typing.NDArray[np.floating],
                             numpy.typing.NDArray[np.floating],
@@ -153,7 +153,7 @@ class SetWarp(Decorator):
                             return _unwarp_values(mean, lower, upper)
 
                         def log_probability(
-                            self, y: Tuple[numpy.typing.NDArray[np.floating]]
+                            self, y: tuple[numpy.typing.NDArray[np.floating]]
                         ) -> numpy.typing.NDArray[np.floating]:
                             """Apply the change of variables to the density using the warp."""
                             warped_y = _warp_values(y)
@@ -182,7 +182,7 @@ class SetWarp(Decorator):
                 self._gp.train_targets = warped_train_y
                 return loss
 
-            def _unwarp_values(self, *values: Union[Tensor, numpy.typing.NDArray[np.floating]]) -> Tuple[Tensor, ...]:
+            def _unwarp_values(self, *values: Union[Tensor, numpy.typing.NDArray[np.floating]]) -> tuple[Tensor, ...]:
                 """Map values back through the warp."""
                 values_as_tensors = (torch.as_tensor(value) for value in values)
                 unwarped_values_as_tensors = (self.warp.inverse(tensor).reshape(-1) for tensor in values_as_tensors)

@@ -27,7 +27,7 @@ import os
 import re
 import shutil
 import sys
-from typing import Any, Dict, List, Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
 import gpytorch.constraints
 import gpytorch.distributions
@@ -131,7 +131,7 @@ intersphinx_mapping = {
 }
 
 nitpicky = True
-nitpicky_ignore_mapping: Dict[str, List[str]] = {
+nitpicky_ignore_mapping: dict[str, list[str]] = {
     "py:class": [
         "torch.Size",
         "gpytorch.likelihoods.gaussian_likelihood._GaussianLikelihoodBase",
@@ -228,7 +228,7 @@ def require_full_stops_on_params(
     name: str,
     obj: object,  # pylint: disable=unused-argument
     options: sphinx_autodoc_typehints.Options,  # pylint: disable=unused-argument
-    lines: List[str],
+    lines: list[str],
 ):
     """Require full stops on `param` directives in docstrings."""
     current_param = None  # The parameter we're currently processing

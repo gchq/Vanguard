@@ -16,7 +16,7 @@
 Contains the Python decorators for applying input warping.
 """
 
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
 
 import torch
 from typing_extensions import Self
@@ -45,7 +45,7 @@ class _SetModuleInputWarp:
     def __init__(self, warp: WarpFunction) -> None:
         self.warp = warp
 
-    def __call__(self, module_class: Type[ModuleT]) -> Type[ModuleT]:
+    def __call__(self, module_class: type[ModuleT]) -> type[ModuleT]:
         warp = self.warp
 
         @wraps_class(module_class)
@@ -83,7 +83,7 @@ class SetInputWarp(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.warp_function = warp_function
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         warp_function = self.warp_function
 
         @wraps_class(cls)

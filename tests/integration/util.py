@@ -14,14 +14,14 @@
 
 """Utility functions for use in integration tests."""
 
-from typing import Literal, Tuple, Union
+from typing import Literal, Union
 
 import numpy as np
 import torch
 from numpy.typing import NDArray
 from torch import Tensor
 
-TrainTestData = Union[Tuple[NDArray, NDArray, NDArray, NDArray], Tuple[Tensor, Tensor, Tensor, Tensor]]
+TrainTestData = Union[tuple[NDArray, NDArray, NDArray, NDArray], tuple[Tensor, Tensor, Tensor, Tensor]]
 
 
 def train_test_split_convert(

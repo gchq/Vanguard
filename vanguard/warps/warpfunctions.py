@@ -16,7 +16,7 @@
 There are several pre-defined warp functions implementing some common maps.
 """
 
-from typing import Tuple, Union
+from typing import Union
 
 import numpy as np
 import torch
@@ -113,7 +113,7 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
         return -(self.weight**2 * self.lambda_1 - self.bias**2 * self.lambda_2)
 
     @staticmethod
-    def _get_constraint_slopes(y_values: Union[Tensor, NDArray[np.floating]]) -> Tuple[float, float]:
+    def _get_constraint_slopes(y_values: Union[Tensor, NDArray[np.floating]]) -> tuple[float, float]:
         """
         Return the two constraint slopes needed for the y_values.
 

@@ -19,7 +19,7 @@ Code to test example notebooks.
 import os
 import re
 import unittest
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
@@ -37,7 +37,7 @@ class NotebookMetaClass(type):
     opposed to subtests.
     """
 
-    def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
+    def __new__(mcs, name: str, bases: Optional[tuple[Any]], namespace: Any):
         """
         Prepare a class object.
 

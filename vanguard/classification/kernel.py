@@ -16,7 +16,7 @@
 Contains the DirichletKernelMulticlassClassification decorator.
 """
 
-from typing import Any, Tuple, Type, TypeVar, Union
+from typing import Any, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -82,7 +82,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         num_classes = self.num_classes
 
         @Classification()
@@ -122,7 +122,7 @@ class DirichletKernelMulticlassClassification(Decorator):
 
             def classify_points(
                 self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """Classify points."""
                 x = torch.as_tensor(x)
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
@@ -134,7 +134,7 @@ class DirichletKernelMulticlassClassification(Decorator):
                 self,
                 x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
                 x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """Classify fuzzy points - not supported for this class."""
                 msg = "Fuzzy classification is not supported for DirichletKernelMulticlassClassification."
                 raise NotImplementedError(msg)
@@ -142,7 +142,7 @@ class DirichletKernelMulticlassClassification(Decorator):
             @staticmethod
             def _get_predictions_from_prediction_means(
                 means: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 

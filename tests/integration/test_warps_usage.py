@@ -16,7 +16,7 @@
 Basic end to end functionality test for warping of Gaussian processes in Vanguard.
 """
 
-from typing import Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Union
 
 import numpy as np
 import pytest
@@ -39,7 +39,7 @@ from vanguard.warps.warpfunctions import (
     SoftPlusWarpFunction,
 )
 
-TrainTestData = Union[Tuple[NDArray, NDArray, NDArray, NDArray, NDArray], Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]]
+TrainTestData = Union[tuple[NDArray, NDArray, NDArray, NDArray, NDArray], tuple[Tensor, Tensor, Tensor, Tensor, Tensor]]
 
 
 class TestWarpsUsage:

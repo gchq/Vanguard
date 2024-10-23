@@ -18,7 +18,7 @@ A suite of aggregators to be used with the :class:`~vanguard.distribute.decorato
 These are responsible for combining the predictions of several independent expert controllers.
 """
 
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import torch
 
@@ -42,7 +42,7 @@ class BaseAggregator:
     """
 
     def __init__(
-        self, means: List[torch.Tensor], covars: List[torch.Tensor], prior_var: Optional[torch.Tensor] = None
+        self, means: list[torch.Tensor], covars: list[torch.Tensor], prior_var: Optional[torch.Tensor] = None
     ) -> None:
         """
         Initialise the BaseAggregator class.
@@ -62,7 +62,7 @@ class BaseAggregator:
                     f"Prior var shape {self.prior_var.shape} doesn't match variances shape {self.variances.shape}"
                 )
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single PoE prediction.
 
@@ -118,7 +118,7 @@ class POEAggregator(BaseAggregator):
         \sigma^{-2} &= \sum_{i} \sigma_{i}^{-2}(x)
     """
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single PoE prediction.
 
@@ -154,7 +154,7 @@ class EKPOEAggregator(POEAggregator):
         \sigma^{-2} &= \frac{1}{M} \sum_{i} \sigma_{i}^{-2}(x)
     """
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single PoE prediction.
 
@@ -178,7 +178,7 @@ class GPOEAggregator(BaseAggregator):
     where :math:`\beta_{i}=\frac{1}{M}`.
     """
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single PoE prediction.
 
@@ -205,7 +205,7 @@ class BCMAggregator(BaseAggregator):
     on all pairs of points in :math:`x`.
     """
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single BCM prediction.
 
@@ -234,7 +234,7 @@ class RBCMAggregator(BaseAggregator):
     covariance matrix formed by applying the kernel on all pairs of points in :math:`x`.
     """
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single RBCM prediction.
 
@@ -254,7 +254,7 @@ class XBCMAggregator(BaseAggregator):
     (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single XBCM prediction.
 
@@ -289,7 +289,7 @@ class GRBCMAggregator(BaseAggregator):
         \end{cases}
     """
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single GRBCM prediction.
 
@@ -316,7 +316,7 @@ class XGRBCMAggregator(BaseAggregator):
     (For further details see :meth:`BaseAggregator._beta_correction`.)
     """
 
-    def aggregate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def aggregate(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Combine the predictions of the individual experts into a single XGRBCM prediction.
 

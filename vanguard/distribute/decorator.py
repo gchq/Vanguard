@@ -17,7 +17,8 @@ Contains the Distributed decorator.
 """
 
 import warnings
-from typing import Any, Dict, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+from collections.abc import Iterable
+from typing import Any, Generic, Optional, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -91,9 +92,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         n_experts: int = 3,
         subset_fraction: float = 0.1,
         rng: Optional[np.random.Generator] = None,
-        aggregator_class: Type[BaseAggregator] = RBCMAggregator,
-        partitioner_class: Type[BasePartitioner] = KMeansPartitioner,
-        partitioner_kwargs: Optional[Dict[str, Any]] = None,
+        aggregator_class: type[BaseAggregator] = RBCMAggregator,
+        partitioner_class: type[BasePartitioner] = KMeansPartitioner,
+        partitioner_kwargs: Optional[dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -108,7 +109,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     @override
-    def verify_decorated_class(self, cls: Type[ControllerT]) -> None:
+    def verify_decorated_class(self, cls: type[ControllerT]) -> None:
         super().verify_decorated_class(cls)
         # pylint: disable-next=protected-access
         if HigherRankFeatures in cls.__decorators__ and not self.partitioner_class._can_handle_higher_rank_features:
@@ -118,7 +119,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
             )
             raise TypeError(msg)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
@@ -162,7 +163,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                     **partitioner_kwargs,
                 )
 
-                self._expert_controllers: List[ControllerT] = []
+                self._expert_controllers: list[ControllerT] = []
 
                 # pylint: disable=unbalanced-tuple-unpacking
                 train_x_subset, train_y_subset, y_std_subset = _create_subset(
@@ -198,7 +199,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 ]
                 return loss
 
-            def expert_losses(self) -> List[float]:
+            def expert_losses(self) -> list[float]:
                 """
                 Get the loss from each expert as evaluated on their subset of the data.
 
@@ -261,7 +262,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 aggregated_posterior = self.posterior_class(aggregated_distribution)
                 return aggregated_posterior
 
-            def _create_expert_controller(self, subset_indices: List[int]) -> ControllerT:
+            def _create_expert_controller(self, subset_indices: list[int]) -> ControllerT:
                 """
                 Create an expert controller with respect to a subset of the input data.
 
@@ -288,8 +289,8 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
             def _aggregate_expert_predictions(
                 self,
                 x: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
-                means_and_covars: List[Tuple[torch.Tensor, torch.Tensor]],
-            ) -> Tuple[torch.Tensor, torch.Tensor]:
+                means_and_covars: list[tuple[torch.Tensor, torch.Tensor]],
+            ) -> tuple[torch.Tensor, torch.Tensor]:
                 """
                 Aggregate the means and variances from the expert predictions.
 
@@ -329,7 +330,7 @@ def _create_subset(
     *arrays: Union[Tensor, NDArray[np.floating], NDArray[np.integer], float, int],
     subset_fraction: float = 0.1,
     rng: Optional[np.random.Generator] = None,
-) -> List[Union[Tensor, NDArray[np.floating], NDArray[np.integer], float]]:
+) -> list[Union[Tensor, NDArray[np.floating], NDArray[np.integer], float]]:
     """
     Return subsets of the arrays along the same random indices.
 

@@ -17,7 +17,7 @@ Tests for the pairwise combinations of decorators.
 """
 
 import itertools
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Optional, TypeVar
 from unittest.mock import patch
 
 import numpy as np
@@ -104,18 +104,18 @@ class OneHotMulticlassGaussianClassificationDataset(MulticlassGaussianClassifica
 class RequirementDetails(TypedDict, total=False):
     """Type hint for the sub-decorator details specification in `DECORATORS`."""
 
-    decorator: Dict[str, Any]
+    decorator: dict[str, Any]
     """Keyword arguments to pass to the decorator. `ignore_all=True` is always passed."""
-    controller: Dict[str, Any]
+    controller: dict[str, Any]
     """Additional keyword arguments to pass to the `GPController` on instantiation."""
 
 
 class DecoratorDetails(TypedDict, total=False):
     """Type hint for the decorator details specifications in `DECORATORS`."""
 
-    decorator: Dict[str, Any]
+    decorator: dict[str, Any]
     """Keyword arguments to pass to the decorator. `ignore_all=True` is always passed."""
-    controller: Dict[str, Any]
+    controller: dict[str, Any]
     """Additional keyword arguments to pass to the `GPController` on instantiation."""
     dataset: Dataset
     """
@@ -128,7 +128,7 @@ class DecoratorDetails(TypedDict, total=False):
     """
     # TODO(rg): Remove the requirements specification from here if it gets added to the Decorator framework
     # https://github.com/gchq/Vanguard/issues/381
-    requirements: Dict[Type[Decorator], RequirementDetails]
+    requirements: dict[type[Decorator], RequirementDetails]
     """
     Specifies additional decorators that this decorator requires.
 
@@ -149,7 +149,7 @@ class EmptyDecorator(Decorator):
 
 
 # Details for each of the decorators under test. See `DecoratorDetails` for documentation on each key.
-DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
+DECORATORS: dict[type[Decorator], DecoratorDetails] = {
     EmptyDecorator: {},
     BinaryClassification: {
         "controller": {
@@ -242,7 +242,7 @@ DECORATORS: Dict[Type[Decorator], DecoratorDetails] = {
 
 # (upper, lower) -> kwargs
 # Additional keyword arguments to provide to the `GPController` on instantiation for specific decorator combinations
-COMBINATION_CONTROLLER_KWARGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Dict[str, Any]] = {
+COMBINATION_CONTROLLER_KWARGS: dict[tuple[type[Decorator], type[Decorator]], dict[str, Any]] = {
     (VariationalInference, DirichletMulticlassClassification): {"likelihood_class": DirichletClassificationLikelihood},
     (VariationalInference, CategoricalClassification): {"likelihood_class": MultitaskBernoulliLikelihood},
     (VariationalInference, BinaryClassification): {"likelihood_class": BernoulliLikelihood},
@@ -326,7 +326,7 @@ BATCH_EXCLUDED_COMBINATIONS = {
 
 # (upper, lower) -> (error type, message regex)
 # Errors we expect to be raised on initialisation of the decorated class.
-EXPECTED_COMBINATION_INIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
+EXPECTED_COMBINATION_INIT_ERRORS: dict[tuple[type[Decorator], type[Decorator]], tuple[type[Exception], str]] = {
     (NormaliseY, DirichletMulticlassClassification): (
         TypeError,
         "NormaliseY should not be used above classification decorators.",
@@ -335,7 +335,7 @@ EXPECTED_COMBINATION_INIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], 
 
 # (upper, lower) -> (error type, message regex)
 # Errors we expect to be raised on decorator application.
-EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
+EXPECTED_COMBINATION_APPLY_ERRORS: dict[tuple[type[Decorator], type[Decorator]], tuple[type[Exception], str]] = {
     (Distributed, HigherRankFeatures): (
         TypeError,
         ".* cannot handle higher-rank features. Consider moving the `@Distributed` decorator "
@@ -373,7 +373,7 @@ EXPECTED_COMBINATION_APPLY_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]],
 
 # (upper, lower) -> (warning type, message regex)
 # Warnings we expect to be raised on decorator application.
-EXPECTED_COMBINATION_APPLY_WARNINGS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Warning], str]] = {
+EXPECTED_COMBINATION_APPLY_WARNINGS: dict[tuple[type[Decorator], type[Decorator]], tuple[type[Warning], str]] = {
     (NormaliseY, DirichletMulticlassClassification): (
         BadCombinationWarning,
         "NormaliseY should not be used above classification decorators - this may lead to unexpected behaviour.",
@@ -382,7 +382,7 @@ EXPECTED_COMBINATION_APPLY_WARNINGS: Dict[Tuple[Type[Decorator], Type[Decorator]
 
 # (upper, lower) -> (error type, message regex)
 # Errors we expect to be raised when calling controller.fit().
-EXPECTED_COMBINATION_FIT_ERRORS: Dict[Tuple[Type[Decorator], Type[Decorator]], Tuple[Type[Exception], str]] = {
+EXPECTED_COMBINATION_FIT_ERRORS: dict[tuple[type[Decorator], type[Decorator]], tuple[type[Exception], str]] = {
     (VariationalInference, Multitask): (RuntimeError, ".* may not be the correct choice for a variational strategy"),
 }
 
@@ -408,11 +408,11 @@ DATASET_CONFLICT_OVERRIDES = {
 
 
 def _initialise_decorator_pair(
-    upper_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
-    lower_decorator_details: Tuple[Type[Decorator], DecoratorDetails],
+    upper_decorator_details: tuple[type[Decorator], DecoratorDetails],
+    lower_decorator_details: tuple[type[Decorator], DecoratorDetails],
     *,
     batch_mode: bool,
-) -> Tuple[Decorator, List[Decorator], Decorator, List[Decorator], List[Decorator], Dict[str, Any], Optional[Dataset]]:
+) -> tuple[Decorator, list[Decorator], Decorator, list[Decorator], list[Decorator], dict[str, Any], Optional[Dataset]]:
     """
     Initialise a pair of decorators for testing.
 
@@ -491,8 +491,8 @@ def _initialise_decorator_pair(
 
 
 def _create_decorator(
-    details: Tuple[Type[Decorator], DecoratorDetails],
-) -> Tuple[Decorator, List[Decorator], Dict[str, Any], Optional[Dataset]]:
+    details: tuple[type[Decorator], DecoratorDetails],
+) -> tuple[Decorator, list[Decorator], dict[str, Any], Optional[Dataset]]:
     """
     Unpack decorator details.
 
@@ -545,8 +545,8 @@ def _create_decorator(
 )
 @pytest.mark.parametrize("batch_size", [pytest.param(None, id="full"), pytest.param(2, id="batch")])
 def test_combinations(
-    upper_details: Tuple[Type[Decorator], DecoratorDetails],
-    lower_details: Tuple[Type[Decorator], DecoratorDetails],
+    upper_details: tuple[type[Decorator], DecoratorDetails],
+    lower_details: tuple[type[Decorator], DecoratorDetails],
     batch_size: Optional[int],
 ) -> None:
     """
@@ -591,8 +591,9 @@ def test_combinations(
         combination, (None, None)
     )
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_APPLY_ERRORS.get(combination, (None, None))
-    with maybe_warns(expected_warning_class, expected_warning_message), maybe_throws(
-        expected_error_class, expected_error_message
+    with (
+        maybe_warns(expected_warning_class, expected_warning_message),
+        maybe_throws(expected_error_class, expected_error_message),
     ):
         controller_class = compose(all_decorators)(GaussianGPController)
     if expected_error_class is not None:

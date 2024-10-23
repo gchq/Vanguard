@@ -16,7 +16,8 @@
 Contains the VariationalHierarchicalHyperparameters decorator.
 """
 
-from typing import Any, Generator, List, Optional, Type, TypeVar, Union
+from collections.abc import Generator
+from typing import Any, Optional, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -98,7 +99,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         super().__init__(num_mc_samples=num_mc_samples, **kwargs)
         self.variational_distribution_class = variational_distribution_class
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         sample_shape = self.sample_shape
         variational_distribution_class = self.variational_distribution_class
         base_decorated_cls = super()._decorate_class(cls)
@@ -241,7 +242,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 yield likelihood_output
 
 
-def _correct_point_estimate_shapes(point_estimate_kernels: List[KernelT]) -> None:
+def _correct_point_estimate_shapes(point_estimate_kernels: list[KernelT]) -> None:
     """
     Adjust the shape of the constants of point estimate kernels.
 

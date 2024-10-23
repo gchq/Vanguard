@@ -19,7 +19,7 @@ Contains test cases for Vanguard testing.
 import contextlib
 import unittest
 import warnings
-from typing import Any, Optional, Tuple, Type, Union
+from typing import Any, Optional, Union
 from unittest.mock import Mock
 
 import numpy as np
@@ -77,7 +77,7 @@ def get_default_torch_rng() -> torch.Generator:
 
 
 @contextlib.contextmanager
-def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
+def maybe_throws(category: Optional[type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
     """
     Do nothing if :data:`None` is given. Do :py:func:`pytest.raises()` if an exception type is passed.
 
@@ -94,7 +94,7 @@ def maybe_throws(category: Optional[Type[Exception]], match: Optional[str] = Non
 
 
 @contextlib.contextmanager
-def maybe_warns(category: Optional[Type[Warning]], match: Optional[str] = None) -> Optional[pytest.WarningsRecorder]:
+def maybe_warns(category: Optional[type[Warning]], match: Optional[str] = None) -> Optional[pytest.WarningsRecorder]:
     """
     Do nothing if :data:`None` is given. Do :py:func:`pytest.warns()` if a warning type is passed.
 
@@ -145,7 +145,7 @@ class VanguardTestCase(unittest.TestCase):
     @staticmethod
     def assertInConfidenceInterval(  # pylint: disable=invalid-name
         data: numpy.typing.NDArray[np.floating],
-        interval: Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]],
+        interval: tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]],
         delta: Union[int, float] = 0,
     ) -> None:
         """
@@ -175,7 +175,7 @@ class VanguardTestCase(unittest.TestCase):
         mu: Union[float, numpy.typing.NDArray[np.floating]],
         sigma: Union[float, numpy.typing.NDArray[np.floating]],
         alpha: float,
-    ) -> Union[Tuple[float, float], Tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]]:
+    ) -> Union[tuple[float, float], tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]]:
         """Create a confidence interval."""
         sig_fac = stats.norm.ppf(1 - alpha / 2)
         std_dev = np.sqrt(np.diag(sigma))
@@ -196,7 +196,7 @@ class VanguardTestCase(unittest.TestCase):
 
 
 @contextlib.contextmanager
-def assert_not_warns(expected_warning_type: Type[Warning] = Warning) -> None:
+def assert_not_warns(expected_warning_type: type[Warning] = Warning) -> None:
     """Assert that enclosed code raises no warnings, or no warnings of a given type."""
     with warnings.catch_warnings(record=True) as ws:
         yield

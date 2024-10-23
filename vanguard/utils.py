@@ -19,7 +19,8 @@ Contain some small utilities of use in some cases.
 import functools
 import os
 import warnings
-from typing import Any, Callable, Generator, List, Optional, Tuple, TypeVar
+from collections.abc import Generator
+from typing import Any, Callable, Optional, TypeVar
 
 import numpy as np
 import numpy.typing
@@ -131,7 +132,7 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
 def infinite_tensor_generator(
     batch_size: Optional[int],
     device: torch.device,
-    *tensor_axis_pairs: Tuple[torch.Tensor, int],
+    *tensor_axis_pairs: tuple[torch.Tensor, int],
     rng: Optional[np.random.Generator] = None,
 ) -> Generator[torch.Tensor, None, None]:
     """
@@ -230,7 +231,7 @@ def optional_random_generator(generator: Optional[np.random.Generator]) -> np.ra
 T = TypeVar("T")
 
 
-def compose(functions: List[Callable[[T], T]]) -> Callable[[T], T]:
+def compose(functions: list[Callable[[T], T]]) -> Callable[[T], T]:
     """
     Compose a list of functions.
 

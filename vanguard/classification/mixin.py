@@ -24,7 +24,7 @@ mixin for the inner class, and then decorate the inner class with :class:`Classi
 """
 
 import warnings
-from typing import NoReturn, Tuple, Type, TypeVar, Union
+from typing import NoReturn, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -40,7 +40,7 @@ class ClassificationMixin:
 
     def classify_points(
         self, x: Union[float, numpy.typing.NDArray[np.floating]]
-    ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+    ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
         """
         Classify points.
 
@@ -54,7 +54,7 @@ class ClassificationMixin:
 
     def classify_fuzzy_points(
         self, x: Union[float, numpy.typing.NDArray[np.floating]], x_std: Union[float, numpy.typing.NDArray[np.floating]]
-    ) -> Tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
+    ) -> tuple[numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]]:
         """
         Classify fuzzy points.
 
@@ -92,7 +92,7 @@ class Classification(Decorator):
         )
         super().__init__(framework_class=GPController, required_decorators={}, ignore_methods=ignore_methods, **kwargs)
 
-    def verify_decorated_class(self, cls: Type[T]) -> None:
+    def verify_decorated_class(self, cls: type[T]) -> None:
         """
         Verify that a class can be decorated by this instance.
 
@@ -117,7 +117,7 @@ class Classification(Decorator):
                 )
                 raise TypeError(msg)
 
-    def _decorate_class(self, cls: Type[T]) -> Type[T]:
+    def _decorate_class(self, cls: type[T]) -> type[T]:
         """Close off the prediction methods on a GP."""
 
         @wraps_class(cls)

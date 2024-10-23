@@ -16,7 +16,7 @@
 Contains a spectral decomposition version of multivariate normal.
 """
 
-from typing import NoReturn, Type, TypeVar
+from typing import NoReturn, TypeVar
 
 import torch
 from torch.distributions import MultivariateNormal, constraints
@@ -56,8 +56,8 @@ class SpectralRegularisedMultivariateNormal(MultivariateNormal):
 
     @classmethod
     def from_eigendecomposition(
-        cls: Type[T], mean: torch.Tensor, covar_eigenvalues: torch.Tensor, covar_eigenvectors: torch.Tensor
-    ) -> Type[T]:
+        cls: type[T], mean: torch.Tensor, covar_eigenvalues: torch.Tensor, covar_eigenvectors: torch.Tensor
+    ) -> type[T]:
         """
         Construct the distribution from the eigendecomposition of its covariance matrix.
 

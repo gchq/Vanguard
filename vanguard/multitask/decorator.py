@@ -19,7 +19,7 @@ The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, Optional, TypeVar
 
 import torch
 from gpytorch.kernels import Kernel, MultitaskKernel
@@ -70,7 +70,7 @@ class Multitask(Decorator):
         self.lmc_dimension = lmc_dimension
         self.rank = rank
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
         is_variational = VariationalInference in cls.__decorators__
 
@@ -165,11 +165,11 @@ class Multitask(Decorator):
 
             @staticmethod
             def _match_mean_shape_to_kernel(
-                mean_class: Type[Mean],
-                kernel_class: Type[Kernel],
-                mean_kwargs: Dict[str, Any],
-                kernel_kwargs: Dict[str, Any],
-            ) -> Type[Mean]:
+                mean_class: type[Mean],
+                kernel_class: type[Kernel],
+                mean_kwargs: dict[str, Any],
+                kernel_kwargs: dict[str, Any],
+            ) -> type[Mean]:
                 """
                 Construct a mean class suitable for multitask GPs that matches the form of the kernel, if possible.
 
@@ -201,7 +201,7 @@ class Multitask(Decorator):
         return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _batchify(module_class: Type[T], _kwargs: Dict[str, Any], num_tasks: int, lmc_dimension: Optional[int]) -> Type[T]:
+def _batchify(module_class: type[T], _kwargs: dict[str, Any], num_tasks: int, lmc_dimension: Optional[int]) -> type[T]:
     """
     Add a batch shape to a class so it can be used for multitask variational GPs.
 
@@ -225,7 +225,7 @@ def _batchify(module_class: Type[T], _kwargs: Dict[str, Any], num_tasks: int, lm
     return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _multitaskify_kernel(kernel_class: Type[Kernel], num_tasks: int, rank: int = 1) -> Type[MultitaskKernel]:
+def _multitaskify_kernel(kernel_class: type[Kernel], num_tasks: int, rank: int = 1) -> type[MultitaskKernel]:
     """
     If necessary, make a kernel multitask using the GPyTorch Multitask kernel.
 
@@ -247,7 +247,7 @@ def _multitaskify_kernel(kernel_class: Type[Kernel], num_tasks: int, rank: int =
         return InnerKernelClass
 
 
-def _multitaskify_mean(mean_class: Type[Mean], num_tasks: int) -> Type[MultitaskMean]:
+def _multitaskify_mean(mean_class: type[Mean], num_tasks: int) -> type[MultitaskMean]:
     """
     If necessary, make a mean multitask using the GPyTorch Multitask mean.
 

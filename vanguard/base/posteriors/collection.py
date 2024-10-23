@@ -16,7 +16,8 @@
 Contains the MonteCarloPosteriorCollection class.
 """
 
-from typing import Generator, NoReturn, Tuple
+from collections.abc import Generator
+from typing import NoReturn
 
 import torch
 from torch import Tensor
@@ -91,7 +92,7 @@ class MonteCarloPosteriorCollection(Posterior):
             "Gaussian is not supported."
         )
 
-    def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _tensor_prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Return the prediction as a tensor.
 
@@ -111,7 +112,7 @@ class MonteCarloPosteriorCollection(Posterior):
     def _tensor_confidence_interval(
         self,
         alpha: float,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 

@@ -18,7 +18,7 @@ Utility functions for the configuration file.
 
 import os
 import shutil
-from typing import Collection
+from collections.abc import Collection
 
 import nbformat
 

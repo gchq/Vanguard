@@ -19,7 +19,7 @@ The :class:`VariationalInference` decorator primes a :class:`~vanguard.base.gpco
 for variational inference.
 """
 
-from typing import Any, Generic, Optional, Type, TypeVar, Union
+from typing import Any, Generic, Optional, TypeVar, Union
 
 import gpytorch.settings
 import numpy as np
@@ -71,8 +71,8 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
         self,
         n_inducing_points: Optional[int] = None,
         n_likelihood_samples: int = 10,
-        variational_strategy_class: Optional[Type[StrategyT]] = None,
-        variational_distribution_class: Optional[Type[DistributionT]] = None,
+        variational_strategy_class: Optional[type[StrategyT]] = None,
+        variational_distribution_class: Optional[type[DistributionT]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -100,9 +100,9 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
     def _build_gp_model_class(
         self,
-        variational_distribution_class: Optional[Type[DistributionT]],
-        variational_strategy_class: Optional[Type[StrategyT]],
-    ) -> Type[SVGPModel]:
+        variational_distribution_class: Optional[type[DistributionT]],
+        variational_strategy_class: Optional[type[StrategyT]],
+    ) -> type[SVGPModel]:
         if variational_distribution_class is not None:
 
             @wraps_class(SVGPModel)
@@ -132,7 +132,7 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
         return NewGPModel
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         n_inducing_points = self.n_inducing_points
         decorator = self
         _gp_model_class = self.gp_model_class

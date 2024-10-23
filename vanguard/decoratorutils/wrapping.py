@@ -23,12 +23,12 @@ to a function into a dictionary for straightforward access.
 
 import inspect
 from functools import WRAPPER_ASSIGNMENTS, wraps
-from typing import Any, Callable, Dict, Type, TypeVar
+from typing import Any, Callable, TypeVar
 
 T = TypeVar("T")
 
 
-def process_args(func: Callable, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict[str, Any]:
     """
     Process the arguments for a function.
 
@@ -98,7 +98,7 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> Dict[str, Any]:
     return dict(parameters_as_kwargs)
 
 
-def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
+def wraps_class(base_class: type[T]) -> Callable[[type[T]], type[T]]:
     r"""
     Update the names and docstrings of an inner class to those of a base class.
 
@@ -135,7 +135,7 @@ def wraps_class(base_class: Type[T]) -> Callable[[Type[T]], Type[T]]:
         <class 'vanguard.decoratorutils.wrapping.First'>
     """
 
-    def inner_function(inner_class: Type[T]) -> Type[T]:
+    def inner_function(inner_class: type[T]) -> type[T]:
         """Update the values in the inner class."""
         for attribute in WRAPPER_ASSIGNMENTS:
             try:

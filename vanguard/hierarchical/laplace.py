@@ -15,8 +15,9 @@
 """Implementation of tempered Laplace approximation approach to Bayesian hyperparameters."""
 
 import itertools
+from collections.abc import Generator
 from math import ceil
-from typing import Any, Callable, Generator, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Optional, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -103,7 +104,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         self.temperature = temperature
         self.uv_cutoff = uv_cutoff
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         uv_cutoff = self.uv_cutoff
         posterior_temperature = self.temperature
         base_decorated_cls = super()._decorate_class(cls)
@@ -171,7 +172,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
             def _compute_hyperparameter_laplace_approximation(
                 self,
-            ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+            ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
                 hessian = self._compute_loss_hessian().detach().clone()
                 eigenvalues, eigenvectors = _subspace_hessian_inverse_eig(hessian, cutoff=uv_cutoff)
                 mean = self.hyperparameter_collection.hyperparameter_tensor
@@ -305,7 +306,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         yield from func(controller, x, x_std)
 
 
-def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -> Tuple[torch.Tensor, torch.Tensor]:
+def _subspace_hessian_inverse_eig(hessian: torch.Tensor, cutoff: float = 1e-3) -> tuple[torch.Tensor, torch.Tensor]:
     """
     Compute a sort-of-inverse of the Hessian and return its eigenbasis and spectrum.
 

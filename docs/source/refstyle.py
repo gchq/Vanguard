@@ -18,7 +18,7 @@ Contains a custom reference style for Vanguard.
 See https://github.com/mcmtroffaes/sphinxcontrib-bibtex/blob/2.6.2/test/roots/test-bibliography_style_label_1/conf.py.
 """
 
-from typing import Generator, Iterable
+from collections.abc import Generator, Iterable
 
 from pybtex.database import Entry
 from pybtex.plugin import register_plugin

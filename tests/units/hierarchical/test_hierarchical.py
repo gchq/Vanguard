@@ -18,7 +18,7 @@ Tests for the VariationalHierarchicalHyperparameters and BayesianHyperparameters
 
 import abc
 import unittest
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Generic, TypeVar
 from unittest.mock import MagicMock
 
 import gpytorch
@@ -180,7 +180,7 @@ class AbstractTests:
 
         @property
         @abc.abstractmethod
-        def controller_class(self) -> Type[GPControllerT]:
+        def controller_class(self) -> type[GPControllerT]:
             """
             The GPController subclass to be tested.
 
