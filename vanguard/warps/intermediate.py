@@ -65,8 +65,8 @@ def require_controller_input(cache_name: str) -> Callable[[Type[WarpFunctionT]],
         Traceback (most recent call last):
             ...
         AttributeError: ...
-        >>> warp_function.activate(train_y=torch.Tensor([0, 1, 2, 3, 4]))
-        >>> warp_function(torch.Tensor([1])).detach()
+        >>> warp_function.activate(train_y=torch.as_tensor([0.0, 1.0, 2.0, 3.0, 4.0]))
+        >>> warp_function(torch.as_tensor([1.0])).detach().cpu()
         tensor([[-0.6325]])
 
     .. note::

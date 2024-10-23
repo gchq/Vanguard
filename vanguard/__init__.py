@@ -19,7 +19,14 @@ Vanguard contains convenience wrappers for a number of advanced Gaussian Process
 techniques, designed with a focus on simplicity, extension and combination.
 """
 
+import torch
+
+import vanguard.utils
 from vanguard import _bibliography
+
+torch.set_default_dtype(vanguard.utils.DEFAULT_DTYPE)
+torch.set_default_device(vanguard.utils.DEFAULT_DEVICE)
+
 
 __author__ = "GCHQ"
 __version__ = "2.1.0"
