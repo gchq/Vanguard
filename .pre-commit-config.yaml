@@ -115,6 +115,22 @@ repos:
           (?x)^(
             docs/source/_static/.+.png
           )$
+      # Keep requirements-docs.txt in sync with uv.lock
+      - id: check-requirements-docs
+        name: Keep requirements-docs.txt in sync with uv.lock
+        language: system
+        entry: >
+          uv export
+          --frozen
+          --quiet
+          --format requirements-txt
+          --no-hashes
+          --no-dev
+          --no-emit-project
+          --extra doc
+          --output-file requirements-docs.txt
+        pass_filenames: false
+        files: ^uv\.lock$
       - id: check-copyright
         name: Check for copyright notice
         description: Ensure a copyright notice is present at the top of each Python file
