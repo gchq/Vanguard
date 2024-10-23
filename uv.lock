@@ -24,10 +24,12 @@ supported-markers = [
 [manifest]
 constraints = [
     { name = "appnope", specifier = ">=0.1" },
-    { name = "argon2-cffi", specifier = ">=16.3.0" },
+    { name = "argon2-cffi", specifier = ">=19" },
     { name = "bleach", specifier = ">=1" },
     { name = "cmdln", specifier = ">=2" },
+    { name = "defusedxml", specifier = ">=0.5" },
     { name = "distribute", specifier = ">=1" },
+    { name = "kiwisolver", specifier = ">=1.3.0" },
     { name = "lxml", specifier = ">=4.7.1" },
     { name = "networkx", specifier = ">=2" },
     { name = "nvidia-nvjitlink-cu12", specifier = ">=12.6.77" },
