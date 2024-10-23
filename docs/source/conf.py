@@ -74,9 +74,12 @@ version = "v" + vanguard.__version__
 # -- General configuration ---------------------------------------------------
 
 show_warning_types = True
-suppress_warnings = ["config.cache"]  # TODO: Remove this if/when Sphinx fix the caching issue
-# https://github.com/gchq/Vanguard/issues/196
-
+suppress_warnings = [
+    "config.cache",  # TODO: Remove this if/when Sphinx fix the caching issue
+    # https://github.com/gchq/Vanguard/issues/196
+    "misc.copy_overwrite",  # TODO: Explore why this is only an issue with notebooks
+    # https://github.com/gchq/Vanguard/issues/398
+]
 
 extensions = [
     "sphinx.ext.coverage",
@@ -96,13 +99,13 @@ bibtex_bibfiles = [os.path.join(VANGUARD_FOLDER_FILE_PATH, "references.bib")]
 
 linkcheck_ignore = ["https://doi.org"]
 linkcheck_timeout = 5
+linkcheck_report_timeouts_as_broken = True
 
 coverage_show_missing_items = True
 coverage_write_headline = False
 coverage_ignore_classes = ["EmptyDataset"]
 coverage_ignore_pyobjects = [r"vanguard\.warps\.warpfunctions\..*?WarpFunction\.(deriv|forward|inverse)"]
 
-nbsphinx_execute = "never"
 nbsphinx_thumbnails = {"examples/*": "_static/logo_circle.png"}
 
 
@@ -297,7 +300,15 @@ os.mkdir(examples_dest)
 confutils.copy_filtered_files(examples_source, examples_dest, file_types={".ipynb", ".rst"})
 
 notebooks_file_paths = [os.path.join(examples_dest, notebook_path) for notebook_path in os.listdir(examples_dest)]
-confutils.process_notebooks(notebooks_file_paths)
+confutils.process_notebooks(
+    notebook_file_paths=notebooks_file_paths,
+    notebooks_to_skip=[
+        "distributed_gp",
+        "laplace_hierarchical",
+        "sparse_variational_gps",
+        "sparse_kernel_approximation",
+    ],
+)
 
 circle_logo_path = os.path.join(SOURCE_FOLDER_FILE_PATH, "_static", "logo_circle.png")
 if not os.path.exists(circle_logo_path):

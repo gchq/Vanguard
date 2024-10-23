@@ -137,13 +137,25 @@ class MulticlassGaussianClassificationDataset(Dataset):
         :param alpha: The transparency of the points.
         """
         ax = plt.gca()
-        scatter = plt.scatter(self.train_x[:, 0], self.train_x[:, 1], c=self.train_y, cmap=cmap, alpha=alpha)
-        plt.scatter(self.test_x[:, 0], self.test_x[:, 1], c=self.test_y, cmap=cmap, alpha=alpha)
+        scatter = plt.scatter(
+            self.train_x[:, 0].numpy(force=True),
+            self.train_x[:, 1].numpy(force=True),
+            c=self.train_y.numpy(force=True),
+            cmap=cmap,
+            alpha=alpha,
+        )
+        plt.scatter(
+            self.test_x[:, 0].numpy(force=True),
+            self.test_x[:, 1].numpy(force=True),
+            c=self.test_y.numpy(force=True),
+            cmap=cmap,
+            alpha=alpha,
+        )
         legend = ax.legend(*scatter.legend_elements(), title="Classes")
         ax.add_artist(legend)
 
     def plot_prediction(
-        self, prediction: NDArray, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5
+        self, prediction: Union[NDArray, Tensor], cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5
     ) -> None:  # pragma: no cover
         """
         Plot a prediction.
@@ -152,21 +164,22 @@ class MulticlassGaussianClassificationDataset(Dataset):
         :param cmap: The colour map to be used.
         :param alpha: The transparency of the points.
         """
+        prediction = torch.as_tensor(prediction)
         correct_prediction = prediction == self.test_y
         proportion_correct: float = correct_prediction.sum() / len(self.test_x)  # type: ignore
 
         ax = plt.gca()
         correct_scatter = plt.scatter(
-            self.test_x[correct_prediction, 0],
-            self.test_x[correct_prediction, 1],
-            c=prediction[correct_prediction],
+            self.test_x[correct_prediction, 0].numpy(force=True),
+            self.test_x[correct_prediction, 1].numpy(force=True),
+            c=prediction[correct_prediction].numpy(force=True),
             cmap=cmap,
             alpha=alpha,
         )
         incorrect_scatter = plt.scatter(
-            self.test_x[~correct_prediction, 0],
-            self.test_x[~correct_prediction, 1],
-            c=prediction[~correct_prediction],
+            self.test_x[~correct_prediction, 0].numpy(force=True),
+            self.test_x[~correct_prediction, 1].numpy(force=True),
+            c=prediction[~correct_prediction].numpy(force=True),
             cmap=cmap,
             marker="x",
             alpha=alpha,

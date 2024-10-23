@@ -38,6 +38,7 @@ dependencies = [
     "matplotlib>=3.2",  # earlier versions fail to build with recent setuptools versions
     "numpy>=1.21",  # numpy.typing introduced in 1.21
     "numpy>=1.25; python_version>='3.12'",  # 1.24 and earlier require distutils, which was removed in 3.12
+    "pandas>=2",
     "scikit-learn>=1",  # earlier versions fail to build with recent setuptools versions
     "scipy>=1.4",  # earlier versions fail to build with recent setuptools versions
     "scipy>=1.11; python_version>='3.12'",  # 1.10 and earlier appear to be incompatible with Python 3.12,
@@ -50,32 +51,44 @@ dependencies = [
 
 [project.optional-dependencies]
 # These match the suffixes on the various requirements-*.txt files
-# Run unit tests
+# Run tests
 test = [
+    "ipykernel>=6",  # for notebook tests
+    "nbconvert>=7",  # for notebook tests
+    "nbformat>=5",  # for notebook tests
+    "tqdm>=4",  # for notebook tests
+    "pytest-beartype>=0.1",
     "pytest-cov>=5",
     "pytest>=8.3.3",
-    "pytest-beartype>=0.1",
     "beartype>=0.19",
 ]
 # Compile documentation
 doc = [
     "furo>=2024",
+    "ipykernel>=6",
+    "ipython>=8",
+    "nbconvert>=7",
     "nbformat>=5",
     "nbsphinx>=0.9",
     "pillow>=10",
     "pybtex>=0.24",
-    "ipython>=8",
     "setuptools>=75; python_version>='3.12'",  # TODO: Remove once pybtex releases > 0.24.0
     # https://github.com/gchq/Vanguard/issues/246
     "sphinx>=8; python_version>='3.10'",
     "sphinx>=7; python_version<'3.10'",
     "sphinx-autodoc-typehints>=2",
     "sphinxcontrib-bibtex>=2",
+    "tqdm>=4",
+]
+# Run notebooks in the jupyter interface
+notebook = [
+    "jupyterlab>=4",
+    "tqdm>=4",
 ]
 
 [tool.uv]
 dev-dependencies = [
-    "vanguard[test, doc]",
+    "vanguard[test, doc, notebook]",
     "isort>=5",
     "jupyterlab>=4",
     "pre-commit>=3",
@@ -88,6 +101,8 @@ dev-dependencies = [
 # Constraints on dependencies. These do *not* select a package to be installed, but if *another* package requires
 # one of these packages, then uv will respect these constraints. Note that pip does *not* respect these constraints,
 # however - they are only for ensuring that `--resolution lowest` only picks packages compatible with modern Python.
+# Only include *transitive* dependencies in this list - to apply a constraint on a direct dependency, do so at the
+# actual dependency specification!
 constraint-dependencies = [
     "networkx>=2",
     "sympy>=1.5",
@@ -98,6 +113,19 @@ constraint-dependencies = [
     "python-json-logger>=1",
     "py>=1",
     "nvidia-nvjitlink-cu12>=12.6.77",  # torch CUDA dependency
+    "lxml>=4.7.1",  # earlier versions fail to build to missing libxml2
+    "argon2-cffi>=16.3.0",  # prevents errors due to CFFI reinstallation
+    "bleach>=1",  # some pre-1.0 versions fail to build
+]
+
+# force the lockfile to be split by Python version, ensuring we get the latest dependencies for each version
+environments = [
+    "python_version>='3.13'",
+    "python_version=='3.12.*'",
+    "python_version=='3.11.*'",
+    "python_version=='3.10.*'",
+    "python_version=='3.9.*'",
+    "python_version=='3.8.*'",
 ]
 
 [project.urls]

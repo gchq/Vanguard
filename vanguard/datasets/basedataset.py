@@ -20,14 +20,11 @@ The dataset instances allow for easy access to the training and testing data thr
 """
 
 import os
-from contextlib import contextmanager
-from typing import Generator, Union
+from typing import Union
 
 import numpy as np
 import torch
-import urllib3
 from numpy.typing import NDArray
-from urllib3 import BaseHTTPResponse
 
 
 class Dataset:
@@ -93,26 +90,7 @@ class Dataset:
 class FileDataset(Dataset):
     """
     A Vanguard dataset which requires a file to be loaded.
-
-    If missing, this file can be
-    downloaded with the :meth:`~vanguard.datasets.basedataset.FileDataset.download` method.
     """
-
-    @classmethod
-    def download(cls):
-        """Download the data needed for this dataset."""
-        raise NotImplementedError
-
-    @staticmethod
-    @contextmanager
-    def _large_file_downloader(url: str) -> Generator[BaseHTTPResponse, None, None]:
-        """Download a file within a context manager."""
-        http = urllib3.PoolManager()
-        request = http.request("GET", url, preload_content=False)
-        try:
-            yield request
-        finally:
-            request.release_conn()
 
     @staticmethod
     def _get_data_path(file_name: str) -> str:
@@ -120,8 +98,9 @@ class FileDataset(Dataset):
         Get the full path to the file name within the data folder.
 
         .. note::
-            This will also create the ``data`` folder if it is missing. If the
-            download fails then this can result in an unexpected empty folder.
+
+            This will also create the ``data`` folder if it is missing, but the data should be
+            placed there manually by the user.
         """
         current_directory_path = os.path.dirname(__file__)
         data_path = os.path.join(current_directory_path, "data")
@@ -155,8 +134,3 @@ class EmptyDataset(Dataset):
             np.zeros((0,)),
             significance=significance,
         )
-
-    @classmethod
-    def download(cls):
-        """Download the data needed for this dataset."""
-        raise TypeError("Not implemented for this class.")

@@ -18,6 +18,7 @@ Basic end to end functionality test for classification problems in Vanguard.
 
 from typing import Literal, Tuple, Union
 
+import gpytorch.means
 import numpy as np
 import pytest
 from gpytorch.likelihoods import BernoulliLikelihood, DirichletClassificationLikelihood
@@ -31,6 +32,7 @@ from tests.integration.util import train_test_split_convert
 from vanguard.classification import BinaryClassification, DirichletMulticlassClassification
 from vanguard.classification.kernel import DirichletKernelMulticlassClassification
 from vanguard.classification.likelihoods import DirichletKernelClassifierLikelihood, GenericExactMarginalLogLikelihood
+from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
@@ -207,3 +209,76 @@ class TestClassification:
         # Sense check outputs
         assert f1_score(predictions_train, train_y, average="micro") >= self.required_f1_score
         assert f1_score(predictions_test, test_y, average="micro") >= self.required_f1_score
+
+    def test_multitask_dirichlet_classification_notebook_example(self) -> None:
+        """
+        Explicitly test the multitask Dirichlet classification example using Gaussian data.
+
+        Here we recreate a minimal example based on the content of the notebook  ``multiclass_dirichlet_classification``
+        to ensure it is tested on all supported python versions.
+        """
+        # Recreate the notebook example with specific data
+        num_classes = 4
+        dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=100,
+            num_test_points=500,
+            num_classes=num_classes,
+            covariance_scale=1.0,
+            rng=get_default_rng(),
+        )
+
+        # Test the first controller can be created and fit without error
+        @DirichletMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
+        class MulticlassGaussianClassifierWithoutKernel(GaussianGPController):
+            pass
+
+        gp = MulticlassGaussianClassifierWithoutKernel(
+            dataset.train_x,
+            dataset.train_y,
+            ScaledRBFKernel,
+            y_std=0.0,
+            mean_class=gpytorch.means.ZeroMean,
+            likelihood_class=DirichletClassificationLikelihood,
+            mean_kwargs={"batch_shape": (num_classes,)},
+            kernel_kwargs={"batch_shape": (num_classes,)},
+            likelihood_kwargs={"alpha_epsilon": 0.3, "learn_additional_noise": True},
+            optim_kwargs={"lr": 0.05},
+            rng=get_default_rng(),
+        )
+        gp.fit(1)
+
+    def test_multitask_dirichlet_kernel_classification_notebook_example(self):
+        """
+        Explicitly test the multitask Dirichlet kernel classification example using Gaussian data.
+
+        Here we recreate a minimal example based on the content of the notebook  ``multiclass_dirichlet_classification``
+        to ensure it is tested on all supported python versions.
+        """
+        # Recreate the notebook example with specific data
+        num_classes = 4
+        dataset = MulticlassGaussianClassificationDataset(
+            num_train_points=100,
+            num_test_points=500,
+            num_classes=num_classes,
+            covariance_scale=1.0,
+            rng=get_default_rng(),
+        )
+
+        # Test the second controller can be created and fit without error
+        @DirichletKernelMulticlassClassification(num_classes=num_classes, ignore_methods=("__init__",))
+        class MulticlassGaussianClassifierWithKernel(GaussianGPController):
+            pass
+
+        gp = MulticlassGaussianClassifierWithKernel(
+            dataset.train_x,
+            dataset.train_y,
+            kernel_class=ScaledRBFKernel,
+            y_std=0.0,
+            mean_class=gpytorch.means.ZeroMean,
+            likelihood_class=DirichletKernelClassifierLikelihood,
+            likelihood_kwargs={"learn_alpha": False, "alpha": 5.0},
+            marginal_log_likelihood_class=GenericExactMarginalLogLikelihood,
+            optim_kwargs={"lr": 0.1, "early_stop_patience": 5},
+            rng=get_default_rng(),
+        )
+        gp.fit(1)

@@ -16,14 +16,14 @@
 Utility functions for the configuration file.
 """
 
-import itertools
 import os
 import shutil
+from typing import Collection
 
 import nbformat
 
 
-def copy_filtered_files(source_folder, destination_folder, file_types=()):
+def copy_filtered_files(source_folder: str, destination_folder: str, file_types: Collection[str] = ()):
     """Copy the contents of a folder across if they have a particular type."""
     for root, dirs, files in os.walk(source_folder):
         for dr in dirs:
@@ -35,8 +35,18 @@ def copy_filtered_files(source_folder, destination_folder, file_types=()):
                 shutil.copyfile(source_filename, dest_filename)
 
 
-def process_notebooks(notebook_file_paths, encoding="utf8"):
-    """Remove empty cells from Jupyter notebook files, filter sphinx commands and set raw mimetype."""
+def process_notebooks(notebook_file_paths: Collection[str], notebooks_to_skip: Collection[str], encoding: str = "utf8"):
+    """
+    Remove empty cells from Jupyter notebook files, filter sphinx commands and set raw mimetype.
+
+    Note that empty cells shouldn't be committed to the repo in the first place (the `nbstripout` pre-commit hook
+    should remove them), but we strip again here to facilitate deployment.
+
+    :param notebook_file_paths: Paths to notebooks that will be loaded and adjusted.
+    :param notebooks_to_skip: List of notebooks to skip running during sphinx compile, e.g. due
+        to long run times.
+    :param encoding: Encoding to use when reading notebook files.
+    """
     for notebook_path in notebook_file_paths:
         if not notebook_path.endswith(".ipynb"):
             continue
@@ -45,23 +55,22 @@ def process_notebooks(notebook_file_paths, encoding="utf8"):
             notebook = nbformat.read(rf, as_version=4)
 
         notebook.cells = [
-            cell  #
-            for cell in notebook.cells
-            if cell.source and not cell["source"].startswith("# sphinx ignore")
+            cell for cell in notebook.cells if cell.source and not cell["source"].startswith("# sphinx ignore")
         ]
 
-        correct_cell_numbers = itertools.count(1)
-        for cell in notebook.cells:
-            if cell.cell_type == "code":
-                cell.execution_count = next(correct_cell_numbers)
-
+        # Apply any specific exclusions we want
         for cell in notebook.cells:
             if cell.source.startswith("# sphinx expect"):
                 cell.source = "\n".join(cell.source.split("\n")[1:]).lstrip()
 
+        # Ensure nbsphinx correctly compiles text cells
         for cell in notebook.cells:
             if cell["cell_type"] == "raw":
                 cell["metadata"]["raw_mimetype"] = "text/restructuredtext"
+
+        # Skip long-running notebooks
+        if any(exclude_string in notebook_path for exclude_string in notebooks_to_skip):
+            notebook["metadata"]["nbsphinx"] = {"execute": "never"}
 
         with open(notebook_path, "w", encoding=encoding) as wf:
             nbformat.write(notebook, wf, version=4)
