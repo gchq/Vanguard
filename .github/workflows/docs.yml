@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     name: Build documentation
-    runs-on: [ self-hosted, linux ]
+    runs-on: ubuntu-latest
     env:
       # Set the Python version that `uv` will use for its virtual environment.
       UV_PYTHON: 3.12

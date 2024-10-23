@@ -19,7 +19,7 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12"
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
     env:
       # Set the Python version that `uv` will use for its virtual environment.
       UV_PYTHON: ${{ matrix.python-version }}
