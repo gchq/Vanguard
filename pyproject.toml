@@ -34,7 +34,7 @@ dependencies = [
                        #   one of our multitask tests fails on 1.10.
     "kmedoids>=0.3.3",  # prebuild wheels only exist for 3.3+;
                         #   earlier versions require rust toolchain
-    "matplotlib>=3.2",  # earlier versions fail to build with recent setuptools versions
+    "matplotlib>=3.3.3",  # earlier versions don't have prebuilt wheels for Linux
     "numpy>=1.21",  # numpy.typing introduced in 1.21
     "numpy>=1.25; python_version>='3.12'",  # 1.24 and earlier require distutils, which was removed in 3.12
     "pandas>=2",
@@ -115,6 +115,7 @@ constraint-dependencies = [
     "lxml>=4.7.1",  # earlier versions fail to build to missing libxml2
     "argon2-cffi>=16.3.0",  # prevents errors due to CFFI reinstallation
     "bleach>=1",  # some pre-1.0 versions fail to build
+    "webencodings>=0.5",  # older versions fail to build
 ]
 
 # force the lockfile to be split by Python version, ensuring we get the latest dependencies for each version

@@ -35,6 +35,7 @@ constraints = [
     { name = "python-json-logger", specifier = ">=1" },
     { name = "sympy", specifier = ">=1.5" },
     { name = "wcwidth", specifier = ">=0.2" },
+    { name = "webencodings", specifier = ">=0.5" },
 ]
 
 [[package]]
@@ -3585,7 +3586,7 @@ requires-dist = [
     { name = "ipython", marker = "extra == 'doc'", specifier = ">=8" },
     { name = "jupyterlab", marker = "extra == 'notebook'", specifier = ">=4" },
     { name = "kmedoids", specifier = ">=0.3.3" },
-    { name = "matplotlib", specifier = ">=3.2" },
+    { name = "matplotlib", specifier = ">=3.3.3" },
     { name = "nbconvert", marker = "extra == 'doc'", specifier = ">=7" },
     { name = "nbconvert", marker = "extra == 'test'", specifier = ">=7" },
     { name = "nbformat", marker = "extra == 'doc'", specifier = ">=5" },
