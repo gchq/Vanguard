@@ -113,7 +113,7 @@ class MulticlassFuzzyTests(ClassificationTestCase):
         self.rng = get_default_rng_override_seed(12345)
         self.torch_rng = get_default_torch_rng()
 
-    # TODO: Seems too flaky on 3.8 and 3.9 but reliable on 3.12, especially when delta=0.5.
+    # TODO: Seems too flaky on 3.9 but reliable on 3.12, especially when delta=0.5.
     # https://github.com/gchq/Vanguard/issues/128
     def test_fuzzy_predictions_monte_carlo(self) -> None:
         """

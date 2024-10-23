@@ -92,10 +92,7 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict[str, Any]:
     inner_kwargs = parameters_as_kwargs.pop("kwargs", {})
     parameters_as_kwargs.update(inner_kwargs)
 
-    # TODO: remove this dict() conversion when we drop support for 3.8 - it's only required to make the doctests pass
-    #  on 3.8, since in 3.8 Signature.bind() returns OrderedDict rather than a normal dictionary
-    # https://github.com/gchq/Vanguard/issues/65
-    return dict(parameters_as_kwargs)
+    return parameters_as_kwargs
 
 
 def wraps_class(base_class: type[T]) -> Callable[[type[T]], type[T]]:
