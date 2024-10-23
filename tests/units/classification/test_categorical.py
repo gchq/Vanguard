@@ -237,7 +237,7 @@ class SoftmaxTests(ClassificationTestCase):
 
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
-        self.controller.fit(10)
+        self.controller.fit(20)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 

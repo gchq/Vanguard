@@ -185,7 +185,7 @@ class ForwardTest(unittest.TestCase):
             warp.compose_with_self(-10)
 
         # With a zero valued composition, we should recover the identity warp
-        np.testing.assert_array_almost_equal(warp.compose_with_self(0)(torch.tensor([2, 3])), torch.tensor([2, 3]))
+        torch.testing.assert_close(warp.compose_with_self(0)(torch.tensor([2, 3])), torch.tensor([2, 3]))
 
         # With more than 0 compositions, we should get distinct components
         two_composed = warp.compose_with_self(2)
@@ -197,14 +197,14 @@ class ForwardTest(unittest.TestCase):
         warp = warpfunctions.LogitWarpFunction()
 
         # Manually computed :math:`log(0.25/(1-0.25)) = -1.098612`
-        np.testing.assert_array_almost_equal(warp(torch.tensor(0.25)), np.array([-1.098612]))
+        torch.testing.assert_close(warp(torch.tensor(0.25)), torch.tensor(-1.098612))
 
     def test_soft_plus(self) -> None:
         """Test forward method of SoftPlusWarpFunction."""
         warp = warpfunctions.SoftPlusWarpFunction()
 
         # Manually computed :math:`log(e^0.25 - 1) = -1.258692`
-        np.testing.assert_array_almost_equal(warp(torch.tensor(0.25)), np.array([-1.258692]))
+        torch.testing.assert_close(warp(torch.tensor(0.25)), torch.tensor(-1.258692))
 
 
 class InverseTest(unittest.TestCase):
@@ -250,21 +250,21 @@ class InverseTest(unittest.TestCase):
         warp = warpfunctions.ArcSinhWarpFunction()
 
         # :math:`sinh(1.5) = 2.12928` can be verified independently
-        np.testing.assert_array_almost_equal(warp.inverse(torch.tensor(1.5)), np.array([2.12928]))
+        torch.testing.assert_close(warp.inverse(torch.tensor(1.5)), torch.tensor(2.12928))
 
     def test_logit(self) -> None:
         """Test inverse method of LogitWarpFunction."""
         warp = warpfunctions.LogitWarpFunction()
 
         # Manually computed :math:`sigmoid(0.25) = 0.5621765`
-        np.testing.assert_array_almost_equal(warp.inverse(torch.tensor(0.25)), np.array([0.5621765]))
+        torch.testing.assert_close(warp.inverse(torch.tensor(0.25)), torch.tensor(0.5621765))
 
     def test_soft_plus(self) -> None:
         """Test inverse method of SoftPlusWarpFunction."""
         warp = warpfunctions.SoftPlusWarpFunction()
 
         # Manually computed :math:`log(e^0.25 + 1) = 0.8259394`
-        np.testing.assert_array_almost_equal(warp.inverse(torch.tensor(0.25)), np.array([0.8259394]))
+        torch.testing.assert_close(warp.inverse(torch.tensor(0.25)), torch.tensor(0.8259394))
 
 
 class DerivativeTest(unittest.TestCase):
@@ -321,14 +321,14 @@ class DerivativeTest(unittest.TestCase):
         warp = warpfunctions.LogitWarpFunction()
 
         # Manually computed :math:`(1 - 2 * 0.25) / (0.25 * (1 - 0.25)) = 2.666666666`
-        np.testing.assert_array_almost_equal(warp.deriv(torch.tensor(0.25)), np.array([2.666666666]))
+        torch.testing.assert_close(warp.deriv(torch.tensor(0.25)), torch.tensor(2.666666666))
 
     def test_soft_plus(self) -> None:
         """Test derivative method of SoftPlusWarpFunction."""
         warp = warpfunctions.SoftPlusWarpFunction()
 
         # Manually computed :math:`sigmoid(0.25) = 0.5621765`
-        np.testing.assert_array_almost_equal(warp.deriv(torch.tensor(0.25)), np.array([0.5621765]))
+        torch.testing.assert_close(warp.deriv(torch.tensor(0.25)), torch.tensor(0.5621765))
 
 
 class PositiveAffineWarpTests(unittest.TestCase):
@@ -416,16 +416,16 @@ class TestIdentityWarp(unittest.TestCase):
         """
         Test forward method of the identity warp function.
         """
-        np.testing.assert_array_almost_equal(self.warp_function(self.data_point), self.data_point)
+        torch.testing.assert_close(self.warp_function(self.data_point), self.data_point)
 
     def test_derivative(self) -> None:
         """
         Test derivative method of the identity warp function.
         """
-        np.testing.assert_array_almost_equal(self.warp_function.deriv(self.data_point), torch.ones([3]))
+        torch.testing.assert_close(self.warp_function.deriv(self.data_point), torch.ones([3]))
 
     def test_inverse(self) -> None:
         """
         Test inverse method of the identity warp function.
         """
-        np.testing.assert_array_almost_equal(self.warp_function.inverse(self.data_point), self.data_point)
+        torch.testing.assert_close(self.warp_function.inverse(self.data_point), self.data_point)

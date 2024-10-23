@@ -185,7 +185,7 @@ class ParameterTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp_1 = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -193,7 +193,7 @@ class ParameterTests(VanguardTestCase):
         )
 
         gp_2 = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -217,7 +217,7 @@ class ParameterTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp_1 = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -225,7 +225,7 @@ class ParameterTests(VanguardTestCase):
         )
 
         gp_2 = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -247,7 +247,7 @@ class ParameterTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -270,7 +270,7 @@ class ParameterTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -292,7 +292,7 @@ class ParameterTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -316,7 +316,7 @@ class ParameterTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -340,7 +340,7 @@ class ParameterTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -386,7 +386,7 @@ class ConstraintTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
@@ -413,7 +413,7 @@ class ConstraintTests(VanguardTestCase):
 
         scaler = StandardScaler()
         gp = TestController(
-            scaler.fit_transform(self.DATASET.train_x),
+            scaler.fit_transform(self.DATASET.train_x.numpy(force=True)),
             self.DATASET.train_y,
             ScaledRBFKernel,
             y_std=self.DATASET.train_y_std,
