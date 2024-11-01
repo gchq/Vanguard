@@ -17,7 +17,7 @@ Contains decorators for torch optimisers to apply LR schedulers as part of the o
 """
 
 import inspect
-from typing import Any, Callable, Generic, Optional, Type, TypeVar, Union, overload
+from typing import Any, Callable, Generic, Optional, TypeVar, Union, overload
 
 import torch
 from torch.optim import Optimizer
@@ -34,7 +34,7 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
     The scheduler is stepped at each step of optimiser.
     """
 
-    def __init__(self, scheduler_class: Type[LRSchedulerT], *args: Any, **kwargs: Any) -> None:
+    def __init__(self, scheduler_class: type[LRSchedulerT], *args: Any, **kwargs: Any) -> None:
         """
         :param scheduler_class: The (uninstantiated) torch learning rate scheduler to be used.
         """
@@ -43,7 +43,7 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
         self.scheduler_args = args
         self.scheduler_takes_loss = "metrics" in inspect.signature(scheduler_class.step).parameters
 
-    def __call__(self, cls: Type[OptimiserT]) -> Type[OptimiserT]:
+    def __call__(self, cls: type[OptimiserT]) -> type[OptimiserT]:
         """Apply scheduler to optimiser."""
         scheduler_class = self.scheduler_class
         scheduler_kwargs = self.scheduler_kwargs

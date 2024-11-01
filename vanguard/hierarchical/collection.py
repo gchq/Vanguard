@@ -16,7 +16,8 @@
 Contains the HyperparameterCollection class.
 """
 
-from typing import Any, Iterator, List, Tuple, Type, TypeVar
+from collections.abc import Iterator
+from typing import Any, TypeVar
 
 import gpytorch
 import torch
@@ -43,9 +44,9 @@ class HyperparameterCollection:
 
     def __init__(
         self,
-        module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]],
+        module_hyperparameter_pairs: list[tuple[ModuleT, HyperparameterT]],
         sample_shape: torch.Size,
-        variational_distribution_class: Type[VariationalDistributionT],
+        variational_distribution_class: type[VariationalDistributionT],
     ) -> None:
         """
         Initialise self.
@@ -159,7 +160,7 @@ class OnePointHyperparameterCollection:
     It also manages the prior placed over the hyperparameters.
     """
 
-    def __init__(self, module_hyperparameter_pairs: List[Tuple[ModuleT, HyperparameterT]]) -> None:
+    def __init__(self, module_hyperparameter_pairs: list[tuple[ModuleT, HyperparameterT]]) -> None:
         """
         Initialise self.
 

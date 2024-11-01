@@ -16,7 +16,7 @@
 Basic end to end functionality test for distributed decorators in Vanguard.
 """
 
-from typing import Tuple, Type, Union
+from typing import Union
 
 import numpy as np
 import pytest
@@ -53,7 +53,7 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-TrainTestData = Union[Tuple[NDArray, NDArray, NDArray, NDArray], Tuple[Tensor, Tensor, Tensor, Tensor]]
+TrainTestData = Union[tuple[NDArray, NDArray, NDArray, NDArray], tuple[Tensor, Tensor, Tensor, Tensor]]
 
 
 class TestDistributeUsage:
@@ -114,8 +114,8 @@ class TestDistributeUsage:
     def test_distributed_gp_vary_aggregator_and_partitioner(
         self,
         binary_classification_data: TrainTestData,
-        aggregator: Type[BaseAggregator],
-        partitioner: Type[BasePartitioner],
+        aggregator: type[BaseAggregator],
+        partitioner: type[BasePartitioner],
     ) -> None:
         """
         Verify Vanguard usage on a simple, single variable distributed binary classification problem

@@ -18,9 +18,10 @@ Vanguard defines its own optimiser wrapper to enable additional features.
 
 import inspect
 from collections import deque
+from collections.abc import Generator
 from functools import total_ordering
 from heapq import heappush, heappushpop, nlargest
-from typing import Any, Callable, Deque, Dict, Generator, Generic, List, Optional, Type, TypeVar, Union, overload
+from typing import Any, Callable, Generic, Optional, TypeVar, Union, overload
 
 import numpy as np
 import torch
@@ -40,13 +41,13 @@ class SmartOptimiser(Generic[OptimiserT]):
         the parameters for each registered module are re-initialised.
     """
 
-    _stored_initial_state_dicts: Dict[Module, Dict[str, Tensor]]
-    last_n_losses: Deque[float]
+    _stored_initial_state_dicts: dict[Module, dict[str, Tensor]]
+    last_n_losses: deque[float]
     _internal_optimiser: OptimiserT
 
     def __init__(
         self,
-        optimiser_class: Type[OptimiserT],
+        optimiser_class: type[OptimiserT],
         *initial_modules: Module,
         early_stop_patience: Optional[int] = None,
         **optimiser_kwargs: Any,
@@ -218,7 +219,7 @@ class SmartOptimiser(Generic[OptimiserT]):
             self._step = new_step_without_loss
 
     @staticmethod
-    def _get_last_n_losses_structure(n: Optional[int]) -> Deque[float]:
+    def _get_last_n_losses_structure(n: Optional[int]) -> deque[float]:
         """
         Get the structure which will contain the last :math`n` losses.
 
@@ -270,7 +271,7 @@ class Parameters:
     Wrapped for module state_dicts and an objective value of their quality.
     """
 
-    def __init__(self, module_state_dicts: Dict[Module, Dict[str, Tensor]], value: float = np.inf) -> None:
+    def __init__(self, module_state_dicts: dict[Module, dict[str, Tensor]], value: float = np.inf) -> None:
         """Initialise self."""
         self.module_state_dicts = {
             module: self._clone_state_dict(state_dict) for module, state_dict in module_state_dicts.items()
@@ -288,7 +289,7 @@ class Parameters:
         return self.priority_value == other.priority_value
 
     @staticmethod
-    def _clone_state_dict(state_dict: Dict[str, Tensor]) -> Dict[str, Tensor]:
+    def _clone_state_dict(state_dict: dict[str, Tensor]) -> dict[str, Tensor]:
         """Detach and clone a state_dict so its tensors are not changed external to this class."""
         return {key: value.detach().clone() for key, value in state_dict.items()}
 
@@ -311,7 +312,7 @@ class MaxLengthHeapQ(Generic[T]):
         else:
             heappushpop(self.heap, item)
 
-    def nlargest(self, n: int) -> List[T]:
+    def nlargest(self, n: int) -> list[T]:
         """Get the top elements on the heapq."""
         return nlargest(n, self.heap)
 
@@ -339,7 +340,7 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
 
     def __init__(
         self,
-        optimiser_class: Type[OptimiserT],
+        optimiser_class: type[OptimiserT],
         *initial_modules: Module,
         early_stop_patience: Optional[int] = None,
         **optimiser_kwargs: Any,

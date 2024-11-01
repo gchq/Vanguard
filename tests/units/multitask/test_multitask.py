@@ -17,7 +17,7 @@ Tests for the Multitask decorator.
 """
 
 import unittest
-from typing import Callable, Optional, Type
+from typing import Callable, Optional
 from unittest.mock import MagicMock, Mock, patch
 
 import gpytorch
@@ -130,8 +130,8 @@ class ErrorTests(unittest.TestCase):
     ],
 )
 def test_variational_multitask_model_task_latent_mismatch(
-    model_decorator: Callable[[Type], Type],
-    expected_exc_type: Optional[Type[Exception]],
+    model_decorator: Callable[[type], type],
+    expected_exc_type: Optional[type[Exception]],
     expected_exc_message: Optional[str],
 ) -> None:
     """
@@ -421,10 +421,13 @@ class TestMulticlassDecorator(unittest.TestCase):
 
         See #357 - previously, this would have been silently suppressed within `__init__`.
         """
-        with self.assertRaisesRegex(TypeError, "Testing error"), patch.object(
-            VariationalInferenceMultitaskController,
-            "_match_mean_shape_to_kernel",
-            Mock(side_effect=TypeError("Testing error")),
+        with (
+            self.assertRaisesRegex(TypeError, "Testing error"),
+            patch.object(
+                VariationalInferenceMultitaskController,
+                "_match_mean_shape_to_kernel",
+                Mock(side_effect=TypeError("Testing error")),
+            ),
         ):
             VariationalInferenceMultitaskController(
                 train_x=self.train_x,

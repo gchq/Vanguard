@@ -32,8 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Detailed online documentation, complete with references.
 - Near-complete unit test coverage.
 - Comprehensive type hints, checked by [beartype].
-- Support for Python 3.8-3.12.
-- A requirements file providing a pinned set of dependencies that are known to work for Python 3.9.
+- Support for Python 3.9-3.12.
 - This changelog, to make it easier for users and contributors to see precisely what notable changes have been made
   between each release of the project.
 - And various contributor-facing amenities:

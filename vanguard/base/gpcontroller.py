@@ -17,7 +17,7 @@ The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPCon
 """
 
 import warnings
-from typing import List, Optional, Type, Union
+from typing import Optional, Union
 
 import numpy as np
 import numpy.typing
@@ -80,7 +80,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
     """
 
     _init_params = {}
-    __decorators__: List[Type[Decorator]] = []
+    __decorators__: list[type[Decorator]] = []
 
     @property
     def likelihood_noise(self) -> Tensor:

@@ -16,7 +16,7 @@
 Contains the DirichletMulticlassClassification decorator.
 """
 
-from typing import Any, Tuple, Type, TypeVar, Union
+from typing import Any, TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -83,7 +83,7 @@ class DirichletMulticlassClassification(Decorator):
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         @Classification()
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
@@ -130,7 +130,7 @@ class DirichletMulticlassClassification(Decorator):
                     compatibility downstream.
                     """
 
-                    def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
+                    def _tensor_prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
                         """Return a transposed version of the mean of the prediction."""
                         mean, covar = super()._tensor_prediction()
                         return mean.T, torch.block_diag(*covar)
@@ -183,7 +183,7 @@ class DirichletMulticlassClassification(Decorator):
 
             def classify_points(
                 self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor], *, n_posterior_samples: int = 256
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """
                 Classify points.
 
@@ -210,7 +210,7 @@ class DirichletMulticlassClassification(Decorator):
                 x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
                 *,
                 n_posterior_samples: int = 256,
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """
                 Classify fuzzy points.
 

@@ -16,7 +16,7 @@
 Contains the multitask_model decorator.
 """
 
-from typing import Optional, Type, TypeVar
+from typing import Optional, TypeVar
 
 import gpytorch
 import numpy as np
@@ -41,7 +41,7 @@ from vanguard.decoratorutils import wraps_class
 GPT = TypeVar("GPT", bound=GP)
 
 
-def multitask_model(cls: Type[GPT]) -> Type[GPT]:
+def multitask_model(cls: type[GPT]) -> type[GPT]:
     """
     Convert a model to a multitask model.
 
@@ -101,7 +101,7 @@ def multitask_model(cls: Type[GPT]) -> Type[GPT]:
     return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
+def independent_variational_multitask_model(cls: type[GPT]) -> type[GPT]:
     """Decorate a class to enable independent multitask variational approximation."""
 
     # Pyright cannot resolve dynamic base class
@@ -214,7 +214,7 @@ def independent_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
     return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def lmc_variational_multitask_model(cls: Type[GPT]) -> Type[GPT]:
+def lmc_variational_multitask_model(cls: type[GPT]) -> type[GPT]:
     """Decorate a class to enable an LMC multitask variational approximation."""
     new_cls = independent_variational_multitask_model(cls)
 

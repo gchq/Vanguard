@@ -16,7 +16,8 @@
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
 
-from typing import Callable, Iterable, Optional, Tuple, Union
+from collections.abc import Iterable
+from typing import Callable, Optional, Union
 
 import numpy as np
 import torch
@@ -80,8 +81,8 @@ class SyntheticDataset(Dataset):
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
         output_noise: float = 0.1,
-        train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
-        test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
+        train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
+        test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
@@ -108,10 +109,10 @@ class SyntheticDataset(Dataset):
     def make_sample_data(
         self,
         n_points: int,
-        input_noise_bounds: Tuple[float, float],
+        input_noise_bounds: tuple[float, float],
         output_noise_level: Union[int, float],
         interval_length: float = 1,
-    ) -> Tuple[Tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
+    ) -> tuple[tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
         """
         Create some sample data.
 
@@ -162,8 +163,8 @@ class MultidimensionalSyntheticDataset(Dataset):
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f, complicated_f),
         output_noise: float = 0.1,
-        train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
-        test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
+        train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
+        test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
@@ -226,8 +227,8 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
         output_noise_mean: float = 0.1,
         output_noise_std: float = 0.01,
-        train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
-        test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
+        train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
+        test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
@@ -272,8 +273,8 @@ class HigherRankSyntheticDataset(Dataset):
         self,
         functions: Iterable[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = (simple_f,),
         output_noise: float = 0.1,
-        train_input_noise_bounds: Tuple[float, float] = (0.01, 0.05),
-        test_input_noise_bounds: Tuple[float, float] = (0.01, 0.03),
+        train_input_noise_bounds: tuple[float, float] = (0.01, 0.05),
+        test_input_noise_bounds: tuple[float, float] = (0.01, 0.03),
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
@@ -300,10 +301,10 @@ class HigherRankSyntheticDataset(Dataset):
     def make_sample_data(
         self,
         n_points: int,
-        input_noise_bounds: Tuple[float, float],
+        input_noise_bounds: tuple[float, float],
         output_noise_level: Union[int, float],
         interval_length: float = 1,
-    ) -> Tuple[Tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
+    ) -> tuple[tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
         """
         Create some sample data.
 

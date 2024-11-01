@@ -15,7 +15,6 @@ jobs:
       matrix:
         # Note that we only do type checking on Python 3.12.
         python-version:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"

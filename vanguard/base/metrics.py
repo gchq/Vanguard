@@ -21,8 +21,9 @@ controller classes. These are calculated per iteration by the
 """
 
 import itertools
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Callable, Iterator, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 if TYPE_CHECKING:
     import vanguard.base.basecontroller

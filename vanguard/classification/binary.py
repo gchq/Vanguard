@@ -16,7 +16,7 @@
 Contains the BinaryClassification decorator.
 """
 
-from typing import Any, Tuple, Type, TypeVar, Union
+from typing import Any, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -91,7 +91,7 @@ class BinaryClassification(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         @Classification()
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
@@ -114,7 +114,7 @@ class BinaryClassification(Decorator):
 
             def classify_points(
                 self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """Classify points."""
                 x = torch.as_tensor(x)
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
@@ -124,7 +124,7 @@ class BinaryClassification(Decorator):
                 self,
                 x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
                 x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """Classify fuzzy points."""
                 x = torch.as_tensor(x)
                 x_std = torch.as_tensor(x_std)
@@ -134,7 +134,7 @@ class BinaryClassification(Decorator):
             @staticmethod
             def _get_predictions_from_prediction_means(
                 means: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-            ) -> Tuple[Tensor, Tensor]:
+            ) -> tuple[Tensor, Tensor]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.
 

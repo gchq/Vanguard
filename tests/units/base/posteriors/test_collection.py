@@ -18,7 +18,7 @@ Tests for the MonteCarloPosteriorCollection class.
 
 import itertools
 import unittest
-from typing import Generator
+from collections.abc import Generator
 from unittest import expectedFailure
 from unittest.mock import Mock, patch
 

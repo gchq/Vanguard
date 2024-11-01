@@ -24,8 +24,9 @@ import io
 import os
 import unittest
 import warnings
+from collections.abc import Generator
 from types import ModuleType
-from typing import Any, Generator, Optional, Tuple
+from typing import Any, Optional
 
 import vanguard
 from vanguard.utils import UnseededRandomWarning
@@ -59,7 +60,7 @@ class DoctestMetaClass(type):
     method in the class, which will test the doctests.
     """
 
-    def __new__(mcs, name: str, bases: Optional[Tuple[Any]], namespace: Any):
+    def __new__(mcs, name: str, bases: Optional[tuple[Any]], namespace: Any):
         """
         Prepare a class object.
 

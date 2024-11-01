@@ -17,7 +17,7 @@ The :class:`NormaliseY` decorator will scale the y-inputs to a unit normal distr
 """
 
 import warnings
-from typing import Any, Tuple, Type, TypeVar
+from typing import Any, TypeVar
 
 import torch
 
@@ -82,7 +82,7 @@ class NormaliseY(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         if issubclass(cls, ClassificationMixin):
             warnings.warn(
                 "NormaliseY should not be used above classification decorators "
@@ -113,7 +113,7 @@ class NormaliseY(Decorator):
                 train_y = (train_y - _normalising_mean) / _normalising_std
                 y_std = y_std / _normalising_std
 
-                def normalise_posterior_class(posterior_class: Type[Posterior]) -> Type[Posterior]:
+                def normalise_posterior_class(posterior_class: type[Posterior]) -> type[Posterior]:
                     """Wrap a posterior class to enable normalisation."""
 
                     @wraps_class(posterior_class)
@@ -122,7 +122,7 @@ class NormaliseY(Decorator):
                         Un-scale the distribution at initialisation.
                         """
 
-                        def prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
+                        def prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
                             """
                             Un-normalise values.
 
@@ -135,7 +135,7 @@ class NormaliseY(Decorator):
 
                         def confidence_interval(
                             self, alpha: float = 0.05
-                        ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+                        ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
                             """
                             Un-normalise values.
 

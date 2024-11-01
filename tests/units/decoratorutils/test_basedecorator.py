@@ -15,7 +15,7 @@
 """Contains tests for the decorators."""
 
 import contextlib
-from typing import Any, List, Type, TypeVar, Union
+from typing import Any, TypeVar, Union
 
 import pytest
 
@@ -52,7 +52,7 @@ class SquareResult(Decorator):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[SimpleNumber]) -> Type[SimpleNumber]:
+    def _decorate_class(self, cls: type[SimpleNumber]) -> type[SimpleNumber]:
         @wraps_class(cls)
         class InnerClass(cls):
             """A wrapper for normalising y inputs and variance."""
@@ -67,7 +67,7 @@ class SquareResult(Decorator):
             def do_nothing(self) -> None:
                 """Do nothing. Note that this method is not on the base class."""
 
-            def function_with_no_annotations_or_docstring(self, t: T) -> List[T]:
+            def function_with_no_annotations_or_docstring(self, t: T) -> list[T]:
                 """
                 Return three of whatever was passed in.
 
@@ -92,7 +92,7 @@ class DummyDecorator(Decorator):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         @wraps_class(cls)
         class InnerClass(cls):
             """A subclass which adds no functionality."""
@@ -106,7 +106,7 @@ class OtherDummyDecorator(Decorator):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         @wraps_class(cls)
         class InnerClass(cls):
             """A subclass which adds no functionality."""
@@ -117,7 +117,7 @@ class OtherDummyDecorator(Decorator):
 class DummySubclassDecorator(DummyDecorator):
     """A cooperative subclass of `DummyDecorator`, used for testing."""
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         super_decorated = super()._decorate_class(cls)
 
         @wraps_class(super_decorated)
@@ -133,7 +133,7 @@ class DummyTopmostDecorator(TopMostDecorator):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         @wraps_class(cls)
         class InnerClass(cls):
             """A subclass which adds no functionality."""

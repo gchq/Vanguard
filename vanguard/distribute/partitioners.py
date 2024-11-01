@@ -17,7 +17,8 @@ Partitioners are responsible for separating the training data into subsets to be
 """
 
 from collections import defaultdict
-from typing import Iterable, List, Optional, Union
+from collections.abc import Iterable
+from typing import Optional, Union
 
 import gpytorch.kernels
 import kmedoids
@@ -67,7 +68,7 @@ class BasePartitioner:
 
         self.n_examples = self.train_x.shape[0]
 
-    def create_partition(self) -> List[List[int]]:
+    def create_partition(self) -> list[list[int]]:
         """
         Create a partition of ``self.train_x`` across ``self.n_experts``.
 
@@ -81,7 +82,7 @@ class BasePartitioner:
         return partition
 
     def plot_partition(
-        self, partition: List[List[int]], cmap: Optional[Union[str, Colormap]] = "Set3", **plot_kwargs
+        self, partition: list[list[int]], cmap: Optional[Union[str, Colormap]] = "Set3", **plot_kwargs
     ) -> None:
         """
         Plot a partition on a T-SNE graph.
@@ -100,7 +101,7 @@ class BasePartitioner:
 
         plt.scatter(embedding[:, 0], embedding[:, 1], c=colours, cmap=cmap, **plot_kwargs)
 
-    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
         """
         Create the partition.
 
@@ -111,7 +112,7 @@ class BasePartitioner:
         # https://github.com/gchq/Vanguard/issues/198
         raise NotImplementedError
 
-    def _create_cluster_communication_partition(self) -> List[List[int]]:
+    def _create_cluster_communication_partition(self) -> list[list[int]]:
         """
         Create a partition with a communications expert.
 
@@ -129,7 +130,7 @@ class BasePartitioner:
         return partition
 
     @staticmethod
-    def _group_indices_by_label(labels: Iterable[int]) -> List[List[int]]:
+    def _group_indices_by_label(labels: Iterable[int]) -> list[list[int]]:
         """
         Group the indices of the labels by their value.
 
@@ -154,7 +155,7 @@ class RandomPartitioner(BasePartitioner):
     Create a partition using random sampling.
     """
 
-    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
         """
         Create the partition via uniform random sampling.
 
@@ -171,7 +172,7 @@ class KMeansPartitioner(BasePartitioner):
     Create a partition using K-Means.
     """
 
-    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
         """
         Create the partition by clustering the data using KMeans clustering.
 
@@ -189,7 +190,7 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
     Create a partition using Mini-batch K-Means.
     """
 
-    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
         """
         Create the partition by clustering the data using KMeans clustering, but processing data in batches.
 
@@ -241,7 +242,7 @@ class KMedoidsPartitioner(BasePartitioner):
         )
         self.kernel = kernel
 
-    def _create_cluster_partition(self, n_clusters: int) -> List[List[int]]:
+    def _create_cluster_partition(self, n_clusters: int) -> list[list[int]]:
         """
         Create the partition by clustering the data using KMedoids clustering.
 

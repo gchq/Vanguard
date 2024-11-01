@@ -20,7 +20,7 @@ Tests for the HigherRankFeatures decorator.
 """
 
 import unittest
-from typing import Any, Type, Union
+from typing import Any, Union
 
 import pytest
 import torch
@@ -45,7 +45,7 @@ class TwoDimensionalLazyEvaluatedKernelTensor(LazyEvaluatedKernelTensor):
 
     # pylint: disable=abstract-method
     @classmethod
-    def from_lazy_evaluated_kernel_tensor(cls: Type[Self], lazy_tensor: LazyEvaluatedKernelTensor) -> Self:
+    def from_lazy_evaluated_kernel_tensor(cls: type[Self], lazy_tensor: LazyEvaluatedKernelTensor) -> Self:
         """
         Create an instance of the class from a lazy tensor.
 

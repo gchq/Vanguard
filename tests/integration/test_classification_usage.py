@@ -16,7 +16,7 @@
 Basic end to end functionality test for classification problems in Vanguard.
 """
 
-from typing import Literal, Tuple, Union
+from typing import Literal, Union
 
 import gpytorch.means
 import numpy as np
@@ -37,7 +37,7 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-TrainTestData = Union[Tuple[NDArray, NDArray, NDArray, NDArray], Tuple[Tensor, Tensor, Tensor, Tensor]]
+TrainTestData = Union[tuple[NDArray, NDArray, NDArray, NDArray], tuple[Tensor, Tensor, Tensor, Tensor]]
 
 
 class TestClassification:

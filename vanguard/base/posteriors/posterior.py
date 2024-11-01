@@ -16,7 +16,7 @@
 Contains the Posterior class.
 """
 
-from typing import Tuple, TypeVar, Union
+from typing import TypeVar, Union
 
 import gpytorch
 import numpy as np
@@ -61,7 +61,7 @@ class Posterior:
         """
         return self.distribution
 
-    def prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Return the prediction as a numpy array.
 
@@ -75,7 +75,7 @@ class Posterior:
     def confidence_interval(
         self,
         alpha: float = 0.05,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
@@ -164,7 +164,7 @@ class Posterior:
         """
         return cls(cls._make_multivariate_normal(mean, covariance))
 
-    def _tensor_prediction(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _tensor_prediction(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Return the prediction as a tensor.
 
@@ -186,7 +186,7 @@ class Posterior:
     def _tensor_confidence_interval(
         self,
         alpha: float,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Construct confidence intervals around mean of predictive posterior.
 
@@ -255,7 +255,7 @@ class Posterior:
         mean: torch.Tensor,
         covariance: torch.Tensor,
         alpha: float = 0.05,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Get pointwise (diagonal) confidence intervals for a multivariate Gaussian's coordinates.
 

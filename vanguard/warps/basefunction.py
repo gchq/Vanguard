@@ -17,9 +17,10 @@ All warp functions should subclass this :class:`WarpFunction` class.
 """
 
 import copy
+from collections.abc import Iterator
 from functools import wraps
 from itertools import chain
-from typing import Callable, Iterator, List, TypeVar, Union
+from typing import Callable, TypeVar, Union
 
 import gpytorch
 import torch
@@ -68,7 +69,7 @@ class WarpFunction(gpytorch.Module):
         return NotImplemented
 
     @property
-    def components(self) -> List["WarpFunction"]:
+    def components(self) -> list["WarpFunction"]:
         """Get the components of the composition."""
         try:
             components = self.old_warp_left.components + self.old_warp_right.components

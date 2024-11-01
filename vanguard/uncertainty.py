@@ -17,8 +17,9 @@ Gaussian processes can be trained on inputs with uncertainty.
 """
 
 import warnings
+from collections.abc import Iterable
 from itertools import islice
-from typing import Any, Iterable, NoReturn, Optional, Tuple, Type, Union
+from typing import Any, NoReturn, Optional, Union
 
 import gpytorch
 import numpy as np
@@ -52,12 +53,12 @@ class GaussianUncertaintyGPController(GPController):
         train_x_std: Optional[Union[Tensor, numpy.typing.NDArray[np.floating], float]],
         train_y: Union[Tensor, numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]],
         y_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
-        kernel_class: Type[gpytorch.kernels.Kernel],
-        mean_class: Type[gpytorch.means.Mean] = gpytorch.means.ConstantMean,
-        likelihood_class: Type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
-        marginal_log_likelihood_class: Type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
-        optimiser_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
-        smart_optimiser_class: Type[SmartOptimiser] = SmartOptimiser,
+        kernel_class: type[gpytorch.kernels.Kernel],
+        mean_class: type[gpytorch.means.Mean] = gpytorch.means.ConstantMean,
+        likelihood_class: type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
+        marginal_log_likelihood_class: type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
+        optimiser_class: type[torch.optim.Optimizer] = torch.optim.Adam,
+        smart_optimiser_class: type[SmartOptimiser] = SmartOptimiser,
         rng: Optional[np.random.Generator] = None,
         **kwargs: Any,
     ) -> None:
@@ -214,7 +215,7 @@ class GaussianUncertaintyGPController(GPController):
 
     def _get_additive_grad_noise(
         self, x: torch.Tensor, x_var: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Use :mod:`torch.autograd` to find the gradient of the posterior mean and derived additive covariance term.
 

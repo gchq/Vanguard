@@ -20,8 +20,9 @@ machinery of the :class:`~vanguard.base.gpcontroller.GPController`.
 """
 
 import warnings
+from collections.abc import Generator
 from itertools import islice
-from typing import Callable, Generator, List, Optional, Tuple, Type, Union
+from typing import Callable, Optional, Union
 
 import gpytorch
 import numpy as np
@@ -89,7 +90,7 @@ class BaseGPController:
     _default_tensor_dtype = utils.DEFAULT_DTYPE
     _default_tensor_device = utils.DEFAULT_DEVICE
 
-    gp_model_class: Type[Union[ExactGP, ApproximateGP]] = ExactGPModel
+    gp_model_class: type[Union[ExactGP, ApproximateGP]] = ExactGPModel
     posterior_class = Posterior
     posterior_collection_class = MonteCarloPosteriorCollection
     likelihood_noise = None
@@ -100,13 +101,13 @@ class BaseGPController:
         self,
         train_x: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
         train_y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.integer], float],
-        kernel_class: Type[gpytorch.kernels.Kernel],
-        mean_class: Type[gpytorch.means.Mean],
+        kernel_class: type[gpytorch.kernels.Kernel],
+        mean_class: type[gpytorch.means.Mean],
         y_std: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
-        likelihood_class: Type[gpytorch.likelihoods.Likelihood],
-        marginal_log_likelihood_class: Type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
-        optimiser_class: Type[torch.optim.Optimizer],
-        smart_optimiser_class: Type[SmartOptimiser],
+        likelihood_class: type[gpytorch.likelihoods.Likelihood],
+        marginal_log_likelihood_class: type[gpytorch.mlls.marginal_log_likelihood.MarginalLogLikelihood],
+        optimiser_class: type[torch.optim.Optimizer],
+        smart_optimiser_class: type[SmartOptimiser],
         rng: Optional[np.random.Generator] = None,
         **kwargs,
     ) -> None:
@@ -490,8 +491,8 @@ class BaseGPController:
 
     def _input_standardise_modules(
         self,
-        *modules: Type[torch.nn.Module],
-    ) -> List[Type[torch.nn.Module]]:
+        *modules: type[torch.nn.Module],
+    ) -> list[type[torch.nn.Module]]:
         """
         Apply standard input scaling (mean zero, variance 1) to the supplied PyTorch nn.Modules.
 
@@ -527,7 +528,7 @@ class BaseGPController:
     def _decide_noise_shape(
         posterior: Posterior,
         x: Union[torch.Tensor, np.typing.NDArray[np.floating]],
-    ) -> Tuple[int, ...]:
+    ) -> tuple[int, ...]:
         """
         Determine the correct shape of the likelihood noise.
 
@@ -586,8 +587,8 @@ def _catch_and_check_module_errors(
     """
 
     def decorator(
-        module_class: Type[torch.nn.Module],
-    ) -> Type[torch.nn.Module]:
+        module_class: type[torch.nn.Module],
+    ) -> type[torch.nn.Module]:
         """
         Decorate a particular module (mean/kernel).
 

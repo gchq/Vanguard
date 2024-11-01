@@ -16,7 +16,7 @@
 Contains a class decorator to apply input standard scaling to means and kernels.
 """
 
-from typing import Any, Optional, Type, Union
+from typing import Any, Optional, Union
 
 import numpy.typing
 import torch
@@ -52,8 +52,8 @@ class StandardiseXModule:
 
     def apply(
         self,
-        module_class: Type[torch.nn.Module],
-    ) -> Type[torch.nn.Module]:
+        module_class: type[torch.nn.Module],
+    ) -> type[torch.nn.Module]:
         """
         Modify the module's forward method to include standard scaling.
 

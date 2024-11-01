@@ -18,7 +18,7 @@ Contains the LearnYNoise decorator.
 
 import re
 import warnings
-from typing import Any, Tuple, Type, TypeVar, Union
+from typing import Any, TypeVar, Union
 
 import numpy as np
 import numpy.typing
@@ -55,7 +55,7 @@ class LearnYNoise(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
-    def _decorate_class(self, cls: Type[ControllerT]) -> Type[ControllerT]:
+    def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
         @wraps_class(cls)
@@ -117,7 +117,7 @@ class LearnYNoise(Decorator):
 
 def _process_y_std(
     y_std: Union[float, torch.Tensor, numpy.typing.NDArray[np.floating]],
-    shape: Tuple[int, ...],
+    shape: tuple[int, ...],
     dtype: torch.dtype,
     device: torch.device,
 ) -> torch.Tensor:

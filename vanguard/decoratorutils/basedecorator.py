@@ -17,8 +17,9 @@ Contains the BaseDecorator class.
 """
 
 import warnings
+from collections.abc import Iterable
 from inspect import getmembers, isfunction
-from typing import Iterable, Set, Type, TypeVar
+from typing import TypeVar
 
 from vanguard.decoratorutils import errors
 
@@ -55,8 +56,8 @@ class Decorator:
 
     def __init__(
         self,
-        framework_class: Type[T],
-        required_decorators: Iterable[Type[DecoratorT]],
+        framework_class: type[T],
+        required_decorators: Iterable[type[DecoratorT]],
         ignore_methods: Iterable[str] = (),
         ignore_all: bool = False,
         raise_instead: bool = False,
@@ -79,7 +80,7 @@ class Decorator:
         self.ignore_all = ignore_all
         self.raise_instead = raise_instead
 
-    def __call__(self, cls: Type[T]) -> Type[T]:
+    def __call__(self, cls: type[T]) -> type[T]:
         """
         Decorate a class, checking that the class is appropriate before decorating.
 
@@ -96,11 +97,11 @@ class Decorator:
             decorated_class.__decorators__ = decorated_class.__decorators__ + [type(self)]
         return decorated_class
 
-    def _decorate_class(self, cls: Type[T]) -> Type[T]:
+    def _decorate_class(self, cls: type[T]) -> type[T]:
         """Return a wrapped version of a class."""
         return cls
 
-    def verify_decorated_class(self, cls: Type[T]) -> None:
+    def verify_decorated_class(self, cls: type[T]) -> None:
         """
         Verify that a class can be decorated by this instance.
 
@@ -134,7 +135,7 @@ class Decorator:
             for other_class in potentially_invalid_classes:
                 self._verify_class_has_no_newly_added_methods(other_class, super_methods)
 
-    def _verify_class_has_no_newly_added_methods(self, cls: Type[T], super_methods: Set[str]) -> None:
+    def _verify_class_has_no_newly_added_methods(self, cls: type[T], super_methods: set[str]) -> None:
         """
         Verify that a class has not overwritten methods in the framework class or declared any new ones.
 
