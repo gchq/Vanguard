@@ -78,6 +78,8 @@ is called `main`.
 Do **not** add labels like `[RFC]` or `[WIP]` to the title of your PR to indicate its state.
 Non-Draft PRs are assumed to be open for comments; if you want feedback from specific people, `@`-mention them in a comment.
 
+PRs should be merged by the reviewer on approval.
+
 ### Pull request commenting process
 - Use a comment thread for each required change.
 - Reviewer closes the thread once the comment has been resolved.
