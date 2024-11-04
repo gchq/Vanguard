@@ -1,7 +1,8 @@
 # Vanguard: Advanced GPs
 
-![version] ![python] ![coverage] ![pre-commit]
+![version] ![python] ![coverage] ![pre-commit] ![Beta]
 
+[Beta]: https://img.shields.io/badge/pre--release-beta-red
 [version]: https://img.shields.io/badge/version-2.1.0-informational
 [python]: https://img.shields.io/badge/python-3.9--3.12-informational
 [coverage]: https://img.shields.io/badge/coverage-91%25-brightgreen
