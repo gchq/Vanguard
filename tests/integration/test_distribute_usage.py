@@ -161,6 +161,16 @@ class TestDistributeUsage:
         predictions_train, _ = gp.classify_points(train_x)
         predictions_test, _ = gp.classify_points(test_x)
 
+        # Convert to numpy for f1 score calculation
+        predictions_test_np = predictions_test.numpy(force=True)
+        predictions_train_np = predictions_train.numpy(force=True)
+        if isinstance(train_y, np.ndarray):
+            train_y_np = train_y
+            test_y_np = test_y
+        else:
+            train_y_np = train_y.numpy(force=True)
+            test_y_np = test_y.numpy(force=True)
+
         # Sense check outputs
-        assert f1_score(predictions_train, train_y) >= self.required_f1_score
-        assert f1_score(predictions_test, test_y) >= self.required_f1_score
+        assert f1_score(predictions_train_np, train_y_np) >= self.required_f1_score
+        assert f1_score(predictions_test_np, test_y_np) >= self.required_f1_score

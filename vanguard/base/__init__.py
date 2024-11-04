@@ -16,12 +16,6 @@
 Contains base GPController class which is sub-classed for all GP controllers in Vanguard.
 """
 
-import torch
-
-import vanguard.utils
 from vanguard.base.gpcontroller import GPController
-
-torch.set_default_device(vanguard.utils.DEFAULT_DEVICE)
-torch.set_default_dtype(vanguard.utils.DEFAULT_DTYPE)
 
 __all__ = ["GPController"]

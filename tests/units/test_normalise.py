@@ -18,7 +18,6 @@ Tests for the NormaliseY decorator.
 
 import unittest
 
-import numpy as np
 import torch
 
 from tests.cases import get_default_rng
@@ -207,7 +206,7 @@ class BasicTests(unittest.TestCase):
         # small amount of spread in some cases due to numerics
         posterior_train_zero_y_std = controller.posterior_over_point(dataset.train_x)
         _, external_upper_zero_y_std, external_lower_zero_y_std = posterior_train_zero_y_std.confidence_interval(0.05)
-        self.assertLess(np.nanmean(np.abs(external_upper_zero_y_std - external_lower_zero_y_std)), 0.01)
+        assert torch.all(torch.nanmean(torch.abs(external_upper_zero_y_std - external_lower_zero_y_std)) < 0.01)
 
         # As a final sense check, if we make predictions of the training data with the controller created where there
         # is input noise, we expect the corresponding confidence intervals to be much wider than the ones created when
@@ -216,7 +215,7 @@ class BasicTests(unittest.TestCase):
         _, external_upper_non_zero_y_std, external_lower_non_zero_y_std = (
             posterior_train_non_zero_y_std.confidence_interval(0.05)
         )
-        self.assertLess(
-            np.nanmean(np.abs(external_upper_zero_y_std - external_lower_zero_y_std)),
-            np.nanmean(np.abs(external_upper_non_zero_y_std - external_lower_non_zero_y_std)),
+        assert torch.all(
+            torch.nanmean(torch.abs(external_upper_zero_y_std - external_lower_zero_y_std))
+            < torch.nanmean(torch.abs(external_upper_non_zero_y_std - external_lower_non_zero_y_std))
         )

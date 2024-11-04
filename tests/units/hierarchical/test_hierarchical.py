@@ -136,9 +136,9 @@ class KernelConversionTests(unittest.TestCase):
 
         mean, upper, lower = posterior.confidence_interval()
 
-        self.assertFalse(np.isnan(mean).any())
-        self.assertFalse(np.isnan(upper).any())
-        self.assertFalse(np.isnan(lower).any())
+        assert not torch.isnan(mean).any()
+        assert not torch.isnan(upper).any()
+        assert not torch.isnan(lower).any()
 
     def test_fuzzy_predictive_likelihood(self) -> None:
         """
@@ -159,9 +159,9 @@ class KernelConversionTests(unittest.TestCase):
 
         mean, upper, lower = posterior.confidence_interval()
 
-        self.assertFalse(np.isnan(mean).any())
-        self.assertFalse(np.isnan(upper).any())
-        self.assertFalse(np.isnan(lower).any())
+        assert not torch.isnan(mean).any()
+        assert not torch.isnan(upper).any()
+        assert not torch.isnan(lower).any()
 
 
 GPControllerT = TypeVar("GPControllerT", bound=GPController)

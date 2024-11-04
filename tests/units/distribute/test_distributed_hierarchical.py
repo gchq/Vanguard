@@ -20,7 +20,6 @@ import unittest
 
 import torch
 from gpytorch.kernels import RBFKernel
-from scipy.spatial import distance_matrix
 
 from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
@@ -159,8 +158,8 @@ class LaplaceTests(unittest.TestCase):
 
         covars_evals = torch.stack(posterior_covariance_evals)
         covars_evals = covars_evals.reshape((covars_evals.shape[0], -1))
-        covar_dists = distance_matrix(covars_evals, covars_evals)
-        self.assertTrue((covar_dists == 0).all())
+        covar_dists = torch.cdist(covars_evals, covars_evals)
+        assert (covar_dists == 0).all()
 
         covars_evecs = torch.stack(posterior_covariance_evecs)
         covars_evecs = covars_evecs.reshape((covars_evecs.shape[0], -1))

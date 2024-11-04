@@ -66,7 +66,7 @@ class NormaliseY(Decorator):
         ...                     y_std=0.5,
         ...                     kernel_class=ScaledRBFKernel
         ...                     )
-        >>> controller.train_y.T
+        >>> controller.train_y.T.cpu()
         tensor([[-0.8660, -0.6186,  0.1237,  1.3609]])
         >>> controller.train_y.mean().item()
         0.0

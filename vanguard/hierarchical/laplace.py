@@ -73,7 +73,8 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         ...     pass
         >>>
         >>> train_x = torch.tensor([0, 0.5, 0.9, 1])
-        >>> train_y = 1 / (1 + train_x) + np.random.randn(4)*0.005
+        >>> rng = torch.Generator(device=train_x.device).manual_seed(1234)
+        >>> train_y = torch.normal(mean=1 / (1 + train_x), std=torch.ones_like(train_x) * 0.005, generator=rng)
         >>> gp = HierarchicalController(train_x, train_y, BayesianRBFKernel, y_std=0.0)
         >>> loss = gp.fit(100)
         >>>

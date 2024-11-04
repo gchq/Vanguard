@@ -128,9 +128,19 @@ class TestClassification:
         predictions_train, _ = gp.classify_points(train_x)
         predictions_test, _ = gp.classify_points(test_x)
 
+        # Convert to numpy for f1 score calculation
+        predictions_test_np = predictions_test.numpy(force=True)
+        predictions_train_np = predictions_train.numpy(force=True)
+        if isinstance(train_y, np.ndarray):
+            train_y_np = train_y
+            test_y_np = test_y
+        else:
+            train_y_np = train_y.numpy(force=True)
+            test_y_np = test_y.numpy(force=True)
+
         # Sense check outputs
-        assert f1_score(predictions_train, train_y) >= self.required_f1_score
-        assert f1_score(predictions_test, test_y) >= self.required_f1_score
+        assert f1_score(predictions_train_np, train_y_np) >= self.required_f1_score
+        assert f1_score(predictions_test_np, test_y_np) >= self.required_f1_score
 
     def test_gp_categorical_classification_exact(self, train_test_data_multiclass: TrainTestData) -> None:
         """
@@ -167,9 +177,19 @@ class TestClassification:
         predictions_train, _ = gp.classify_points(train_x)
         predictions_test, _ = gp.classify_points(test_x)
 
+        # Convert to numpy for f1 score calculation
+        predictions_test_np = predictions_test.numpy(force=True)
+        predictions_train_np = predictions_train.numpy(force=True)
+        if isinstance(train_y, np.ndarray):
+            train_y_np = train_y
+            test_y_np = test_y
+        else:
+            train_y_np = train_y.numpy(force=True)
+            test_y_np = test_y.numpy(force=True)
+
         # Sense check outputs
-        assert f1_score(predictions_train, train_y, average="micro") >= self.required_f1_score
-        assert f1_score(predictions_test, test_y, average="micro") >= self.required_f1_score
+        assert f1_score(predictions_train_np, train_y_np, average="weighted") >= self.required_f1_score
+        assert f1_score(predictions_test_np, test_y_np, average="weighted") >= self.required_f1_score
 
     def test_gp_categorical_classification_dirichlet_kernel(self, train_test_data_multiclass: TrainTestData) -> None:
         """
@@ -206,9 +226,19 @@ class TestClassification:
         predictions_train, _ = gp.classify_points(train_x)
         predictions_test, _ = gp.classify_points(test_x)
 
+        # Convert to numpy for f1 score calculation
+        predictions_test_np = predictions_test.numpy(force=True)
+        predictions_train_np = predictions_train.numpy(force=True)
+        if isinstance(train_y, np.ndarray):
+            train_y_np = train_y
+            test_y_np = test_y
+        else:
+            train_y_np = train_y.numpy(force=True)
+            test_y_np = test_y.numpy(force=True)
+
         # Sense check outputs
-        assert f1_score(predictions_train, train_y, average="micro") >= self.required_f1_score
-        assert f1_score(predictions_test, test_y, average="micro") >= self.required_f1_score
+        assert f1_score(predictions_train_np, train_y_np, average="weighted") >= self.required_f1_score
+        assert f1_score(predictions_test_np, test_y_np, average="weighted") >= self.required_f1_score
 
     def test_multitask_dirichlet_classification_notebook_example(self) -> None:
         """

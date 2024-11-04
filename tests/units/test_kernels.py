@@ -18,7 +18,7 @@ Tests for kernels.
 
 import unittest
 
-from numpy.testing import assert_array_less
+import torch
 
 from tests.cases import get_default_rng
 from vanguard.datasets.synthetic import SyntheticDataset
@@ -42,4 +42,4 @@ class BasicTests(unittest.TestCase):
         )
         controller.fit(10)
         mean, _, upper = controller.posterior_over_point(dataset.test_x).confidence_interval()
-        assert_array_less(upper - mean, 0.5)
+        assert torch.all(upper - mean < 0.5)

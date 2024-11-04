@@ -200,7 +200,7 @@ class MiniBatchKMeansPartitioner(BasePartitioner):
         clusterer = sklearn.cluster.MiniBatchKMeans(
             n_clusters=n_clusters, random_state=self.rng.integers(0, (2**32 - 1))
         )
-        labels = clusterer.fit(self.train_x).labels_
+        labels = clusterer.fit(self.train_x.numpy(force=True)).labels_
         partition = self._group_indices_by_label(labels)
         return partition
 

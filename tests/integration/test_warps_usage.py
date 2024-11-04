@@ -87,7 +87,7 @@ class TestWarpsUsage:
         x_train, x_test, y_train, y_test = train_test_split_convert(
             x, y, n_test_points=self.num_test_points, array_type=array_type, rng=rng
         )
-        y_train_std = convert_array_type(np.ones_like(y_train) * self.small_noise, array_type)
+        y_train_std = convert_array_type(torch.ones_like(torch.as_tensor(y_train)) * self.small_noise, array_type)
 
         return x_train, y_train, y_train_std, x_test, y_test
 

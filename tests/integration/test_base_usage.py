@@ -88,7 +88,7 @@ class TestBaseUsage:
         x_train, x_test, y_train, y_test = train_test_split_convert(
             x, y, n_test_points=self.num_test_points, array_type=array_type, rng=rng
         )
-        y_train_std = convert_array_type(self.small_noise * np.ones_like(y_train), array_type)
+        y_train_std = convert_array_type(self.small_noise * torch.ones_like(torch.as_tensor(y_train)), array_type)
 
         # Define the controller object, with an assumed small amount of noise
         if batch_size is None:

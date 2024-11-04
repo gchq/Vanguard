@@ -52,16 +52,19 @@ def train_test_split_convert(
     )
 
 
-def convert_array_type(arr: NDArray, array_type: Literal["ndarray", "tensor"]) -> Union[Tensor, NDArray]:
+def convert_array_type(arr: Union[Tensor, NDArray], array_type: Literal["ndarray", "tensor"]) -> Union[Tensor, NDArray]:
     """
-    Convert an NDArray to a Tensor, or check that it is in fact an NDArray.
+    Convert an NDArray or Tensor to an NDArray or Tensor.
 
     :param arr: The array to convert.
     :param array_type: The type (tensor/ndarray) to convert to.
     """
     if array_type == "ndarray":
-        assert isinstance(arr, np.ndarray)
-        return arr
+        if isinstance(arr, np.ndarray):
+            return arr
+        else:
+            assert isinstance(arr, torch.Tensor)
+            return arr.numpy(force=True)
     else:
         assert array_type == "tensor"
         return torch.as_tensor(arr)
