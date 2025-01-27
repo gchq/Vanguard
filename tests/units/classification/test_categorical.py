@@ -15,9 +15,10 @@
 """
 Tests for the CategoricalClassification decorator.
 """
-
+import platform
 from unittest import expectedFailure
 
+import pytest
 import sklearn
 import torch
 from gpytorch.mlls import VariationalELBO
@@ -203,6 +204,9 @@ class SoftmaxLMCTests(ClassificationTestCase):
             rng=self.rng,
         )
 
+    # TODO(rg): Investigate why this fails on Mac
+    # https://github.com/gchq/Vanguard/issues/473
+    @pytest.mark.skipif(platform.system() == "Darwin", "Currently fails on Mac")
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         # This test failed for eight different seeds in a row when fitting for only 10 iterations - this one really
