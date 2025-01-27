@@ -15,6 +15,7 @@
 """
 Tests for the CategoricalClassification decorator.
 """
+
 import platform
 from unittest import expectedFailure
 

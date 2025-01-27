@@ -95,8 +95,7 @@ class PosteriorCollectionTests(unittest.TestCase):
                 p for p in [Posterior.from_mean_and_covariance(torch.zeros((2,)), torch.eye(2))]
             )
         self.assertEqual(
-            "ran out of samples from the generator! "
-            "MonteCarloPosteriorCollection must be given an infinite generator.",
+            "ran out of samples from the generator! MonteCarloPosteriorCollection must be given an infinite generator.",
             str(ctx.exception),
         )
 
