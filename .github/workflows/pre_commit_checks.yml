@@ -45,9 +45,6 @@ jobs:
             pre_commit-${{ runner.os }}
       - name: Upgrade Pip
         run: python -m pip install --upgrade pip
-      - name: Clean installation
-        run: |
-          pip freeze --exclude-editable | xargs pip uninstall -y || pip freeze
       - name: Install uv
         run: pip install uv
       - name: Install latest dependencies
