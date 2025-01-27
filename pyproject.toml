@@ -113,6 +113,7 @@ constraint-dependencies = [
     "distribute>=1",
     "python-json-logger>=1",
     "py>=1",
+    "fsspec>=2024",
     "six>=1.16; python_version>='3.10'",  # earlier versions don't work on 3.10+
     "pyzmq>=26",
     "contourpy>=1.1; python_version>='3.11'",
