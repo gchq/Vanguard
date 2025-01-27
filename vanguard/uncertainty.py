@@ -188,7 +188,7 @@ class GaussianUncertaintyGPController(GPController):
             except RuntimeError as err:
                 warnings.warn(f"Hit a numerical error after {iter_num} iterations of training.")
                 if self.auto_restart:
-                    warnings.warn(f"Re-running training from scratch for {iter_num-1} iterations.")
+                    warnings.warn(f"Re-running training from scratch for {iter_num - 1} iterations.")
                     self._smart_optimiser.reset()
                     self.metrics_tracker.reset()
                     self._sgd_round(iter_num - 1, gradient_every)
