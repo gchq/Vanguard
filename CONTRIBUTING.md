@@ -420,7 +420,8 @@ for another release:
      the relevant versions.
    - Replace all issue links in the new version's sections with links to the PRs that
      closed them.
-6. Update the version number in `vanguard/__init.py__`.
+6. Update the version number in `vanguard/__init.py__`and
+   `.github/ISSUE_TEMPLATE/bug_report.yml`.
 8. Once approved, merge the release branch into `main` as soon as possible.
 9. Create a release in GitHub pointing at the final commit on the release branch (that
    is, the commit _before_ merging into `main`). If the release branch was deleted, you
