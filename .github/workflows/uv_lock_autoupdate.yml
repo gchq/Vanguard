@@ -9,7 +9,7 @@ jobs:
   uv_lock_autoupdate:
     env:
       lockfile_path: uv.lock
-      requirements_doc_path: requirements-doc.txt
+      requirements_doc_path: requirements-docs.txt
       update_message_path: /tmp/message.txt
       update_branch: chore/uv-lock-autoupdate
     runs-on: ubuntu-latest
