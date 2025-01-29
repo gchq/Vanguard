@@ -420,14 +420,20 @@ for another release:
      the relevant versions.
    - Replace all issue links in the new version's sections with links to the PRs that
      closed them.
-6. Update the version number in `vanguard/__init.py__`and
+6. Update the version number in `vanguard/__init.py__` and
    `.github/ISSUE_TEMPLATE/bug_report.yml`.
-8. Once approved, merge the release branch into `main` as soon as possible.
-9. Create a release in GitHub pointing at the final commit on the release branch (that
-   is, the commit _before_ merging into `main`). If the release branch was deleted, you
-   may need to target the commit by its hash.
-10. Build and publish to PyPI and ReadTheDocs, ensuring that the code is published from
-   the same commit as the GitHub release.
+7. Create and review a pull request.
+8. Once approved, merge the release branch into `main` as soon as possible. Do _not_
+   delete the release branch when you merge the PR - only delete it once the full
+   release process has been completed.
+9. Manually trigger the "Release" action, inputting the name of the release branch.
+10. Create a release in GitHub pointing at the final commit on the release branch (that
+   is, the commit _before_ merging into `main`). Add the wheel file produced by the
+   Release action to the GitHub release as an artifact.
+11. Publish to PyPI. Ensure that the wheel and sdist uploaded are those produced by
+   the Release action.
+12. Publish to ReadTheDocs, ensuring that the documentation is built from the same
+   commit as in step 10.
 
 ## References
 
