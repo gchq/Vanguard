@@ -2,7 +2,7 @@
 
 ![version](https://img.shields.io/badge/version-2.1.0-informational)
 ![python](https://img.shields.io/badge/python-3.9--3.12-informational)
-[![coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgchq%2Fvanguard-metadata%2Frefs%2Fheads%2Fmain%2Fcoverage%2Fcoverage.json)](https://github.com/gchq/vanguard/actions/workflows/coverage.yml)
+[![coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgchq%2Fvanguard-metadata%2Frefs%2Fheads%2Fmain%2Fcoverage%2Fcoverage_badge.json)](https://github.com/gchq/vanguard/actions/workflows/coverage.yml)
 [![Pre-commit Checks](https://github.com/gchq/Vanguard/actions/workflows/pre_commit_checks.yml/badge.svg)](https://github.com/gchq/Vanguard/actions/workflows/pre_commit_checks.yml)
 ![beta](https://img.shields.io/badge/pre--release-beta-red)
 
