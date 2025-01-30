@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Contributor guidelines,
   - Automatic [pre-commit] checks, including formatting and linting,
   - GH Actions to check unit tests and documentation build on each PR.
+  - Test coverage badge.
 
 
 

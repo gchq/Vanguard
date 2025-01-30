@@ -26,6 +26,7 @@ biburl
 bigg
 bmatrix
 booktitle
+brightgreen
 bysource
 cdist
 cmap
