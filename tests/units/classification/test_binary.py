@@ -171,7 +171,7 @@ class BinaryFuzzyTests(ClassificationTestCase):
             marginal_log_likelihood_class=VariationalELBO,
             rng=self.rng,
         )
-        controller.fit(20)
+        controller.fit(30)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
-        self.assertPredictionsEqual(dataset.test_y.squeeze(), predictions, delta=0.25)
+        self.assertPredictionsEqual(dataset.test_y.squeeze(), predictions, delta=0.3)

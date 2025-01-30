@@ -211,8 +211,8 @@ class SoftmaxLMCTests(ClassificationTestCase):
     def test_predictions(self) -> None:
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         # This test failed for eight different seeds in a row when fitting for only 10 iterations - this one really
-        # needs to go to 20 iterations to be accurate enough to pass
-        self.controller.fit(20)
+        # needs more iterations to be accurate enough to pass
+        self.controller.fit(30)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
         self.assertPredictionsEqual(self.dataset.test_y, predictions, delta=0.4)
 
