@@ -19,7 +19,6 @@ For the ease of the user, Vanguard contains a number of datasets commonly refere
 The dataset instances allow for easy access to the training and testing data through attributes.
 """
 
-import os
 from typing import Union
 
 import numpy as np
@@ -85,28 +84,6 @@ class Dataset:
     def num_points(self) -> int:
         """Return the number of data points."""
         return self.num_training_points + self.num_testing_points
-
-
-class FileDataset(Dataset):
-    """
-    A Vanguard dataset which requires a file to be loaded.
-    """
-
-    @staticmethod
-    def _get_data_path(file_name: str) -> str:
-        """
-        Get the full path to the file name within the data folder.
-
-        .. note::
-
-            This will also create the ``data`` folder if it is missing, but the data should be
-            placed there manually by the user.
-        """
-        current_directory_path = os.path.dirname(__file__)
-        data_path = os.path.join(current_directory_path, "data")
-        os.makedirs(data_path, exist_ok=True)
-        full_file_path = os.path.join(data_path, file_name)
-        return full_file_path
 
 
 class EmptyDataset(Dataset):
