@@ -31,10 +31,6 @@ class AirPassengers(Dataset):
     Analysis of air passengers through time.
 
     Functionality to load the air passengers dataset, taken from :cite:`Jiang_KATS_2022`.
-
-    We do not need any functionality from the :class:`~vanguard.datasets.basedataset.FileDataset` class, so we instead
-    just use null values to initialise. The real value of subclassing here is loading and downloading data in the
-    unified interface.
     """
 
     def __init__(self) -> None:
