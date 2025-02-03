@@ -5,11 +5,11 @@ alabaster==1.0.0 ; python_full_version >= '3.10'
 appnope==0.1.4 ; sys_platform == 'darwin'
 asttokens==3.0.0
 attrs==25.1.0
-babel==2.16.0
-beautifulsoup4==4.12.3
+babel==2.17.0
+beautifulsoup4==4.13.0
 bibtexparser==1.4.3
 bleach==6.2.0
-certifi==2024.12.14
+certifi==2025.1.31
 cffi==1.17.1 ; implementation_name == 'pypy'
 charset-normalizer==3.4.1
 colorama==0.4.6 ; sys_platform == 'win32'
@@ -25,18 +25,20 @@ exceptiongroup==1.2.2 ; python_full_version < '3.11'
 executing==2.2.0
 fastjsonschema==2.21.1
 filelock==3.17.0
-fonttools==4.55.6
-fsspec==2024.12.0
+fonttools==4.55.8
+fsspec==2025.2.0
 furo==2024.8.6
-gpytorch==1.13
+gpytorch==1.13 ; python_full_version < '3.10'
+gpytorch==1.14 ; python_full_version >= '3.10'
 idna==3.10
 imagesize==1.4.1
 importlib-metadata==8.6.1 ; python_full_version < '3.10'
 importlib-resources==6.5.2 ; python_full_version < '3.10'
 ipykernel==6.29.5
 ipython==8.18.1 ; python_full_version < '3.10'
-ipython==8.31.0 ; python_full_version >= '3.10'
-jaxtyping==0.2.19
+ipython==8.32.0 ; python_full_version >= '3.10'
+jaxtyping==0.2.19 ; python_full_version < '3.10'
+jaxtyping==0.2.37 ; python_full_version >= '3.10'
 jedi==0.19.2
 jinja2==3.1.5
 joblib==1.4.2
@@ -49,15 +51,16 @@ kiwisolver==1.4.7 ; python_full_version < '3.10'
 kiwisolver==1.4.8 ; python_full_version >= '3.10'
 kmedoids==0.5.3.1
 latexcodec==3.0.0
-linear-operator==0.5.3
+linear-operator==0.5.3 ; python_full_version < '3.10'
+linear-operator==0.6 ; python_full_version >= '3.10'
 markupsafe==3.0.2
 matplotlib==3.9.4 ; python_full_version < '3.10'
 matplotlib==3.10.0 ; python_full_version >= '3.10'
 matplotlib-inline==0.1.7
-mistune==3.1.0
+mistune==3.1.1
 mpmath==1.3.0
 nbclient==0.10.2
-nbconvert==7.16.5
+nbconvert==7.16.6
 nbformat==5.10.4
 nbsphinx==0.9.6
 nest-asyncio==1.6.0
@@ -94,10 +97,10 @@ pycparser==2.22 ; implementation_name == 'pypy'
 pygments==2.19.1
 pyparsing==3.2.1
 python-dateutil==2.9.0.post0
-pytz==2024.2
+pytz==2025.1
 pywin32==308 ; platform_python_implementation != 'PyPy' and sys_platform == 'win32'
 pyyaml==6.0.2
-pyzmq==26.2.0
+pyzmq==26.2.1
 referencing==0.36.2
 requests==2.32.3
 rpds-py==0.22.3
@@ -130,10 +133,11 @@ tornado==6.4.2
 tqdm==4.67.1
 traitlets==5.14.3
 triton==3.0.0 ; python_full_version < '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'
-typeguard==4.4.1
+typeguard==4.4.1 ; python_full_version < '3.10'
 typing-extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
+wadler-lindig==0.1.3 ; python_full_version >= '3.10'
 wcwidth==0.2.13
 webencodings==0.5.1
 zipp==3.21.0 ; python_full_version < '3.10'
