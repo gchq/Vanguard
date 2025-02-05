@@ -179,7 +179,7 @@ class BikeDataset(Dataset):
         """
         file_name = "bike.csv"
         try:
-            with as_file(files("vanguard.datasets.data").joinpath(file_name)) as f:
+            with as_file(files("vanguard.datasets").joinpath("data", file_name)) as f:
                 df = pd.read_csv(f, parse_dates=["dteday"])
         except FileNotFoundError as exc:
             message = f"Could not find data at {file_name}."

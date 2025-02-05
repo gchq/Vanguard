@@ -46,7 +46,7 @@ class AirPassengers(Dataset):
         """
         file_name = "air_passengers.csv"
         try:
-            with as_file(files("vanguard.datasets.data").joinpath(file_name)) as f:
+            with as_file(files("vanguard.datasets").joinpath("data", file_name)) as f:
                 df = pd.read_csv(f)
         except FileNotFoundError as exc:
             message = f"Could not find data at {file_name}."
