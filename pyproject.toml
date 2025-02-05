@@ -146,13 +146,28 @@ Issues = "https://github.com/gchq/Vanguard/issues"
 Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
-packages = ["vanguard"]
+packages = [
+    "vanguard",
+    "vanguard.base",
+    "vanguard.base.posteriors",
+    "vanguard.classification",
+    "vanguard.datasets",
+    "vanguard.datasets.data",
+    "vanguard.decoratorutils",
+    "vanguard.distribute",
+    "vanguard.hierarchical",
+    "vanguard.multitask",
+    "vanguard.optimise",
+    "vanguard.variational",
+    "vanguard.warps",
+]
 
 [tool.setuptools.dynamic]
 version = {attr = "vanguard.__version__"}
 
 [tool.setuptools.package-data]
 vanguard = ["references.bib"]
+"vanguard.datasets.data" = ["*.csv", "*.rst"]
 
 [tool.ruff]
 line-length = 120

@@ -16,6 +16,6 @@
 A subpackage containing a number of pertinent datasets.
 """
 
-from vanguard.datasets.basedataset import Dataset, EmptyDataset, FileDataset
+from vanguard.datasets.basedataset import Dataset, EmptyDataset
 
-__all__ = ["Dataset", "EmptyDataset", "FileDataset"]
+__all__ = ["Dataset", "EmptyDataset"]

@@ -20,6 +20,7 @@ Supplied by the UC Irvine Machine Learning Repository :cite:`FanaeeT2013`.
 
 import math
 import warnings
+from importlib.resources import as_file, files
 from typing import Optional
 
 import matplotlib.pyplot as plt
@@ -29,10 +30,10 @@ import torch
 from scipy import stats
 
 import vanguard.utils as utils
-from vanguard.datasets.basedataset import FileDataset
+from vanguard.datasets.basedataset import Dataset
 
 
-class BikeDataset(FileDataset):
+class BikeDataset(Dataset):
     """
     Comparison of bike rentals to weather information.
 
@@ -169,13 +170,19 @@ class BikeDataset(FileDataset):
         plt.xlabel("$y$", fontsize=15)
         plt.legend()
 
-    def _load_data(self) -> np.typing.NDArray:
-        """Load the data."""
-        file_path = self._get_data_path("bike.csv")
+    @staticmethod
+    def _load_data() -> np.typing.NDArray:
+        """
+        Load the data.
+
+        :return: Array containing the bike data.
+        """
+        file_name = "bike.csv"
         try:
-            df = pd.read_csv(file_path, parse_dates=["dteday"])
+            with as_file(files("vanguard.datasets").joinpath("data", file_name)) as f:
+                df = pd.read_csv(f, parse_dates=["dteday"])
         except FileNotFoundError as exc:
-            message = f"Could not find data at {file_path}."
+            message = f"Could not find data at {file_name}."
             raise FileNotFoundError(message) from exc
         # Extract the day of the date and convert it to an integer
         df["dteday"] = df["dteday"].apply(lambda x: int(x.strftime("%d")))
