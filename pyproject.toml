@@ -139,8 +139,7 @@ environments = [
 ]
 
 [project.urls]
-#Documentation = "https://example.org/" # TODO: Populate URL once ReadTheDocs URL reserved
-# https://github.com/gchq/Vanguard/issues/254
+Documentation = "https://vanguard.readthedocs.io/en/latest/"
 Repository = "https://github.com/gchq/Vanguard"
 Issues = "https://github.com/gchq/Vanguard/issues"
 Changelog = "https://github.com/gchq/Vanguard/blob/main/CHANGELOG.md"
