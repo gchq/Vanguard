@@ -1,10 +1,12 @@
 # Vanguard: Advanced GPs
 
-![version](https://img.shields.io/badge/version-2.1.0-informational)
-![python](https://img.shields.io/badge/python-3.9--3.12-informational)
-[![coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgchq%2Fvanguard-metadata%2Frefs%2Fheads%2Fmain%2Fcoverage%2Fcoverage_badge.json)](https://github.com/gchq/vanguard/actions/workflows/coverage.yml)
+[![Unit Tests](https://github.com/gchq/Vanguard/actions/workflows/unittests.yml/badge.svg)](https://github.com/gchq/Vanguard/actions/workflows/unittests.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgchq%2Fvanguard-metadata%2Frefs%2Fheads%2Fmain%2Fcoverage%2Fcoverage_badge.json)](https://github.com/gchq/vanguard/actions/workflows/coverage.yml)
 [![Pre-commit Checks](https://github.com/gchq/Vanguard/actions/workflows/pre_commit_checks.yml/badge.svg)](https://github.com/gchq/Vanguard/actions/workflows/pre_commit_checks.yml)
-![beta](https://img.shields.io/badge/pre--release-beta-red)
+[![Linting: Pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
+[![Python version](https://img.shields.io/pypi/pyversions/vanguard-gp.svg)](https://pypi.org/project/vanguard-gp)
+[![PyPI](https://img.shields.io/pypi/v/vanguard-gp)](https://pypi.org/project/vanguard-gp)
+![Beta](https://img.shields.io/badge/pre--release-beta-red)
 
 Vanguard is a high-level wrapper around [GPyTorch](https://gpytorch.ai/) and aims to provide a user-friendly interface for training and using Gaussian process models.
 Vanguard's main objective is to make a variety of more advanced GP techniques in the machine learning literature available for easy use by a non-specialists and specialists alike.
