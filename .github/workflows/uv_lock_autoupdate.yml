@@ -83,9 +83,9 @@ jobs:
           --format requirements-txt
           --no-hashes
           --no-dev
-          --no-emit-project
+          --no-editable
           --extra doc
-          --output-file requirements-doc.txt
+          --output-file requirements-docs.txt
       - name: Store hash of new files for comparison
         id: new_hash
         run: |
