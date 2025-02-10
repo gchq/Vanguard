@@ -7,7 +7,7 @@ appnope==0.1.4 ; sys_platform == 'darwin'
 asttokens==3.0.0
 attrs==25.1.0
 babel==2.17.0
-beautifulsoup4==4.13.0
+beautifulsoup4==4.13.3
 bibtexparser==1.4.3
 bleach==6.2.0
 certifi==2025.1.31
@@ -26,7 +26,7 @@ exceptiongroup==1.2.2 ; python_full_version < '3.11'
 executing==2.2.0
 fastjsonschema==2.21.1
 filelock==3.17.0
-fonttools==4.55.8
+fonttools==4.56.0
 fsspec==2025.2.0
 furo==2024.8.6
 gpytorch==1.13 ; python_full_version < '3.10'
