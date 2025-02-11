@@ -8,11 +8,14 @@
 [![PyPI](https://img.shields.io/pypi/v/vanguard-gp)](https://pypi.org/project/vanguard-gp)
 ![Beta](https://img.shields.io/badge/pre--release-beta-red)
 
-Vanguard is a high-level wrapper around [GPyTorch](https://gpytorch.ai/) and aims to provide a user-friendly interface for training and using Gaussian process models.
-Vanguard's main objective is to make a variety of more advanced GP techniques in the machine learning literature available for easy use by a non-specialists and specialists alike.
+Vanguard is a high-level wrapper around [GPyTorch](https://gpytorch.ai/) and aims to provide a user-friendly interface for training and
+using Gaussian process models. Vanguard's main objective is to make a variety of more advanced GP techniques in the
+machine learning literature available for easy use by a non-specialists and specialists alike.
 Vanguard is designed for modularity to facilitate straightforward combinations of different techniques.
 
-Vanguard implements many advanced Gaussian process techniques, as showcased in our `examples` folder. These techniques and others implemented within the Vanguard paradigm can be combined straightforwardly with minimal extra code, and without requiring specialist GP knowledge.
+Vanguard implements many advanced Gaussian process techniques, as showcased in our `examples` folder. These techniques
+and others implemented within the Vanguard paradigm can be combined straightforwardly with minimal extra code, and
+without requiring specialist GP knowledge.
 
 ## Installation
 
@@ -23,49 +26,49 @@ $ pip install vanguard-gp
 Note that it is `vanguard-gp` and not `vanguard`. However, to import the package, use
 `from vanguard import ...`.
 
-If the code is not running properly, recreate the environment with `pip install -r requirements.txt --no-deps`.
+There are optional sets of additional dependencies:
+
+* `vanguard-gp[test]` is required to run the tests;
+* `vanguard-gp[doc]` is for compiling the Sphinx documentation;
+* `vanguard-gp[notebook]` contains all dependencies for the example notebooks;
+* `vanguard-gp[dev]` includes all tools and packages a developer of Vanguard might need.
+
+Should the installation of Vanguard fail, you can see the versions used by the Vanguard
+development team in `uv.lock`. You can transfer these to your own project as follows.
+First, [install UV](https://docs.astral.sh/uv/getting-started/installation/). Then,
+clone the repo from [GitHub](https://github.com/gchq/Vanguard). Next, run
+```shell
+uv export --format requirements-txt
+```
+which will generate a `requirements.txt`. Install this in your own project before trying
+to install Vanguard itself,
+```shell
+pip install -r requirements.txt
+pip install vanguard-gp
+```
 
 ## Documentation
 
-Vanguard's documentation can be found online at [TODO: LINK GOES HERE].
+[Vanguard's documentation](https://vanguard.readthedocs.io/en/latest/) can be found online.
 
 Alternatively, you can build the documentation from source - instructions for doing so can be found in
 [`CONTRIBUTING.md`](CONTRIBUTING.md#documentation).
 
-## Tests
+## Examples
 
-Vanguard's tests are contained in the `tests/` directory, and can be run with `pytest`. The tests are arranged
-as follows:
- - `tests/units` contains unit tests. These should be fairly quick to run.
- - `tests/integration` contains integration tests, which may take longer to run.
- - `tests/test_doctests.py` finds and runs all doctests. This should be fairly quick to run.
- - `tests/test_examples.py` runs all notebooks under `examples/` as tests. These require `nbconvert` and `nbformat` to run,
-and can take a significant amount of time to complete, so consider excluding `test_examples.py` from your test
-discovery.
-
+Vanguard contains a number of example notebooks, contained in the `examples/notebooks` folder. These are designed to
+showcase certain features of Vanguard within the context of a data science problem. To run them, you will need to first
+install the additional requirements:
 
 ```shell
-$ pytest # run all tests (slow)
-$ pytest tests/units # run unit tests
-$ pytest tests/integration # run integration tests (slow)
-$ pytest tests/test_doctests.py # run doctests
-$ pytest tests/test_examples.py # run example tests (slow)
+$ pip install .[notebook]
 ```
 
-Our PR workflows run our tests with the `pytest-beartype` plugin. This is a runtime type checker that ensures all
-our type hints are correct. In order to run with these checks locally, add
-`--beartype-packages="vanguard" -m "not no_beartype"` to your pytest invocation. You should then separately run pytest
-with `-m no_beartype` to ensure that all tests are run. The reason for this separation is that some of our tests check
-that our handling of inputs of invalid type are correct, but `beartype` catches these errors before we get a chance to
-look at them, causing the tests to fail; thus, these tests need to be run separately _without_ beartype.
-
-Since different Python versions have different versions of standard library and third-party modules, we can't guarantee
-that type hints are 100% correct on all Python versions. Type hints are only tested for correctness on the latest
-version of Python (3.12).
-
-For example, to run the unit tests with type checking:
+If you are in a virtual environment, you can then run the following to add the `vanguard` kernel to Jupyter, which makes
+running the notebooks as frictionless as possible:
 
 ```shell
-$ pytest tests/units --beartype-packages="vanguard" -m "not no_beartype"  # run unit tests with type checking
-$ pytest tests/units -m no_beartype  # run unit tests that are incompatible with beartype
+$ ipython kernel install --name vanguard --user
 ```
+
+> **Warning**: Certain notebooks can take a long time to run, even on a GPU.  To see fully rendered examples, please visit the documentation.
