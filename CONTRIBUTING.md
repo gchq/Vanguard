@@ -8,7 +8,6 @@ If you would like to contribute to the development of Vanguard, you can do so in
 - Increase awareness of Vanguard with other potential users.
 
 All contributors must sign the [GCHQ Contributor Licence Agreement][cla].
-(TODO: Update link when this is set up; see the linked issue.)
 
 In addition, all contributors must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
@@ -292,13 +291,34 @@ instead of `Blu`.
 
 Vanguard is subject to rigorous testing in both function and documentation.
 
+Vanguard's tests are contained in the `tests/` directory, and can be run with `pytest`. The tests are arranged
+as follows:
+
+ - `tests/units` contains unit tests. These should be fairly quick to run.
+ - `tests/integration` contains integration tests, which may take longer to run.
+ - `tests/test_doctests.py` finds and runs all doctests. This should be fairly quick to run.
+ - `tests/test_examples.py` runs all notebooks under `examples/` as tests. These require `nbconvert` and `nbformat` to
+   run, and can take a significant amount of time to complete, so consider excluding `test_examples.py` from your test
+   discovery.
+
+To run:
+
+```shell
+$ pytest  # Run all tests (slow)
+$ pytest tests/units  # Run unit tests
+$ pytest tests/integration  # Run integration tests (slow)
+$ pytest tests/test_doctests.py  # Run doctests
+$ pytest tests/test_examples.py  # Run example tests (slow)
+```
+
 Either [Pytest][pytest] or [Unittest][unittest] can be used to write tests for Vanguard.
 [Pytest][pytest] is recommended where it would simplify code, such as for parameterized tests.
 As much effort should be put into developing tests as is put into developing the code.
 Tests should be provided to test functionality and also ensuring exceptions and warnings are raised or
 managed appropriately. This includes:
-- Unit testing of new functions added to the codebase
-- Verifying all existing tests pass with the integrated changes
+
+- Unit testing of new functions added to the codebase;
+- Verifying all existing tests pass with the integrated changes.
 
 Keep in mind the impact on runtime when writing your tests. Favour more tests that are smaller rather than a few large
 tests with many assert statements unless it would significantly affect run time, e.g. due to excess set up or duplicated
@@ -307,25 +327,28 @@ function calls.
 The test suite is run automatically on each opened pull request, and no merging can occur until the whole suite has
 passed.
 
-The `requirements.txt` file contains what is needed to run unit tests and doctests,
-but `docs/requirements-docs.txt` is required for the example tests.
-
-Please ensure that tests are run regularly _before_ opening a pull request, in order to catch errors early:
-
-```shell
-# Unittest:
-$ python -m unittest discover -s tests/units # run unit tests
-$ python -m unittest tests/test_doctests.py # run doctests
-$ python -m unittest tests/test_examples.py # run example tests (slow)
-
-# Pytest:
-$ pytest tests/units # run unit tests
-$ pytest tests/test_doctests.py # run doctests
-$ pytest tests/test_examples.py # run example tests (slow)
-```
+Please ensure that tests are run regularly _before_ opening a pull request, in order to catch errors early.
 
 Note that some tests are non-deterministic and as such may occasionally fail due to randomness.
 Please try running them again before raising an issue.
+
+Our PR workflows run our tests with the `pytest-beartype` plugin. This is a runtime type checker that ensures all
+our type hints are correct. In order to run with these checks locally, add
+`--beartype-packages="vanguard" -m "not no_beartype"` to your pytest invocation. You should then separately run pytest
+with `-m no_beartype` to ensure that all tests are run. The reason for this separation is that some of our tests check
+that our handling of inputs of invalid type are correct, but `beartype` catches these errors before we get a chance to
+look at them, causing the tests to fail; thus, these tests need to be run separately _without_ beartype.
+
+Since different Python versions have different versions of standard library and third-party modules, we can't guarantee
+that type hints are 100% correct on all Python versions. Type hints are only tested for correctness on the latest
+supported version of Python.
+
+For example, to run the unit tests with type checking:
+
+```shell
+$ pytest tests/units --beartype-packages="vanguard" -m "not no_beartype"  # Run unit tests with type checking
+$ pytest tests/units -m no_beartype  # Run unit tests that are incompatible with beartype
+```
 
 ### Testing before releases to PyPI
 
@@ -441,7 +464,7 @@ Vanguard is an academic project and therefore all work should be referenced.
 New references should be placed in the file [`references.bib`](references.bib).
 An entry with the keyword `Doe99` can then be referenced within a docstring anywhere with ``:cite:`Doe99` ``.
 
-[cla]: https://github.com/gchq/Vanguard/issues/230
+[cla]: https://cla-assistant.io/gchq/Vanguard
 [conventional_commits]: https://www.conventionalcommits.org
 [cspell]: https://cspell.org/
 [doctest]: https://docs.python.org/3/library/doctest.html
