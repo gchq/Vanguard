@@ -14,7 +14,8 @@ Version 4 will be the first stable version.
 
 ### Fixed
 
--
+- Package name corrected to `vanguard-gp` in pyproject.toml. (https://github.com/gchq/Vanguard/pull/505)
+- Dev dependencies option was installing `vanguard` (wrong package). (https://github.com/gchq/Vanguard/pull/505)
 
 ### Changed
 
