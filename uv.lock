@@ -2223,7 +2223,7 @@ name = "nvidia-cudnn-cu12"
 version = "9.1.0.70"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas-cu12" },
+    { name = "nvidia-cublas-cu12", marker = "(python_full_version < '3.10' and platform_python_implementation != 'PyPy') or platform_python_implementation == 'PyPy' or sys_platform != 'win32'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9f/fd/713452cd72343f682b1c7b9321e23829f00b842ceaedcda96e742ea0b0b3/nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl", hash = "sha256:165764f44ef8c61fcdfdfdbe769d687e06374059fbb388b6c89ecb0e28793a6f", size = 664752741 },
@@ -2250,9 +2250,9 @@ name = "nvidia-cusolver-cu12"
 version = "11.4.5.107"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas-cu12" },
-    { name = "nvidia-cusparse-cu12" },
-    { name = "nvidia-nvjitlink-cu12" },
+    { name = "nvidia-cublas-cu12", marker = "(python_full_version < '3.10' and platform_python_implementation != 'PyPy') or platform_python_implementation == 'PyPy' or sys_platform != 'win32'" },
+    { name = "nvidia-cusparse-cu12", marker = "(python_full_version < '3.10' and platform_python_implementation != 'PyPy') or platform_python_implementation == 'PyPy' or sys_platform != 'win32'" },
+    { name = "nvidia-nvjitlink-cu12", marker = "(python_full_version < '3.10' and platform_python_implementation != 'PyPy') or platform_python_implementation == 'PyPy' or sys_platform != 'win32'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bc/1d/8de1e5c67099015c834315e333911273a8c6aaba78923dd1d1e25fc5f217/nvidia_cusolver_cu12-11.4.5.107-py3-none-manylinux1_x86_64.whl", hash = "sha256:8a7ec542f0412294b15072fa7dab71d31334014a69f953004ea7a118206fe0dd", size = 124161928 },
@@ -2263,7 +2263,7 @@ name = "nvidia-cusparse-cu12"
 version = "12.1.0.106"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12" },
+    { name = "nvidia-nvjitlink-cu12", marker = "(python_full_version < '3.10' and platform_python_implementation != 'PyPy') or platform_python_implementation == 'PyPy' or sys_platform != 'win32'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/65/5b/cfaeebf25cd9fdec14338ccb16f6b2c4c7fa9163aefcf057d86b9cc248bb/nvidia_cusparse_cu12-12.1.0.106-py3-none-manylinux1_x86_64.whl", hash = "sha256:f3b50f42cf363f86ab21f720998517a659a48131e8d538dc02f8768237bd884c", size = 195958278 },
@@ -2390,7 +2390,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "(python_full_version < '3.10' and platform_python_implementation != 'PyPy') or platform_python_implementation == 'PyPy' or sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450 }
 wheels = [
@@ -3702,7 +3702,7 @@ name = "triton"
 version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "filelock", marker = "python_full_version < '3.13'" },
+    { name = "filelock", marker = "(python_full_version < '3.13' and platform_python_implementation == 'PyPy') or (python_full_version < '3.10' and platform_python_implementation != 'PyPy' and sys_platform == 'win32') or (python_full_version < '3.13' and sys_platform != 'win32')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/45/27/14cc3101409b9b4b9241d2ba7deaa93535a217a211c86c4cc7151fb12181/triton-3.0.0-1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:e1efef76935b2febc365bfadf74bcb65a6f959a9872e5bddf44cc9e0adce1e1a", size = 209376304 },
@@ -3779,7 +3779,7 @@ wheels = [
 ]
 
 [[package]]
-name = "vanguard"
+name = "vanguard-gp"
 source = { editable = "." }
 dependencies = [
     { name = "bibtexparser" },
@@ -3842,7 +3842,7 @@ dev = [
     { name = "pyright" },
     { name = "pyroma" },
     { name = "ruff" },
-    { name = "vanguard", extra = ["doc", "notebook", "test"] },
+    { name = "vanguard-gp", extra = ["doc", "notebook", "test"] },
 ]
 
 [package.metadata]
@@ -3899,7 +3899,7 @@ dev = [
     { name = "pyright", specifier = ">=1" },
     { name = "pyroma", specifier = ">=4" },
     { name = "ruff", specifier = ">=0.6" },
-    { name = "vanguard", extras = ["test", "doc", "notebook"] },
+    { name = "vanguard-gp", extras = ["test", "doc", "notebook"] },
 ]
 
 [[package]]

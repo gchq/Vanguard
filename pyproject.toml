@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Vanguard"
+name = "vanguard-gp"
 dynamic = ["version"]
 description = "Various easy-to-use extensions for Gaussian process models and a framework for composition of extensions."
 readme = "README.md"
@@ -89,7 +89,7 @@ notebook = [
 
 [tool.uv]
 dev-dependencies = [
-    "vanguard[test, doc, notebook]",
+    "vanguard-gp[test, doc, notebook]",
     "isort>=5",
     "jupyterlab>=4",
     "pre-commit>=3",
