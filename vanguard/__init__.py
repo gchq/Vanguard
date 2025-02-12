@@ -29,5 +29,5 @@ torch.set_default_device(vanguard.utils.DEFAULT_DEVICE)
 
 
 __author__ = "GCHQ"
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 __bibliography__ = _bibliography.find_bibliography()
