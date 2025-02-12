@@ -16,6 +16,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
+          lfs: true
+      - name: Checkout LFS files
+        run: |
+          git lfs fetch
+          git lfs checkout
       - name: Set up base Python
         uses: actions/setup-python@v5
         with:
