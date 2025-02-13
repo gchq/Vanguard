@@ -14,8 +14,7 @@ Version 4 will be the first stable version.
 
 ### Fixed
 
-- Package name corrected to `vanguard-gp` in pyproject.toml. (https://github.com/gchq/Vanguard/pull/505)
-- Dev dependencies option was installing `vanguard` (wrong package). (https://github.com/gchq/Vanguard/pull/505)
+-
 
 ### Changed
 
@@ -30,7 +29,17 @@ Version 4 will be the first stable version.
 -
 
 
-## [3.0.0]
+## [3.0.1]
+
+### Fixed
+
+- Package name corrected to `vanguard-gp` in pyproject.toml. (https://github.com/gchq/Vanguard/pull/505)
+- Dev dependencies option was installing `vanguard` (wrong package). (https://github.com/gchq/Vanguard/pull/505)
+
+
+## [3.0.0] - [YANKED]
+
+Yanked due to build failure.
 
 ### Added
 
@@ -82,5 +91,6 @@ Version 4 will be the first stable version.
 [beartype]: https://pypi.org/project/beartype/
 [pre-commit]: https://pre-commit.com/
 
-[Unreleased]: https://github.com/gchq/Vanguard/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/gchq/Vanguard/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/gchq/Vanguard/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/gchq/Vanguard/releases/tag/v3.0.0
