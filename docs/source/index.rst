@@ -3,6 +3,8 @@
 Welcome to Vanguard's Documentation!
 ====================================
 
+|version|
+
 Vanguard is a high-level wrapper around `GPyTorch <https://gpytorch.ai>`_ and aims to provide a user-friendly interface
 for training and using Gaussian process models. Vanguard's main objective is to make a variety of more advanced GP
 techniques in the machine learning literature available for easy use by a non-specialists and specialists alike.
