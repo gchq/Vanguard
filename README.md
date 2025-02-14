@@ -21,7 +21,7 @@ without requiring specialist GP knowledge.
 
 To install Vanguard:
 ```shell
-$ pip install vanguard-gp
+pip install vanguard-gp
 ```
 Note that it is `vanguard-gp` and not `vanguard`. However, to import the package, use
 `from vanguard import ...`.
@@ -61,14 +61,14 @@ showcase certain features of Vanguard within the context of a data science probl
 install the additional requirements:
 
 ```shell
-$ pip install .[notebook]
+pip install vanguard-gp[notebook]
 ```
 
 If you are in a virtual environment, you can then run the following to add the `vanguard` kernel to Jupyter, which makes
 running the notebooks as frictionless as possible:
 
 ```shell
-$ ipython kernel install --name vanguard --user
+ipython kernel install --name vanguard --user
 ```
 
 > **Warning**: Certain notebooks can take a long time to run, even on a GPU.  To see fully rendered examples, please visit the documentation.
