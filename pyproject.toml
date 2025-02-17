@@ -127,6 +127,8 @@ constraint-dependencies = [
     "pywin32>=302; python_version>='3.10'",  # first version to support 3.10
     "pywin32>=303; python_version>='3.11'",  # first version to support 3.11
     "pywin32>=306; python_version>='3.12'",  # first version to support 3.12
+    "wheel>=0.30",  # picking a too-low version of this was causing CI failures that couldn't be replicated locally,
+                    # so this is a guessed lower bound
 ]
 
 # force the lockfile to be split by Python version, ensuring we get the latest dependencies for each version
