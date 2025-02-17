@@ -59,7 +59,7 @@ repos:
       # No tabs, only spaces
       - id: forbid-tabs
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.5
+    rev: v0.9.6
     hooks:
       # Run the formatter.
       - id: ruff-format
