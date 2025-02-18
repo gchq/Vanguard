@@ -26,7 +26,8 @@ _INPUT_WARNING = "The input matches the stored training data. Did you forget to 
 _CHOLESKY_WARNING = r"Runtime Error when computing Cholesky decomposition: (.*?)\. Using RootDecomposition\."
 _JITTER_WARNING = r"A not p\.d\., added jitter of (.*?) to the diagonal"
 _RE_INCORRECT_LIKELIHOOD_PARAMETER = re.compile(
-    r"^.*?\.?__init__\(\) got (?:an unexpected|multiple values for) keyword argument '(.*?)'$"
+    r"^.*?\.?__init__\(\) got (?:an unexpected|multiple values for) keyword argument '(.*?)'"
+    r"(?:\. Did you mean '.*'\?)?$"
 )
 
 
