@@ -117,7 +117,7 @@ constraint-dependencies = [
     "six>=1.16; python_version>='3.10'",  # earlier versions don't work on 3.10+
     "pyzmq>=26",
     "contourpy>=1.1; python_version>='3.11'",
-    "nvidia-nvjitlink-cu12>=12.6.77",  # torch CUDA dependency
+    "nvidia-nvjitlink-cu12>=12.6.77; python_version<='3.12'",  # torch CUDA dependency
     "lxml>=4.7.1",  # earlier versions fail to build to missing libxml2
     "argon2-cffi>=19", # earlier versions have issues building on Linux
     "bleach>=1",  # some pre-1.0 versions fail to build
