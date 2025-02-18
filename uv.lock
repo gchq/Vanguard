@@ -2,8 +2,14 @@ version = 1
 revision = 1
 requires-python = ">=3.9"
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -29,6 +35,7 @@ constraints = [
     { name = "appnope", specifier = ">=0.1" },
     { name = "argon2-cffi", specifier = ">=19" },
     { name = "bleach", specifier = ">=1" },
+    { name = "cffi", marker = "python_full_version >= '3.13'", specifier = ">=1.17" },
     { name = "cmdln", specifier = ">=2" },
     { name = "contourpy", marker = "python_full_version >= '3.11'", specifier = ">=1.1" },
     { name = "defusedxml", specifier = ">=0.5" },
@@ -38,11 +45,14 @@ constraints = [
     { name = "lxml", specifier = ">=4.7.1" },
     { name = "networkx", specifier = ">=2" },
     { name = "nvidia-nvjitlink-cu12", marker = "python_full_version < '3.13'", specifier = ">=12.6.77" },
+    { name = "pillow", marker = "python_full_version >= '3.13'", specifier = ">=11" },
     { name = "py", specifier = ">=1" },
     { name = "python-json-logger", specifier = ">=1" },
     { name = "pywin32", marker = "python_full_version >= '3.10'", specifier = ">=302" },
     { name = "pywin32", marker = "python_full_version >= '3.11'", specifier = ">=303" },
     { name = "pywin32", marker = "python_full_version >= '3.12'", specifier = ">=306" },
+    { name = "pywin32", marker = "python_full_version >= '3.13'", specifier = ">=307" },
+    { name = "pywinpty", marker = "python_full_version >= '3.13'", specifier = ">=2.0.14" },
     { name = "pyzmq", specifier = ">=26" },
     { name = "six", marker = "python_full_version >= '3.10'", specifier = ">=1.16" },
     { name = "sympy", specifier = ">=1.5" },
@@ -69,8 +79,14 @@ name = "alabaster"
 version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -537,8 +553,14 @@ name = "contourpy"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -911,8 +933,14 @@ name = "gpytorch"
 version = "1.14"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -1037,7 +1065,7 @@ name = "ipykernel"
 version = "6.29.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "appnope", marker = "sys_platform == 'darwin'" },
+    { name = "appnope", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (os_name != 'nt' and sys_platform == 'darwin')" },
     { name = "comm" },
     { name = "debugpy" },
     { name = "ipython", version = "8.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -1088,8 +1116,14 @@ name = "ipython"
 version = "8.32.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -1162,8 +1196,14 @@ name = "jaxtyping"
 version = "0.2.38"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -1541,8 +1581,14 @@ name = "kiwisolver"
 version = "1.4.8"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -1707,8 +1753,14 @@ name = "linear-operator"
 version = "0.6"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -1868,8 +1920,14 @@ name = "matplotlib"
 version = "3.10.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -2071,8 +2129,14 @@ name = "networkx"
 version = "3.4.2"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -2170,8 +2234,14 @@ name = "numpy"
 version = "2.2.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -2259,7 +2329,8 @@ name = "nvidia-cublas-cu12"
 version = "12.4.5.8"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ae/71/1c91302526c45ab494c23f61c7a84aa568b8c1f9d196efa5993957faf906/nvidia_cublas_cu12-12.4.5.8-py3-none-manylinux2014_x86_64.whl", hash = "sha256:2fc8da60df463fdefa81e323eef2e36489e1c94335b5358bcb38360adf75ac9b", size = 363438805 },
@@ -2284,7 +2355,8 @@ name = "nvidia-cuda-cupti-cu12"
 version = "12.4.127"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/67/42/f4f60238e8194a3106d06a058d494b18e006c10bb2b915655bd9f6ea4cb1/nvidia_cuda_cupti_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:9dec60f5ac126f7bb551c055072b69d85392b13311fcc1bcda2202d172df30fb", size = 13813957 },
@@ -2309,7 +2381,8 @@ name = "nvidia-cuda-nvrtc-cu12"
 version = "12.4.127"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2c/14/91ae57cd4db3f9ef7aa99f4019cfa8d54cb4caa7e00975df6467e9725a9f/nvidia_cuda_nvrtc_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:a178759ebb095827bd30ef56598ec182b85547f1508941a3d560eb7ea1fbf338", size = 24640306 },
@@ -2334,7 +2407,8 @@ name = "nvidia-cuda-runtime-cu12"
 version = "12.4.127"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ea/27/1795d86fe88ef397885f2e580ac37628ed058a92ed2c39dc8eac3adf0619/nvidia_cuda_runtime_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:64403288fa2136ee8e467cdc9c9427e0434110899d07c779f25b5c068934faa5", size = 883737 },
@@ -2346,7 +2420,7 @@ version = "9.1.0.70"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nvidia-cublas-cu12", version = "12.1.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
+    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.13' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and os_name != 'nt' and sys_platform != 'win32')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9f/fd/713452cd72343f682b1c7b9321e23829f00b842ceaedcda96e742ea0b0b3/nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl", hash = "sha256:165764f44ef8c61fcdfdfdbe769d687e06374059fbb388b6c89ecb0e28793a6f", size = 664752741 },
@@ -2371,10 +2445,11 @@ name = "nvidia-cufft-cu12"
 version = "11.2.1.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.13' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and os_name != 'nt' and sys_platform != 'win32')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/27/94/3266821f65b92b3138631e9c8e7fe1fb513804ac934485a8d05776e1dd43/nvidia_cufft_cu12-11.2.1.3-py3-none-manylinux2014_x86_64.whl", hash = "sha256:f083fc24912aa410be21fa16d157fed2055dab1cc4b6934a0e03cba69eb242b9", size = 211459117 },
@@ -2399,7 +2474,8 @@ name = "nvidia-curand-cu12"
 version = "10.3.5.147"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8a/6d/44ad094874c6f1b9c654f8ed939590bdc408349f137f9b98a3a23ccec411/nvidia_curand_cu12-10.3.5.147-py3-none-manylinux2014_x86_64.whl", hash = "sha256:a88f583d4e0bb643c49743469964103aa59f7f708d862c3ddb0fc07f851e3b8b", size = 56305206 },
@@ -2429,12 +2505,13 @@ name = "nvidia-cusolver-cu12"
 version = "11.6.1.9"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 dependencies = [
-    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
-    { name = "nvidia-cusparse-cu12", version = "12.3.1.170", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
-    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
+    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.13' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and os_name != 'nt' and sys_platform != 'win32')" },
+    { name = "nvidia-cusparse-cu12", version = "12.3.1.170", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.13' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and os_name != 'nt' and sys_platform != 'win32')" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.13' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and os_name != 'nt' and sys_platform != 'win32')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3a/e1/5b9089a4b2a4790dfdea8b3a006052cfecff58139d5a4e34cb1a51df8d6f/nvidia_cusolver_cu12-11.6.1.9-py3-none-manylinux2014_x86_64.whl", hash = "sha256:19e33fa442bcfd085b3086c4ebf7e8debc07cfe01e11513cc6d332fd918ac260", size = 127936057 },
@@ -2462,10 +2539,11 @@ name = "nvidia-cusparse-cu12"
 version = "12.3.1.170"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.13' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and os_name != 'nt' and sys_platform != 'win32')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/db/f7/97a9ea26ed4bbbfc2d470994b8b4f338ef663be97b8f677519ac195e113d/nvidia_cusparse_cu12-12.3.1.170-py3-none-manylinux2014_x86_64.whl", hash = "sha256:ea4f11a2904e2a8dc4b1833cc1b5181cde564edd0d5cd33e3c168eff2d1863f1", size = 207454763 },
@@ -2498,7 +2576,8 @@ name = "nvidia-nccl-cu12"
 version = "2.21.5"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/99/12cd266d6233f47d00daf3a72739872bdc10267d0383508b0b9c84a18bb6/nvidia_nccl_cu12-2.21.5-py3-none-manylinux2014_x86_64.whl", hash = "sha256:8579076d30a8c24988834445f8d633c697d42397e92ffc3f63fa26766d25e0a0", size = 188654414 },
@@ -2509,7 +2588,8 @@ name = "nvidia-nvjitlink-cu12"
 version = "12.4.127"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ff/ff/847841bacfbefc97a00036e0fce5a0f086b640756dc38caea5e1bb002655/nvidia_nvjitlink_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:06b3b9b25bf3f8af351d664978ca26a16d2c5127dbd53c0497e28d1fb9611d57", size = 21066810 },
@@ -2548,7 +2628,8 @@ name = "nvidia-nvtx-cu12"
 version = "12.4.127"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/87/20/199b8713428322a2f22b722c62b8cc278cc53dffa9705d744484b5035ee9/nvidia_nvtx_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:781e950d9b9f60d8241ccea575b32f5105a5baf4c2351cab5256a24869f12a1a", size = 99144 },
@@ -2651,7 +2732,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "(python_full_version < '3.10' and platform_python_implementation != 'PyPy') or platform_python_implementation == 'PyPy' or sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450 }
 wheels = [
@@ -3466,8 +3547,14 @@ name = "scipy"
 version = "1.15.2"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -3622,8 +3709,14 @@ name = "sphinx"
 version = "8.1.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -3679,8 +3772,14 @@ name = "sphinx-autodoc-typehints"
 version = "3.0.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
@@ -3936,8 +4035,14 @@ name = "torch"
 version = "2.6.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name == 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
     "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
     "(python_full_version == '3.12.*' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version == '3.12.*' and platform_python_implementation == 'PyPy' and sys_platform == 'win32') or (python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32')",
     "python_full_version == '3.11.*' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
@@ -3952,22 +4057,22 @@ dependencies = [
     { name = "jinja2", marker = "python_full_version >= '3.13' or platform_machine != 'x86_64' or sys_platform != 'linux'" },
     { name = "networkx", version = "3.2.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.10' and platform_machine != 'x86_64') or (python_full_version < '3.10' and sys_platform != 'linux')" },
     { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.10' and platform_machine != 'x86_64') or (python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux') or (python_full_version >= '3.10' and sys_platform != 'linux')" },
-    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cuda-cupti-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cuda-nvrtc-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cuda-runtime-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cudnn-cu12", marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cufft-cu12", version = "11.2.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-curand-cu12", version = "10.3.5.147", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cusolver-cu12", version = "11.6.1.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cusparse-cu12", version = "12.3.1.170", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cusparselt-cu12", marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-nccl-cu12", version = "2.21.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-nvtx-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cuda-cupti-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cuda-nvrtc-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cuda-runtime-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cudnn-cu12", marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cufft-cu12", version = "11.2.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-curand-cu12", version = "10.3.5.147", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cusolver-cu12", version = "11.6.1.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cusparse-cu12", version = "12.3.1.170", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-cusparselt-cu12", marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-nccl-cu12", version = "2.21.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "nvidia-nvtx-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "setuptools", marker = "(python_full_version >= '3.12' and platform_machine != 'x86_64') or (python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux') or (python_full_version >= '3.12' and sys_platform != 'linux')" },
     { name = "sympy", marker = "python_full_version >= '3.13' or platform_machine != 'x86_64' or sys_platform != 'linux'" },
-    { name = "triton", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "triton", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "typing-extensions", marker = "python_full_version >= '3.13' or platform_machine != 'x86_64' or sys_platform != 'linux'" },
 ]
 wheels = [
@@ -4057,7 +4162,8 @@ name = "triton"
 version = "3.2.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name == 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
+    "(python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and platform_python_implementation == 'PyPy') or (python_full_version >= '3.13' and implementation_name != 'pypy' and os_name != 'nt' and sys_platform != 'win32')",
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/01/65/3ffa90e158a2c82f0716eee8d26a725d241549b7d7aaf7e4f44ac03ebd89/triton-3.2.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b3e54983cd51875855da7c68ec05c05cf8bb08df361b1d5b69e05e40b0c9bd62", size = 253090354 },
@@ -4215,6 +4321,7 @@ requires-dist = [
     { name = "kmedoids", specifier = ">=0.3.3" },
     { name = "kmedoids", marker = "python_full_version >= '3.11'", specifier = ">=0.4" },
     { name = "kmedoids", marker = "python_full_version >= '3.12'", specifier = ">=0.4.4" },
+    { name = "kmedoids", marker = "python_full_version >= '3.13'", specifier = ">=0.5.3" },
     { name = "matplotlib", specifier = ">=3.5" },
     { name = "matplotlib", marker = "python_full_version >= '3.11'", specifier = ">=3.6" },
     { name = "nbconvert", marker = "python_full_version >= '3.11' and extra == 'doc'", specifier = ">=7.1" },
@@ -4225,25 +4332,31 @@ requires-dist = [
     { name = "nbsphinx", marker = "extra == 'doc'", specifier = ">=0.9" },
     { name = "numpy", specifier = ">=1.21" },
     { name = "numpy", marker = "python_full_version >= '3.12'", specifier = ">=1.26" },
+    { name = "numpy", marker = "python_full_version >= '3.13'", specifier = ">=2.1.0" },
     { name = "pandas", specifier = ">=2" },
+    { name = "pandas", marker = "python_full_version >= '3.13'", specifier = ">=2.2.3" },
     { name = "pillow", marker = "extra == 'doc'", specifier = ">=10" },
     { name = "pybtex", marker = "extra == 'doc'", specifier = ">=0.24" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.3" },
     { name = "pytest-beartype", marker = "extra == 'test'", specifier = ">=0.1" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=5" },
     { name = "scikit-learn", specifier = ">=1.5.0" },
+    { name = "scikit-learn", marker = "python_full_version >= '3.13'", specifier = ">=1.6.0" },
     { name = "scipy", specifier = ">=1.4" },
     { name = "scipy", marker = "python_full_version >= '3.12'", specifier = ">=1.12" },
+    { name = "scipy", marker = "python_full_version >= '3.13'", specifier = ">=1.14.1" },
     { name = "setuptools", marker = "python_full_version >= '3.12' and extra == 'doc'", specifier = ">=75" },
     { name = "sphinx", marker = "python_full_version >= '3.10' and extra == 'doc'", specifier = ">=8" },
     { name = "sphinx", marker = "python_full_version < '3.10' and extra == 'doc'", specifier = ">=7" },
     { name = "sphinx-autodoc-typehints", marker = "extra == 'doc'", specifier = ">=2" },
     { name = "sphinxcontrib-bibtex", marker = "extra == 'doc'", specifier = ">=2" },
     { name = "torch", specifier = ">=2.2" },
+    { name = "torch", marker = "python_full_version >= '3.13'", specifier = ">=2.6" },
     { name = "tqdm", marker = "extra == 'doc'", specifier = ">=4" },
     { name = "tqdm", marker = "extra == 'notebook'", specifier = ">=4" },
     { name = "tqdm", marker = "extra == 'test'", specifier = ">=4" },
     { name = "typing-extensions", specifier = ">=4.4" },
+    { name = "typing-extensions", marker = "python_full_version >= '3.13'", specifier = ">=4.12" },
     { name = "urllib3", specifier = ">=2.0.4" },
 ]
 provides-extras = ["test", "doc", "notebook"]
