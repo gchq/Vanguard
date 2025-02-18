@@ -403,7 +403,7 @@ pip install -r requirements-docs.txt --no-deps
 from the repo root. Note that the pinned dependencies are not guaranteed to work on Windows or macOS.
 
 In both cases, these commands should be run in a fresh virtual environment (to avoid any issues with already-existing
-packages), and on Python 3.12.
+packages), and on Python 3.13.
 
 ### Building the documentation
 
