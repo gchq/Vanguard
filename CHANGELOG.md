@@ -10,7 +10,7 @@ Version 4 will be the first stable version.
 
 ### Added
 
--
+- Support for Python 3.13. (https://github.com/gchq/Vanguard/pull/511)
 
 ### Fixed
 
@@ -22,7 +22,8 @@ Version 4 will be the first stable version.
 
 ### Removed
 
--
+- [BREAKING CHANGE] Removed support for old versions of some dependencies; most importantly, we no longer support
+  NumPy 1.x. (https://github.com/gchq/Vanguard/pull/511)
 
 ### Deprecated
 
