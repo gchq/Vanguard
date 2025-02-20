@@ -4061,8 +4061,7 @@ requires-dist = [
     { name = "tqdm", marker = "extra == 'doc'", specifier = ">=4" },
     { name = "tqdm", marker = "extra == 'notebook'", specifier = ">=4" },
     { name = "tqdm", marker = "extra == 'test'", specifier = ">=4" },
-    { name = "typing-extensions", specifier = ">=4.4" },
-    { name = "typing-extensions", marker = "python_full_version >= '3.13'", specifier = ">=4.12" },
+    { name = "typing-extensions", specifier = ">=4.12" },
     { name = "urllib3", specifier = ">=2.0.4" },
 ]
 provides-extras = ["test", "doc", "notebook"]

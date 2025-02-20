@@ -47,8 +47,7 @@ dependencies = [
     "scipy>=1.13",  # first version to support numpy 2
     "scipy>=1.14.1; python_version>='3.13'",  # earlier versions don't provide prebuilt wheels for python 3.13
     "torch>=2.6",  # earlier versions have issues in CI in lower-bound tests
-    "typing_extensions>=4.4",  # @override introduced in 4.4
-    "typing_extensions>=4.12; python_version>='3.13'",  # ParamSpec behaviour improved in 4.12
+    "typing_extensions>=4.12",  # ParamSpec behaviour improved in 4.12
     "urllib3>=2.0.4",  # BaseHttpResponse added to urllib3.__all__ in 2.0.4
 ]
 
