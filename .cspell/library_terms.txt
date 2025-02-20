@@ -140,6 +140,7 @@ pytest
 PYTHONHASHSEED
 pytorch
 pyupgrade
+pywinpty
 qualnames
 quickstart
 randn

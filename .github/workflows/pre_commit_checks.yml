@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Set the Python version that `uv` will use for its virtual environment.
-      UV_PYTHON: 3.12
+      UV_PYTHON: 3.13
     steps:
       - uses: actions/checkout@v4
       - name: Set up base Python

@@ -14,16 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Set the Python version that `uv` will use for its virtual environment.
-      UV_PYTHON: 3.12
+      UV_PYTHON: 3.13
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.12
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
           # Note that this is just the version of Python that we use to run `uv` with.
           # `uv` manages its own version of Python.
           # For speed, we use the same version for both, but in principle these could differ.
-          python-version: 3.12
+          python-version: 3.13
       - name: Set up uv cache directory location
         run: echo "UV_CACHE_DIR=${{ runner.temp }}/.uv-cache" >> $GITHUB_ENV
       - name: Restore uv cache

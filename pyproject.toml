@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
 license = {file = "LICENSE.md"}
@@ -35,17 +36,18 @@ dependencies = [
     "kmedoids>=0.3.3",  # first version with prebuilt wheels; earlier versions require a rust toolchain to build
     "kmedoids>=0.4; python_version>='3.11'",  # earlier versions don't have prebuilt wheels for python 3.11
     "kmedoids>=0.4.4; python_version>='3.12'",  # earlier versions don't have prebuilt wheels for python 3.12
-    "matplotlib>=3.5",  # earlier versions don't install properly on Windows
-    "matplotlib>=3.6; python_version>='3.11'",  # earlier versions don't install properly on Windows
-    "numpy>=1.21",  # numpy.typing introduced in 1.21
-    "numpy>=1.26; python_version>='3.12'",  # 1.25 and earlier require distutils, which was removed in 3.12
+    "kmedoids>=0.5.3; python_version>='3.13'",  # earlier versions don't have prebuilt wheels for python 3.13
+    "matplotlib>=3.8.4",  # first version to support numpy 2
+    "numpy>=2",  # modern versions of packages are incompatible with numpy<2
+    "numpy>=2.1.0; python_version>='3.13'",  # first version to support python 3.13
     "pandas>=2",
+    "pandas>=2.2.3; python_version>='3.13'",  # earlier versions don't provide prebuilt wheels for python 3.13
     "scikit-learn>=1.5.0",  # CVE-2024-5206 affects versions earlier than 1.5.0
-    "scipy>=1.4",  # earlier versions fail to build with recent setuptools versions
-    "scipy>=1.12; python_version>='3.12'",  # earlier versions don't provide prebuilt wheels for python 3.12
-    "torch>=2.2",  # torch.optim.LRScheduler made public in 2.0.0;
-                   #   versions <2.2 have issues with C library dependencies in our CI
-    "typing_extensions>=4.4",  # @override introduced in 4.4
+    "scikit-learn>=1.6.0; python_version>='3.13'",  # earlier versions don't provide prebuilt wheels for python 3.13
+    "scipy>=1.13",  # first version to support numpy 2
+    "scipy>=1.14.1; python_version>='3.13'",  # earlier versions don't provide prebuilt wheels for python 3.13
+    "torch>=2.6",  # earlier versions have issues in CI in lower-bound tests
+    "typing_extensions>=4.12",  # ParamSpec behaviour improved in 4.12
     "urllib3>=2.0.4",  # BaseHttpResponse added to urllib3.__all__ in 2.0.4
 ]
 
@@ -117,7 +119,6 @@ constraint-dependencies = [
     "six>=1.16; python_version>='3.10'",  # earlier versions don't work on 3.10+
     "pyzmq>=26",
     "contourpy>=1.1; python_version>='3.11'",
-    "nvidia-nvjitlink-cu12>=12.6.77",  # torch CUDA dependency
     "lxml>=4.7.1",  # earlier versions fail to build to missing libxml2
     "argon2-cffi>=19", # earlier versions have issues building on Linux
     "bleach>=1",  # some pre-1.0 versions fail to build
@@ -127,8 +128,12 @@ constraint-dependencies = [
     "pywin32>=302; python_version>='3.10'",  # first version to support 3.10
     "pywin32>=303; python_version>='3.11'",  # first version to support 3.11
     "pywin32>=306; python_version>='3.12'",  # first version to support 3.12
+    "pywin32>=307; python_version>='3.13'",  # first version to support 3.13
     "wheel>=0.30",  # picking a too-low version of this was causing CI failures that couldn't be replicated locally,
                     # so this is a guessed lower bound
+    "cffi>=1.17; python_version>='3.13'",
+    "pywinpty>=2.0.14; python_version>='3.13'",
+    "pillow>=11; python_version>='3.13'",
 ]
 
 # force the lockfile to be split by Python version, ensuring we get the latest dependencies for each version
