@@ -215,11 +215,11 @@ wheels = [
 
 [[package]]
 name = "beartype"
-version = "0.20.0"
+version = "0.19.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7d/48/fe1177f4272a1bc344f3371414aa5b76e19c30d7280d711ce90c5335a6f5/beartype-0.20.0.tar.gz", hash = "sha256:599ecc86b88549bcb6d1af626f44d85ffbb9151ace5d7f9f3b493dce2ffee529", size = 1390635 }
+sdist = { url = "https://files.pythonhosted.org/packages/6f/e1/00515b97afa3993b4a314e4bc168fbde0917fd5845435cb6f16a19770746/beartype-0.19.0.tar.gz", hash = "sha256:de42dfc1ba5c3710fde6c3002e3bd2cad236ed4d2aabe876345ab0b4234a6573", size = 1294480 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/61/ce/9cf60b72e3fbd36a6dd16e31ecbe9ae137a8ead77cb24a5f75302adfc9a9/beartype-0.20.0-py3-none-any.whl", hash = "sha256:090d10e3540b3fca209a0ab5f1c15f9652a075da0a7249c2e6713011e9e5f6ef", size = 1139097 },
+    { url = "https://files.pythonhosted.org/packages/64/69/f6db6e4cb2fe2f887dead40b76caa91af4844cb647dd2c7223bb010aa416/beartype-0.19.0-py3-none-any.whl", hash = "sha256:33b2694eda0daf052eb2aff623ed9a8a586703bbf0a90bbc475a83bbf427f699", size = 1039760 },
 ]
 
 [[package]]
@@ -2783,15 +2783,15 @@ wheels = [
 
 [[package]]
 name = "pytest-beartype"
-version = "0.2.0"
+version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beartype" },
     { name = "pytest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/63/69/954ee438f1c72f4247b09381cd07a7d776ebdb4f6c0359b3b971676a2eef/pytest_beartype-0.2.0.tar.gz", hash = "sha256:9eeec379f812e0e5c9c1bb7e95d90a33a79c387034f2d735e03bc9aa0fd7cf3f", size = 5871 }
+sdist = { url = "https://files.pythonhosted.org/packages/24/b9/7e51d25a12e9bb995619feaceec591d5fd2bb0f7680c817638777c63bc1c/pytest_beartype-0.1.1.tar.gz", hash = "sha256:5b7d5344c2c23b930e56331c3cbb4b2b2a538dad7b5eea9ae6a40fe6d5faed47", size = 4682 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/69/87efc2482aab172a32e4147eb5666ebc2e4c875e17d3104878553720a83a/pytest_beartype-0.2.0-py3-none-any.whl", hash = "sha256:be6be04be4a143f965f21140d6661bab43dcd7c761d50cf6daa1b16848e5d2d0", size = 4940 },
+    { url = "https://files.pythonhosted.org/packages/ee/1e/c0541fb858bf692690113fc7b2c1c14005ce25d3d47617d2635335e76aa0/pytest_beartype-0.1.1-py3-none-any.whl", hash = "sha256:342a25fedeb019e38dc6cc738e0cae2ceaf53c24ef16c2b6aa99e59be50c8a32", size = 4733 },
 ]
 
 [[package]]
@@ -3964,7 +3964,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "beartype", marker = "extra == 'test'", specifier = ">=0.19" },
+    { name = "beartype", marker = "extra == 'test'", specifier = ">=0.19,!=0.20" },
     { name = "bibtexparser", specifier = ">=1.1" },
     { name = "furo", marker = "extra == 'doc'", specifier = ">=2024" },
     { name = "gpytorch", specifier = ">=1.11" },
