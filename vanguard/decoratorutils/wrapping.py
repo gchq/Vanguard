@@ -23,7 +23,9 @@ to a function into a dictionary for straightforward access.
 
 import inspect
 from functools import WRAPPER_ASSIGNMENTS, wraps
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Optional, TypeVar
+
+from vanguard.decoratorutils import Decorator
 
 T = TypeVar("T")
 
@@ -95,7 +97,7 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict[str, Any]:
     return parameters_as_kwargs
 
 
-def wraps_class(base_class: type[T]) -> Callable[[type[T]], type[T]]:
+def wraps_class(base_class: type[T], *, decorator_source: Optional[Decorator] = None) -> Callable[[type[T]], type[T]]:
     r"""
     Update the names and docstrings of an inner class to those of a base class.
 
@@ -130,6 +132,11 @@ def wraps_class(base_class: type[T]) -> Callable[[type[T]], type[T]]:
         '(self, a, b)'
         >>> Second.__wrapped__
         <class 'vanguard.decoratorutils.wrapping.First'>
+
+    :param base_class: The base class to wrap.
+    :param decorator_source: If present, any wrapped functions on the class have the attribute
+        ``__vanguard_wrap_source__`` set to this value.
+    :returns: A function that wraps the class.
     """
 
     def inner_function(inner_class: type[T]) -> type[T]:
@@ -152,9 +159,12 @@ def wraps_class(base_class: type[T]) -> Callable[[type[T]], type[T]]:
                 except AttributeError:
                     continue
                 wrapped_method = wraps(base_class_method)(value)
+                if decorator_source is not None:
+                    wrapped_method.__vanguard_wrap_source__ = decorator_source
                 setattr(inner_class, key, wrapped_method)
-
         inner_class.__wrapped__ = base_class
+        if decorator_source is not None:
+            inner_class.__vanguard_wrap_source__ = decorator_source
         return inner_class
 
     return inner_function

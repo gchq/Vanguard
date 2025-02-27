@@ -327,11 +327,13 @@ class TestErrorsWhenOverwriting:
 
             if mode == "new_method":
                 expected_message = (
-                    f"The class '{blame_class}' has added the following unexpected methods: {{'something_new'}}."
+                    f"{SquareResult.__name__!r}: The class '{blame_class}' has added the following unexpected methods"
                 )
                 expected_types = errors.UnexpectedMethodError, errors.UnexpectedMethodWarning
             elif mode == "override_method":
-                expected_message = f"The class '{blame_class}' has overwritten the following methods: {{'add_5'}}."
+                expected_message = (
+                    f"{SquareResult.__name__!r}: The class '{blame_class}' has overwritten the following methods"
+                )
                 expected_types = errors.OverwrittenMethodError, errors.OverwrittenMethodWarning
             else:
                 raise ValueError(mode)

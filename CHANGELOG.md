@@ -18,7 +18,8 @@ Version 4 will be the first stable version.
 
 ### Changed
 
--
+- Reduced the number of spurious `OverwrittenMethodWarning`s and `UnexpectedMethodWarning`s raised by normal usage.
+   (https://github.com/gchq/Vanguard/pull/515)
 
 ### Removed
 

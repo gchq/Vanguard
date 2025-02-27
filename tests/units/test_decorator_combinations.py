@@ -30,7 +30,7 @@ from gpytorch.means import ZeroMean
 from gpytorch.mlls import VariationalELBO
 from typing_extensions import TypedDict
 
-from tests.cases import get_default_rng, maybe_throws, maybe_warns
+from tests.cases import assert_not_warns, get_default_rng, maybe_throws, maybe_warns
 
 # not super happy about importing HigherRankKernel/HigherRankMean from another test file - these should probably be
 # moved to some more central location
@@ -50,7 +50,7 @@ from vanguard.datasets import Dataset
 from vanguard.datasets.classification import MulticlassGaussianClassificationDataset
 from vanguard.datasets.synthetic import HigherRankSyntheticDataset, SyntheticDataset, complicated_f, simple_f
 from vanguard.decoratorutils import Decorator, TopMostDecorator
-from vanguard.decoratorutils.errors import BadCombinationWarning
+from vanguard.decoratorutils.errors import BadCombinationWarning, OverwrittenMethodWarning, UnexpectedMethodWarning
 from vanguard.distribute import Distributed
 from vanguard.features import HigherRankFeatures
 from vanguard.hierarchical import (
@@ -705,3 +705,18 @@ def test_combinations(
         # the minimum number that doesn't cause numerical errors.
         with patch.object(MonteCarloPosteriorCollection, "_decide_mc_num_samples", lambda *_: 4):
             fuzzy_posterior.confidence_interval(dataset.significance)
+
+
+def test_no_overwrite_warnings_temporary():
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class BinaryClassifier(GaussianGPController):
+        pass
+
+    with assert_not_warns(OverwrittenMethodWarning), assert_not_warns(UnexpectedMethodWarning):
+        BinaryClassification()(VariationalInference()(BinaryClassifier))

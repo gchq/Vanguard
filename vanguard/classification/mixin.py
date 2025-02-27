@@ -120,7 +120,7 @@ class Classification(Decorator):
     def _decorate_class(self, cls: type[T]) -> type[T]:
         """Close off the prediction methods on a GP."""
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """Class that closes off the prediction methods."""
 
