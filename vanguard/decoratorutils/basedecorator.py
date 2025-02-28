@@ -288,6 +288,7 @@ class Decorator:
             outer_class = mro_unwrapped[method_path[0]]
         except KeyError:
             # TODO: logging here?
+            # https://github.com/gchq/Vanguard/issues/123
             return None
 
         if len(method_path) == 2:
@@ -307,6 +308,7 @@ class Decorator:
             return outer_class.__vanguard_wrap_source__.__class__
         else:
             # TODO: logging here?
+            # https://github.com/gchq/Vanguard/issues/123
             return None
 
 
