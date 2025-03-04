@@ -77,8 +77,8 @@ doc = [
     "pybtex>=0.24",
     "setuptools>=75; python_version>='3.12'",  # TODO: Remove once pybtex releases > 0.24.0
     # https://github.com/gchq/Vanguard/issues/246
-    "sphinx>=8, !=8.2.1; python_version>='3.10'",
-    "sphinx>=7, !=8.2.1; python_version<'3.10'",
+    "sphinx>=8, !=8.2.*; python_version>='3.10'",
+    "sphinx>=7, !=8.2.*; python_version<'3.10'",
     "sphinx-autodoc-typehints>=2",
     "sphinxcontrib-bibtex>=2",
     "tqdm>=4",
