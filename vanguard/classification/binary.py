@@ -23,6 +23,7 @@ import numpy.typing
 import torch
 from gpytorch.likelihoods import BernoulliLikelihood
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -91,9 +92,19 @@ class BinaryClassification(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={VariationalInference}, **kwargs)
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"}},
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
-        @Classification()
-        @wraps_class(cls)
+        # We set ignore_all here as it doesn't make sense for @Classification to be checking for overrides - that
+        # should only be done by decorators that actually add mathematical changes
+        @Classification(ignore_all=True)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls, ClassificationMixin):
             """
             A wrapper for implementing binary classification.

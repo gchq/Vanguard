@@ -137,7 +137,7 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
         decorator = self
         _gp_model_class = self.gp_model_class
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """
             A wrapper for implementing variational inference.

@@ -19,7 +19,7 @@ Contains the BaseDecorator class.
 import warnings
 from collections.abc import Iterable
 from inspect import getmembers, isfunction
-from typing import TypeVar
+from typing import Optional, TypeVar
 
 from vanguard.decoratorutils import errors
 
@@ -97,6 +97,42 @@ class Decorator:
             decorated_class.__decorators__ = decorated_class.__decorators__ + [type(self)]
         return decorated_class
 
+    @property
+    def safe_updates(self) -> dict[type, set[str]]:
+        """Get a dictionary (class -> set[names]) of overrides/new methods that we consider "safe"."""
+        # This import needs to be lazy to avoid circular imports.
+        from vanguard.vanilla import GaussianGPController  # pylint: disable=import-outside-toplevel
+
+        return {GaussianGPController: {"__init__"}}
+
+    @staticmethod
+    def _add_to_safe_updates(old: dict[type, set[str]], new: dict[type, set[str]]) -> dict[type, set[str]]:
+        """
+        Add to a safe-updates set in-place - see the example.
+
+        :Example:
+            >>> class A: pass
+            >>> class B: pass
+            >>> class C: pass
+            >>> old = {A: {"1", "2"}, B: {"other"}}
+            >>> new = {A: {"3"}, C: {"newer"}}
+            >>> updated = Decorator._add_to_safe_updates(old, new)
+            >>> sorted(updated[A])  # sets are updated
+            ['1', '2', '3']
+            >>> updated[B]  # non-overlapping keys are both added
+            {'other'}
+            >>> updated[C]
+            {'newer'}
+            >>> updated == old  # `old` is modified in-place
+            True
+        """
+        for key, value in new.items():
+            if key in old:
+                old[key].update(value)
+            else:
+                old[key] = value
+        return old
+
     def _decorate_class(self, cls: type[T]) -> type[T]:
         """Return a wrapped version of a class."""
         return cls
@@ -146,13 +182,29 @@ class Decorator:
         :raises errors.OverwrittenMethodError: If a method has been overwritten, and the
             :attr:`vanguard.decoratorutils.basedecorator.Decorator.raise_instead` is ``True``.
         """
-        cls_methods = {key for key, value in getmembers(cls) if isfunction(value)}
+        cls_methods = {
+            key
+            for key, value in getmembers(cls, isfunction)
+            if key not in self.safe_updates.get(self._get_method_implementation(cls, key), set())
+        }
         ignore_methods = set(self.ignore_methods) | {"__wrapped__"}
 
         extra_methods = cls_methods - super_methods - ignore_methods
         if extra_methods:
             if __debug__:
-                message = f"The class {cls.__name__!r} has added the following unexpected methods: {extra_methods!r}."
+                extra_method_messages = "\n".join(
+                    f"* {getattr(cls, method).__vanguard_wrap_source__.__class__.__module__}"
+                    f".{getattr(cls, method).__vanguard_wrap_source__.__class__.__qualname__}.{method} "
+                    f"(wrapping {getattr(cls, method).__module__}.{getattr(cls, method).__qualname__})"
+                    if hasattr(getattr(cls, method), "__vanguard_wrap_source__")
+                    else f"* {getattr(cls, method).__module__}.{getattr(cls, method).__qualname__}"
+                    for method in extra_methods
+                )
+                message = (
+                    f"{self.__class__.__name__!r}: The class {cls.__name__!r} "
+                    f"has added the following unexpected methods: \n"
+                    f"{extra_method_messages}"
+                )
             else:
                 message = "Unexpected methods added to the class"
             if self.raise_instead:
@@ -163,13 +215,101 @@ class Decorator:
         overwritten_methods = {method for method in cls_methods if method in cls.__dict__} - ignore_methods
         if overwritten_methods:
             if __debug__:
-                message = f"The class {cls.__name__!r} has overwritten the following methods: {overwritten_methods!r}."
+                overwritten_method_messages = "\n".join(
+                    f"* {getattr(cls, method).__vanguard_wrap_source__.__class__.__module__}"
+                    f".{getattr(cls, method).__vanguard_wrap_source__.__class__.__qualname__}.{method} "
+                    f"(wrapping {getattr(cls, method).__module__}.{getattr(cls, method).__qualname__})"
+                    if hasattr(getattr(cls, method), "__vanguard_wrap_source__")
+                    else f"* {getattr(cls, method).__module__}.{getattr(cls, method).__qualname__}"
+                    for method in overwritten_methods
+                )
+                message = (
+                    f"{self.__class__.__name__!r}: The class {cls.__name__!r} "
+                    f"has overwritten the following methods: \n"
+                    f"{overwritten_method_messages}"
+                )
             else:
                 message = "Unexpected methods overwritten by the class"
             if self.raise_instead:
                 raise errors.OverwrittenMethodError(message)
             else:
                 warnings.warn(message, errors.OverwrittenMethodWarning)
+
+    @staticmethod
+    def _get_method_implementation(subclass: type, method_name: str) -> Optional[type]:
+        """
+        Get the class that provides the implementation of a method.
+
+        Has a special case for classes decorated with @wraps_class.
+
+        This is doing some rather finicky introspection, so might end up being quite fragile.
+
+        In particular, things that might cause problems are:
+
+          - Classes that inherit from a wrapped class.
+          - Nested classes.
+
+        :Example:
+            >>> from vanguard.vanilla import GaussianGPController
+            >>> Decorator._get_method_implementation(GaussianGPController, "__init__").__name__
+            'GaussianGPController'
+            >>> Decorator._get_method_implementation(GaussianGPController, "fit").__name__
+            'GPController'
+            >>> Decorator._get_method_implementation(GaussianGPController, "_predictive_likelihood").__name__
+            'BaseGPController'
+
+        :Example:
+            >>> from vanguard.classification import BinaryClassification
+            >>> from vanguard.variational import VariationalInference
+            >>> from vanguard.vanilla import GaussianGPController
+            >>> @BinaryClassification()
+            ... @VariationalInference()
+            ... class BinaryController(GaussianGPController):
+            ...     pass
+            >>> Decorator._get_method_implementation(BinaryController, "classify_points").__name__
+            'BinaryClassification'
+
+
+        :param subclass: The class that the method belongs to. (Note that this could be a subclass.)
+        :param method_name: The name of the method to get the implementing class for.
+        :returns: The class that provides the implementation for the method, or None if the class could not be found.
+        """
+        method = getattr(subclass, method_name)
+        # Handle wrapping by @wraps_class
+        if hasattr(method, "__vanguard_wrap_source__"):
+            return getattr(method, "__vanguard_wrap_source__").__class__
+
+        method_path = method.__qualname__.split(".")
+        mro_unwrapped = {
+            (c.__vanguard_wrap_source__.__class__.__name__ if hasattr(c, "__vanguard_wrap_source__") else c.__name__): c
+            for c in subclass.__mro__
+        }
+        try:
+            outer_class = mro_unwrapped[method_path[0]]
+        except KeyError:
+            # TODO: logging here?
+            # https://github.com/gchq/Vanguard/issues/123
+            return None
+
+        if len(method_path) == 2:
+            # Simple case - Class.method()
+            return outer_class
+        if (
+            # Vanguard decorator case: DecoratorClass._decorate_class.<locals>.InnerClass.method()
+            hasattr(outer_class, "__vanguard_wrap_source__")
+            and isinstance(outer_class.__vanguard_wrap_source__, Decorator)
+            and len(method_path) == 5
+            # method_path[0] is the class name
+            and method_path[1] == "_decorate_class"
+            and method_path[2] == "<locals>"
+            # method_path[3] is conventionally `InnerClass`, but don't enforce this
+            # method_path[4] is the method_name
+        ):
+            return outer_class.__vanguard_wrap_source__.__class__
+        else:
+            # TODO: logging here?
+            # https://github.com/gchq/Vanguard/issues/123
+            return None
 
 
 class TopMostDecorator(Decorator):
