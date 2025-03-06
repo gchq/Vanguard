@@ -245,12 +245,6 @@ filterwarnings = [
     "ignore:You have passed data through a FixedNoiseGaussianLikelihood that did not match the size of the fixed noise:gpytorch.utils.warnings.GPInputWarning",
     "ignore:To get the last learning rate computed by the scheduler, please use `get_last_lr\\(\\)`:UserWarning",
 
-    # Vanguard being pedantic errors
-    # TODO: add ignore_methods to fix these
-    # https://github.com/gchq/Vanguard/issues/283
-    "ignore::vanguard.decoratorutils.errors.OverwrittenMethodWarning",
-    "ignore::vanguard.decoratorutils.errors.UnexpectedMethodWarning",
-
     # -- Deprecations --
     # TODO: replace with sparse_coo_tensor
     # https://github.com/gchq/Vanguard/issues/278
