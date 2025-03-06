@@ -186,6 +186,10 @@ class Decorator:
             key
             for key, value in getmembers(cls, isfunction)
             if key not in self.safe_updates.get(self._get_method_implementation(cls, key), set())
+            # beartype does weird things with __sizeof__; however, it's of no concern to us, and we never make use of
+            # this dunder attribute. See https://github.com/beartype/beartype/blob/v0.19.0/beartype/_decor/_decortype.py
+            # for more details
+            and key != "__sizeof__"
         }
         ignore_methods = set(self.ignore_methods) | {"__wrapped__"}
 
