@@ -735,5 +735,6 @@ def test_no_overwrite_warnings_hyperparameters_temporary():
     class TestController(GaussianGPController):
         pass
 
-    VariationalHierarchicalHyperparameters()(VariationalInference()(TestController))
-    LaplaceHierarchicalHyperparameters()(VariationalInference()(TestController))
+    with assert_not_warns(OverwrittenMethodWarning), assert_not_warns(UnexpectedMethodWarning):
+        VariationalHierarchicalHyperparameters()(VariationalInference()(TestController))
+        LaplaceHierarchicalHyperparameters()(VariationalInference()(TestController))
