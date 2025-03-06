@@ -29,7 +29,6 @@ from torch import Tensor
 from typing_extensions import override
 
 from vanguard import utils
-from vanguard.base.basecontroller import BaseGPController
 from vanguard.decoratorutils import process_args, wraps_class
 from vanguard.hierarchical.base import (
     BaseHierarchicalHyperparameters,
@@ -111,7 +110,6 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
             super().safe_updates,
             {
                 VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
-                BaseGPController: {"_loss", "_sgd_round"},
             },
         )
 
