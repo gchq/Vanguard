@@ -17,6 +17,7 @@ Tests for the pairwise combinations of decorators.
 """
 
 import itertools
+from contextlib import nullcontext
 from typing import Any, Optional, TypeVar
 from unittest.mock import patch
 
@@ -105,7 +106,7 @@ class RequirementDetails(TypedDict, total=False):
     """Type hint for the sub-decorator details specification in `DECORATORS`."""
 
     decorator: dict[str, Any]
-    """Keyword arguments to pass to the decorator. `ignore_all=True` is always passed."""
+    """Keyword arguments to pass to the decorator."""
     controller: dict[str, Any]
     """Additional keyword arguments to pass to the `GPController` on instantiation."""
 
@@ -114,7 +115,7 @@ class DecoratorDetails(TypedDict, total=False):
     """Type hint for the decorator details specifications in `DECORATORS`."""
 
     decorator: dict[str, Any]
-    """Keyword arguments to pass to the decorator. `ignore_all=True` is always passed."""
+    """Keyword arguments to pass to the decorator."""
     controller: dict[str, Any]
     """Additional keyword arguments to pass to the `GPController` on instantiation."""
     dataset: Dataset
@@ -406,6 +407,9 @@ DATASET_CONFLICT_OVERRIDES = {
     }
 }
 
+# Decorators which shouldn't raise `OverwrittenMethodWarning` or `UnexpectedMethodWarning` when used together.
+HAS_SUPPRESSED_WARNINGS = {EmptyDecorator}
+
 
 def _initialise_decorator_pair(
     upper_decorator_details: tuple[type[Decorator], DecoratorDetails],
@@ -505,7 +509,7 @@ def _create_decorator(
         - `dataset`: dataset to test with, or :data:`None` to defer to the other decorator or to a default
     """
     decorator_class, decorator_details = details
-    decorator = decorator_class(ignore_all=True, **decorator_details.get("decorator", {}))
+    decorator = decorator_class(**decorator_details.get("decorator", {}))
     controller_kwargs = {}
 
     requirement_decorators = []
@@ -591,7 +595,19 @@ def test_combinations(
         combination, (None, None)
     )
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_APPLY_ERRORS.get(combination, (None, None))
+    if (
+        expected_error_class is None
+        and expected_warning_class is None
+        and any(isinstance(upper_decorator, cls) for cls in HAS_SUPPRESSED_WARNINGS)
+        and any(isinstance(lower_decorator, cls) for cls in HAS_SUPPRESSED_WARNINGS)
+    ):
+        # If *both* upper and lower decorator have suppressed warnings, we shouldn't get any of these spurious warnings.
+        # However, if we expect some other error or warning, don't bother to check.
+        warnings_context = assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning)
+    else:
+        warnings_context = nullcontext()
     with (
+        warnings_context,
         maybe_warns(expected_warning_class, expected_warning_message),
         maybe_throws(expected_error_class, expected_error_message),
     ):
@@ -718,7 +734,7 @@ def test_no_overwrite_warnings_temporary():
     class BinaryClassifier(GaussianGPController):
         pass
 
-    with assert_not_warns(OverwrittenMethodWarning), assert_not_warns(UnexpectedMethodWarning):
+    with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
         BinaryClassification()(VariationalInference()(BinaryClassifier))
 
 

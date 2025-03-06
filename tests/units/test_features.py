@@ -123,7 +123,7 @@ class HigherRankMean(ConstantMean):
         return super().forward(input.reshape(input.shape[0], 4))
 
 
-@HigherRankFeatures(2)
+@HigherRankFeatures(2, ignore_all=True)
 @DisableStandardScaling(ignore_all=True)
 class Rank2Controller(GaussianGPController):
     pass
