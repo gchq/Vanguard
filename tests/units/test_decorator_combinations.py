@@ -720,3 +720,20 @@ def test_no_overwrite_warnings_temporary():
 
     with assert_not_warns(OverwrittenMethodWarning), assert_not_warns(UnexpectedMethodWarning):
         BinaryClassification()(VariationalInference()(BinaryClassifier))
+
+
+def test_no_overwrite_warnings_hyperparameters_temporary():
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    The test should raise no warnings when run.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+    class TestController(GaussianGPController):
+        pass
+
+    VariationalHierarchicalHyperparameters()(VariationalInference()(TestController))
+    LaplaceHierarchicalHyperparameters()(VariationalInference()(TestController))
+
