@@ -210,7 +210,7 @@ class Decorator:
             if self.raise_instead:
                 raise errors.UnexpectedMethodError(message)
             else:
-                warnings.warn(message, errors.UnexpectedMethodWarning)
+                warnings.warn(message, errors.UnexpectedMethodWarning, stacklevel=4)
 
         overwritten_methods = {method for method in cls_methods if method in cls.__dict__} - ignore_methods
         if overwritten_methods:
@@ -233,7 +233,7 @@ class Decorator:
             if self.raise_instead:
                 raise errors.OverwrittenMethodError(message)
             else:
-                warnings.warn(message, errors.OverwrittenMethodWarning)
+                warnings.warn(message, errors.OverwrittenMethodWarning, stacklevel=4)
 
     @staticmethod
     def _get_method_implementation(subclass: type, method_name: str) -> Optional[type]:
