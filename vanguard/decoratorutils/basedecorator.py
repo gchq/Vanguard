@@ -186,6 +186,10 @@ class Decorator:
             key
             for key, value in getmembers(cls, isfunction)
             if key not in self.safe_updates.get(self._get_method_implementation(cls, key), set())
+            # beartype does weird things with __sizeof__; however, it's of no concern to us, and we never make use of
+            # this dunder attribute. See https://github.com/beartype/beartype/blob/v0.19.0/beartype/_decor/_decortype.py
+            # for more details
+            and key != "__sizeof__"
         }
         ignore_methods = set(self.ignore_methods) | {"__wrapped__"}
 
@@ -210,7 +214,7 @@ class Decorator:
             if self.raise_instead:
                 raise errors.UnexpectedMethodError(message)
             else:
-                warnings.warn(message, errors.UnexpectedMethodWarning)
+                warnings.warn(message, errors.UnexpectedMethodWarning, stacklevel=4)
 
         overwritten_methods = {method for method in cls_methods if method in cls.__dict__} - ignore_methods
         if overwritten_methods:
@@ -233,7 +237,7 @@ class Decorator:
             if self.raise_instead:
                 raise errors.OverwrittenMethodError(message)
             else:
-                warnings.warn(message, errors.OverwrittenMethodWarning)
+                warnings.warn(message, errors.OverwrittenMethodWarning, stacklevel=4)
 
     @staticmethod
     def _get_method_implementation(subclass: type, method_name: str) -> Optional[type]:

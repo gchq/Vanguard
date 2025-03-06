@@ -19,6 +19,7 @@ Contains test cases for Vanguard testing.
 import contextlib
 import unittest
 import warnings
+from collections.abc import Iterable
 from typing import Any, Optional, Union
 from unittest.mock import Mock
 
@@ -196,12 +197,31 @@ class VanguardTestCase(unittest.TestCase):
 
 
 @contextlib.contextmanager
-def assert_not_warns(expected_warning_type: type[Warning] = Warning) -> None:
-    """Assert that enclosed code raises no warnings, or no warnings of a given type."""
+def assert_not_warns(*expected_warning_types: type[Warning]) -> Iterable[None]:
+    r"""
+    Assert that enclosed code raises no warnings, or no warnings of a given type.
+
+    If a warning type is provided, this context manager re-raises any warnings that were not of the given type, with
+    the same message, but with stacklevel=1. This loses information as to where the warning originally came from, but
+    handling this more intelligently would require fiddling with the guts of the :mod:`warnings` module.
+
+    :param \*expected_warning_types: Warning types to check for. If none are provided, checks for all types of warnings.
+    """
     with warnings.catch_warnings(record=True) as ws:
         yield
 
-    ws = list(filter(lambda w: issubclass(w.category, expected_warning_type), ws))
+    if expected_warning_types:
+        # Filter to only warnings of the given types; re-raise warnings not of that type
+        ws_caught = []
+        ws_uncaught = []
+        for warning in ws:
+            if any(issubclass(warning.category, warning_type) for warning_type in expected_warning_types):
+                ws_caught.append(warning)
+            else:
+                ws_uncaught.append(warning)
+        for warning in ws_uncaught:
+            warnings.warn(message=warning.message, category=warning.category, stacklevel=1, source=warning.source)
+        ws = ws_caught
 
     if len(ws) > 0:
         msg = f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}"
