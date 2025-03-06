@@ -737,3 +737,111 @@ def test_no_overwrite_warnings_hyperparameters_temporary():
 
     VariationalHierarchicalHyperparameters()(VariationalInference()(TestController))
     LaplaceHierarchicalHyperparameters()(VariationalInference()(TestController))
+
+
+@pytest.mark.parametrize(
+    "top_level_decorator",
+    (NormaliseY, LearnYNoise, DisableStandardScaling),
+)
+def test_no_overwrite_warnings_utilities_temporary(top_level_decorator):
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    The test will at the time of writing raise warnings, but they are all InnerClass
+    warnings to be fixed under a different warnings issue, or are due to a
+    classification decorator over writing another decorators methods, again to be
+    fixed in a different branch.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class TestController(GaussianGPController):
+        pass
+
+    top_level_decorator()(DirichletMulticlassClassification(num_classes=2)(TestController))
+    top_level_decorator()(DirichletKernelMulticlassClassification(num_classes=2)(TestController))
+    top_level_decorator()(HigherRankFeatures(rank=3)(TestController))
+    top_level_decorator()(DisableStandardScaling()(TestController))
+    top_level_decorator()(VariationalHierarchicalHyperparameters()(TestController))
+    top_level_decorator()(LaplaceHierarchicalHyperparameters()(TestController))
+    top_level_decorator()(NormaliseY()(TestController))
+    top_level_decorator()(Multitask(num_tasks=3)(TestController))
+    top_level_decorator()(SetWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+    top_level_decorator()(SetInputWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+    top_level_decorator()(VariationalInference()(TestController))
+
+
+def test_no_overwrite_warnings_utilities_temporary_high_rank():
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    The test will at the time of writing raise warnings, but they are all InnerClass
+    warnings to be fixed under a different warnings issue, or are due to a
+    classification decorator over writing another decorators methods, again to be
+    fixed in a different branch.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class TestController(GaussianGPController):
+        pass
+
+    HigherRankFeatures(rank=4)(DirichletMulticlassClassification(num_classes=2)(TestController))
+    HigherRankFeatures(rank=4)(DirichletKernelMulticlassClassification(num_classes=2)(TestController))
+    HigherRankFeatures(rank=4)(HigherRankFeatures(rank=3)(TestController))
+    HigherRankFeatures(rank=4)(DisableStandardScaling()(TestController))
+    HigherRankFeatures(rank=4)(VariationalHierarchicalHyperparameters()(TestController))
+    HigherRankFeatures(rank=4)(LaplaceHierarchicalHyperparameters()(TestController))
+    HigherRankFeatures(rank=4)(NormaliseY()(TestController))
+    HigherRankFeatures(rank=4)(Multitask(num_tasks=3)(TestController))
+    HigherRankFeatures(rank=4)(SetWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+    HigherRankFeatures(rank=4)(SetInputWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+    HigherRankFeatures(rank=4)(VariationalInference()(TestController))
+
+
+# @pytest.mark.parametrize(
+#     "upper_details, lower_details",
+#     [
+#         pytest.param(
+#             upper_details,
+#             lower_details,
+#             id=(
+#                 f"Upper: {upper_details[0].__name__}-Lower: {lower_details[0].__name__}"
+#                 if lower_details[0] is not EmptyDecorator
+#                 else f"Only {upper_details[0].__name__}"
+#             ),
+#         )
+#         for upper_details, lower_details in itertools.product(DECORATORS.items(), repeat=2)
+#         # Don't test combinations which we've excluded above
+#         if (upper_details[0], lower_details[0]) not in EXCLUDED_COMBINATIONS
+#         and (lower_details[0], upper_details[0]) not in EXCLUDED_COMBINATIONS
+#         # NoDecorator should only be on bottom, to avoid cluttering the test log
+#         and upper_details[0] is not EmptyDecorator
+#         # TopMostDecorators must be on top, as the name suggests
+#         and not issubclass(lower_details[0], TopMostDecorator)
+#     ],
+# )
+# @pytest.mark.parametrize("batch_size", [pytest.param(None, id="full")])
+# def test_combinations(
+#     upper_details: tuple[type[Decorator], DecoratorDetails],
+#     lower_details: tuple[type[Decorator], DecoratorDetails],
+#     batch_size: Optional[int],
+# ) -> None:
+#     if "DisableStandardScaling" in upper_details[0].__name__:
+#         (
+#             upper_decorator,
+#             upper_requirements,
+#             lower_decorator,
+#             lower_requirements,
+#             batch_requirements,
+#             controller_kwargs,
+#             dataset,
+#         ) = _initialise_decorator_pair(upper_details, lower_details, batch_mode=batch_size is not None)
+#
+#         print('--------------')
+#         print('--------------')
+#         print(upper_details[0])
+#         print(lower_details[0])
+#         AAA
