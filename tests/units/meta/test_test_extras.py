@@ -49,7 +49,7 @@ class TestNotWarns:
 
     def test_passes_with_warning_not_of_given_type(self):
         """Test that if a warning type is passed, warnings not of that type do not cause any error."""
-        with assert_not_warns(UserWarning):
+        with pytest.warns(OtherWarningSubclass), assert_not_warns(UserWarning):
             warnings.warn("A warning!", OtherWarningSubclass)
 
     def test_fails_with_warning_of_given_type(self):
@@ -73,5 +73,11 @@ class TestNotWarns:
 
     def test_passes_with_warning_not_of_given_types(self):
         """Test that if a warning not of either of the given types is raised, it does not cause any error."""
-        with assert_not_warns(SubclassOfUserWarning, SecondSubclassOfUserWarning):
+        with pytest.warns(OtherWarningSubclass), assert_not_warns(SubclassOfUserWarning, SecondSubclassOfUserWarning):
             warnings.warn("A warning!", OtherWarningSubclass)
+
+    def test_nested(self):
+        """Test that nesting multiple copies of assert_not_warns works."""
+        with pytest.raises(AssertionError):
+            with assert_not_warns(OtherWarningSubclass), assert_not_warns(UserWarning):
+                warnings.warn("A warning!", OtherWarningSubclass)
