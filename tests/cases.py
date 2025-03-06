@@ -19,6 +19,7 @@ Contains test cases for Vanguard testing.
 import contextlib
 import unittest
 import warnings
+from collections.abc import Iterable
 from typing import Any, Optional, Union
 from unittest.mock import Mock
 
@@ -196,12 +197,19 @@ class VanguardTestCase(unittest.TestCase):
 
 
 @contextlib.contextmanager
-def assert_not_warns(expected_warning_type: type[Warning] = Warning) -> None:
-    """Assert that enclosed code raises no warnings, or no warnings of a given type."""
+def assert_not_warns(*expected_warning_types: type[Warning]) -> Iterable[None]:
+    r"""
+    Assert that enclosed code raises no warnings, or no warnings of a given type.
+
+    :param \*expected_warning_types: Warning types to check for. If none are provided, checks for all types of warnings.
+    """
     with warnings.catch_warnings(record=True) as ws:
         yield
 
-    ws = list(filter(lambda w: issubclass(w.category, expected_warning_type), ws))
+    if expected_warning_types:
+        ws = list(
+            filter(lambda w: any(issubclass(w.category, warning_type) for warning_type in expected_warning_types), ws)
+        )
 
     if len(ws) > 0:
         msg = f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}"
