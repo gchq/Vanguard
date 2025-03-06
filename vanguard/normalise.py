@@ -24,7 +24,6 @@ from typing_extensions import override
 
 from vanguard import utils
 from vanguard.base import GPController
-from vanguard.base.gpcontroller import BaseGPController
 from vanguard.base.posteriors import Posterior
 from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
@@ -98,14 +97,6 @@ class NormaliseY(Decorator):
                     "posterior_over_fuzzy_point",
                     "fuzzy_predictive_likelihood",
                     "predictive_likelihood",
-                },
-                BaseGPController: {
-                    "_input_standardise_modules",
-                    "_gp_forward",
-                    "_predictive_likelihood",
-                    "_get_posterior_over_point",
-                    "._get_posterior_over_fuzzy_point_in_eval_mode",
-                    "_fuzzy_predictive_likelihood",
                 },
             },
         )

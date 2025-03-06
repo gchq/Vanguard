@@ -21,7 +21,6 @@ from typing import Any, TypeVar
 from typing_extensions import override
 
 from vanguard.base import GPController
-from vanguard.base.basecontroller import BaseGPController
 from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import Decorator, wraps_class
 from vanguard.variational import VariationalInference
@@ -74,16 +73,6 @@ class DisableStandardScaling(Decorator):
                     "predictive_likelihood",
                 },
                 VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
-                BaseGPController: {
-                    "_input_standardise_modules",
-                    "_fuzzy_predictive_likelihood",
-                    "_gp_forward",
-                    "_predictive_likelihood",
-                    "_get_posterior_over_fuzzy_point_in_eval_mode",
-                    "_get_posterior_over_point",
-                    "_loss",
-                    "_sgd_round",
-                },
             },
         )
 
