@@ -731,9 +731,9 @@ def test_no_overwrite_warnings_hyperparameters_temporary():
     This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
     set up.
     """
+
     class TestController(GaussianGPController):
         pass
 
     VariationalHierarchicalHyperparameters()(VariationalInference()(TestController))
     LaplaceHierarchicalHyperparameters()(VariationalInference()(TestController))
-

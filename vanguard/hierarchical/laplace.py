@@ -24,8 +24,7 @@ import numpy as np
 import torch
 from numpy.typing import NDArray
 from torch import Tensor
-from typing_extensions import Self
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from vanguard import utils
 from vanguard.decoratorutils import process_args, wraps_class
@@ -112,11 +111,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     def safe_updates(self) -> dict[type, set[str]]:
         return self._add_to_safe_updates(
             super().safe_updates,
-            {
-                VariationalInference: {
-                    "__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"
-                }
-            },
+            {VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"}},
         )
 
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
