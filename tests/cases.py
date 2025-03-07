@@ -224,7 +224,8 @@ def assert_not_warns(*expected_warning_types: type[Warning]) -> Iterable[None]:
         ws = ws_caught
 
     if len(ws) > 0:
-        msg = f"Expected no warnings, caught {len(ws)}: {[w.message for w in ws]}"
+        sep = "\n-----------\n"
+        msg = f"Expected no warnings, caught {len(ws)}: {sep.join([f'{w.category.__name__}: {w.message}' for w in ws])}"
         if __debug__:
             raise AssertionError(msg)
         else:
