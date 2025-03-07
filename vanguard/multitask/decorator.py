@@ -25,6 +25,7 @@ import torch
 from gpytorch.kernels import Kernel, MultitaskKernel
 from gpytorch.means import ConstantMean, Mean, MultitaskMean
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -70,11 +71,19 @@ class Multitask(Decorator):
         self.lmc_dimension = lmc_dimension
         self.rank = rank
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"}},
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
         is_variational = VariationalInference in cls.__decorators__
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """
             A wrapper for converting a controller class to multitask.

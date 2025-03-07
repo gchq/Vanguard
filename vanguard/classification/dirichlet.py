@@ -24,12 +24,13 @@ import numpy.typing
 import torch
 from gpytorch.likelihoods import DirichletClassificationLikelihood
 from torch import Tensor
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from vanguard import utils
 from vanguard.base import GPController
 from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.variational import VariationalInference
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
@@ -83,9 +84,17 @@ class DirichletMulticlassClassification(Decorator):
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"}},
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
-        @Classification()
-        @wraps_class(cls)
+        @Classification(ignore_all=True)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls, ClassificationMixin):
             """
             A wrapper for multiclass GP classification using a Dirichlet transformation.
