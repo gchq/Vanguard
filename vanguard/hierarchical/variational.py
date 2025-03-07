@@ -118,7 +118,7 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         variational_distribution_class = self.variational_distribution_class
         base_decorated_cls = super()._decorate_class(cls)
 
-        @wraps_class(base_decorated_cls)
+        @wraps_class(base_decorated_cls, decorator_source=self)
         class InnerClass(base_decorated_cls):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 for module_name in ("kernel", "mean", "likelihood"):
