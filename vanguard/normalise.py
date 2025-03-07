@@ -110,7 +110,7 @@ class NormaliseY(Decorator):
                 stacklevel=3,
             )
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """
             A wrapper for normalising y inputs and variance.

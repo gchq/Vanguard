@@ -78,7 +78,7 @@ class HigherRankFeatures(Decorator):
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         rank = self.rank
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)

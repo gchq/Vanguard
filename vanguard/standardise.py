@@ -77,7 +77,7 @@ class DisableStandardScaling(Decorator):
         )
 
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """
             A wrapper for disabling standard scaling.
