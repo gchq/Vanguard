@@ -26,6 +26,7 @@ from gpytorch.variational import CholeskyVariationalDistribution, _VariationalDi
 from linear_operator import to_linear_operator
 from numpy.typing import NDArray
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.decoratorutils import process_args, wraps_class
@@ -37,6 +38,7 @@ from vanguard.hierarchical.base import (
     set_batch_shape,
 )
 from vanguard.hierarchical.collection import HyperparameterCollection
+from vanguard.variational import VariationalInference
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 KernelT = TypeVar("KernelT", bound=gpytorch.kernels.Kernel)
@@ -101,12 +103,22 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
         super().__init__(num_mc_samples=num_mc_samples, **kwargs)
         self.variational_distribution_class = variational_distribution_class
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
+            },
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         sample_shape = self.sample_shape
         variational_distribution_class = self.variational_distribution_class
         base_decorated_cls = super()._decorate_class(cls)
 
-        @wraps_class(base_decorated_cls)
+        @wraps_class(base_decorated_cls, decorator_source=self)
         class InnerClass(base_decorated_cls):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 for module_name in ("kernel", "mean", "likelihood"):
