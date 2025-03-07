@@ -28,7 +28,6 @@ from typing import NoReturn, TypeVar, Union
 
 import numpy as np
 import numpy.typing
-from typing_extensions import override
 
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, wraps_class
@@ -117,14 +116,6 @@ class Classification(Decorator):
                     "Please use only one classification decorator at once."
                 )
                 raise TypeError(msg)
-
-    @property
-    @override
-    def safe_updates(self) -> dict[type, set[str]]:
-        return self._add_to_safe_updates(
-            super().safe_updates,
-            {ClassificationMixin: {"classify_points", "classify_fuzzy_points"}},
-        )
 
     def _decorate_class(self, cls: type[T]) -> type[T]:
         """Close off the prediction methods on a GP."""
