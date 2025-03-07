@@ -736,3 +736,50 @@ def test_no_overwrite_warnings_temporary():
 
     with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
         BinaryClassification()(VariationalInference()(BinaryClassifier))
+
+
+@pytest.mark.skip(reason="Fails from warnings raised within classification decorators")
+@pytest.mark.parametrize("top_level_decorator", (SetInputWarp, SetWarp))
+def test_no_overwrite_warnings_warping_temporary(top_level_decorator):
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class TestController(GaussianGPController):
+        pass
+
+    with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            BinaryClassification()(VariationalInference()(TestController))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            DirichletMulticlassClassification(num_classes=3)(VariationalInference()(TestController))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            DirichletKernelMulticlassClassification(num_classes=3)(VariationalInference()(TestController))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(HigherRankFeatures(rank=3)(TestController))
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(DisableStandardScaling()(TestController))
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            CategoricalClassification(num_classes=3)(Multitask(num_tasks=3)(VariationalInference()(TestController)))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            VariationalHierarchicalHyperparameters()(TestController)
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            LaplaceHierarchicalHyperparameters()(TestController)
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(LearnYNoise()(TestController))
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(NormaliseY()(TestController))
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            Multitask(num_tasks=3)(VariationalInference()(TestController))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            SetWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController)
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            SetInputWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController)
+        )
