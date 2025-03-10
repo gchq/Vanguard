@@ -19,11 +19,13 @@ Contains the Python decorators for applying input warping.
 from typing import Any, TypeVar
 
 import torch
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from vanguard import utils
 from vanguard.base import GPController
+from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.variational import VariationalInference
 from vanguard.warps.basefunction import WarpFunction
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -83,10 +85,27 @@ class SetInputWarp(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.warp_function = warp_function
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {
+                ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
+                VariationalInference: {"__init__", "_fuzzy_predictive_likelihood", "_predictive_likelihood"},
+                Classification: {
+                    "predictive_likelihood",
+                    "posterior_over_point",
+                    "fuzzy_predictive_likelihood",
+                    "posterior_over_fuzzy_point",
+                },
+            },
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         warp_function = self.warp_function
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """
             A wrapper for applying a warp to inputs for non-Gaussian input uncertainty.
