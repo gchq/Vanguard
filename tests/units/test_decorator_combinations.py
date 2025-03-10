@@ -750,3 +750,134 @@ def test_no_overwrite_warnings_classifiers_temporary():
         CategoricalClassification(num_classes=3)(Multitask(num_tasks=3)(VariationalInference()(TestController)))
         DirichletMulticlassClassification(num_classes=3)(TestController)
         DirichletKernelMulticlassClassification(num_classes=3)(TestController)
+
+
+def test_no_overwrite_warnings_hyperparameters_temporary():
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    The test should raise no warnings when run.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class TestController(GaussianGPController):
+        pass
+
+    with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
+        VariationalHierarchicalHyperparameters()(VariationalInference()(TestController))
+        LaplaceHierarchicalHyperparameters()(VariationalInference()(TestController))
+
+
+@pytest.mark.skip(reason="Skipping due to InnerClass and classification warnings raised unrelated to this issue.")
+@pytest.mark.parametrize(
+    "top_level_decorator",
+    (NormaliseY, LearnYNoise, DisableStandardScaling),
+)
+def test_no_overwrite_warnings_utilities_temporary(top_level_decorator):
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    The test will at the time of writing raise warnings, but they are all InnerClass
+    warnings to be fixed under a different warnings issue, or are due to a
+    classification decorator over writing another decorators methods, again to be
+    fixed in a different branch.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class TestController(GaussianGPController):
+        pass
+
+    with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
+        top_level_decorator()(DirichletMulticlassClassification(num_classes=2)(TestController))
+        top_level_decorator()(DirichletKernelMulticlassClassification(num_classes=2)(TestController))
+        top_level_decorator()(HigherRankFeatures(rank=3)(TestController))
+        top_level_decorator()(DisableStandardScaling()(TestController))
+        top_level_decorator()(VariationalHierarchicalHyperparameters()(TestController))
+        top_level_decorator()(LaplaceHierarchicalHyperparameters()(TestController))
+        top_level_decorator()(NormaliseY()(TestController))
+        top_level_decorator()(Multitask(num_tasks=3)(TestController))
+        top_level_decorator()(SetWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+        top_level_decorator()(SetInputWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+        top_level_decorator()(VariationalInference()(TestController))
+
+
+@pytest.mark.skip(reason="Skipping due to InnerClass and classification warnings raised unrelated to this issue.")
+def test_no_overwrite_warnings_utilities_temporary_high_rank():
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    The test will at the time of writing raise warnings, but they are all InnerClass
+    warnings to be fixed under a different warnings issue, or are due to a
+    classification decorator over writing another decorators methods, again to be
+    fixed in a different branch. As a  result, it's skipped.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class TestController(GaussianGPController):
+        pass
+
+    with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
+        HigherRankFeatures(rank=4)(DirichletMulticlassClassification(num_classes=2)(TestController))
+        HigherRankFeatures(rank=4)(DirichletKernelMulticlassClassification(num_classes=2)(TestController))
+        HigherRankFeatures(rank=4)(HigherRankFeatures(rank=3)(TestController))
+        HigherRankFeatures(rank=4)(DisableStandardScaling()(TestController))
+        HigherRankFeatures(rank=4)(VariationalHierarchicalHyperparameters()(TestController))
+        HigherRankFeatures(rank=4)(LaplaceHierarchicalHyperparameters()(TestController))
+        HigherRankFeatures(rank=4)(NormaliseY()(TestController))
+        HigherRankFeatures(rank=4)(Multitask(num_tasks=3)(TestController))
+        HigherRankFeatures(rank=4)(SetWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+        HigherRankFeatures(rank=4)(SetInputWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+        HigherRankFeatures(rank=4)(VariationalInference()(TestController))
+
+
+@pytest.mark.skip(reason="Fails from warnings raised within classification decorators")
+@pytest.mark.parametrize("top_level_decorator", (SetInputWarp, SetWarp))
+def test_no_overwrite_warnings_warping_temporary(top_level_decorator):
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class TestController(GaussianGPController):
+        pass
+
+    with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            BinaryClassification()(VariationalInference()(TestController))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            DirichletMulticlassClassification(num_classes=3)(VariationalInference()(TestController))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            DirichletKernelMulticlassClassification(num_classes=3)(VariationalInference()(TestController))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(HigherRankFeatures(rank=3)(TestController))
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(DisableStandardScaling()(TestController))
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            CategoricalClassification(num_classes=3)(Multitask(num_tasks=3)(VariationalInference()(TestController)))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            VariationalHierarchicalHyperparameters()(TestController)
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            LaplaceHierarchicalHyperparameters()(TestController)
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(LearnYNoise()(TestController))
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(NormaliseY()(TestController))
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            Multitask(num_tasks=3)(VariationalInference()(TestController))
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            SetWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController)
+        )
+        top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
+            SetInputWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController)
+        )
