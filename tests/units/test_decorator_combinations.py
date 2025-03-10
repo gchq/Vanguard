@@ -881,3 +881,31 @@ def test_no_overwrite_warnings_warping_temporary(top_level_decorator):
         top_level_decorator(warp_function=warpfunctions.SinhWarpFunction())(
             SetInputWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController)
         )
+
+
+@pytest.mark.skip(reason="Skipping due to InnerClass issue.")
+def test_no_overwrite_warnings_distributed_temporary():
+    """
+    Test that no spurious warnings are raised on decorator application in simple cases.
+
+    The test will at the time of writing raise warnings, but they are all InnerClass
+    warnings to be fixed under a different warnings issue.
+
+    This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
+    set up.
+    """
+
+    class TestController(GaussianGPController):
+        pass
+
+    with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
+        Distributed()(DirichletMulticlassClassification(num_classes=2)(TestController))
+        Distributed()(DirichletKernelMulticlassClassification(num_classes=2)(TestController))
+        Distributed()(DisableStandardScaling()(TestController))
+        Distributed()(VariationalHierarchicalHyperparameters()(TestController))
+        Distributed()(LaplaceHierarchicalHyperparameters()(TestController))
+        Distributed()(NormaliseY()(TestController))
+        Distributed()(Multitask(num_tasks=3)(TestController))
+        Distributed()(SetWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+        Distributed()(SetInputWarp(warp_function=warpfunctions.SinhWarpFunction())(TestController))
+        Distributed()(VariationalInference()(TestController))
