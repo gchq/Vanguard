@@ -22,10 +22,13 @@ from typing import Any, TypeVar, Union
 import numpy as np
 import torch
 from gpytorch.models import GP
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.base import GPController
+from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.variational import VariationalInference
 from vanguard.warnings import warn_experimental
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -55,10 +58,27 @@ class HigherRankFeatures(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.rank = rank
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {
+                ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
+                Classification: {
+                    "posterior_over_point",
+                    "posterior_over_fuzzy_point",
+                    "fuzzy_predictive_likelihood",
+                    "predictive_likelihood",
+                },
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
+            },
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         rank = self.rank
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             def __init__(self, *args: Any, **kwargs: Any) -> None:
                 all_parameters_as_kwargs = process_args(super().__init__, *args, **kwargs)

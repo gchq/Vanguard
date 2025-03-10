@@ -18,8 +18,12 @@ The :class:`DisableStandardScaling` decorator will disable the default input sta
 
 from typing import Any, TypeVar
 
+from typing_extensions import override
+
 from vanguard.base import GPController
+from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import Decorator, wraps_class
+from vanguard.variational import VariationalInference
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 
@@ -55,8 +59,25 @@ class DisableStandardScaling(Decorator):
         """
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {
+                ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
+                Classification: {
+                    "posterior_over_point",
+                    "posterior_over_fuzzy_point",
+                    "fuzzy_predictive_likelihood",
+                    "predictive_likelihood",
+                },
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
+            },
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """
             A wrapper for disabling standard scaling.
