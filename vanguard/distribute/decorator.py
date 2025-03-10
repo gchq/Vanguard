@@ -31,6 +31,9 @@ from typing_extensions import override
 from vanguard import utils
 from vanguard.base import GPController
 from vanguard.base.posteriors import Posterior
+from vanguard.classification import DirichletMulticlassClassification
+from vanguard.classification.kernel import DirichletKernelMulticlassClassification
+from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import TopMostDecorator, process_args, wraps_class
 from vanguard.distribute.aggregators import (
     BadPriorVarShapeError,
@@ -43,6 +46,12 @@ from vanguard.distribute.aggregators import (
 )
 from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner
 from vanguard.features import HigherRankFeatures
+from vanguard.hierarchical import LaplaceHierarchicalHyperparameters, VariationalHierarchicalHyperparameters
+from vanguard.multitask import Multitask
+from vanguard.normalise import NormaliseY
+from vanguard.standardise import DisableStandardScaling
+from vanguard.variational import VariationalInference
+from vanguard.warps import SetInputWarp, SetWarp
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
@@ -119,10 +128,36 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
             )
             raise TypeError(msg)
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {
+                DirichletMulticlassClassification: {"__init__", "_loss"},
+                DirichletKernelMulticlassClassification: {"__init__"},
+                Classification: {
+                    "fuzzy_predictive_likelihood",
+                    "posterior_over_point",
+                    "posterior_over_fuzzy_point",
+                    "predictive_likelihood",
+                },
+                ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
+                NormaliseY: {"__init__"},
+                DisableStandardScaling: {"_input_standardise_modules"},
+                VariationalHierarchicalHyperparameters: {"__init__", "_loss"},
+                LaplaceHierarchicalHyperparameters: {"__init__", "_sgd_round"},
+                SetWarp: {"__init__", "_loss", "_sgd_round"},
+                SetInputWarp: {"__init__"},
+                Multitask: {"__init__"},
+                VariationalInference: {"_fuzzy_predictive_likelihood", "_predictive_likelihood", "__init__"},
+            },
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """
             Uses multiple controller classes to aggregate predictions.
