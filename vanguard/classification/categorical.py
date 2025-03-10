@@ -21,6 +21,7 @@ from typing import Any, TypeVar, Union
 import numpy as np
 import numpy.typing
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -84,10 +85,21 @@ class CategoricalClassification(Decorator):
         super().__init__(framework_class=GPController, required_decorators={VariationalInference, Multitask}, **kwargs)
         self.num_classes = num_classes
 
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
+                Multitask: {"__init__", "_match_mean_shape_to_kernel"},
+            },
+        )
+
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
-        @Classification()
+        @Classification(ignore_all=True)
         @wraps_class(cls)
         class InnerClass(cls, ClassificationMixin):
             """

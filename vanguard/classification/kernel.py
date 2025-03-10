@@ -85,8 +85,8 @@ class DirichletKernelMulticlassClassification(Decorator):
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         num_classes = self.num_classes
 
-        @Classification()
-        @wraps_class(cls)
+        @Classification(ignore_all=True)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls, ClassificationMixin):
             gp_model_class = InertKernelModel
 

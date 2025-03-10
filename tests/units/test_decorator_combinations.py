@@ -141,7 +141,12 @@ class EmptyDecorator(Decorator):
     """Placeholder decorator to allow testing each other decorator on its own."""
 
     def __init__(self, **kwargs) -> None:
-        """Initialise the placeholder decorator."""
+        """
+        Initialise the placeholder decorator.
+
+        `ignore_all=True` is always passed, since this decorator is meant to be a no-op.
+        """
+        kwargs["ignore_all"] = True
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: T) -> T:
@@ -408,7 +413,13 @@ DATASET_CONFLICT_OVERRIDES = {
 }
 
 # Decorators which shouldn't raise `OverwrittenMethodWarning` or `UnexpectedMethodWarning` when used together.
-HAS_SUPPRESSED_WARNINGS = {EmptyDecorator}
+HAS_SUPPRESSED_WARNINGS = {
+    EmptyDecorator,
+    BinaryClassification,
+    CategoricalClassification,
+    DirichletKernelMulticlassClassification,
+    DirichletMulticlassClassification,
+}
 
 
 def _initialise_decorator_pair(
@@ -723,19 +734,22 @@ def test_combinations(
             fuzzy_posterior.confidence_interval(dataset.significance)
 
 
-def test_no_overwrite_warnings_temporary():
+def test_no_overwrite_warnings_classifiers_temporary():
     """
-    Test that no spurious warnings are raised on decorator application in simple cases.
+    Test that no spurious warnings are raised on decorator application in simple cases with classifiers.
 
     This is a temporary test, and should be incorporated into test_combinations above once all decorators have this
     set up.
     """
 
-    class BinaryClassifier(GaussianGPController):
+    class TestController(GaussianGPController):
         pass
 
     with assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning):
-        BinaryClassification()(VariationalInference()(BinaryClassifier))
+        BinaryClassification()(VariationalInference()(TestController))
+        CategoricalClassification(num_classes=3)(Multitask(num_tasks=3)(VariationalInference()(TestController)))
+        DirichletMulticlassClassification(num_classes=3)(TestController)
+        DirichletKernelMulticlassClassification(num_classes=3)(TestController)
 
 
 def test_no_overwrite_warnings_hyperparameters_temporary():
