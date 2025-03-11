@@ -615,7 +615,6 @@ def test_combinations(
         dataset,
     ) = _initialise_decorator_pair(upper_details, lower_details, batch_mode=batch_size is not None)
     all_decorators = [upper_decorator, *upper_requirements, lower_decorator, *lower_requirements, *batch_requirements]
-    print([type(d).__name__ for d in all_decorators])
 
     if batch_size is not None and any(isinstance(d, DirichletKernelMulticlassClassification) for d in all_decorators):
         pytest.skip("DirichletKernelMulticlassClassification is not compatible with VariationalInference")
