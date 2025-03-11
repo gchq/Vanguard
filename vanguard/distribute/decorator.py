@@ -31,9 +31,6 @@ from typing_extensions import override
 from vanguard import utils
 from vanguard.base import GPController
 from vanguard.base.posteriors import Posterior
-from vanguard.classification import DirichletMulticlassClassification
-from vanguard.classification.kernel import DirichletKernelMulticlassClassification
-from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import TopMostDecorator, process_args, wraps_class
 from vanguard.distribute.aggregators import (
     BadPriorVarShapeError,
@@ -46,12 +43,6 @@ from vanguard.distribute.aggregators import (
 )
 from vanguard.distribute.partitioners import BasePartitioner, KMeansPartitioner
 from vanguard.features import HigherRankFeatures
-from vanguard.hierarchical import LaplaceHierarchicalHyperparameters, VariationalHierarchicalHyperparameters
-from vanguard.multitask import Multitask
-from vanguard.normalise import NormaliseY
-from vanguard.standardise import DisableStandardScaling
-from vanguard.variational import VariationalInference
-from vanguard.warps import SetInputWarp, SetWarp
 
 _AGGREGATION_JITTER = 1e-10
 _INPUT_WARNING = "The input matches the stored training data. Did you forget to call model.train()?"
@@ -131,11 +122,40 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
     @property
     @override
     def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.classification import (
+            BinaryClassification,
+            CategoricalClassification,
+            DirichletMulticlassClassification,
+        )
+        from vanguard.classification.kernel import DirichletKernelMulticlassClassification
+        from vanguard.classification.mixin import Classification, ClassificationMixin
+        from vanguard.hierarchical import LaplaceHierarchicalHyperparameters, VariationalHierarchicalHyperparameters
+        from vanguard.learning import LearnYNoise
+        from vanguard.multitask import Multitask
+        from vanguard.normalise import NormaliseY
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.variational import VariationalInference
+        from vanguard.warps import SetInputWarp, SetWarp
+        # pylint: enable=import-outside-toplevel
+
         return self._add_to_safe_updates(
             super().safe_updates,
             {
-                DirichletMulticlassClassification: {"__init__", "_loss"},
-                DirichletKernelMulticlassClassification: {"__init__"},
+                BinaryClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_prediction_means",
+                    "warn_normalise_y",
+                },
+                CategoricalClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_posterior",
+                    "warn_normalise_y",
+                },
                 Classification: {
                     "fuzzy_predictive_likelihood",
                     "posterior_over_point",
@@ -143,13 +163,50 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                     "predictive_likelihood",
                 },
                 ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
-                NormaliseY: {"__init__"},
+                DirichletKernelMulticlassClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_prediction_means",
+                },
+                DirichletMulticlassClassification: {
+                    "__init__",
+                    "_loss",
+                    "_noise_transform",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    # "_get_predictions_from_prediction_means",
+                    "warn_normalise_y",
+                },
                 DisableStandardScaling: {"_input_standardise_modules"},
-                VariationalHierarchicalHyperparameters: {"__init__", "_loss"},
-                LaplaceHierarchicalHyperparameters: {"__init__", "_sgd_round"},
-                SetWarp: {"__init__", "_loss", "_sgd_round"},
+                LaplaceHierarchicalHyperparameters: {
+                    "__init__",
+                    "_compute_hyperparameter_laplace_approximation",
+                    "_compute_loss_hessian",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_predictive_likelihood",
+                    "_sample_and_set_hyperparameters",
+                    "_sgd_round",
+                    "_update_hyperparameter_posterior",
+                    "auto_temperature",
+                },
+                LearnYNoise: {"__init__"},
+                Multitask: {"__init__", "_match_mean_shape_to_kernel"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "_unwarp_values", "warn_normalise_y"},
                 SetInputWarp: {"__init__"},
-                Multitask: {"__init__"},
+                VariationalHierarchicalHyperparameters: {
+                    "__init__",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_loss",
+                    "_predictive_likelihood",
+                },
                 VariationalInference: {"_fuzzy_predictive_likelihood", "_predictive_likelihood", "__init__"},
             },
         )

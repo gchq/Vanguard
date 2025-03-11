@@ -87,17 +87,78 @@ class NormaliseY(Decorator):
     @property
     @override
     def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.classification import BinaryClassification, CategoricalClassification
+        from vanguard.classification.kernel import DirichletKernelMulticlassClassification
+        from vanguard.features import HigherRankFeatures
+        from vanguard.hierarchical import LaplaceHierarchicalHyperparameters, VariationalHierarchicalHyperparameters
+        from vanguard.learning import LearnYNoise
+        from vanguard.multitask import Multitask
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.warps import SetInputWarp, SetWarp
+        # pylint: enable=import-outside-toplevel
+
         return self._add_to_safe_updates(
             super().safe_updates,
             {
+                BinaryClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_prediction_means",
+                    "warn_normalise_y",
+                },
+                CategoricalClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_posterior",
+                    "warn_normalise_y",
+                },
                 ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
-                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
                 Classification: {
                     "posterior_over_point",
                     "posterior_over_fuzzy_point",
                     "fuzzy_predictive_likelihood",
                     "predictive_likelihood",
                 },
+                DirichletKernelMulticlassClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_prediction_means",
+                },
+                DisableStandardScaling: {"_input_standardise_modules"},
+                HigherRankFeatures: {"__init__"},
+                LaplaceHierarchicalHyperparameters: {
+                    "__init__",
+                    "_compute_hyperparameter_laplace_approximation",
+                    "_compute_loss_hessian",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_predictive_likelihood",
+                    "_sample_and_set_hyperparameters",
+                    "_sgd_round",
+                    "_update_hyperparameter_posterior",
+                    "auto_temperature",
+                },
+                LearnYNoise: {"__init__"},
+                Multitask: {"__init__", "_match_mean_shape_to_kernel"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetInputWarp: {"__init__"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "warn_normalise_y", "_unwarp_values"},
+                VariationalHierarchicalHyperparameters: {
+                    "__init__",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_loss",
+                    "_predictive_likelihood",
+                },
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
             },
         )
 

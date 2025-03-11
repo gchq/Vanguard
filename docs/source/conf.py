@@ -22,7 +22,7 @@ For a full list see the documentation: https://www.sphinx-doc.org/en/master/usag
 import logging
 
 # a bunch of pylint disables as this file is uniquely weird:
-# pylint: disable=import-error,invalid-name,wrong-import-order,wrong-import-position
+# pylint: disable=invalid-name,wrong-import-order,wrong-import-position
 import os
 import re
 import shutil

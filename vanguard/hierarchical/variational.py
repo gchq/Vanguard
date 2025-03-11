@@ -106,9 +106,23 @@ class VariationalHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     @property
     @override
     def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.learning import LearnYNoise
+        from vanguard.multitask import Multitask
+        from vanguard.normalise import NormaliseY
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.warps import SetInputWarp, SetWarp
+        # pylint: enable=import-outside-toplevel
+
         return self._add_to_safe_updates(
             super().safe_updates,
             {
+                DisableStandardScaling: {"_input_standardise_modules"},
+                LearnYNoise: {"__init__"},
+                Multitask: {"__init__", "_match_mean_shape_to_kernel"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetInputWarp: {"__init__"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "warn_normalise_y", "_unwarp_values"},
                 VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
             },
         )

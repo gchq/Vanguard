@@ -16,6 +16,7 @@
 Contains decorators to deal with input features that aren't vectors.
 """
 
+import warnings
 from functools import partial
 from typing import Any, TypeVar, Union
 
@@ -28,6 +29,8 @@ from vanguard import utils
 from vanguard.base import GPController
 from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.decoratorutils.basedecorator import T
+from vanguard.decoratorutils.errors import BadCombinationWarning
 from vanguard.variational import VariationalInference
 from vanguard.warnings import warn_experimental
 
@@ -58,9 +61,30 @@ class HigherRankFeatures(Decorator):
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
         self.rank = rank
 
+    @override
+    def verify_decorated_class(self, cls: type[T]) -> None:
+        super().verify_decorated_class(cls)
+
+        decorators = getattr(cls, "__decorators__", [])
+        if any(issubclass(decorator, HigherRankFeatures) for decorator in decorators):
+            warnings.warn(
+                "Multiple instances of `@HigherRankFeatures` not supported."
+                " Please only apply one instance of `@HigherRankFeatures` at once.",
+                BadCombinationWarning,
+                stacklevel=3,
+            )
+
     @property
     @override
     def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.classification import BinaryClassification
+        from vanguard.learning import LearnYNoise
+        from vanguard.normalise import NormaliseY
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.warps import SetInputWarp, SetWarp
+        # pylint: enable=import-outside-toplevel
+
         return self._add_to_safe_updates(
             super().safe_updates,
             {
@@ -72,6 +96,18 @@ class HigherRankFeatures(Decorator):
                     "predictive_likelihood",
                 },
                 VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
+                DisableStandardScaling: {"_input_standardise_modules"},
+                LearnYNoise: {"__init__"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetInputWarp: {"__init__"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "warn_normalise_y", "_unwarp_values"},
+                BinaryClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_prediction_means",
+                    "warn_normalise_y",
+                },
             },
         )
 

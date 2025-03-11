@@ -73,7 +73,7 @@ class BaseHierarchicalHyperparameters(Decorator):
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self
 
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             @classmethod
             def new(cls, instance: Self, **kwargs: Any) -> Self:

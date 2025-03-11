@@ -27,9 +27,7 @@ from typing_extensions import Self, override
 from vanguard import utils
 from vanguard.base import GPController
 from vanguard.base.posteriors import Posterior
-from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
-from vanguard.variational import VariationalInference
 from vanguard.warps.basefunction import WarpFunction
 from vanguard.warps.intermediate import is_intermediate_warp_function
 
@@ -62,17 +60,87 @@ class SetWarp(Decorator):
     @property
     @override
     def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.classification import (
+            BinaryClassification,
+            CategoricalClassification,
+            DirichletMulticlassClassification,
+        )
+        from vanguard.classification.mixin import Classification, ClassificationMixin
+        from vanguard.features import HigherRankFeatures
+        from vanguard.hierarchical import LaplaceHierarchicalHyperparameters, VariationalHierarchicalHyperparameters
+        from vanguard.learning import LearnYNoise
+        from vanguard.multitask import Multitask
+        from vanguard.normalise import NormaliseY
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.variational import VariationalInference
+        from vanguard.warps import SetInputWarp
+        # pylint: enable=import-outside-toplevel
+
         return self._add_to_safe_updates(
             super().safe_updates,
             {
-                ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
-                VariationalInference: {"__init__", "_fuzzy_predictive_likelihood", "_predictive_likelihood"},
-                Classification: {
-                    "predictive_likelihood",
-                    "posterior_over_point",
-                    "fuzzy_predictive_likelihood",
-                    "posterior_over_fuzzy_point",
+                BinaryClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_prediction_means",
+                    "warn_normalise_y",
                 },
+                CategoricalClassification: {
+                    "__init__",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_posterior",
+                    "warn_normalise_y",
+                },
+                ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
+                Classification: {
+                    "posterior_over_point",
+                    "posterior_over_fuzzy_point",
+                    "fuzzy_predictive_likelihood",
+                    "predictive_likelihood",
+                },
+                DisableStandardScaling: {"_input_standardise_modules"},
+                DirichletMulticlassClassification: {
+                    "__init__",
+                    "_loss",
+                    "_noise_transform",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_prediction_means",
+                    "warn_normalise_y",
+                },
+                HigherRankFeatures: {"__init__"},
+                LaplaceHierarchicalHyperparameters: {
+                    "__init__",
+                    "_compute_hyperparameter_laplace_approximation",
+                    "_compute_loss_hessian",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_predictive_likelihood",
+                    "_sample_and_set_hyperparameters",
+                    "_sgd_round",
+                    "_update_hyperparameter_posterior",
+                    "auto_temperature",
+                },
+                LearnYNoise: {"__init__"},
+                Multitask: {"__init__", "_match_mean_shape_to_kernel"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetInputWarp: {"__init__"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "warn_normalise_y", "_unwarp_values"},
+                VariationalHierarchicalHyperparameters: {
+                    "__init__",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_loss",
+                    "_predictive_likelihood",
+                },
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
             },
         )
 
