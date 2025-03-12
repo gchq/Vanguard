@@ -17,7 +17,6 @@ Tests for the pairwise combinations of decorators.
 """
 
 import itertools
-from contextlib import nullcontext
 from typing import Any, Optional, TypeVar
 from unittest.mock import patch
 
@@ -31,7 +30,7 @@ from gpytorch.means import ZeroMean
 from gpytorch.mlls import VariationalELBO
 from typing_extensions import TypedDict
 
-from tests.cases import assert_not_warns, get_default_rng, maybe_throws, maybe_warns
+from tests.cases import assert_not_warns, disable_warnings, get_default_rng, maybe_throws, maybe_warns
 
 # not super happy about importing HigherRankKernel/HigherRankMean from another test file - these should probably be
 # moved to some more central location
@@ -628,7 +627,7 @@ def test_combinations(
     expected_error_class, expected_error_message = EXPECTED_COMBINATION_APPLY_ERRORS.get(combination, (None, None))
     if expected_error_class is not None or expected_warning_class is not None:
         # If we expect some other error or warning, we might also get these warnings too, so ignore them.
-        warnings_context = nullcontext()
+        warnings_context = disable_warnings(OverwrittenMethodWarning, UnexpectedMethodWarning)
     else:
         # Otherwise, we shouldn't get any of these spurious warnings.
         warnings_context = assert_not_warns(OverwrittenMethodWarning, UnexpectedMethodWarning)

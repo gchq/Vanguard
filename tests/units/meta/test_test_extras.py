@@ -18,7 +18,7 @@ import warnings
 
 import pytest
 
-from tests.cases import assert_not_warns
+from tests.cases import assert_not_warns, disable_warnings
 
 
 class OtherWarningSubclass(Warning):
@@ -80,4 +80,38 @@ class TestNotWarns:
         """Test that nesting multiple copies of assert_not_warns works."""
         with pytest.raises(AssertionError):
             with assert_not_warns(OtherWarningSubclass), assert_not_warns(UserWarning):
+                warnings.warn("A warning!", OtherWarningSubclass)
+
+
+class TestDisableWarnings:
+    def test_specific_class(self):
+        """Test the disable_warnings context manager with a specific class."""
+        with assert_not_warns():
+            with disable_warnings(SubclassOfUserWarning):
+                warnings.warn("A warning!", SubclassOfUserWarning)
+
+    def test_specific_classes(self):
+        """Test the disable_warnings context manager with multiple specific classes."""
+        with assert_not_warns():
+            with disable_warnings(SubclassOfUserWarning, SecondSubclassOfUserWarning):
+                warnings.warn("A warning!", SubclassOfUserWarning)
+                warnings.warn("A warning!", SecondSubclassOfUserWarning)
+
+    def test_disable_all(self):
+        """Test the disable_warnings context manager in the default case."""
+        with assert_not_warns():
+            with disable_warnings():
+                warnings.warn("A warning!", SubclassOfUserWarning)
+                warnings.warn("A warning!", SecondSubclassOfUserWarning)
+
+    def test_allows_other_warnings_single(self):
+        """Test the disable_warnings context manager with a specific class and a different warning."""
+        with pytest.warns(OtherWarningSubclass):
+            with disable_warnings(UserWarning):
+                warnings.warn("A warning!", OtherWarningSubclass)
+
+    def test_allows_other_warnings_multiple(self):
+        """Test the disable_warnings context manager with multiple classes and a different warning."""
+        with pytest.warns(OtherWarningSubclass):
+            with disable_warnings(SubclassOfUserWarning, SecondSubclassOfUserWarning):
                 warnings.warn("A warning!", OtherWarningSubclass)
