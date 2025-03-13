@@ -19,6 +19,7 @@ The :class:`VariationalInference` decorator primes a :class:`~vanguard.base.gpco
 for variational inference.
 """
 
+import warnings
 from typing import Any, Generic, Optional, TypeVar, Union
 
 import gpytorch.settings
@@ -26,11 +27,14 @@ import numpy as np
 import numpy.typing
 import torch
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.base import GPController
 from vanguard.base.posteriors import Posterior
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.decoratorutils.basedecorator import T
+from vanguard.decoratorutils.errors import BadCombinationWarning
 from vanguard.variational.models import SVGPModel
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -97,6 +101,86 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
         self.n_likelihood_samples = n_likelihood_samples
         self.variational_strategy_class = variational_strategy_class
         self.gp_model_class = self._build_gp_model_class(variational_distribution_class, variational_strategy_class)
+
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.classification import DirichletMulticlassClassification
+        from vanguard.classification.mixin import Classification, ClassificationMixin
+        from vanguard.features import HigherRankFeatures
+        from vanguard.hierarchical import LaplaceHierarchicalHyperparameters, VariationalHierarchicalHyperparameters
+        from vanguard.learning import LearnYNoise
+        from vanguard.multitask import Multitask
+        from vanguard.normalise import NormaliseY
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.warps import SetInputWarp, SetWarp
+        # pylint: enable=import-outside-toplevel
+
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {
+                Classification: {
+                    "posterior_over_point",
+                    "posterior_over_fuzzy_point",
+                    "fuzzy_predictive_likelihood",
+                    "predictive_likelihood",
+                },
+                ClassificationMixin: {"classify_points", "classify_fuzzy_points"},
+                DirichletMulticlassClassification: {
+                    "__init__",
+                    "_loss",
+                    "_noise_transform",
+                    "classify_points",
+                    "classify_fuzzy_points",
+                    "_get_predictions_from_prediction_means",
+                    "warn_normalise_y",
+                },
+                DisableStandardScaling: {"_input_standardise_modules"},
+                HigherRankFeatures: {"__init__"},
+                LaplaceHierarchicalHyperparameters: {
+                    "__init__",
+                    "_compute_hyperparameter_laplace_approximation",
+                    "_compute_loss_hessian",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_predictive_likelihood",
+                    "_sample_and_set_hyperparameters",
+                    "_sgd_round",
+                    "_update_hyperparameter_posterior",
+                    "auto_temperature",
+                },
+                LearnYNoise: {"__init__"},
+                Multitask: {"__init__", "_match_mean_shape_to_kernel"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetInputWarp: {"__init__"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "warn_normalise_y", "_unwarp_values"},
+                VariationalHierarchicalHyperparameters: {
+                    "__init__",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_loss",
+                    "_predictive_likelihood",
+                },
+            },
+        )
+
+    @override
+    def verify_decorated_class(self, cls: type[T]) -> None:
+        super().verify_decorated_class(cls)
+
+        decorators = getattr(cls, "__decorators__", [])
+        if any(issubclass(decorator, VariationalInference) for decorator in decorators):
+            warnings.warn(
+                "Multiple instances of `@VariationalInference` not supported."
+                " Please only apply one instance of `@VariationalInference` at once.",
+                BadCombinationWarning,
+                stacklevel=3,
+            )
 
     def _build_gp_model_class(
         self,

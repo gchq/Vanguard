@@ -230,3 +230,17 @@ def assert_not_warns(*expected_warning_types: type[Warning]) -> Iterable[None]:
             raise AssertionError(msg)
         else:
             raise AssertionError(f"Expected no warnings, caught {len(ws)}")
+
+
+@contextlib.contextmanager
+def disable_warnings(*warning_types: type[Warning]) -> Iterable[None]:
+    """Context manager to disable warnings of a given type."""
+    with warnings.catch_warnings():
+        if not warning_types:
+            # Ignore all warnings
+            warnings.simplefilter("ignore")
+        else:
+            # Ignore all warnings of specified types
+            for warning_type in warning_types:
+                warnings.simplefilter("ignore", warning_type)
+        yield

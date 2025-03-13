@@ -95,9 +95,25 @@ class BinaryClassification(Decorator):
     @property
     @override
     def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.features import HigherRankFeatures
+        from vanguard.learning import LearnYNoise
+        from vanguard.normalise import NormaliseY
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.warps import SetInputWarp, SetWarp
+        # pylint: enable=import-outside-toplevel
+
         return self._add_to_safe_updates(
             super().safe_updates,
-            {VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"}},
+            {
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
+                DisableStandardScaling: {"_input_standardise_modules"},
+                HigherRankFeatures: {"__init__"},
+                LearnYNoise: {"__init__"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetInputWarp: {"__init__"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "warn_normalise_y", "_unwarp_values"},
+            },
         )
 
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:

@@ -19,6 +19,7 @@ The :class:`~vanguard.multitask.decorator.Multitask` decorator
 converts a controller class into a multitask controller.
 """
 
+import warnings
 from typing import Any, Optional, TypeVar
 
 import torch
@@ -30,6 +31,7 @@ from typing_extensions import override
 from vanguard import utils
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.decoratorutils.errors import BadCombinationWarning
 from vanguard.multitask.kernel import BatchCompatibleMultitaskKernel
 from vanguard.multitask.models import (
     independent_variational_multitask_model,
@@ -74,10 +76,61 @@ class Multitask(Decorator):
     @property
     @override
     def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.hierarchical import LaplaceHierarchicalHyperparameters, VariationalHierarchicalHyperparameters
+        from vanguard.learning import LearnYNoise
+        from vanguard.normalise import NormaliseY
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.warps import SetInputWarp, SetWarp
+        # pylint: enable=import-outside-toplevel
+
         return self._add_to_safe_updates(
             super().safe_updates,
-            {VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"}},
+            {
+                DisableStandardScaling: {"_input_standardise_modules"},
+                LaplaceHierarchicalHyperparameters: {
+                    "__init__",
+                    "_compute_hyperparameter_laplace_approximation",
+                    "_compute_loss_hessian",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_predictive_likelihood",
+                    "_sample_and_set_hyperparameters",
+                    "_sgd_round",
+                    "_update_hyperparameter_posterior",
+                    "auto_temperature",
+                },
+                LearnYNoise: {"__init__"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetInputWarp: {"__init__"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "warn_normalise_y", "_unwarp_values"},
+                VariationalHierarchicalHyperparameters: {
+                    "__init__",
+                    "_fuzzy_predictive_likelihood",
+                    "_get_posterior_over_fuzzy_point_in_eval_mode",
+                    "_get_posterior_over_point",
+                    "_gp_forward",
+                    "_loss",
+                    "_predictive_likelihood",
+                },
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
+            },
         )
+
+    @override
+    def verify_decorated_class(self, cls: type[T]) -> None:
+        super().verify_decorated_class(cls)
+
+        decorators = getattr(cls, "__decorators__", [])
+        if any(issubclass(decorator, Multitask) for decorator in decorators):
+            warnings.warn(
+                "Multiple instances of `@Multitask` not supported."
+                " Please only apply one instance of `@Multitask` at once.",
+                BadCombinationWarning,
+                stacklevel=3,
+            )
 
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         decorator = self

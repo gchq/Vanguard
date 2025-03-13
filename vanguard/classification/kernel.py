@@ -22,6 +22,7 @@ import numpy as np
 import numpy.typing
 import torch
 from torch import Tensor
+from typing_extensions import override
 
 from vanguard import utils
 from vanguard.base import GPController
@@ -81,6 +82,29 @@ class DirichletKernelMulticlassClassification(Decorator):
         """
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
+
+    @property
+    @override
+    def safe_updates(self) -> dict[type, set[str]]:
+        # pylint: disable=import-outside-toplevel
+        from vanguard.learning import LearnYNoise
+        from vanguard.normalise import NormaliseY
+        from vanguard.standardise import DisableStandardScaling
+        from vanguard.variational import VariationalInference
+        from vanguard.warps import SetInputWarp, SetWarp
+        # pylint: enable=import-outside-toplevel
+
+        return self._add_to_safe_updates(
+            super().safe_updates,
+            {
+                VariationalInference: {"__init__", "_predictive_likelihood", "_fuzzy_predictive_likelihood"},
+                DisableStandardScaling: {"_input_standardise_modules"},
+                LearnYNoise: {"__init__"},
+                NormaliseY: {"__init__", "warn_normalise_y"},
+                SetInputWarp: {"__init__"},
+                SetWarp: {"__init__", "_loss", "_sgd_round", "warn_normalise_y", "_unwarp_values"},
+            },
+        )
 
     def _decorate_class(self, cls: type[ControllerT]) -> type[ControllerT]:
         num_classes = self.num_classes
