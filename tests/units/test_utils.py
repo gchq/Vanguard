@@ -17,11 +17,13 @@ Tests for the vanguard.utils module.
 """
 
 import unittest
+from unittest.mock import MagicMock
 
 import numpy as np
 import numpy.typing
 import pytest
 import torch
+from typing_extensions import ContextManager
 
 from tests.cases import get_default_rng
 from vanguard.utils import (
@@ -30,6 +32,7 @@ from vanguard.utils import (
     generator_append_constant,
     infinite_tensor_generator,
     instantiate_with_subset_of_kwargs,
+    multi_context,
     optional_random_generator,
 )
 
@@ -286,3 +289,26 @@ class TestGenerators(unittest.TestCase):
 
         with pytest.raises(ValueError, match="0-dimensional tensors are incompatible"):
             next(generator)
+
+
+@pytest.mark.parametrize("num_contexts", [1, 5])
+def test_multi_context(num_contexts: int):
+    """Test the `multi_context` context manager."""
+    dummy_contexts = [MagicMock(spec=ContextManager)() for _ in range(num_contexts)]
+    context = multi_context(dummy_contexts)
+
+    for ctx in dummy_contexts:
+        # haven't entered the contexts yet
+        ctx.__enter__.assert_not_called()
+        ctx.__exit__.assert_not_called()
+
+    with context:
+        for ctx in dummy_contexts:
+            # have entered but not left the contexts yet
+            ctx.__enter__.assert_called_once()
+            ctx.__exit__.assert_not_called()
+
+    for ctx in dummy_contexts:
+        # have left the contexts
+        ctx.__enter__.assert_called_once()
+        ctx.__exit__.assert_called_once()
