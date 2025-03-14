@@ -185,6 +185,9 @@ class Decorator:
         cls_methods = {
             key
             for key, value in getmembers(cls, isfunction)
+            # only functions that are actually from this class (as opposed to a superclass)
+            if key in cls.__dict__
+            # ignore functions defined in safe_updates
             if key not in self.safe_updates.get(self._get_method_implementation(cls, key), set())
             # beartype does weird things with __sizeof__; however, it's of no concern to us, and we never make use of
             # this dunder attribute. See https://github.com/beartype/beartype/blob/v0.19.0/beartype/_decor/_decortype.py
@@ -216,7 +219,7 @@ class Decorator:
             else:
                 warnings.warn(message, errors.UnexpectedMethodWarning, stacklevel=4)
 
-        overwritten_methods = {method for method in cls_methods if method in cls.__dict__} - ignore_methods
+        overwritten_methods = cls_methods - ignore_methods - extra_methods
         if overwritten_methods:
             if __debug__:
                 overwritten_method_messages = "\n".join(

@@ -16,15 +16,17 @@
 Contain some small utilities of use in some cases.
 """
 
+import contextlib
 import functools
 import os
 import warnings
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 from typing import Any, Callable, Optional, TypeVar
 
 import numpy as np
 import numpy.typing
 import torch
+from typing_extensions import ContextManager
 
 from vanguard.warnings import _RE_INCORRECT_LIKELIHOOD_PARAMETER
 
@@ -253,3 +255,12 @@ def compose(functions: list[Callable[[T], T]]) -> Callable[[T], T]:
     :return: A single function of type (T -> T) that applies each of the passed functions in series.
     """
     return lambda x: functools.reduce(lambda acc, f: f(acc), reversed(functions), x)
+
+
+@contextlib.contextmanager
+def multi_context(contexts: Iterable[ContextManager]):
+    """Combine multiple context managers into one."""
+    with contextlib.ExitStack() as stack:
+        for context in contexts:
+            stack.enter_context(context)
+        yield
