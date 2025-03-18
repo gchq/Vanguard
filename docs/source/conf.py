@@ -100,6 +100,7 @@ bibtex_bibfiles = [os.path.join(VANGUARD_FOLDER_FILE_PATH, "references.bib")]
 linkcheck_ignore = [
     "https://doi.org",
     "https://artowen.su.domains/mc/",
+    "https://dl.acm.org/doi",
 ]
 linkcheck_timeout = 5
 linkcheck_report_timeouts_as_broken = True
