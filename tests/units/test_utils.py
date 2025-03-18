@@ -293,22 +293,33 @@ class TestGenerators(unittest.TestCase):
 
 @pytest.mark.parametrize("num_contexts", [1, 5])
 def test_multi_context(num_contexts: int):
-    """Test the `multi_context` context manager."""
+    """
+    Test the `multi_context` context manager.
+
+    Given that the context manager syntax is ultimately just syntactic sugar for calling `ctx.__enter__` and
+    `ctx.__exit__` (with some extra semantics around exception handling), all we really need to do is check that
+    these methods are called on each context manager passed to `multi_context` at the appropriate times. We don't
+    test the specifics of exception propagation, as that is (a) too complex for a single unit test, and (b) more the
+    responsibility of the `contextlib.ExitStack` that `multi_context` uses internally.
+
+    Test with both a single context and multiple contexts being passed to `multi_context`.
+    """
     dummy_contexts = [MagicMock(spec=ContextManager)() for _ in range(num_contexts)]
     context = multi_context(dummy_contexts)
 
     for ctx in dummy_contexts:
-        # haven't entered the contexts yet
+        # check that we haven't entered or left any of the contexts yet
         ctx.__enter__.assert_not_called()
         ctx.__exit__.assert_not_called()
 
+    # enter the multi context
     with context:
         for ctx in dummy_contexts:
-            # have entered but not left the contexts yet
+            # check that we have entered but not left each of the contexts yet
             ctx.__enter__.assert_called_once()
             ctx.__exit__.assert_not_called()
 
     for ctx in dummy_contexts:
-        # have left the contexts
+        # check that we have left each of the contexts
         ctx.__enter__.assert_called_once()
         ctx.__exit__.assert_called_once()
