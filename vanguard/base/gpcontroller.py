@@ -141,7 +141,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
                 warnings.warn(
                     f"You are trying to set gradient_every (in this case to {gradient_every}) in batch mode."
                     "This does not make mathematical sense and your value of gradient every will be ignored "
-                    " and replaced by 1."
+                    " and replaced by 1.",
+                    stacklevel=2,
                 )
             gradient_every = 1
 

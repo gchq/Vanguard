@@ -379,10 +379,18 @@ EXPECTED_COMBINATION_APPLY_ERRORS: dict[tuple[type[Decorator], type[Decorator]],
 # (upper, lower) -> (warning type, message regex)
 # Warnings we expect to be raised on decorator application.
 EXPECTED_COMBINATION_APPLY_WARNINGS: dict[tuple[type[Decorator], type[Decorator]], tuple[type[Warning], str]] = {
-    (NormaliseY, DirichletMulticlassClassification): (
-        BadCombinationWarning,
-        "NormaliseY should not be used above classification decorators - this may lead to unexpected behaviour.",
-    ),
+    **{
+        (NormaliseY, lower): (
+            BadCombinationWarning,
+            "NormaliseY should not be used above classification decorators - this may lead to unexpected behaviour.",
+        )
+        for lower in [
+            BinaryClassification,
+            CategoricalClassification,
+            DirichletMulticlassClassification,
+            DirichletKernelMulticlassClassification,
+        ]
+    },
     **{
         (VariationalInference, lower): (
             BadCombinationWarning,

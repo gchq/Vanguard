@@ -18,11 +18,13 @@ import contextlib
 from typing import Any, TypeVar, Union
 
 import pytest
+from typing_extensions import ContextManager
 
 from tests.cases import assert_not_warns
 from vanguard.base import GPController
 from vanguard.decoratorutils import Decorator, TopMostDecorator, errors, wraps_class
 from vanguard.decoratorutils.errors import TopmostDecoratorError
+from vanguard.utils import multi_context
 from vanguard.vanilla import GaussianGPController
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
@@ -53,7 +55,7 @@ class SquareResult(Decorator):
         super().__init__(framework_class=SimpleNumber, required_decorators={}, **kwargs)
 
     def _decorate_class(self, cls: type[SimpleNumber]) -> type[SimpleNumber]:
-        @wraps_class(cls)
+        @wraps_class(cls, decorator_source=self)
         class InnerClass(cls):
             """A wrapper for normalising y inputs and variance."""
 
@@ -319,29 +321,40 @@ class TestErrorsWhenOverwriting:
 
             # If we're not ignoring the errors, then specify what the expected error/warning is.
             if who_is_wrong == "subclass":
-                blame_class = "NewNumber"
+                blame_classes = ["NewNumber"]
+            elif who_is_wrong == "superclass":
+                blame_classes = ["MiddleNumber"]
             elif who_is_wrong == "superclass" or who_is_wrong == "both":
-                blame_class = "MiddleNumber"
+                blame_classes = ["MiddleNumber", "NewNumber"]
             else:
                 raise ValueError(who_is_wrong)
 
+            contexts: list[ContextManager]
             if mode == "new_method":
-                expected_message = (
+                expected_messages = [
                     f"{SquareResult.__name__!r}: The class '{blame_class}' has added the following unexpected methods"
+                    for blame_class in blame_classes
+                ]
+                contexts = (
+                    [pytest.raises(errors.UnexpectedMethodError, match=expected_messages[0])]
+                    if raise_instead
+                    else [pytest.warns(errors.UnexpectedMethodWarning, match=msg) for msg in expected_messages]
                 )
-                expected_types = errors.UnexpectedMethodError, errors.UnexpectedMethodWarning
             elif mode == "override_method":
-                expected_message = (
+                expected_messages = [
                     f"{SquareResult.__name__!r}: The class '{blame_class}' has overwritten the following methods"
+                    for blame_class in blame_classes
+                ]
+                contexts = (
+                    [pytest.raises(errors.OverwrittenMethodError, match=expected_messages[0])]
+                    if raise_instead
+                    else [pytest.warns(errors.OverwrittenMethodWarning, match=msg) for msg in expected_messages]
                 )
-                expected_types = errors.OverwrittenMethodError, errors.OverwrittenMethodWarning
             else:
                 raise ValueError(mode)
 
-            if raise_instead:
-                context = pytest.raises(expected_types[0], match=expected_message)
-            else:
-                context = pytest.warns(expected_types[1], match=expected_message)
+            context = multi_context(contexts)
+
         elif ignore == "specific":
             # Ignore by setting `ignore_methods`.
             if mode == "new_method":
@@ -358,9 +371,11 @@ class TestErrorsWhenOverwriting:
         else:
             raise ValueError(ignore)
 
-        # Actually perform the decoration, and check for errors/warnings as appropriate
-        with context:
-            SquareResult(**kwargs)(NewNumber)
+        # Actually perform the decoration, and check for errors/warnings as appropriate. No warnings other than those
+        # we expect should be raised.
+        with assert_not_warns(errors.OverwrittenMethodWarning, errors.UnexpectedMethodWarning):
+            with context:
+                SquareResult(**kwargs)(NewNumber)
 
 
 class TestInvalidDecoration:
@@ -394,7 +409,7 @@ class TestInvalidDecoration:
     def test_passed_requirements(self) -> None:
         """Test that when all requirements for a decorator are satisfied, no error is thrown."""
 
-        @RequiresSquareResult(ignore_methods=("__init__", "add_5"))
+        @RequiresSquareResult(ignore_all=True)
         @SquareResult()
         class NewNumber(SimpleNumber):  # pylint: disable=unused-variable
             """Declaring this class should not throw any error, as all requirements are satisfied."""
