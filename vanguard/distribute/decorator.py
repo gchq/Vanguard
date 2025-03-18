@@ -275,7 +275,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                     **self._expert_init_kwargs,
                 )
 
-            def fit(self, n_sgd_iters: int = 10, gradient_every: int = 10) -> torch.Tensor:
+            def fit(self, n_sgd_iters: int = 10, gradient_every: Optional[int] = None) -> torch.Tensor:
                 """
                 Create the expert controllers.
 
