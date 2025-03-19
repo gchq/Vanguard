@@ -314,4 +314,5 @@ class GaussianUncertaintyGPController(GPController):
     def _noise_transform(gamma: Union[Tensor, Iterable[torch.Tensor]]) -> torch.Tensor:
         # TODO: Change type hint back to just Iterable[torch.Tensor] when
         #  beartype issue at https://github.com/beartype/beartype/issues/512 is resolved
+        # https://github.com/gchq/Vanguard/issues/542
         return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze()
