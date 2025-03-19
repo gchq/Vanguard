@@ -58,9 +58,10 @@ test = [
     "ipykernel>=6",  # for notebook tests
     "nbconvert>=7",  # for notebook tests
     "nbformat>=5",  # for notebook tests
-    "tqdm>=4",  # for notebook tests
+    "tqdm>=4", #  for notebook tests
     "pytest-beartype>=0.1",
     "pytest-cov>=5",
+    "pytest-xdist>=3.6.1",
     "pytest>=8.3.3",
     "beartype>=0.19, !=0.20",
 ]
