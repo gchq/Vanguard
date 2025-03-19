@@ -237,7 +237,7 @@ filterwarnings = [
 
     # Other warnings
     "ignore::pytest.PytestCollectionWarning",
-    "ignore::vanguard.warnings.ExperimentalFeatureWarning",
+    "ignore::vanguard.warnings.ExperimentalFeatureWarning",  # we already know what parts of the code are experimental!
     "ignore:The input matches the stored training data. Did you forget to call model.train\\(\\)\\?:gpytorch.utils.warnings.GPInputWarning",
     "ignore:To copy construct from a tensor, it is recommended to use sourceTensor.clone\\(\\).detach\\(\\):UserWarning",
     "ignore:Pass auto_restart=True to the controller to automatically restart training up to the last stable iterations:UserWarning",

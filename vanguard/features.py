@@ -47,6 +47,10 @@ class HigherRankFeatures(Decorator):
     This decorator modifies the gp model class to make it compatible with higher
     rank features.
 
+    .. warning::
+        This decorator is EXPERIMENTAL. It may cause errors or give incorrect results, and may have breaking changes
+        without warning.
+
     :Example:
         >>> @HigherRankFeatures(2)
         ... class NewController(GPController):

@@ -30,6 +30,7 @@ from vanguard.classification.likelihoods import DirichletKernelClassifierLikelih
 from vanguard.classification.mixin import Classification, ClassificationMixin
 from vanguard.classification.models import InertKernelModel
 from vanguard.decoratorutils import Decorator, process_args, wraps_class
+from vanguard.warnings import warn_experimental
 
 ControllerT = TypeVar("ControllerT", bound=GPController)
 SAMPLE_DIM, TASK_DIM = 0, 2
@@ -40,6 +41,11 @@ class DirichletKernelMulticlassClassification(Decorator):
     Implements multiclass classification using a Dirichlet kernel method.
 
     Based on the paper :cite:`MacKenzie14`.
+
+
+    .. warning::
+        This decorator is EXPERIMENTAL. It may cause errors or give incorrect results, and may have breaking changes
+        without warning.
 
     .. warning::
         Fuzzy classification (with `classify_fuzzy_points`) is not supported.
@@ -80,6 +86,7 @@ class DirichletKernelMulticlassClassification(Decorator):
         :param num_classes: The number of target classes.
         :param kwargs: Keyword arguments passed to :class:`~vanguard.decoratorutils.basedecorator.Decorator`.
         """
+        warn_experimental("The DirichletKernelMulticlassClassification decorator")
         self.num_classes = num_classes
         super().__init__(framework_class=GPController, required_decorators={}, **kwargs)
 
