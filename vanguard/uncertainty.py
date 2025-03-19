@@ -47,6 +47,8 @@ class GaussianUncertaintyGPController(GPController):
     exploits :mod:`torch.autograd` to circumvent any by-hand calculations of GP derivatives.
     """
 
+    _gradient_variance: Optional[torch.Tensor]
+
     def __init__(
         self,
         train_x: Union[Tensor, numpy.typing.NDArray[np.floating]],
@@ -143,7 +145,7 @@ class GaussianUncertaintyGPController(GPController):
         return self._gradient_variance
 
     @gradient_variance.setter
-    def gradient_variance(self, value: Iterable[torch.Tensor]) -> None:
+    def gradient_variance(self, value: Union[Tensor, Iterable[torch.Tensor]]) -> None:
         """
         Set the gradient variance.
 
@@ -152,6 +154,10 @@ class GaussianUncertaintyGPController(GPController):
 
         :param value: Iterable containing values defining the gradient variance.
         """
+        # Handle the case where we're passed an iterable of Tensors that is not itself a Tensor.
+        # This doesn't happen within Vanguard itself, but might in client code.
+        if not isinstance(value, Tensor):
+            value = torch.stack(list(value))
         self._gradient_variance = value
         self.likelihood_noise = self._original_y_variance_as_tensor + self._noise_transform(value)
 
@@ -305,5 +311,7 @@ class GaussianUncertaintyGPController(GPController):
         return std_tensor
 
     @staticmethod
-    def _noise_transform(gamma: Iterable[torch.Tensor]) -> torch.Tensor:
+    def _noise_transform(gamma: Union[Tensor, Iterable[torch.Tensor]]) -> torch.Tensor:
+        # TODO: Change type hint back to just Iterable[torch.Tensor] when
+        #  beartype issue at https://github.com/beartype/beartype/issues/512 is resolved
         return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze()

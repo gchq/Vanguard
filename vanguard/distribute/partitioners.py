@@ -181,7 +181,7 @@ class KMeansPartitioner(BasePartitioner):
         """
         clusterer = sklearn.cluster.KMeans(n_clusters=n_clusters, random_state=self.rng.integers(0, (2**32 - 1)))
         labels = clusterer.fit(self.train_x.detach().cpu().numpy()).labels_
-        partition = self._group_indices_by_label(labels)
+        partition = self._group_indices_by_label(labels.tolist())
         return partition
 
 
@@ -254,7 +254,7 @@ class KMedoidsPartitioner(BasePartitioner):
             n_clusters=n_clusters, metric="precomputed", random_state=self.rng.integers(0, (2**32 - 1))
         )
         labels: NDArray = clusterer.fit(dist_matrix).labels_
-        partition = self._group_indices_by_label(labels.astype(int))
+        partition = self._group_indices_by_label(labels.astype(int).tolist())
         return partition
 
     def _construct_distance_matrix(self) -> NDArray[np.floating]:

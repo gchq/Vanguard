@@ -95,7 +95,9 @@ def maybe_throws(category: Optional[type[Exception]], match: Optional[str] = Non
 
 
 @contextlib.contextmanager
-def maybe_warns(category: Optional[type[Warning]], match: Optional[str] = None) -> Optional[pytest.WarningsRecorder]:
+def maybe_warns(
+    category: Optional[type[Warning]], match: Optional[str] = None
+) -> Iterable[Optional[pytest.WarningsRecorder]]:
     """
     Do nothing if :data:`None` is given. Do :py:func:`pytest.warns()` if a warning type is passed.
 
