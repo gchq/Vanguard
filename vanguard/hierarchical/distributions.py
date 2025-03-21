@@ -21,7 +21,7 @@ from typing import NoReturn, TypeVar
 import torch
 from torch.distributions import MultivariateNormal, constraints
 from torch.distributions.utils import lazy_property
-from typing_extensions import override
+from typing_extensions import Self, override
 
 T = TypeVar("T", bound="MultivariateNormal")
 
@@ -56,8 +56,8 @@ class SpectralRegularisedMultivariateNormal(MultivariateNormal):
 
     @classmethod
     def from_eigendecomposition(
-        cls: type[T], mean: torch.Tensor, covar_eigenvalues: torch.Tensor, covar_eigenvectors: torch.Tensor
-    ) -> type[T]:
+        cls, mean: torch.Tensor, covar_eigenvalues: torch.Tensor, covar_eigenvectors: torch.Tensor
+    ) -> Self:
         """
         Construct the distribution from the eigendecomposition of its covariance matrix.
 

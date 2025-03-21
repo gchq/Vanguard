@@ -237,6 +237,7 @@ class TestMulticlassModels(unittest.TestCase):
         self.assertIsInstance(result, MultivariateNormal)
         self.assertListEqual(list(result.mean.shape), [self.train_x.shape[0], self.train_y.shape[1]])
 
+    @pytest.mark.no_beartype
     def test_multitask_model_invalid_gp_model(self) -> None:
         """Test construction of a multitask model when using an invalid GP model."""
         # Create the model - should raise a type error since it's not a child of an exact or approximate GP
