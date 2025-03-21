@@ -134,6 +134,7 @@ constraint-dependencies = [
     "cffi>=1.17; python_version>='3.13'",
     "pywinpty>=2.0.14; python_version>='3.13'",
     "pillow>=11; python_version>='3.13'",
+    "html5lib>=1",
 ]
 
 # force the lockfile to be split by Python version, ensuring we get the latest dependencies for each version
