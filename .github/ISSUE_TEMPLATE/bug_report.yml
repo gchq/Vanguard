@@ -53,7 +53,7 @@ body:
     attributes:
       label: Package version
       description: What version of Vanguard are you using?
-      placeholder: 3.0.1
+      placeholder: 3.1.0
     validations:
       required: true
   - type: input

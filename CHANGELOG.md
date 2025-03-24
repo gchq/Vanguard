@@ -9,6 +9,13 @@ Version 4 will be the first stable version.
 ## [Unreleased]
 
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## [3.1.0]
+
+### Added
 
 - Support for Python 3.13. (https://github.com/gchq/Vanguard/pull/511)
 
@@ -93,6 +100,7 @@ Yanked due to build failure.
 [beartype]: https://pypi.org/project/beartype/
 [pre-commit]: https://pre-commit.com/
 
-[Unreleased]: https://github.com/gchq/Vanguard/compare/v3.0.1...HEAD
+[Unreleased]: https://github.com/gchq/Vanguard/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/gchq/Vanguard/compare/v3.0.1...v3.1.0
 [3.0.1]: https://github.com/gchq/Vanguard/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/gchq/Vanguard/releases/tag/v3.0.0
