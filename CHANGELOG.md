@@ -14,7 +14,7 @@ Version 4 will be the first stable version.
 
 ### Fixed
 
--
+- Several type hints that were causing errors with `beartype`. (https://github.com/gchq/Vanguard/pull/541)
 
 ### Changed
 
