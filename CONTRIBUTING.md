@@ -105,8 +105,9 @@ Refs: #123
 
 ### Breaking changes and deprecation
 
-Since we are still pre-1.0, [SemVer] states that any release may contain breaking
-changes. However, breaking changes should not be made without warning.
+Vanguard is still in beta, so breaking changes may be made without warning.
+(Technically, this contradicts [SemVer], but due to internal constraints our first public release had to be v3.0.0.)
+However, breaking changes should not be made without warning.
 
 Any breaking changes must have a deprecation period of at least **one minor release,
 or one month (whichever is longer),** before the breaking change is made. If the change
@@ -124,19 +125,19 @@ As an example, this is what the deprecation period for renaming `my_old_function
 brevity, but should be included in real code!):
 
 ```python
-# v0.1.0:
+# 3.1.0:
 def my_old_function(x: int) -> int:
     return x + x + x + x
 
-# v0.2.0:
+# 3.2.0:
 def my_new_function(x: int) -> int:
     return x*4
 
-@deprecated("Renamed to my_new_function; will be removed in v0.3.0")
+@deprecated("Renamed to my_new_function; will be removed in v3.3.0")
 def my_old_function(x: int) -> int:
     return my_new_function(x)
 
-# v0.3.0:
+# 3.3.0:
 def my_new_function(x: int) -> int:
     return x*4
 ```
@@ -485,7 +486,7 @@ An entry with the keyword `Doe99` can then be referenced within a docstring anyw
 [pytest]: https://docs.pytest.org/
 [ruff]: https://docs.astral.sh/ruff/
 [run-tests]: https://github.com/gchq/Vanguard/actions/workflows/unittests.yml
-[semver]: https://semver.org/
+[SemVer]: https://semver.org/
 [sphinx]: https://www.sphinx-doc.org/en/master/index.html
 [sphinx-format]: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html
 [sphinx-rst]: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
