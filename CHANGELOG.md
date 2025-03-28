@@ -10,6 +10,29 @@ Version 4 will be the first stable version.
 
 ### Added
 
+-
+
+### Fixed
+
+-
+
+### Changed
+
+-
+
+### Removed
+
+-
+
+### Deprecated
+
+-
+
+
+## [3.1.0]
+
+### Added
+
 - Support for Python 3.13. (https://github.com/gchq/Vanguard/pull/511)
 
 ### Fixed
@@ -26,9 +49,6 @@ Version 4 will be the first stable version.
 - [BREAKING CHANGE] Removed support for old versions of some dependencies; most importantly, we no longer support
   NumPy 1.x. (https://github.com/gchq/Vanguard/pull/511)
 
-### Deprecated
-
--
 
 
 ## [3.0.1]
@@ -93,6 +113,7 @@ Yanked due to build failure.
 [beartype]: https://pypi.org/project/beartype/
 [pre-commit]: https://pre-commit.com/
 
-[Unreleased]: https://github.com/gchq/Vanguard/compare/v3.0.1...HEAD
+[Unreleased]: https://github.com/gchq/Vanguard/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/gchq/Vanguard/compare/v3.0.1...v3.1.0
 [3.0.1]: https://github.com/gchq/Vanguard/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/gchq/Vanguard/releases/tag/v3.0.0
