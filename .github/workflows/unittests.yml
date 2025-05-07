@@ -66,6 +66,8 @@ jobs:
         --ignore=tests/test_examples.py
         -W "error::vanguard.utils.UnseededRandomWarning"
         -m "no_beartype"
+        -n auto
+        --dist worksteal
       if: matrix.python-version == '3.13'
     - name: Test with pytest (and type checking)
       run: >
@@ -74,12 +76,16 @@ jobs:
         -W "error::vanguard.utils.UnseededRandomWarning"
         -m "not no_beartype"
         --beartype-packages="vanguard"
+        -n auto
+        --dist worksteal
       if: matrix.python-version == '3.13'
     - name: Run all tests
       run: >
         uv run pytest
         --ignore=tests/test_examples.py
         -W "error::vanguard.utils.UnseededRandomWarning"
+        -n auto
+        --dist worksteal
       if: matrix.python-version != '3.13'
     - name: Minimize UV cache
       run: uv cache prune --ci
