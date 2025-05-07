@@ -59,7 +59,7 @@ repos:
       # No tabs, only spaces
       - id: forbid-tabs
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.2
+    rev: v0.11.8
     hooks:
       # Run the formatter.
       - id: ruff-format
@@ -78,7 +78,7 @@ repos:
       # Ensure that necessary package information is provided
       - id: pyroma
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.17.3
+    rev: v8.19.0
     hooks:
       # Run a spellcheck (words pulled from cspell.config.yaml)
         - id: cspell
