@@ -54,7 +54,7 @@ docutils==0.21.2
     #   pybtex-docutils
     #   sphinx
     #   sphinxcontrib-bibtex
-exceptiongroup==1.2.2 ; python_full_version < '3.11'
+exceptiongroup==1.3.0 ; python_full_version < '3.11'
     # via ipython
 executing==2.2.0
     # via stack-data
@@ -62,7 +62,7 @@ fastjsonschema==2.21.1
     # via nbformat
 filelock==3.18.0
     # via torch
-fonttools==4.57.0
+fonttools==4.58.0
     # via matplotlib
 fsspec==2025.3.2
     # via torch
@@ -154,7 +154,7 @@ markupsafe==3.0.2
     #   nbconvert
 matplotlib==3.9.4 ; python_full_version < '3.10'
     # via vanguard-gp
-matplotlib==3.10.1 ; python_full_version >= '3.10'
+matplotlib==3.10.3 ; python_full_version >= '3.10'
     # via vanguard-gp
 matplotlib-inline==0.1.7
     # via
@@ -259,7 +259,7 @@ pillow==11.2.1
     # via
     #   matplotlib
     #   vanguard-gp
-platformdirs==4.3.7
+platformdirs==4.3.8
     # via jupyter-core
 prompt-toolkit==3.0.51
     # via ipython
@@ -324,13 +324,13 @@ scipy==1.13.1 ; python_full_version < '3.10'
     #   linear-operator
     #   scikit-learn
     #   vanguard-gp
-scipy==1.15.2 ; python_full_version >= '3.10'
+scipy==1.15.3 ; python_full_version >= '3.10'
     # via
     #   gpytorch
     #   linear-operator
     #   scikit-learn
     #   vanguard-gp
-setuptools==80.3.0 ; (python_full_version >= '3.12' and platform_machine != 'x86_64') or (python_full_version >= '3.12' and sys_platform != 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')
+setuptools==80.4.0 ; (python_full_version >= '3.12' and platform_machine != 'x86_64') or (python_full_version >= '3.12' and sys_platform != 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')
     # via
     #   sphinxcontrib-bibtex
     #   torch
@@ -340,7 +340,7 @@ six==1.17.0
     # via
     #   pybtex
     #   python-dateutil
-snowballstemmer==2.2.0
+snowballstemmer==3.0.1
     # via sphinx
 soupsieve==2.7
     # via beautifulsoup4
@@ -419,6 +419,7 @@ typeguard==4.4.2 ; python_full_version < '3.10'
 typing-extensions==4.13.2
     # via
     #   beautifulsoup4
+    #   exceptiongroup
     #   ipython
     #   jaxtyping
     #   mistune
