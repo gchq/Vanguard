@@ -62,7 +62,7 @@ fastjsonschema==2.21.1
     # via nbformat
 filelock==3.18.0
     # via torch
-fonttools==4.58.0
+fonttools==4.58.1
     # via matplotlib
 fsspec==2025.5.1
     # via torch
@@ -91,11 +91,11 @@ ipython==8.18.1 ; python_full_version < '3.10'
     # via
     #   ipykernel
     #   vanguard-gp
-ipython==8.36.0 ; python_full_version == '3.10.*'
+ipython==8.37.0 ; python_full_version == '3.10.*'
     # via
     #   ipykernel
     #   vanguard-gp
-ipython==9.2.0 ; python_full_version >= '3.11'
+ipython==9.3.0 ; python_full_version >= '3.11'
     # via
     #   ipykernel
     #   vanguard-gp
@@ -119,7 +119,7 @@ jinja2==3.1.6
     #   torch
 joblib==1.5.1
     # via scikit-learn
-jsonschema==4.23.0
+jsonschema==4.24.0
     # via nbformat
 jsonschema-specifications==2025.4.1
     # via jsonschema
@@ -127,7 +127,7 @@ jupyter-client==8.6.3
     # via
     #   ipykernel
     #   nbclient
-jupyter-core==5.7.2
+jupyter-core==5.8.1
     # via
     #   ipykernel
     #   jupyter-client
@@ -185,7 +185,9 @@ nest-asyncio==1.6.0
     # via ipykernel
 networkx==3.2.1 ; python_full_version < '3.10'
     # via torch
-networkx==3.4.2 ; python_full_version >= '3.10'
+networkx==3.4.2 ; python_full_version == '3.10.*'
+    # via torch
+networkx==3.5 ; python_full_version >= '3.11'
     # via torch
 numpy==2.0.2 ; python_full_version < '3.10'
     # via
@@ -330,7 +332,7 @@ scipy==1.15.3 ; python_full_version >= '3.10'
     #   linear-operator
     #   scikit-learn
     #   vanguard-gp
-setuptools==80.8.0 ; (python_full_version >= '3.12' and platform_machine != 'x86_64') or (python_full_version >= '3.12' and sys_platform != 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')
+setuptools==80.9.0 ; (python_full_version >= '3.12' and platform_machine != 'x86_64') or (python_full_version >= '3.12' and sys_platform != 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')
     # via
     #   sphinxcontrib-bibtex
     #   torch
@@ -441,7 +443,7 @@ webencodings==0.5.1
     # via
     #   bleach
     #   tinycss2
-zipp==3.21.0 ; python_full_version < '3.10'
+zipp==3.22.0 ; python_full_version < '3.10'
     # via
     #   importlib-metadata
     #   importlib-resources
