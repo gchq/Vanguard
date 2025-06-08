@@ -62,7 +62,7 @@ fastjsonschema==2.21.1
     # via nbformat
 filelock==3.18.0
     # via torch
-fonttools==4.58.1
+fonttools==4.58.2
     # via matplotlib
 fsspec==2025.5.1
     # via torch
@@ -198,7 +198,15 @@ numpy==2.0.2 ; python_full_version < '3.10'
     #   scikit-learn
     #   scipy
     #   vanguard-gp
-numpy==2.2.6 ; python_full_version >= '3.10'
+numpy==2.2.6 ; python_full_version == '3.10.*'
+    # via
+    #   contourpy
+    #   matplotlib
+    #   pandas
+    #   scikit-learn
+    #   scipy
+    #   vanguard-gp
+numpy==2.3.0 ; python_full_version >= '3.11'
     # via
     #   contourpy
     #   matplotlib
@@ -249,7 +257,7 @@ packaging==25.0
     #   matplotlib
     #   nbconvert
     #   sphinx
-pandas==2.2.3
+pandas==2.3.0
     # via vanguard-gp
 pandocfilters==1.5.1
     # via nbconvert
@@ -316,7 +324,11 @@ rpds-py==0.25.1
     # via
     #   jsonschema
     #   referencing
-scikit-learn==1.6.1
+scikit-learn==1.6.1 ; python_full_version < '3.10'
+    # via
+    #   gpytorch
+    #   vanguard-gp
+scikit-learn==1.7.0 ; python_full_version >= '3.10'
     # via
     #   gpytorch
     #   vanguard-gp
@@ -392,7 +404,7 @@ tinycss2==1.4.0
     # via bleach
 tomli==2.2.1 ; python_full_version < '3.11'
     # via sphinx
-torch==2.7.0
+torch==2.7.1
     # via
     #   linear-operator
     #   vanguard-gp
@@ -414,11 +426,11 @@ traitlets==5.14.3
     #   nbconvert
     #   nbformat
     #   nbsphinx
-triton==3.3.0 ; (python_full_version < '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux') or (os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux')
+triton==3.3.1 ; (python_full_version < '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux') or (os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux')
     # via torch
-typeguard==4.4.2 ; python_full_version < '3.10'
+typeguard==4.4.3 ; python_full_version < '3.10'
     # via jaxtyping
-typing-extensions==4.13.2
+typing-extensions==4.14.0
     # via
     #   beautifulsoup4
     #   exceptiongroup
