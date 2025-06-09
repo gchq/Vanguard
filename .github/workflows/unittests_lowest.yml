@@ -71,6 +71,8 @@ jobs:
         uv run --frozen --no-dev pytest
         --ignore=tests/test_examples.py
         -W "error::vanguard.utils.UnseededRandomWarning"
+        -n auto
+        --dist worksteal
     - name: Minimize UV cache
       run: uv cache prune --ci
       if: always()

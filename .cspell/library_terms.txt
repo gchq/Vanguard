@@ -179,6 +179,7 @@ warpfunctions
 weathersit
 windspeed
 workingday
+worksteal
 xlabel
 xlim
 xscale
