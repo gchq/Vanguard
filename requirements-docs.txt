@@ -23,7 +23,7 @@ bibtexparser==1.4.3
     # via vanguard-gp
 bleach==6.2.0
     # via nbconvert
-certifi==2025.4.26
+certifi==2025.6.15
     # via requests
 cffi==1.17.1 ; implementation_name == 'pypy'
     # via pyzmq
@@ -80,6 +80,7 @@ importlib-metadata==8.7.0 ; python_full_version < '3.10'
     # via
     #   jupyter-client
     #   nbconvert
+    #   pybtex
     #   sphinx
     #   sphinxcontrib-bibtex
     #   typeguard
@@ -142,7 +143,7 @@ kiwisolver==1.4.8 ; python_full_version >= '3.10'
     # via matplotlib
 kmedoids==0.5.3.1
     # via vanguard-gp
-latexcodec==3.0.0
+latexcodec==3.0.1
     # via pybtex
 linear-operator==0.5.3 ; python_full_version < '3.10'
     # via gpytorch
@@ -206,7 +207,7 @@ numpy==2.2.6 ; python_full_version == '3.10.*'
     #   scikit-learn
     #   scipy
     #   vanguard-gp
-numpy==2.3.0 ; python_full_version >= '3.11'
+numpy==2.3.1 ; python_full_version >= '3.11'
     # via
     #   contourpy
     #   matplotlib
@@ -279,7 +280,7 @@ ptyprocess==0.7.0 ; (python_full_version < '3.10' and sys_platform == 'emscripte
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
-pybtex==0.24.0
+pybtex==0.25.0
     # via
     #   pybtex-docutils
     #   sphinxcontrib-bibtex
@@ -288,7 +289,7 @@ pybtex-docutils==1.0.3
     # via sphinxcontrib-bibtex
 pycparser==2.22 ; implementation_name == 'pypy'
     # via cffi
-pygments==2.19.1
+pygments==2.19.2
     # via
     #   furo
     #   ipython
@@ -344,16 +345,14 @@ scipy==1.15.3 ; python_full_version >= '3.10'
     #   linear-operator
     #   scikit-learn
     #   vanguard-gp
-setuptools==80.9.0 ; (python_full_version >= '3.12' and platform_machine != 'x86_64') or (python_full_version >= '3.12' and sys_platform != 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')
+setuptools==80.9.0
     # via
     #   sphinxcontrib-bibtex
     #   torch
     #   triton
     #   vanguard-gp
 six==1.17.0
-    # via
-    #   pybtex
-    #   python-dateutil
+    # via python-dateutil
 snowballstemmer==3.0.1
     # via sphinx
 soupsieve==2.7
@@ -382,7 +381,7 @@ sphinx-basic-ng==1.0.0b2
     # via furo
 sphinxcontrib-applehelp==2.0.0
     # via sphinx
-sphinxcontrib-bibtex==2.6.3
+sphinxcontrib-bibtex==2.6.4
     # via vanguard-gp
 sphinxcontrib-devhelp==2.0.0
     # via sphinx
@@ -428,7 +427,7 @@ traitlets==5.14.3
     #   nbsphinx
 triton==3.3.1 ; (python_full_version < '3.13' and platform_machine == 'x86_64' and sys_platform == 'linux') or (os_name != 'nt' and platform_machine == 'x86_64' and sys_platform == 'linux')
     # via torch
-typeguard==4.4.3 ; python_full_version < '3.10'
+typeguard==4.4.4 ; python_full_version < '3.10'
     # via jaxtyping
 typing-extensions==4.14.0
     # via
@@ -443,11 +442,11 @@ typing-extensions==4.14.0
     #   vanguard-gp
 tzdata==2025.2
     # via pandas
-urllib3==2.4.0
+urllib3==2.5.0
     # via
     #   requests
     #   vanguard-gp
-wadler-lindig==0.1.6 ; python_full_version >= '3.10'
+wadler-lindig==0.1.7 ; python_full_version >= '3.10'
     # via jaxtyping
 wcwidth==0.2.13
     # via prompt-toolkit
