@@ -23,7 +23,7 @@ bibtexparser==1.4.3
     # via vanguard-gp
 bleach==6.2.0
     # via nbconvert
-certifi==2025.6.15
+certifi==2025.7.9
     # via requests
 cffi==1.17.1 ; implementation_name == 'pypy'
     # via pyzmq
@@ -258,7 +258,7 @@ packaging==25.0
     #   matplotlib
     #   nbconvert
     #   sphinx
-pandas==2.3.0
+pandas==2.3.1
     # via vanguard-gp
 pandocfilters==1.5.1
     # via nbconvert
