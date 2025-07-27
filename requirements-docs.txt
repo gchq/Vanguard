@@ -36,11 +36,13 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   ipython
     #   sphinx
     #   tqdm
-comm==0.2.2
+comm==0.2.3
     # via ipykernel
 contourpy==1.3.0 ; python_full_version < '3.10'
     # via matplotlib
-contourpy==1.3.2 ; python_full_version >= '3.10'
+contourpy==1.3.2 ; python_full_version == '3.10.*'
+    # via matplotlib
+contourpy==1.3.3 ; python_full_version >= '3.11'
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
@@ -88,7 +90,7 @@ importlib-metadata==8.7.0 ; python_full_version < '3.10'
     #   typeguard
 importlib-resources==6.5.2 ; python_full_version < '3.10'
     # via matplotlib
-ipykernel==6.29.5
+ipykernel==6.30.0
     # via vanguard-gp
 ipython==8.18.1 ; python_full_version < '3.10'
     # via
@@ -209,7 +211,7 @@ numpy==2.2.6 ; python_full_version == '3.10.*'
     #   scikit-learn
     #   scipy
     #   vanguard-gp
-numpy==2.3.1 ; python_full_version >= '3.11'
+numpy==2.3.2 ; python_full_version >= '3.11'
     # via
     #   contourpy
     #   matplotlib
@@ -423,7 +425,6 @@ tqdm==4.67.1
     # via vanguard-gp
 traitlets==5.14.3
     # via
-    #   comm
     #   ipykernel
     #   ipython
     #   jupyter-client
