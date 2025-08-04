@@ -76,7 +76,7 @@ class TestClassification:
 
         # Define some data for the test
         x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
-        y = np.zeros_like(x, dtype=np.integer)
+        y = np.zeros_like(x, dtype=np.int_)
 
         # Set some non-trivial classification target, with either 2 or 3 classes depending on `classification_type`
         third_class_value = 1 if classification_type == "binary" else 2
