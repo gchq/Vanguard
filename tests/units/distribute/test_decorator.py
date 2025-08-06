@@ -230,7 +230,7 @@ class SharedDataTests(unittest.TestCase):
         """
         # Define a new controller and fit it
         gp = DistributedGaussianGPControllerBCMAggregator(
-            np.arange(20, dtype=np.floating).reshape(-1, 1),
+            np.arange(20, dtype=np.float32).reshape(-1, 1),
             2.5 + 0.5 * np.arange(20),
             ScaledRBFKernel,
             0.0,
@@ -241,12 +241,12 @@ class SharedDataTests(unittest.TestCase):
         # Change the kernel on the controller to ensure we hit the case where the posterior prediction
         # computation does not make sense due to the prior variance computed
         mocked_kernel = MagicMock()
-        mocked_kernel.return_value = torch.zeros(size=[2, 3, 5], dtype=torch.float)
+        mocked_kernel.return_value = torch.zeros(size=[2, 3, 5], dtype=torch.float32)
         gp.kernel = mocked_kernel
 
         # Check we reject the invalid noise from the kernel
         with self.assertRaises(RuntimeError) as exc:
-            gp.posterior_over_point(torch.arange(3, dtype=torch.float))
+            gp.posterior_over_point(torch.arange(3, dtype=torch.float32))
         self.assertEqual(
             str(exc.exception), "Cannot distribute using this kernel - try using a non-BCM aggregator instead."
         )
