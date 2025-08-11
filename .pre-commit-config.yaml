@@ -41,7 +41,6 @@ repos:
         files: ^\.cspell/.+\.txt$
         args:
           - --ignore-case
-          - --unique
         fail_fast: true
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
