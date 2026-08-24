@@ -16,7 +16,7 @@
 Contains the multitask_model decorator.
 """
 
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 import gpytorch
 import numpy as np
@@ -120,7 +120,7 @@ def independent_variational_multitask_model(cls: type[GPT]) -> type[GPT]:
             covar_module: Kernel,
             n_inducing_points: int,
             num_tasks: int,
-            rng: Optional[np.random.Generator] = None,
+            rng: np.random.Generator | None = None,
         ) -> None:
             self.rng = utils.optional_random_generator(rng)
             self.num_tasks = num_tasks

@@ -16,7 +16,7 @@
 Contains GPyTorch likelihoods required in Vanguard but not implemented in GPyTorch.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from gpytorch.distributions import MultitaskMultivariateNormal
 from gpytorch.likelihoods import MultitaskGaussianLikelihood
@@ -65,7 +65,7 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         self,
         function_dist: MultitaskMultivariateNormal,
         *params: Any,
-        noise: Optional[Tensor] = None,
+        noise: Tensor | None = None,
         **kwargs: Any,
     ) -> MultitaskMultivariateNormal:
         r"""
@@ -108,7 +108,7 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
         self,
         base_shape: Size,
         add_noise: bool = True,
-        noise: Optional[Tensor] = None,
+        noise: Tensor | None = None,
         *params: Any,
     ) -> DiagLinearOperator:
         """
@@ -145,4 +145,4 @@ class FixedNoiseMultitaskGaussianLikelihood(MultitaskGaussianLikelihood):
 
         :returns: Reshaped 1d tensor. Contiguous within tasks.
         """
-        return noise.T.reshape(-1)
+        return noise.permute(*reversed(range(noise.ndim))).reshape(-1)

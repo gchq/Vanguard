@@ -20,8 +20,8 @@ import contextlib
 import functools
 import os
 import warnings
-from collections.abc import Generator, Iterable
-from typing import Any, Callable, Optional, TypeVar
+from collections.abc import Callable, Generator, Iterable
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing
@@ -132,10 +132,10 @@ def instantiate_with_subset_of_kwargs(cls, **kwargs):
 
 
 def infinite_tensor_generator(
-    batch_size: Optional[int],
+    batch_size: int | None,
     device: torch.device,
     *tensor_axis_pairs: tuple[torch.Tensor, int],
-    rng: Optional[np.random.Generator] = None,
+    rng: np.random.Generator | None = None,
 ) -> Generator[torch.Tensor, None, None]:
     """
     Return a never-ending generator that return random mini-batches of tensors with a shared first dimension.
@@ -205,7 +205,7 @@ class UnseededRandomWarning(UserWarning):
     """Warning for when unseeded random generators are used."""
 
 
-def optional_random_generator(generator: Optional[np.random.Generator]) -> np.random.Generator:
+def optional_random_generator(generator: np.random.Generator | None) -> np.random.Generator:
     """
     Return the generator as-is, or a default unseeded one if :data:`None` is given.
 

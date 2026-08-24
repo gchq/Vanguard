@@ -16,7 +16,7 @@
 Contains the BinaryClassification decorator.
 """
 
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing
@@ -139,9 +139,7 @@ class BinaryClassification(Decorator):
 
                 super().__init__(likelihood_class=likelihood_class, rng=self.rng, **all_parameters_as_kwargs)
 
-            def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
-            ) -> tuple[Tensor, Tensor]:
+            def classify_points(self, x: float | numpy.typing.NDArray[np.floating] | Tensor) -> tuple[Tensor, Tensor]:
                 """Classify points."""
                 x = torch.as_tensor(x)
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
@@ -149,8 +147,8 @@ class BinaryClassification(Decorator):
 
             def classify_fuzzy_points(
                 self,
-                x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-                x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                x: float | numpy.typing.NDArray[np.floating] | Tensor,
+                x_std: float | numpy.typing.NDArray[np.floating] | Tensor,
             ) -> tuple[Tensor, Tensor]:
                 """Classify fuzzy points."""
                 x = torch.as_tensor(x)
@@ -160,7 +158,7 @@ class BinaryClassification(Decorator):
 
             @staticmethod
             def _get_predictions_from_prediction_means(
-                means: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                means: float | numpy.typing.NDArray[np.floating] | Tensor,
             ) -> tuple[Tensor, Tensor]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.

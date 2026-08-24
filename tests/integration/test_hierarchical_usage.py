@@ -16,8 +16,6 @@
 Basic end to end functionality test for hierarchical code in Vanguard.
 """
 
-from typing import Union
-
 import numpy as np
 import pytest
 import torch
@@ -36,7 +34,7 @@ from vanguard.hierarchical import (
 from vanguard.hierarchical.base import BaseHierarchicalHyperparameters
 from vanguard.vanilla import GaussianGPController
 
-TrainTestData = Union[tuple[NDArray, NDArray, NDArray, NDArray], tuple[Tensor, Tensor, Tensor, Tensor]]
+TrainTestData = tuple[NDArray, NDArray, NDArray, NDArray] | tuple[Tensor, Tensor, Tensor, Tensor]
 
 
 class TestHierarchicalUsage:
@@ -51,16 +49,17 @@ class TestHierarchicalUsage:
     num_mc_samples = 50
 
     @pytest.fixture(scope="class", params=["ndarray", "tensor"])
-    def train_test_data(self, request: FixtureRequest) -> TrainTestData:
+    @classmethod
+    def train_test_data(cls, request: FixtureRequest) -> TrainTestData:
         """Generate a single-feature, continuous target problem for testing."""
         rng = get_default_rng()
 
         # Define data for the tests
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        x = np.linspace(start=0, stop=10, num=cls.num_train_points + cls.num_test_points).reshape(-1, 1)
         y = np.squeeze(x * np.sin(x))
 
         x_train, x_test, y_train, y_test = train_test_split_convert(
-            x, y, n_test_points=self.num_test_points, array_type=request.param, rng=rng
+            x, y, n_test_points=cls.num_test_points, array_type=request.param, rng=rng
         )
 
         return x_train, y_train, x_test, y_test

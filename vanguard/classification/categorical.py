@@ -16,7 +16,7 @@
 Contains the CategoricalClassification decorator.
 """
 
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing
@@ -132,17 +132,15 @@ class CategoricalClassification(Decorator):
                     **all_parameters_as_kwargs,
                 )
 
-            def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
-            ) -> tuple[Tensor, Tensor]:
+            def classify_points(self, x: float | numpy.typing.NDArray[np.floating] | Tensor) -> tuple[Tensor, Tensor]:
                 """Classify points."""
                 predictive_likelihood = super().predictive_likelihood(x)
                 return self._get_predictions_from_posterior(predictive_likelihood)
 
             def classify_fuzzy_points(
                 self,
-                x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-                x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                x: float | numpy.typing.NDArray[np.floating] | Tensor,
+                x_std: float | numpy.typing.NDArray[np.floating] | Tensor,
             ) -> tuple[Tensor, Tensor]:
                 """Classify fuzzy points."""
                 predictive_likelihood = super().fuzzy_predictive_likelihood(x, x_std)

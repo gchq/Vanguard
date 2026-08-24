@@ -15,7 +15,7 @@
 """Contains tests for the decorators."""
 
 import contextlib
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import pytest
 from typing_extensions import ContextManager
@@ -36,10 +36,10 @@ class SimpleNumber:
 
     __decorators__ = []
 
-    def __init__(self, number: Union[int, float]) -> None:
+    def __init__(self, number: int | float) -> None:
         self.number = number
 
-    def add_5(self) -> Union[int, float]:
+    def add_5(self) -> int | float:
         """Add 5 to a number."""
         return self.number + 5
 
@@ -286,7 +286,7 @@ class TestErrorsWhenOverwriting:
                 class MiddleNumber(SimpleNumber):
                     """Subclass that overrides an existing method."""
 
-                    def add_5(self) -> Union[int, float]:
+                    def add_5(self) -> int | float:
                         return super().add_5() + 1
             else:
                 raise ValueError("mode")
@@ -308,7 +308,7 @@ class TestErrorsWhenOverwriting:
                 class NewNumber(MiddleNumber):
                     """Subclass that overrides an existing method."""
 
-                    def add_5(self) -> Union[int, float]:
+                    def add_5(self) -> int | float:
                         return super().add_5() + 1
             else:
                 raise ValueError("mode")

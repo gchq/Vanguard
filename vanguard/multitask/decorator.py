@@ -20,7 +20,7 @@ converts a controller class into a multitask controller.
 """
 
 import warnings
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 
 import torch
 from gpytorch.kernels import Kernel, MultitaskKernel
@@ -56,7 +56,7 @@ class Multitask(Decorator):
             ...     pass
     """
 
-    def __init__(self, num_tasks: int, lmc_dimension: Optional[int] = None, rank: int = 1, **kwargs: Any) -> None:
+    def __init__(self, num_tasks: int, lmc_dimension: int | None = None, rank: int = 1, **kwargs: Any) -> None:
         """
         Initialise self.
 
@@ -263,7 +263,7 @@ class Multitask(Decorator):
         return InnerClass  # pyright: ignore [reportReturnType]
 
 
-def _batchify(module_class: type[T], _kwargs: dict[str, Any], num_tasks: int, lmc_dimension: Optional[int]) -> type[T]:
+def _batchify(module_class: type[T], _kwargs: dict[str, Any], num_tasks: int, lmc_dimension: int | None) -> type[T]:
     """
     Add a batch shape to a class so it can be used for multitask variational GPs.
 

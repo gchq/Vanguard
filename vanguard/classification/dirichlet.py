@@ -16,7 +16,7 @@
 Contains the DirichletMulticlassClassification decorator.
 """
 
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import gpytorch
 import numpy as np
@@ -205,7 +205,7 @@ class DirichletMulticlassClassification(Decorator):
                 )
 
             def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor], *, n_posterior_samples: int = 256
+                self, x: float | numpy.typing.NDArray[np.floating] | Tensor, *, n_posterior_samples: int = 256
             ) -> tuple[Tensor, Tensor]:
                 """
                 Classify points.
@@ -229,8 +229,8 @@ class DirichletMulticlassClassification(Decorator):
 
             def classify_fuzzy_points(
                 self,
-                x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-                x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                x: float | numpy.typing.NDArray[np.floating] | Tensor,
+                x_std: float | numpy.typing.NDArray[np.floating] | Tensor,
                 *,
                 n_posterior_samples: int = 256,
             ) -> tuple[Tensor, Tensor]:
@@ -259,7 +259,7 @@ class DirichletMulticlassClassification(Decorator):
                 return super()._loss(train_x, train_y).sum()
 
             @staticmethod
-            def _noise_transform(gamma: Union[float, numpy.typing.NDArray[np.floating], torch.Tensor]) -> torch.Tensor:
+            def _noise_transform(gamma: float | numpy.typing.NDArray[np.floating] | torch.Tensor) -> torch.Tensor:
                 return torch.stack([torch.diag(torch.matmul(g, g.T)) for g in gamma], -1).squeeze().T
 
             @staticmethod

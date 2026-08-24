@@ -7,7 +7,7 @@ name = "vanguard-gp"
 dynamic = ["version"]
 description = "Various easy-to-use extensions for Gaussian process models and a framework for composition of extensions."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = [
     "gaussian-process",
     "pytorch",
@@ -16,7 +16,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -38,9 +37,10 @@ dependencies = [
     "kmedoids>=0.4.4; python_version>='3.12'",  # earlier versions don't have prebuilt wheels for python 3.12
     "kmedoids>=0.5.3; python_version>='3.13'",  # earlier versions don't have prebuilt wheels for python 3.13
     "matplotlib>=3.8.4",  # first version to support numpy 2
+    "matplotlib>=3.9.2; python_version>='3.13'",  # first version to ship pre-built python 3.13 wheels
     "numpy>=2",  # modern versions of packages are incompatible with numpy<2
     "numpy>=2.1.0; python_version>='3.13'",  # first version to support python 3.13
-    "pandas>=2",
+    "pandas>=2.2.0",
     "pandas>=2.2.3; python_version>='3.13'",  # earlier versions don't provide prebuilt wheels for python 3.13
     "scikit-learn>=1.5.0",  # CVE-2024-5206 affects versions earlier than 1.5.0
     "scikit-learn>=1.6.0; python_version>='3.13'",  # earlier versions don't provide prebuilt wheels for python 3.13
@@ -89,8 +89,8 @@ notebook = [
     "tqdm>=4",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "vanguard-gp[test, doc, notebook]",
     "isort>=5",
     "jupyterlab>=4",
@@ -101,6 +101,7 @@ dev-dependencies = [
     "ruff>=0.6",
 ]
 
+[tool.uv]
 # Constraints on dependencies. These do *not* select a package to be installed, but if *another* package requires
 # one of these packages, then uv will respect these constraints. Note that pip does *not* respect these constraints,
 # however - they are only for ensuring that `--resolution lowest` only picks packages compatible with modern Python.
@@ -118,6 +119,7 @@ constraint-dependencies = [
     "fsspec>=2024",
     "six>=1.16; python_version>='3.10'",  # earlier versions don't work on 3.10+
     "pyzmq>=26",
+    "pyzmq>=26.1.0; python_version>='3.13'",  # earliest version with 3.13 built wheels
     "contourpy>=1.1; python_version>='3.11'",
     "lxml>=4.7.1",  # earlier versions fail to build to missing libxml2
     "argon2-cffi>=19", # earlier versions have issues building on Linux
@@ -143,7 +145,6 @@ environments = [
     "python_version=='3.12.*'",
     "python_version=='3.11.*'",
     "python_version=='3.10.*'",
-    "python_version=='3.9.*'",
 ]
 
 [project.urls]
@@ -231,6 +232,13 @@ markers = [
 #  they're emitted using the catch_warnings context manager. Suppress globally here only as a last resort.
 # https://github.com/gchq/Vanguard/issues/281
 filterwarnings = [
+    # Must come first: pytest applies these filters in order, and resolving a dotted-class filter
+    # below (e.g. `ignore::linear_operator...`) makes Python import that module right away. That
+    # eagerly imports linear_operator.utils.linear_cg, which still uses the deprecated
+    # torch.jit.script decorator, firing this warning as an import side effect before a
+    # later-listed ignore rule would have been registered yet.
+    "ignore:`torch.jit.script` is deprecated:DeprecationWarning",
+
     # Numerical error warnings
     "ignore::linear_operator.utils.warnings.NumericalWarning",
     "ignore:Hit a numerical error:UserWarning",
@@ -240,16 +248,18 @@ filterwarnings = [
     "ignore::pytest.PytestCollectionWarning",
     "ignore::vanguard.warnings.ExperimentalFeatureWarning",  # we already know what parts of the code are experimental!
     "ignore:The input matches the stored training data. Did you forget to call model.train\\(\\)\\?:gpytorch.utils.warnings.GPInputWarning",
-    "ignore:To copy construct from a tensor, it is recommended to use sourceTensor.clone\\(\\).detach\\(\\):UserWarning",
+    "ignore:To copy construct from a tensor, it is recommended to use sourceTensor.detach\\(\\).clone\\(\\):UserWarning",
     "ignore:Pass auto_restart=True to the controller to automatically restart training up to the last stable iterations:UserWarning",
     "ignore:std\\(\\). degrees of freedom is <= 0:UserWarning",
     "ignore:You have passed data through a FixedNoiseGaussianLikelihood that did not match the size of the fixed noise:gpytorch.utils.warnings.GPInputWarning",
     "ignore:To get the last learning rate computed by the scheduler, please use `get_last_lr\\(\\)`:UserWarning",
+    # Emitted by linear_operator when materializing an InterpolatedLinearOperator (e.g. from fancy-indexing a
+    # DiagLinearOperator) into a legacy torch.sparse.*Tensor without an explicit check_invariants setting.
+    "ignore:Sparse invariant checks are implicitly disabled:UserWarning",
 
     # -- Deprecations --
-    # TODO: replace with sparse_coo_tensor
-    # https://github.com/gchq/Vanguard/issues/278
+    # Used in a third-party dependency
     "ignore:torch.sparse.SparseTensor\\(indices, values, shape, \\*, device=\\) is deprecated:UserWarning",
     # TODO: replace with some alternative (e.g. beartype.typing.*)
-    "ignore::beartype.roar.BeartypeDecorHintPep585DeprecationWarning"
+    "ignore::beartype.roar.BeartypeDecorHintPep585DeprecationWarning",
 ]

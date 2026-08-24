@@ -18,7 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -42,7 +41,7 @@ jobs:
         # Note that this is just the version of Python that we use to run `uv` with.
         # `uv` manages its own version of Python.
         # For speed, we use the same version for both, but in principle these could differ.
-        python-version: 3.9
+        python-version: "3.10"
     - name: Set up uv cache directory location (Linux/Mac)
       run: echo "UV_CACHE_DIR=${{ runner.temp }}/.uv-cache" >> $GITHUB_ENV
       if: runner.os != 'Windows'
@@ -53,9 +52,9 @@ jobs:
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
       with:
         path: ${{ env.UV_CACHE_DIR }}
-        key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}-3.9_LOWEST-test
+        key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}-3.10_LOWEST-test
         restore-keys: |
-          uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}-3.9_LOWEST
+          uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}-3.10_LOWEST
           uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
           uv-${{ runner.os }}
     - name: Upgrade pip

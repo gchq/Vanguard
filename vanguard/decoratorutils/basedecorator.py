@@ -19,7 +19,7 @@ Contains the BaseDecorator class.
 import warnings
 from collections.abc import Iterable
 from inspect import getmembers, isfunction
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 from vanguard.decoratorutils import errors
 
@@ -243,7 +243,7 @@ class Decorator:
                 warnings.warn(message, errors.OverwrittenMethodWarning, stacklevel=4)
 
     @staticmethod
-    def _get_method_implementation(subclass: type, method_name: str) -> Optional[type]:
+    def _get_method_implementation(subclass: type, method_name: str) -> type | None:
         """
         Get the class that provides the implementation of a method.
 

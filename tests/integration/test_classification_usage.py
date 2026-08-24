@@ -16,7 +16,7 @@
 Basic end to end functionality test for classification problems in Vanguard.
 """
 
-from typing import Literal, Union
+from typing import Literal
 
 import gpytorch.means
 import numpy as np
@@ -37,7 +37,7 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-TrainTestData = Union[tuple[NDArray, NDArray, NDArray, NDArray], tuple[Tensor, Tensor, Tensor, Tensor]]
+TrainTestData = tuple[NDArray, NDArray, NDArray, NDArray] | tuple[Tensor, Tensor, Tensor, Tensor]
 
 
 class TestClassification:
@@ -53,17 +53,20 @@ class TestClassification:
     required_f1_score = 0.9
 
     @pytest.fixture(scope="class", params=["ndarray", "tensor"])
-    def train_test_data_multiclass(self, request: pytest.FixtureRequest) -> TrainTestData:
+    @classmethod
+    def train_test_data_multiclass(cls, request: pytest.FixtureRequest) -> TrainTestData:
         """Create multiclass train/test data."""
-        return self.make_data(request.param, "multiclass")
+        return cls.make_data(request.param, "multiclass")
 
     @pytest.fixture(scope="class", params=["ndarray", "tensor"])
-    def train_test_data_binary(self, request: pytest.FixtureRequest) -> TrainTestData:
+    @classmethod
+    def train_test_data_binary(cls, request: pytest.FixtureRequest) -> TrainTestData:
         """Create binary train/test data."""
-        return self.make_data(request.param, "binary")
+        return cls.make_data(request.param, "binary")
 
+    @classmethod
     def make_data(
-        self, array_type: Literal["ndarray", "tensor"], classification_type: Literal["binary", "multiclass"]
+        cls, array_type: Literal["ndarray", "tensor"], classification_type: Literal["binary", "multiclass"]
     ) -> TrainTestData:
         """
         Create classification data for testing.
@@ -75,7 +78,7 @@ class TestClassification:
         rng = get_default_rng()
 
         # Define some data for the test
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        x = np.linspace(start=0, stop=10, num=cls.num_train_points + cls.num_test_points).reshape(-1, 1)
         y = np.zeros_like(x, dtype=np.int_)
 
         # Set some non-trivial classification target, with either 2 or 3 classes depending on `classification_type`
@@ -87,7 +90,7 @@ class TestClassification:
                 y[index, 0] = third_class_value
 
         x_train, x_test, y_train, y_test = train_test_split_convert(
-            x, y, n_test_points=self.num_test_points, array_type=array_type, rng=rng
+            x, y, n_test_points=cls.num_test_points, array_type=array_type, rng=rng
         )
 
         return x_train, y_train, x_test, y_test

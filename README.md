@@ -30,8 +30,7 @@ There are optional sets of additional dependencies:
 
 * `vanguard-gp[test]` is required to run the tests;
 * `vanguard-gp[doc]` is for compiling the Sphinx documentation;
-* `vanguard-gp[notebook]` contains all dependencies for the example notebooks;
-* `vanguard-gp[dev]` includes all tools and packages a developer of Vanguard might need.
+* `vanguard-gp[notebook]` contains all dependencies for the example notebooks.
 
 Should the installation of Vanguard fail, you can see the versions used by the Vanguard
 development team in `uv.lock`. You can transfer these to your own project as follows.

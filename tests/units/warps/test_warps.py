@@ -17,7 +17,6 @@ Test that the behaviour of some warp functions.
 """
 
 import unittest
-from typing import Union
 
 import numpy as np
 import numpy.typing
@@ -61,7 +60,7 @@ class AutogradBoxCoxWarpFunction(WarpFunction):
     default autograd deriv.
     """
 
-    def __init__(self, lambda_: Union[float, int] = 0) -> None:
+    def __init__(self, lambda_: float | int = 0) -> None:
         super().__init__()
         self.lambda_ = lambda_
 

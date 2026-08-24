@@ -16,8 +16,6 @@
 Contains the BayesianHyperparameter class.
 """
 
-from typing import Optional
-
 import torch
 from gpytorch import constraints
 
@@ -31,7 +29,7 @@ class BayesianHyperparameter:
         self,
         raw_name: str,
         raw_shape: torch.Size,
-        constraint: Optional[constraints.Interval],
+        constraint: constraints.Interval | None,
         prior_mean: float,
         prior_variance: float,
     ) -> None:

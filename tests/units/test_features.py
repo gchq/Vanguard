@@ -20,7 +20,7 @@ Tests for the HigherRankFeatures decorator.
 """
 
 import unittest
-from typing import Any, Union
+from typing import Any
 
 import pytest
 import torch
@@ -80,7 +80,7 @@ class HigherRankKernel(ScaledRBFKernel):
 
     def forward(
         self, x1: torch.Tensor, x2: torch.Tensor, last_dim_is_batch: bool = False, diag: bool = False, **params: Any
-    ) -> Union[torch.Tensor, LinearOperator]:
+    ) -> torch.Tensor | LinearOperator:
         """
         Evaluate the kernel given two tensors.
 
@@ -98,7 +98,7 @@ class HigherRankKernel(ScaledRBFKernel):
             **params,
         )
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Union[torch.Tensor, LinearOperator]:
+    def __call__(self, *args: Any, **kwargs: Any) -> torch.Tensor | LinearOperator:
         """
         Perform forward pass of the kernel.
         """

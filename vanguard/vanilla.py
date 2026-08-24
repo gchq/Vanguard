@@ -16,7 +16,7 @@
 The :class:`GaussianGPController` provides the user with a standard GP model with no extra features.
 """
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import gpytorch
 import numpy as np
@@ -64,16 +64,16 @@ class GaussianGPController(GPController):
 
     def __init__(
         self,
-        train_x: Union[torch.Tensor, numpy.typing.NDArray[np.floating]],
-        train_y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.integer]],
+        train_x: torch.Tensor | numpy.typing.NDArray[np.floating],
+        train_y: torch.Tensor | numpy.typing.NDArray[np.floating] | numpy.typing.NDArray[np.integer],
         kernel_class: type[gpytorch.kernels.Kernel],
-        y_std: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
+        y_std: torch.Tensor | numpy.typing.NDArray[np.floating] | float,
         mean_class: type[gpytorch.means.Mean] = ConstantMean,
         likelihood_class: type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
         marginal_log_likelihood_class: type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
         optimiser_class: type[torch.optim.Optimizer] = torch.optim.Adam,
         smart_optimiser_class: type[SmartOptimiser] = GreedySmartOptimiser,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
         **kwargs: Any,
     ) -> None:
         """

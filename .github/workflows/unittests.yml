@@ -15,7 +15,6 @@ jobs:
       matrix:
         # Note that we only do type checking on Python 3.13 (the latest Python version).
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -71,6 +70,7 @@ jobs:
       run: >
         uv run pytest
         --ignore=tests/test_examples.py
+        -x
         -W "error::vanguard.utils.UnseededRandomWarning"
         -m "not no_beartype"
         --beartype-packages="vanguard"

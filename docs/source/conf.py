@@ -27,7 +27,7 @@ import os
 import re
 import shutil
 import sys
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeAlias, TypeVar
 
 import gpytorch.constraints
 import gpytorch.distributions
@@ -44,7 +44,7 @@ import torch
 import torch.optim
 from PIL import Image
 from sphinx_autodoc_typehints import format_annotation as default_format_annotation
-from typing_extensions import Self, TypeAlias, Unpack
+from typing_extensions import Self, Unpack
 
 # -- Path setup --------------------------------------------------------------
 
@@ -139,6 +139,11 @@ nitpicky_ignore_mapping: dict[str, list[str]] = {
     "py:class": [
         "torch.Size",
         "gpytorch.likelihoods.gaussian_likelihood._GaussianLikelihoodBase",
+        "numpy._typing._array_like.GenericAlias",
+        "numpy._typing._array_like.NDArray",
+    ],
+    "py:data": [
+        "typing.Union",
     ],
     "py:meth": [
         "activate",
@@ -185,7 +190,7 @@ autodoc_custom_types: dict[TypeAlias, str] = {
 }
 
 
-def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> Optional[str]:
+def typehints_formatter(annotation: Any, config: sphinx.config.Config) -> str | None:
     """
     Properly replace custom type aliases.
 
@@ -230,11 +235,14 @@ def require_full_stops_on_params(
     app: sphinx.config.Sphinx,  # pylint: disable=unused-argument
     what: str,  # pylint: disable=unused-argument
     name: str,
-    obj: object,  # pylint: disable=unused-argument
+    obj: object,
     options: sphinx_autodoc_typehints.Options,  # pylint: disable=unused-argument
     lines: list[str],
 ):
     """Require full stops on `param` directives in docstrings."""
+    obj_module = getattr(obj, "__module__", "") or ""
+    if not obj_module.startswith("vanguard"):
+        return
     current_param = None  # The parameter we're currently processing
     current_param_lines = []  # The docstring lines for the parameter we're currently processing
 

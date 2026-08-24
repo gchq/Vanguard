@@ -19,7 +19,7 @@ Gaussian processes can be trained on inputs with uncertainty.
 import warnings
 from collections.abc import Iterable
 from itertools import islice
-from typing import Any, NoReturn, Optional, Union
+from typing import Any, NoReturn
 
 import gpytorch
 import numpy as np
@@ -47,21 +47,21 @@ class GaussianUncertaintyGPController(GPController):
     exploits :mod:`torch.autograd` to circumvent any by-hand calculations of GP derivatives.
     """
 
-    _gradient_variance: Optional[torch.Tensor]
+    _gradient_variance: torch.Tensor | None
 
     def __init__(
         self,
-        train_x: Union[Tensor, numpy.typing.NDArray[np.floating]],
-        train_x_std: Optional[Union[Tensor, numpy.typing.NDArray[np.floating], float]],
-        train_y: Union[Tensor, numpy.typing.NDArray[np.integer], numpy.typing.NDArray[np.floating]],
-        y_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
+        train_x: Tensor | numpy.typing.NDArray[np.floating],
+        train_x_std: Tensor | numpy.typing.NDArray[np.floating] | float | None,
+        train_y: Tensor | numpy.typing.NDArray[np.integer] | numpy.typing.NDArray[np.floating],
+        y_std: Tensor | numpy.typing.NDArray[np.floating] | float,
         kernel_class: type[gpytorch.kernels.Kernel],
         mean_class: type[gpytorch.means.Mean] = gpytorch.means.ConstantMean,
         likelihood_class: type[gpytorch.likelihoods.Likelihood] = FixedNoiseGaussianLikelihood,
         marginal_log_likelihood_class: type[gpytorch.mlls.MarginalLogLikelihood] = ExactMarginalLogLikelihood,
         optimiser_class: type[torch.optim.Optimizer] = torch.optim.Adam,
         smart_optimiser_class: type[SmartOptimiser] = SmartOptimiser,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -135,7 +135,7 @@ class GaussianUncertaintyGPController(GPController):
             )
 
     @property
-    def gradient_variance(self) -> Optional[torch.Tensor]:
+    def gradient_variance(self) -> torch.Tensor | None:
         r"""
         Return the gradient variance.
 
@@ -145,7 +145,7 @@ class GaussianUncertaintyGPController(GPController):
         return self._gradient_variance
 
     @gradient_variance.setter
-    def gradient_variance(self, value: Union[Tensor, Iterable[torch.Tensor]]) -> None:
+    def gradient_variance(self, value: Tensor | Iterable[torch.Tensor]) -> None:
         """
         Set the gradient variance.
 
@@ -161,7 +161,7 @@ class GaussianUncertaintyGPController(GPController):
         self._gradient_variance = value
         self.likelihood_noise = self._original_y_variance_as_tensor + self._noise_transform(value)
 
-    def predict_at_point(self, x: Union[NDArray[np.floating], torch.Tensor]) -> NoReturn:
+    def predict_at_point(self, x: NDArray[np.floating] | torch.Tensor) -> NoReturn:
         """Doesn't make sense for an uncertain controller."""
         raise TypeError("Cannot call 'predict_at_point' directly, try 'predict_at_fuzzy_point'.")
 
@@ -262,8 +262,8 @@ class GaussianUncertaintyGPController(GPController):
 
     def _get_posterior_over_fuzzy_point_in_eval_mode(
         self,
-        x: Union[Tensor, numpy.typing.NDArray[np.floating]],
-        x_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
+        x: Tensor | numpy.typing.NDArray[np.floating],
+        x_std: Tensor | numpy.typing.NDArray[np.floating] | float,
     ) -> Posterior:
         """
         Obtain posterior predictive mean and covariance at a point with variance.
@@ -289,7 +289,7 @@ class GaussianUncertaintyGPController(GPController):
 
         return self.posterior_class.from_mean_and_covariance(predictions.squeeze(), covar + jitter)
 
-    def _process_x_std(self, std: Optional[Union[Tensor, numpy.typing.NDArray[float], float]]) -> torch.Tensor:
+    def _process_x_std(self, std: Tensor | numpy.typing.NDArray[float] | float | None) -> torch.Tensor:
         """
         Parse supplied std dev for input noise for different cases.
 

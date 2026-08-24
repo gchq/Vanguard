@@ -18,7 +18,6 @@ A simple pre-commit hook which forbids markdown cells in Jupyter notebooks.
 
 import argparse
 from collections.abc import Sequence
-from typing import Optional
 
 import nbformat
 
@@ -39,7 +38,7 @@ def count_markdown_cells_in_notebook(file_path: str, encoding="utf8") -> int:
     return number_of_bad_cells
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("filenames", nargs="*", help="Filenames to fix")
     args = parser.parse_args(argv)

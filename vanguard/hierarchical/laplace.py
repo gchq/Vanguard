@@ -15,9 +15,9 @@
 """Implementation of tempered Laplace approximation approach to Bayesian hyperparameters."""
 
 import itertools
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from math import ceil
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
 import gpytorch
 import numpy as np
@@ -86,7 +86,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     """
 
     def __init__(
-        self, num_mc_samples: int = 100, temperature: Optional[float] = None, uv_cutoff: float = 1e-3, **kwargs: Any
+        self, num_mc_samples: int = 100, temperature: float | None = None, uv_cutoff: float = 1e-3, **kwargs: Any
     ) -> None:
         """
         Initialise self.
@@ -177,11 +177,11 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
                 return new_instance
 
             @property
-            def temperature(self) -> Optional[float]:
+            def temperature(self) -> float | None:
                 return self._temperature
 
             @temperature.setter
-            def temperature(self, value: Optional[float]) -> None:
+            def temperature(self, value: float | None) -> None:
                 self._temperature = value
                 self._update_hyperparameter_posterior()
 
@@ -249,7 +249,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_posterior_samples(
-        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
+        controller: ControllerT, x: Tensor | NDArray[np.floating]
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield posterior samples forever.
@@ -267,8 +267,8 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
         controller: ControllerT,
-        x: Union[Tensor, NDArray[np.floating]],
-        x_std: Union[Tensor, NDArray[np.floating], float],
+        x: Tensor | NDArray[np.floating],
+        x_std: Tensor | NDArray[np.floating] | float,
     ) -> Generator[PosteriorT, None, None]:
         """
         Yield fuzzy posterior samples forever.
@@ -282,7 +282,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
         :return: Generator that provides posterior samples.
         """
-        tx = torch.tensor(x, dtype=torch.float32, device=controller.device)
+        tx = torch.as_tensor(x, dtype=torch.float32, device=controller.device)
         tx_std = controller._process_x_std(x_std).to(controller.device)  # pylint: disable=protected-access
         while True:
             # pylint: disable-next=protected-access
@@ -295,7 +295,7 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
 
     @staticmethod
     def _infinite_likelihood_samples(
-        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
+        controller: ControllerT, x: Tensor | NDArray[np.floating]
     ) -> Generator[PosteriorT, None, None]:
         """
         Yield likelihood samples forever.
@@ -310,8 +310,8 @@ class LaplaceHierarchicalHyperparameters(BaseHierarchicalHyperparameters):
     @staticmethod
     def _infinite_fuzzy_likelihood_samples(
         controller: ControllerT,
-        x: Union[Tensor, NDArray[np.floating]],
-        x_std: Union[Tensor, NDArray[np.floating], float],
+        x: Tensor | NDArray[np.floating],
+        x_std: Tensor | NDArray[np.floating] | float,
     ) -> Generator[torch.Tensor, None, None]:
         """
         Yield fuzzy likelihood samples forever.
@@ -365,9 +365,7 @@ def _posterior_to_likelihood_samples(
     :return: Generator object that provides likelihood samples.
     """
 
-    def generator(
-        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], *args
-    ) -> Generator[Tensor, None, None]:
+    def generator(controller: ControllerT, x: Tensor | NDArray[np.floating], *args) -> Generator[Tensor, None, None]:
         """
         Yield likelihood samples forever.
 

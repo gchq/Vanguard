@@ -17,7 +17,7 @@ Tests for the Multitask decorator.
 """
 
 import unittest
-from typing import Callable, Optional
+from collections.abc import Callable
 from unittest.mock import MagicMock, Mock, patch
 
 import gpytorch
@@ -131,8 +131,8 @@ class ErrorTests(unittest.TestCase):
 )
 def test_variational_multitask_model_task_latent_mismatch(
     model_decorator: Callable[[type], type],
-    expected_exc_type: Optional[type[Exception]],
-    expected_exc_message: Optional[str],
+    expected_exc_type: type[Exception] | None,
+    expected_exc_message: str | None,
 ) -> None:
     """
     Test what happens when the number of latent dims and tasks do not agree.

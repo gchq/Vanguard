@@ -16,7 +16,7 @@
 Contains base models for approximate inference.
 """
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy as np
 import torch
@@ -54,13 +54,13 @@ class SVGPModel(ApproximateGP):
 
     def __init__(
         self,
-        train_x: Union[Tensor, NDArray[np.floating]],
-        train_y: Union[Tensor, NDArray[np.floating]],  # pylint: disable=unused-argument
+        train_x: Tensor | NDArray[np.floating],
+        train_y: Tensor | NDArray[np.floating],  # pylint: disable=unused-argument
         likelihood: Likelihood,
         mean_module: Mean,
         covar_module: Kernel,
         n_inducing_points: int,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
         **_: Any,
     ) -> None:
         """

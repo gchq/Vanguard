@@ -21,7 +21,6 @@ Supplied by the UC Irvine Machine Learning Repository :cite:`FanaeeT2013`.
 import math
 import warnings
 from importlib.resources import as_file, files
-from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,11 +55,11 @@ class BikeDataset(Dataset):
 
     def __init__(
         self,
-        num_samples: Optional[int] = None,
+        num_samples: int | None = None,
         training_proportion: float = 0.9,
         significance: float = 0.025,
         noise_scale: float = 0.001,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
     ) -> None:
         """Initialise self."""
         data = self._load_data()
@@ -105,7 +104,7 @@ class BikeDataset(Dataset):
         pred_y_mean: torch.Tensor,
         pred_y_lower: torch.Tensor,
         pred_y_upper: torch.Tensor,
-        y_upper_bound: Optional[torch.Tensor] = None,
+        y_upper_bound: torch.Tensor | None = None,
         error_width: float = 0.3,
     ) -> None:  # pragma: no cover
         """
@@ -190,7 +189,7 @@ class BikeDataset(Dataset):
         return df.drop(columns=["instant", "casual", "registered"]).values
 
     @staticmethod
-    def _get_n_samples(data: np.typing.NDArray, n_samples: Optional[int]) -> int:
+    def _get_n_samples(data: np.typing.NDArray, n_samples: int | None) -> int:
         """
         Verify the number of samples is valid for some given data.
 

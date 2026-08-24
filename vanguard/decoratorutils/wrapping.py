@@ -22,8 +22,9 @@ to a function into a dictionary for straightforward access.
 """
 
 import inspect
+from collections.abc import Callable
 from functools import WRAPPER_ASSIGNMENTS, wraps
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, TypeVar
 
 from vanguard.decoratorutils import Decorator
 
@@ -97,7 +98,7 @@ def process_args(func: Callable, *args: Any, **kwargs: Any) -> dict[str, Any]:
     return parameters_as_kwargs
 
 
-def wraps_class(base_class: type[T], *, decorator_source: Optional[Decorator] = None) -> Callable[[type[T]], type[T]]:
+def wraps_class(base_class: type[T], *, decorator_source: Decorator | None = None) -> Callable[[type[T]], type[T]]:
     r"""
     Update the names and docstrings of an inner class to those of a base class.
 

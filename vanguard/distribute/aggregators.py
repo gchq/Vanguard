@@ -18,8 +18,6 @@ A suite of aggregators to be used with the :class:`~vanguard.distribute.decorato
 These are responsible for combining the predictions of several independent expert controllers.
 """
 
-from typing import Optional
-
 import torch
 
 
@@ -42,7 +40,7 @@ class BaseAggregator:
     """
 
     def __init__(
-        self, means: list[torch.Tensor], covars: list[torch.Tensor], prior_var: Optional[torch.Tensor] = None
+        self, means: list[torch.Tensor], covars: list[torch.Tensor], prior_var: torch.Tensor | None = None
     ) -> None:
         """
         Initialise the BaseAggregator class.

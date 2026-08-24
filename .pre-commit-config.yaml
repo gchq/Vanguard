@@ -60,16 +60,16 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.9
     hooks:
-      # Run the formatter.
-      - id: ruff-format
-        types_or: [ python, jupyter ]
-        fail_fast: true
       # Run the linter.
-      - id: ruff
+      - id: ruff-check
         types_or: [ python, jupyter ]
         args: [--fix]
         # Abort if ruff linter fails as there is some duplication of functionality with
         # the slow pylint hook
+        fail_fast: true
+      # Run the formatter.
+      - id: ruff-format
+        types_or: [ python, jupyter ]
         fail_fast: true
   - repo: https://github.com/regebro/pyroma
     rev: "5.0"

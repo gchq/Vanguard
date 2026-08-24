@@ -16,8 +16,7 @@
 Synthetic data is particularly useful when running tests, as the data can be specifically cultivated for one's needs.
 """
 
-from collections.abc import Iterable
-from typing import Callable, Optional, Union
+from collections.abc import Callable, Iterable
 
 import numpy as np
 import torch
@@ -86,7 +85,7 @@ class SyntheticDataset(Dataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
     ) -> None:
         """Initialise self."""
         self.functions = list(functions)
@@ -110,7 +109,7 @@ class SyntheticDataset(Dataset):
         self,
         n_points: int,
         input_noise_bounds: tuple[float, float],
-        output_noise_level: Union[int, float],
+        output_noise_level: int | float,
         interval_length: float = 1,
     ) -> tuple[tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
         """
@@ -168,7 +167,7 @@ class MultidimensionalSyntheticDataset(Dataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
     ) -> None:
         """Initialise self."""
         rng = utils.optional_random_generator(rng)
@@ -232,7 +231,7 @@ class HeteroskedasticSyntheticDataset(SyntheticDataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
     ) -> None:
         """Initialise self."""
         rng = utils.optional_random_generator(rng)
@@ -278,7 +277,7 @@ class HigherRankSyntheticDataset(Dataset):
         n_train_points: int = 30,
         n_test_points: int = 50,
         significance: float = 0.025,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
     ) -> None:
         """Initialise self."""
         self.functions = list(functions)
@@ -302,7 +301,7 @@ class HigherRankSyntheticDataset(Dataset):
         self,
         n_points: int,
         input_noise_bounds: tuple[float, float],
-        output_noise_level: Union[int, float],
+        output_noise_level: int | float,
         interval_length: float = 1,
     ) -> tuple[tuple[NDArray[np.floating], NDArray[np.floating]], NDArray[np.floating]]:
         """

@@ -17,7 +17,6 @@ The following datasets allow for straightforward experiments with synthetic clas
 """
 
 import itertools
-from typing import Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -49,7 +48,7 @@ class BinaryStripeClassificationDataset(Dataset):
     :param rng: Generator instance used to generate random numbers.
     """
 
-    def __init__(self, num_train_points: int, num_test_points: int, rng: Optional[np.random.Generator] = None) -> None:
+    def __init__(self, num_train_points: int, num_test_points: int, rng: np.random.Generator | None = None) -> None:
         """Initialise self."""
         self.rng = utils.optional_random_generator(rng)
         train_x = np.linspace(0, 1, num_train_points).reshape((-1, 1))
@@ -95,7 +94,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         *,
         covariance_scale: float = 1.0,
         num_features: int = 2,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
     ) -> None:
         """Initialise self."""
         self.rng = utils.optional_random_generator(rng)
@@ -129,7 +128,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         one_hot = sklearn.preprocessing.LabelBinarizer().fit_transform(numpy_train_y)
         return torch.as_tensor(one_hot, device=self.train_y.device)
 
-    def plot(self, cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5) -> None:  # pragma: no cover
+    def plot(self, cmap: str | Colormap = "Set1", alpha: float = 0.5) -> None:  # pragma: no cover
         """
         Plot the data.
 
@@ -155,7 +154,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         ax.add_artist(legend)
 
     def plot_prediction(
-        self, prediction: Union[NDArray, Tensor], cmap: Union[str, Colormap] = "Set1", alpha: float = 0.5
+        self, prediction: NDArray | Tensor, cmap: str | Colormap = "Set1", alpha: float = 0.5
     ) -> None:  # pragma: no cover
         """
         Plot a prediction.
@@ -191,7 +190,7 @@ class MulticlassGaussianClassificationDataset(Dataset):
         plt.title(f"Proportion correct: {100 * proportion_correct:.2f}%")
 
     def plot_confusion_matrix(
-        self, prediction: NDArray, cmap: Union[str, Colormap] = "OrRd", text_size: str = "xx-large"
+        self, prediction: NDArray, cmap: str | Colormap = "OrRd", text_size: str = "xx-large"
     ) -> None:  # pragma: no cover
         """
         Plot a confusion matrix based on a specific prediction.
@@ -241,7 +240,7 @@ class BinaryGaussianClassificationDataset(MulticlassGaussianClassificationDatase
         *,
         covariance_scale: float = 1.0,
         num_features: int = 2,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
     ) -> None:
         """Initialise self."""
         super().__init__(

@@ -18,7 +18,6 @@ Partitioners are responsible for separating the training data into subsets to be
 
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Optional, Union
 
 import gpytorch.kernels
 import kmedoids
@@ -53,10 +52,10 @@ class BasePartitioner:
 
     def __init__(
         self,
-        train_x: Union[Tensor, NDArray[np.floating], NDArray[np.integer]],
+        train_x: Tensor | NDArray[np.floating] | NDArray[np.integer],
         n_experts: int = 3,
         communication: bool = False,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
     ) -> None:
         """
         Initialise the BasePartitioner class.
@@ -81,9 +80,7 @@ class BasePartitioner:
 
         return partition
 
-    def plot_partition(
-        self, partition: list[list[int]], cmap: Optional[Union[str, Colormap]] = "Set3", **plot_kwargs
-    ) -> None:
+    def plot_partition(self, partition: list[list[int]], cmap: str | Colormap | None = "Set3", **plot_kwargs) -> None:
         """
         Plot a partition on a T-SNE graph.
 
@@ -220,10 +217,10 @@ class KMedoidsPartitioner(BasePartitioner):
 
     def __init__(
         self,
-        train_x: Union[Tensor, NDArray[np.floating]],
+        train_x: Tensor | NDArray[np.floating],
         n_experts: int = 2,
         communication: bool = False,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
         *,
         kernel: gpytorch.kernels.Kernel,
     ) -> None:

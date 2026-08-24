@@ -17,10 +17,10 @@ All warp functions should subclass this :class:`WarpFunction` class.
 """
 
 import copy
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from functools import wraps
 from itertools import chain
-from typing import Callable, TypeVar, Union
+from typing import TypeVar, Union
 
 import gpytorch
 import torch

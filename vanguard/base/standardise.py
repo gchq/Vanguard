@@ -16,7 +16,7 @@
 Contains a class decorator to apply input standard scaling to means and kernels.
 """
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy.typing
 import torch
@@ -32,10 +32,10 @@ class StandardiseXModule:
 
     def __init__(
         self,
-        mean: Union[torch.Tensor, numpy.typing.NDArray[float], float],
-        scale: Union[torch.Tensor, numpy.typing.NDArray[float], float],
-        device: Optional[torch.device],
-        dtype: Optional[torch.dtype],
+        mean: torch.Tensor | numpy.typing.NDArray[float] | float,
+        scale: torch.Tensor | numpy.typing.NDArray[float] | float,
+        device: torch.device | None,
+        dtype: torch.dtype | None,
     ) -> None:
         """
         Initialise self.
@@ -77,8 +77,8 @@ class StandardiseXModule:
     def from_data(
         cls,
         x: torch.Tensor,
-        device: Optional[torch.device],
-        dtype: Optional[torch.dtype],
+        device: torch.device | None,
+        dtype: torch.dtype | None,
     ) -> Self:
         """
         Create an instance of self with the mean and scale of the standard scaling obtained from the given data.

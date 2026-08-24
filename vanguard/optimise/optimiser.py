@@ -18,10 +18,10 @@ Vanguard defines its own optimiser wrapper to enable additional features.
 
 import inspect
 from collections import deque
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from functools import total_ordering
 from heapq import heappush, heappushpop, nlargest
-from typing import Any, Callable, Generic, Optional, TypeVar, Union, overload
+from typing import Any, Generic, TypeVar, overload
 
 import numpy as np
 import torch
@@ -49,7 +49,7 @@ class SmartOptimiser(Generic[OptimiserT]):
         self,
         optimiser_class: type[OptimiserT],
         *initial_modules: Module,
-        early_stop_patience: Optional[int] = None,
+        early_stop_patience: int | None = None,
         **optimiser_kwargs: Any,
     ) -> None:
         """
@@ -108,19 +108,20 @@ class SmartOptimiser(Generic[OptimiserT]):
         self._internal_optimiser.zero_grad(set_to_none=set_to_none)
 
     @overload
-    def step(self, loss: Union[float, torch.Tensor], closure: None = ...) -> None: ...  # pragma: no cover
+    def step(self, loss: float | torch.Tensor, closure: None = ...) -> None: ...  # pragma: no cover
 
     @overload
     def step(
-        self, loss: Union[float, torch.Tensor], closure: Callable[[], float]
-    ) -> Union[float, torch.Tensor]: ...  # pragma: no cover
+        self, loss: float | torch.Tensor, closure: Callable[[], float]
+    ) -> float | torch.Tensor: ...  # pragma: no cover
 
     def step(
-        self, loss: Union[float, torch.Tensor], closure: Optional[Callable[[], float]] = None
-    ) -> Optional[Union[float, torch.Tensor]]:
+        self, loss: float | torch.Tensor, closure: Callable[[], float] | None = None
+    ) -> float | torch.Tensor | None:
         """Perform a single optimisation step."""
         step_result = self._step(loss, closure=closure)
-        self.last_n_losses.append(float(loss))
+        loss_value = loss.detach().item() if isinstance(loss, torch.Tensor) else float(loss)
+        self.last_n_losses.append(loss_value)
 
         no_improvement = self.last_n_losses[0] <= min(self.last_n_losses)
         if no_improvement:
@@ -174,12 +175,12 @@ class SmartOptimiser(Generic[OptimiserT]):
         )
 
     @overload
-    def _step(self, loss: Union[torch.Tensor, float], closure: None = ...) -> None: ...  # pragma: no cover
+    def _step(self, loss: torch.Tensor | float, closure: None = ...) -> None: ...  # pragma: no cover
 
     @overload
-    def _step(self, loss: Union[torch.Tensor, float], closure: Callable[[], float]) -> float: ...  # pragma: no cover
+    def _step(self, loss: torch.Tensor | float, closure: Callable[[], float]) -> float: ...  # pragma: no cover
 
-    def _step(self, loss: Union[torch.Tensor, float], closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def _step(self, loss: torch.Tensor | float, closure: Callable[[], float] | None = None) -> float | None:
         """Perform a single optimisation step."""
         raise NotImplementedError
 
@@ -219,7 +220,7 @@ class SmartOptimiser(Generic[OptimiserT]):
             self._step = new_step_without_loss
 
     @staticmethod
-    def _get_last_n_losses_structure(n: Optional[int]) -> deque[float]:
+    def _get_last_n_losses_structure(n: int | None) -> deque[float]:
         """
         Get the structure which will contain the last :math`n` losses.
 
@@ -342,13 +343,13 @@ class GreedySmartOptimiser(SmartOptimiser[OptimiserT], Generic[OptimiserT]):
         self,
         optimiser_class: type[OptimiserT],
         *initial_modules: Module,
-        early_stop_patience: Optional[int] = None,
+        early_stop_patience: int | None = None,
         **optimiser_kwargs: Any,
     ) -> None:
         super().__init__(optimiser_class, *initial_modules, early_stop_patience=early_stop_patience, **optimiser_kwargs)
         self._top_n_parameters: MaxLengthHeapQ[Parameters] = MaxLengthHeapQ(self.N_RETAINED_PARAMETERS)
 
-    def step(self, loss: Union[float, torch.Tensor], closure: Optional[Callable[[], float]] = None) -> None:
+    def step(self, loss: float | torch.Tensor, closure: Callable[[], float] | None = None) -> None:
         """Step the optimiser and update the record best parameters."""
         super().step(loss, closure=closure)
         state_dicts = {module: module.state_dict() for module in self._stored_initial_state_dicts}

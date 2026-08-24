@@ -18,7 +18,7 @@ Tests for learning functionality that is not covered elsewhere.
 
 import sys
 import unittest
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import patch
 
 import numpy as np
@@ -66,7 +66,7 @@ class AlteredDirichletClassificationLikelihoodExpectedError(DirichletClassificat
         self,
         targets: torch.Tensor,
         alpha_epsilon: float = 0.01,
-        learn_additional_noise: Optional[bool] = False,
+        learn_additional_noise: bool | None = False,
         batch_shape: torch.Size = torch.Size(),
         dtype: torch.dtype = torch.float,
         **kwargs: Any,
@@ -98,7 +98,7 @@ class AlteredDirichletClassificationLikelihoodUnexpectedError(DirichletClassific
         self,
         targets: torch.Tensor,
         alpha_epsilon: float = 0.01,
-        learn_additional_noise: Optional[bool] = False,
+        learn_additional_noise: bool | None = False,
         batch_shape: torch.Size = torch.Size(),
         dtype: torch.dtype = torch.float,
         **kwargs: Any,
@@ -170,7 +170,7 @@ class TestLearning(unittest.TestCase):
 
         # Call the function and verify output
         result = _process_y_std(y_std=y_std, shape=(2, 3), dtype=torch.float, device=device)
-        torch.testing.assert_allclose(result, expected_result)
+        torch.testing.assert_close(result, expected_result)
 
     @pytest.mark.skipif(sys.version_info < (3, 12), reason="requires python3.12 or higher")
     def test_with_noise_learning(self) -> None:

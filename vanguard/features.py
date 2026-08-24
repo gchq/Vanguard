@@ -18,7 +18,7 @@ Contains decorators to deal with input features that aren't vectors.
 
 import warnings
 from functools import partial
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import numpy as np
 import torch
@@ -144,7 +144,7 @@ class _HigherRankFeaturesModel:
     computation (e.g. inside kernels) is performed.
     """
 
-    def __init__(self, shape: Union[tuple[int, ...], torch.Size]) -> None:
+    def __init__(self, shape: tuple[int, ...] | torch.Size) -> None:
         """
         :param shape: The native shape of a single data point.
         """
