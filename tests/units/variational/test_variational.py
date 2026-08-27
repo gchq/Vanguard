@@ -18,7 +18,6 @@ Test the behaviour of the VariationalInference decorator.
 
 import unittest
 
-import pytest
 from gpytorch.mlls import ExactMarginalLogLikelihood as InappropriateMarginalLogLikelihood
 
 from tests.cases import get_default_rng
@@ -59,7 +58,6 @@ class BasicTests(unittest.TestCase):
             "`num_data: int` argument, since we run variational inference with SGD."
         )
 
-    @pytest.mark.no_beartype
     def test_other_type_error_unaffected(self):
         """Test that any other `TypeError` is raised as-is and is not converted to a `ValueError`."""
         rng = get_default_rng()

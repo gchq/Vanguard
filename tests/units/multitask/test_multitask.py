@@ -94,7 +94,6 @@ class ErrorTests(unittest.TestCase):
                 self.dataset.train_x, self.dataset.train_y, ScaledRBFKernel, self.dataset.train_y_std, rng=self.rng
             )
 
-    @pytest.mark.no_beartype
     def test_bad_batch_shape_on_kernel(self) -> None:
         """
         Test how the multitask decorator handles an invalid batch shape in the kernel keyword arguments.
@@ -237,7 +236,6 @@ class TestMulticlassModels(unittest.TestCase):
         self.assertIsInstance(result, MultivariateNormal)
         self.assertListEqual(list(result.mean.shape), [self.train_x.shape[0], self.train_y.shape[1]])
 
-    @pytest.mark.no_beartype
     def test_multitask_model_invalid_gp_model(self) -> None:
         """Test construction of a multitask model when using an invalid GP model."""
         # Create the model - should raise a type error since it's not a child of an exact or approximate GP

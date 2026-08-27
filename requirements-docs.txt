@@ -84,7 +84,7 @@ gpytorch==1.15.2
     # via vanguard-gp
 idna==3.19
     # via requests
-imagesize==2.0.0
+imagesize==2.0.1
     # via sphinx
 ipykernel==7.3.0
     # via vanguard-gp
@@ -258,7 +258,7 @@ pillow==12.3.0
     # via
     #   matplotlib
     #   vanguard-gp
-platformdirs==4.11.3
+platformdirs==4.11.4
     # via jupyter-core
 prompt-toolkit==3.0.53
     # via ipython
@@ -384,7 +384,7 @@ sphinx-autodoc-typehints==3.0.1 ; python_full_version < '3.11'
     # via vanguard-gp
 sphinx-autodoc-typehints==3.6.1 ; python_full_version == '3.11.*'
     # via vanguard-gp
-sphinx-autodoc-typehints==3.13.2 ; python_full_version >= '3.12'
+sphinx-autodoc-typehints==3.13.4 ; python_full_version >= '3.12'
     # via vanguard-gp
 sphinx-basic-ng==1.0.0b2
     # via furo

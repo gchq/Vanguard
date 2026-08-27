@@ -23,6 +23,7 @@ Version 4 will be the first stable version.
 ### Removed
 
 - Support for Python 3.9
+- Drop usage of `beartype` at test time; third-party issues were causing CI failures.
 
 ### Deprecated
 
