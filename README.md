@@ -1,3 +1,6 @@
+> [!WARNING]
+> This repository has been archived and is no longer under development.
+
 # Vanguard: Advanced GPs
 
 [![Unit Tests](https://github.com/gchq/Vanguard/actions/workflows/unittests.yml/badge.svg)](https://github.com/gchq/Vanguard/actions/workflows/unittests.yml)
