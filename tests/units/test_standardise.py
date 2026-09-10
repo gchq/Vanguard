@@ -17,9 +17,11 @@ Test the behaviour of the StandardiseXModule class.
 """
 
 import unittest
+import warnings
 
 import numpy as np
 import numpy.typing
+import pytest
 import torch
 from gpytorch.kernels import RBFKernel
 from gpytorch.means import LinearMean
@@ -211,3 +213,48 @@ class DisableStandardiseModuleTests(StandardiseModuleTests):
         )
         self.base_mean = gp.mean
         self.base_kernel = gp.kernel
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize(
+    "values",
+    [
+        [[1.0, 5.0], [2.0, 5.0], [3.0, 5.0]],
+        [[5.0, 5.0], [5.0, 5.0], [5.0, 5.0]],
+        [[2.0, 5.0]],
+    ],
+    ids=["mixed-features", "constant-features", "single-sample"],
+)
+def test_constant_features_use_unit_scale(values: list[list[float]], dtype: torch.dtype) -> None:
+    """Centre constant features without dividing by zero or warning for a single sample."""
+    data = torch.tensor(values, dtype=dtype)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        standardiser = StandardiseXModule.from_data(data, data.device, dtype)
+
+    expected_scale = torch.ones_like(data[0]) if len(data) == 1 else data.std(dim=0)
+    expected_scale[expected_scale == 0] = 1
+    torch.testing.assert_close(standardiser.scale, expected_scale)
+    torch.testing.assert_close(standardiser.mean, data.mean(dim=0))
+
+    scaled_module = standardiser.apply(torch.nn.Identity)()
+    torch.testing.assert_close(scaled_module(data), (data - data.mean(dim=0)) / expected_scale)
+    torch.testing.assert_close(scaled_module(data + 2), (data + 2 - data.mean(dim=0)) / expected_scale)
+    assert torch.isfinite(standardiser.apply(RBFKernel)()(data).to_dense()).all()
+
+
+@pytest.mark.parametrize("single_sample", [False, True])
+def test_controller_predicts_with_constant_features(single_sample: bool) -> None:
+    """Keep GP training and predictions finite when a training feature has no variation."""
+    train_x = np.array([[0.0, 3.0], [1.0, 3.0], [2.0, 3.0]])
+    train_y = np.array([-1.0, 0.0, 1.0])
+    if single_sample:
+        train_x, train_y = train_x[:1], train_y[:1]
+    controller = GaussianGPController(
+        train_x=train_x, train_y=train_y, kernel_class=RBFKernel, y_std=0.1, rng=get_default_rng()
+    )
+    loss = controller.fit(2)
+    mean, covariance = controller.posterior_over_point(np.array([[0.5, 3.0], [1.5, 4.0]])).prediction()
+    assert torch.isfinite(torch.as_tensor(loss)).all()
+    assert torch.isfinite(mean).all()
+    assert torch.isfinite(covariance).all()
