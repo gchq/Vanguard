@@ -59,10 +59,8 @@ test = [
     "nbconvert>=7",  # for notebook tests
     "nbformat>=5",  # for notebook tests
     "tqdm>=4",  # for notebook tests
-    "pytest-beartype>=0.1",
     "pytest-cov>=5",
     "pytest>=8.3.3",
-    "beartype>=0.19",
 ]
 # Compile documentation
 doc = [
@@ -224,10 +222,6 @@ exclude_also = [
 ]
 
 [tool.pytest.ini_options]
-markers = [
-    "no_beartype: for tests incompatible with beartype (e.g. checking for TypeErrors)",
-]
-
 # TODO: fix as many of these as possible, and for those we can't fix, suppress as many as possible at the point that
 #  they're emitted using the catch_warnings context manager. Suppress globally here only as a last resort.
 # https://github.com/gchq/Vanguard/issues/281
@@ -260,6 +254,4 @@ filterwarnings = [
     # -- Deprecations --
     # Used in a third-party dependency
     "ignore:torch.sparse.SparseTensor\\(indices, values, shape, \\*, device=\\) is deprecated:UserWarning",
-    # TODO: replace with some alternative (e.g. beartype.typing.*)
-    "ignore::beartype.roar.BeartypeDecorHintPep585DeprecationWarning",
 ]

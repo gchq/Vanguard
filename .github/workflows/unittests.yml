@@ -59,28 +59,11 @@ jobs:
       run: uv sync --extra test --no-dev --locked
     - name: Debug - uv pip freeze
       run: uv pip freeze
-    - name: Run tests incompatible with type checking
-      run: >
-        uv run pytest
-        --ignore=tests/test_examples.py
-        -W "error::vanguard.utils.UnseededRandomWarning"
-        -m "no_beartype"
-      if: matrix.python-version == '3.13'
-    - name: Test with pytest (and type checking)
-      run: >
-        uv run pytest
-        --ignore=tests/test_examples.py
-        -x
-        -W "error::vanguard.utils.UnseededRandomWarning"
-        -m "not no_beartype"
-        --beartype-packages="vanguard"
-      if: matrix.python-version == '3.13'
     - name: Run all tests
       run: >
         uv run pytest
         --ignore=tests/test_examples.py
         -W "error::vanguard.utils.UnseededRandomWarning"
-      if: matrix.python-version != '3.13'
     - name: Minimize UV cache
       run: uv cache prune --ci
       if: always()

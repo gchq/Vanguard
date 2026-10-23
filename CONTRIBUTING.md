@@ -333,24 +333,6 @@ Please ensure that tests are run regularly _before_ opening a pull request, in o
 Note that some tests are non-deterministic and as such may occasionally fail due to randomness.
 Please try running them again before raising an issue.
 
-Our PR workflows run our tests with the `pytest-beartype` plugin. This is a runtime type checker that ensures all
-our type hints are correct. In order to run with these checks locally, add
-`--beartype-packages="vanguard" -m "not no_beartype"` to your pytest invocation. You should then separately run pytest
-with `-m no_beartype` to ensure that all tests are run. The reason for this separation is that some of our tests check
-that our handling of inputs of invalid type are correct, but `beartype` catches these errors before we get a chance to
-look at them, causing the tests to fail; thus, these tests need to be run separately _without_ beartype.
-
-Since different Python versions have different versions of standard library and third-party modules, we can't guarantee
-that type hints are 100% correct on all Python versions. Type hints are only tested for correctness on the latest
-supported version of Python.
-
-For example, to run the unit tests with type checking:
-
-```shell
-$ pytest tests/units --beartype-packages="vanguard" -m "not no_beartype"  # Run unit tests with type checking
-$ pytest tests/units -m no_beartype  # Run unit tests that are incompatible with beartype
-```
-
 ### Testing before releases to PyPI
 
 Before a release is issued on PyPI, all tests for Vanguard will be run on a GPU machine.

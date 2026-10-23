@@ -18,7 +18,6 @@ from unittest import TestCase, expectedFailure
 from unittest.mock import Mock, patch
 
 import numpy as np
-import pytest
 import torch.testing
 from gpytorch.constraints import GreaterThan
 from gpytorch.distributions import MultivariateNormal
@@ -59,7 +58,6 @@ class TestDirichletKernelClassifierLikelihood(TestCase):
         """Set up data shared between tests."""
         self.rng = get_default_rng()
 
-    @pytest.mark.no_beartype
     def test_illegal_input_type(self):
         """Test that we get an appropriate error when an illegal argument type is passed."""
         # Various illegal inputs

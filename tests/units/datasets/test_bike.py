@@ -133,7 +133,6 @@ class TestGetNSamples:
         """If we don't specify how many samples we want, we should use them all."""
         assert BikeDataset._get_n_samples(self.data, n_samples=None) == self.data.shape[0]
 
-    @pytest.mark.no_beartype
     def test_non_integer(self) -> None:
         """If we request a non-integer number of samples, we should not be able to proceed."""
         with pytest.raises(TypeError, match="A non-integer number of samples has been requested."):
