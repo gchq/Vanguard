@@ -123,6 +123,7 @@ plot_rcparams = {
     "legend.framealpha": 0,  # transparent
 }
 
+torch_version = ".".join(torch.__version__.split(".")[:2])
 intersphinx_mapping = {
     "gpytorch": ("https://docs.gpytorch.ai/en/stable", None),
     "kmedoids": ("https://python-kmedoids.readthedocs.io/en/stable", None),
@@ -131,7 +132,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable", None),
     "python3": ("https://docs.python.org/3", None),
     "sklearn": ("https://scikit-learn.org/stable", None),
-    "torch": ("https://pytorch.org/docs/stable", None),
+    "torch": ("https://docs.pytorch.org/docs/" + torch_version, None),
 }
 
 nitpicky = True
