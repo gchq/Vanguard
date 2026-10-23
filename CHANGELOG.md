@@ -14,7 +14,8 @@ Version 4 will be the first stable version.
 
 ### Fixed
 
--
+- Use unit scale for constant input features and single training samples to avoid NaN kernels and predictions.
+  (https://github.com/gchq/Vanguard/issues/571)
 
 ### Changed
 

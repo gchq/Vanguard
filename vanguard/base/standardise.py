@@ -83,9 +83,13 @@ class StandardiseXModule:
         """
         Create an instance of self with the mean and scale of the standard scaling obtained from the given data.
 
+        Constant features are centred with unit scale. A single training sample is treated as constant.
+
         :param x: (n_sample, n_features) The input data on which to learn to mean and scale.
         :param device: Where the mean and scale will reside.
         :param dtype: Datatype to specify when creating torch tensors.
         """
-        mean, scale = x.mean(dim=0), x.std(dim=0)
+        mean = x.mean(dim=0)
+        scale = torch.ones_like(mean) if x.shape[0] == 1 else x.std(dim=0)
+        scale = torch.where(scale == 0, torch.ones_like(scale), scale)
         return cls(mean, scale, device, dtype)
