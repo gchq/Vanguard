@@ -22,7 +22,7 @@ over them rather than point estimates.
 
 from collections.abc import Iterable
 from functools import partial
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 
 import gpytorch
 import torch
@@ -63,9 +63,9 @@ class BayesianHyperparameters:
 
     def __init__(
         self,
-        ignored_parameters: Optional[Iterable[str]] = frozenset(),
-        prior_means: Optional[dict] = None,
-        prior_variances: Optional[dict] = None,
+        ignored_parameters: Iterable[str] | None = frozenset(),
+        prior_means: dict | None = None,
+        prior_variances: dict | None = None,
     ) -> None:
         """
         Initialise self.
@@ -121,7 +121,7 @@ class BayesianHyperparameters:
 
 
 def _process_hyperparameter(
-    module: ModuleT, raw_parameter_name: str, prior_means: Optional[dict], prior_variances: Optional[dict]
+    module: ModuleT, raw_parameter_name: str, prior_means: dict | None, prior_variances: dict | None
 ) -> BayesianHyperparameter:
     """
     Determine the information to construct a torch parameter.

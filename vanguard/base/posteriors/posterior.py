@@ -16,7 +16,7 @@
 Contains the Posterior class.
 """
 
-from typing import TypeVar, Union
+from typing import TypeVar
 
 import gpytorch
 import numpy as np
@@ -88,7 +88,7 @@ class Posterior:
 
     def mse(
         self,
-        y: Union[torch.Tensor, float],
+        y: torch.Tensor | float,
     ) -> float:
         r"""
         Compute the mean-squared of some values under the posterior.
@@ -102,8 +102,8 @@ class Posterior:
 
     def nll(
         self,
-        y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
-        noise_variance: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float] = 0,
+        y: torch.Tensor | numpy.typing.NDArray[np.floating] | float,
+        noise_variance: torch.Tensor | numpy.typing.NDArray[np.floating] | float = 0,
         alpha: float = stats.norm.cdf(-1) * 2,
     ) -> float:
         """
@@ -128,7 +128,7 @@ class Posterior:
 
     def log_probability(
         self,
-        y: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
+        y: torch.Tensor | numpy.typing.NDArray[np.floating] | float,
     ) -> float:
         r"""
         Compute the log-likelihood of some values under the posterior.

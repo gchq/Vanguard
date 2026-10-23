@@ -20,7 +20,7 @@ import contextlib
 import unittest
 import warnings
 from collections.abc import Iterable
-from typing import Any, Optional, Union
+from typing import Any
 from unittest.mock import Mock
 
 import numpy as np
@@ -78,7 +78,7 @@ def get_default_torch_rng() -> torch.Generator:
 
 
 @contextlib.contextmanager
-def maybe_throws(category: Optional[type[Exception]], match: Optional[str] = None) -> Optional[pytest.ExceptionInfo]:
+def maybe_throws(category: type[Exception] | None, match: str | None = None) -> pytest.ExceptionInfo | None:
     """
     Do nothing if :data:`None` is given. Do :py:func:`pytest.raises()` if an exception type is passed.
 
@@ -95,9 +95,7 @@ def maybe_throws(category: Optional[type[Exception]], match: Optional[str] = Non
 
 
 @contextlib.contextmanager
-def maybe_warns(
-    category: Optional[type[Warning]], match: Optional[str] = None
-) -> Iterable[Optional[pytest.WarningsRecorder]]:
+def maybe_warns(category: type[Warning] | None, match: str | None = None) -> Iterable[pytest.WarningsRecorder | None]:
     """
     Do nothing if :data:`None` is given. Do :py:func:`pytest.warns()` if a warning type is passed.
 
@@ -134,7 +132,7 @@ def assert_mock_called_once_with(mock: Mock, *expected_args: Any, **expected_kwa
 
 def assert_equal_safe(actual: Any, expected: Any) -> None:
     """Version of assert_equal that correctly handles `Tensor`/`ndarray` inputs."""
-    if isinstance(actual, (Tensor, np.ndarray)) or isinstance(expected, (Tensor, np.ndarray)):
+    if isinstance(actual, Tensor | np.ndarray) or isinstance(expected, Tensor | np.ndarray):
         torch.testing.assert_close(torch.as_tensor(actual), torch.as_tensor(expected))
     else:
         assert actual == expected
@@ -149,7 +147,7 @@ class VanguardTestCase(unittest.TestCase):
     def assertInConfidenceInterval(  # pylint: disable=invalid-name
         data: numpy.typing.NDArray[np.floating],
         interval: tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]],
-        delta: Union[int, float] = 0,
+        delta: int | float = 0,
     ) -> None:
         """
         Assert that data is in a confidence interval.
@@ -175,10 +173,10 @@ class VanguardTestCase(unittest.TestCase):
 
     @staticmethod
     def confidence_interval(
-        mu: Union[float, numpy.typing.NDArray[np.floating]],
-        sigma: Union[float, numpy.typing.NDArray[np.floating]],
+        mu: float | numpy.typing.NDArray[np.floating],
+        sigma: float | numpy.typing.NDArray[np.floating],
         alpha: float,
-    ) -> Union[tuple[float, float], tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]]:
+    ) -> tuple[float, float] | tuple[numpy.typing.NDArray[np.floating], numpy.typing.NDArray[np.floating]]:
         """Create a confidence interval."""
         sig_fac = stats.norm.ppf(1 - alpha / 2)
         std_dev = np.sqrt(np.diag(sigma))

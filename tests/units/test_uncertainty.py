@@ -117,7 +117,8 @@ class TestGaussianUncertaintyGPController(unittest.TestCase):
         # manifests as a ValueError from trying to slice with an invalid input.
         self.controller.auto_restart = True
         with self.assertRaises(ValueError):
-            self.controller._sgd_round(n_iters=5)
+            with self.assertWarnsRegex(UserWarning, "Re-running training from scratch for -1 iterations"):
+                self.controller._sgd_round(n_iters=5)
         # pylint: enable=protected-access
 
     def test_set_requires_grad(self) -> None:

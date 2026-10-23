@@ -17,7 +17,6 @@ The user-facing interface of the :class:`~vanguard.base.basecontroller.BaseGPCon
 """
 
 import warnings
-from typing import Optional, Union
 
 import numpy as np
 import numpy.typing
@@ -116,8 +115,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
     def fit(
         self,
         n_sgd_iters: int = 10,
-        gradient_every: Optional[int] = None,
-    ) -> Union[torch.Tensor, float]:
+        gradient_every: int | None = None,
+    ) -> torch.Tensor | float:
         """
         Run rounds of hyperparameter tuning.
 
@@ -160,7 +159,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_point(
         self,
-        x: Union[torch.Tensor, numpy.typing.NDArray[np.floating], float],
+        x: torch.Tensor | numpy.typing.NDArray[np.floating] | float,
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a point.
@@ -172,8 +171,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def posterior_over_fuzzy_point(
         self,
-        x: Union[Tensor, numpy.typing.NDArray[np.floating], float],
-        x_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
+        x: Tensor | numpy.typing.NDArray[np.floating] | float,
+        x_std: Tensor | numpy.typing.NDArray[np.floating] | float,
     ) -> Posterior:
         """
         Return predictive posterior of the y-value over a fuzzy point.
@@ -193,7 +192,7 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def predictive_likelihood(
         self,
-        x: Union[Tensor, numpy.typing.NDArray[np.floating], float],
+        x: Tensor | numpy.typing.NDArray[np.floating] | float,
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value.
@@ -205,8 +204,8 @@ class GPController(BaseGPController, metaclass=_StoreInitValues):
 
     def fuzzy_predictive_likelihood(
         self,
-        x: Union[Tensor, numpy.typing.NDArray[np.floating], float],
-        x_std: Union[Tensor, numpy.typing.NDArray[np.floating], float],
+        x: Tensor | numpy.typing.NDArray[np.floating] | float,
+        x_std: Tensor | numpy.typing.NDArray[np.floating] | float,
     ) -> Posterior:
         """
         Calculate the predictive likelihood at an x-value, given variance.

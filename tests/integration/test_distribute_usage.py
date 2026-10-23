@@ -16,8 +16,6 @@
 Basic end to end functionality test for distributed decorators in Vanguard.
 """
 
-from typing import Union
-
 import numpy as np
 import pytest
 from _pytest.fixtures import FixtureRequest
@@ -53,7 +51,7 @@ from vanguard.kernels import ScaledRBFKernel
 from vanguard.vanilla import GaussianGPController
 from vanguard.variational import VariationalInference
 
-TrainTestData = Union[tuple[NDArray, NDArray, NDArray, NDArray], tuple[Tensor, Tensor, Tensor, Tensor]]
+TrainTestData = tuple[NDArray, NDArray, NDArray, NDArray] | tuple[Tensor, Tensor, Tensor, Tensor]
 
 
 class TestDistributeUsage:
@@ -69,12 +67,13 @@ class TestDistributeUsage:
     required_f1_score = 0.9
 
     @pytest.fixture(scope="class", params=["ndarray", "tensor"])
-    def binary_classification_data(self, request: FixtureRequest) -> TrainTestData:
+    @classmethod
+    def binary_classification_data(cls, request: FixtureRequest) -> TrainTestData:
         """Generate binary classification data for testing."""
         rng = get_default_rng()
 
         # Define some data for the test
-        x = np.linspace(start=0, stop=10, num=self.num_train_points + self.num_test_points).reshape(-1, 1)
+        x = np.linspace(start=0, stop=10, num=cls.num_train_points + cls.num_test_points).reshape(-1, 1)
         y = np.zeros_like(x)
         for index, x_val in enumerate(x):
             # Set some non-trivial classification target
@@ -84,7 +83,7 @@ class TestDistributeUsage:
                 y[index, 0] = 1
 
         x_train, x_test, y_train, y_test = train_test_split_convert(
-            x, y, n_test_points=self.num_test_points, array_type=request.param, rng=rng
+            x, y, n_test_points=cls.num_test_points, array_type=request.param, rng=rng
         )
 
         return x_train, y_train, x_test, y_test

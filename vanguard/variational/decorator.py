@@ -20,7 +20,7 @@ for variational inference.
 """
 
 import warnings
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import Any, Generic, TypeVar
 
 import gpytorch.settings
 import numpy as np
@@ -73,10 +73,10 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
     def __init__(
         self,
-        n_inducing_points: Optional[int] = None,
+        n_inducing_points: int | None = None,
         n_likelihood_samples: int = 10,
-        variational_strategy_class: Optional[type[StrategyT]] = None,
-        variational_distribution_class: Optional[type[DistributionT]] = None,
+        variational_strategy_class: type[StrategyT] | None = None,
+        variational_distribution_class: type[DistributionT] | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -184,8 +184,8 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
 
     def _build_gp_model_class(
         self,
-        variational_distribution_class: Optional[type[DistributionT]],
-        variational_strategy_class: Optional[type[StrategyT]],
+        variational_distribution_class: type[DistributionT] | None,
+        variational_strategy_class: type[StrategyT] | None,
     ) -> type[SVGPModel]:
         if variational_distribution_class is not None:
 
@@ -261,14 +261,14 @@ class VariationalInference(Decorator, Generic[StrategyT, DistributionT]):
                     else:
                         raise
 
-            def _predictive_likelihood(self, x: Union[numpy.typing.NDArray[np.floating], float]) -> Posterior:
+            def _predictive_likelihood(self, x: numpy.typing.NDArray[np.floating] | float) -> Posterior:
                 with gpytorch.settings.num_likelihood_samples(decorator.n_likelihood_samples):
                     return super()._predictive_likelihood(x)
 
             def _fuzzy_predictive_likelihood(
                 self,
-                x: Union[numpy.typing.NDArray[np.floating], float],
-                x_std: Union[numpy.typing.NDArray[np.floating], float],
+                x: numpy.typing.NDArray[np.floating] | float,
+                x_std: numpy.typing.NDArray[np.floating] | float,
             ) -> Posterior:
                 with gpytorch.settings.num_likelihood_samples(decorator.n_likelihood_samples):
                     return super()._fuzzy_predictive_likelihood(x, x_std)

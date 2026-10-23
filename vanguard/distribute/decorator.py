@@ -18,7 +18,7 @@ Contains the Distributed decorator.
 
 import warnings
 from collections.abc import Iterable
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import Any, Generic, TypeVar
 
 import gpytorch
 import numpy as np
@@ -91,10 +91,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
         self,
         n_experts: int = 3,
         subset_fraction: float = 0.1,
-        rng: Optional[np.random.Generator] = None,
+        rng: np.random.Generator | None = None,
         aggregator_class: type[BaseAggregator] = RBCMAggregator,
         partitioner_class: type[BasePartitioner] = KMeansPartitioner,
-        partitioner_kwargs: Optional[dict[str, Any]] = None,
+        partitioner_kwargs: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -246,7 +246,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 partitioner_class = decorator.partitioner_class
                 partitioner_kwargs = dict(decorator.partitioner_kwargs)  # Copy so we don't change the original
                 partitioner_kwargs.update(all_parameters_as_kwargs.pop("partitioner_kwargs", {}))
-                communications_expert = issubclass(self.aggregator_class, (GRBCMAggregator, XGRBCMAggregator))
+                communications_expert = issubclass(self.aggregator_class, GRBCMAggregator | XGRBCMAggregator)
                 self.partitioner = partitioner_class(
                     train_x=self._full_train_x,
                     n_experts=decorator.n_experts,
@@ -275,7 +275,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                     **self._expert_init_kwargs,
                 )
 
-            def fit(self, n_sgd_iters: int = 10, gradient_every: Optional[int] = None) -> torch.Tensor:
+            def fit(self, n_sgd_iters: int = 10, gradient_every: int | None = None) -> torch.Tensor:
                 """
                 Create the expert controllers.
 
@@ -312,7 +312,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                         losses.append(loss.detach().cpu().item())
                 return losses
 
-            def posterior_over_point(self, x: Union[NDArray[np.floating], torch.Tensor]) -> Posterior:
+            def posterior_over_point(self, x: NDArray[np.floating] | torch.Tensor) -> Posterior:
                 """
                 Aggregate expert posteriors.
 
@@ -322,9 +322,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 expert_posteriors = (expert.posterior_over_point(x) for expert in self._expert_controllers)
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
-            def posterior_over_fuzzy_point(
-                self, x: Union[NDArray[np.floating], torch.Tensor], x_std: float
-            ) -> Posterior:
+            def posterior_over_fuzzy_point(self, x: NDArray[np.floating] | torch.Tensor, x_std: float) -> Posterior:
                 """
                 Aggregate expert fuzzy posteriors.
 
@@ -336,7 +334,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
                 return self._aggregate_expert_posteriors(x, expert_posteriors)
 
             def _aggregate_expert_posteriors(
-                self, x: Union[NDArray[np.floating], torch.Tensor], expert_posteriors: Iterable[Posterior]
+                self, x: NDArray[np.floating] | torch.Tensor, expert_posteriors: Iterable[Posterior]
             ) -> Posterior:
                 """
                 Aggregate an iterable of posteriors.
@@ -380,7 +378,7 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
             def _aggregate_expert_predictions(
                 self,
-                x: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
+                x: NDArray[np.floating] | NDArray[np.integer] | torch.Tensor,
                 means_and_covars: list[tuple[torch.Tensor, torch.Tensor]],
             ) -> tuple[torch.Tensor, torch.Tensor]:
                 """
@@ -396,7 +394,9 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
                 """
                 prior_var = None
-                if issubclass(self.aggregator_class, (BCMAggregator, RBCMAggregator, XBCMAggregator, XGRBCMAggregator)):
+                if issubclass(
+                    self.aggregator_class, BCMAggregator | RBCMAggregator | XBCMAggregator | XGRBCMAggregator
+                ):
                     # diag=True is much faster than calling np.diag afterwards
                     prior_var = self.kernel(torch.as_tensor(x), diag=True).detach() + _AGGREGATION_JITTER
 
@@ -419,10 +419,10 @@ class Distributed(TopMostDecorator, Generic[ControllerT]):
 
 
 def _create_subset(
-    *arrays: Union[Tensor, NDArray[np.floating], NDArray[np.integer], float, int],
+    *arrays: Tensor | NDArray[np.floating] | NDArray[np.integer] | float | int,
     subset_fraction: float = 0.1,
-    rng: Optional[np.random.Generator] = None,
-) -> list[Union[Tensor, NDArray[np.floating], NDArray[np.integer], float]]:
+    rng: np.random.Generator | None = None,
+) -> list[Tensor | NDArray[np.floating] | NDArray[np.integer] | float]:
     """
     Return subsets of the arrays along the same random indices.
 

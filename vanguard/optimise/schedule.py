@@ -17,7 +17,8 @@ Contains decorators for torch optimisers to apply LR schedulers as part of the o
 """
 
 import inspect
-from typing import Any, Callable, Generic, Optional, TypeVar, Union, overload
+from collections.abc import Callable
+from typing import Any, Generic, TypeVar, overload
 
 import torch
 from torch.optim import Optimizer
@@ -57,16 +58,16 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
                 self._applied_scheduler = scheduler_class(self, *scheduler_args, **scheduler_kwargs)
 
             @overload
-            def step(self, loss: Union[float, torch.Tensor], closure: None) -> None: ...  # pragma: no cover
+            def step(self, loss: float | torch.Tensor, closure: None) -> None: ...  # pragma: no cover
 
             @overload
             def step(
-                self, loss: Union[float, torch.Tensor], closure: Callable[[], float]
-            ) -> Union[float, torch.Tensor]: ...  # pragma: no cover
+                self, loss: float | torch.Tensor, closure: Callable[[], float]
+            ) -> float | torch.Tensor: ...  # pragma: no cover
 
             def step(
-                self, loss: Union[float, torch.Tensor], closure: Optional[Callable[[], float]] = None
-            ) -> Optional[Union[float, torch.Tensor]]:
+                self, loss: float | torch.Tensor, closure: Callable[[], float] | None = None
+            ) -> float | torch.Tensor | None:
                 ret = super().step(closure=closure)
                 scheduler_step_func(self._applied_scheduler, loss)
                 return ret
@@ -78,5 +79,6 @@ class ApplyLearningRateScheduler(Generic[LRSchedulerT]):
         scheduler.step()
 
     @staticmethod
-    def _step_scheduler_with_loss(scheduler: LRSchedulerT, loss: Union[float, torch.Tensor]) -> None:
-        scheduler.step(loss)
+    def _step_scheduler_with_loss(scheduler: LRSchedulerT, loss: float | torch.Tensor) -> None:
+        loss_value = loss.detach() if isinstance(loss, torch.Tensor) else loss
+        scheduler.step(loss_value)

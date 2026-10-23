@@ -21,7 +21,8 @@ the :func:`require_controller_input` decorator will allow a warp function to be
 initialised lazily, only becoming a full warp function upon activation.
 """
 
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from vanguard.decoratorutils import process_args, wraps_class
 from vanguard.warps.basefunction import WarpFunction

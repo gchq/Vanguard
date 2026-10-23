@@ -18,7 +18,7 @@ Contains the BaseHierarchicalHyperparameters decorator.
 
 import warnings
 from collections.abc import Generator
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import gpytorch
 import numpy as np
@@ -82,7 +82,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 new_instance.hyperparameter_collection = instance.hyperparameter_collection
                 return new_instance
 
-            def _get_posterior_over_point(self, x: Union[Tensor, NDArray[np.floating]]) -> type[PosteriorT]:
+            def _get_posterior_over_point(self, x: Tensor | NDArray[np.floating]) -> type[PosteriorT]:
                 """
                 Predict the y-value of a single point. The mode (eval vs train) of the model is not changed.
 
@@ -98,7 +98,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 posterior_collection = self.posterior_collection_class(posteriors)
                 return posterior_collection
 
-            def _predictive_likelihood(self, x: Union[Tensor, NDArray[np.floating]]) -> type[PosteriorT]:
+            def _predictive_likelihood(self, x: Tensor | NDArray[np.floating]) -> type[PosteriorT]:
                 """
                 Predict the likelihood value of a single point. The mode (eval vs train) of the model is not changed.
 
@@ -115,7 +115,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 return likelihood_collection
 
             def _get_posterior_over_fuzzy_point_in_eval_mode(
-                self, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating], float]
+                self, x: Tensor | NDArray[np.floating], x_std: Tensor | NDArray[np.floating] | float
             ) -> type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive posterior with Gaussian input noise.
@@ -143,7 +143,7 @@ class BaseHierarchicalHyperparameters(Decorator):
                 return posterior_collection
 
             def _fuzzy_predictive_likelihood(
-                self, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating], float]
+                self, x: Tensor | NDArray[np.floating], x_std: Tensor | NDArray[np.floating] | float
             ) -> type[MonteCarloPosteriorCollection]:
                 """
                 Obtain Monte Carlo integration samples from the predictive likelihood with Gaussian input noise.
@@ -188,25 +188,25 @@ class BaseHierarchicalHyperparameters(Decorator):
 
     @staticmethod
     def _infinite_posterior_samples(
-        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
+        controller: ControllerT, x: Tensor | NDArray[np.floating]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_fuzzy_posterior_samples(
-        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating]]
+        controller: ControllerT, x: Tensor | NDArray[np.floating], x_std: Tensor | NDArray[np.floating]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_likelihood_samples(
-        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]]
+        controller: ControllerT, x: Tensor | NDArray[np.floating]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 
     @staticmethod
     def _infinite_fuzzy_likelihood_samples(
-        controller: ControllerT, x: Union[Tensor, NDArray[np.floating]], x_std: Union[Tensor, NDArray[np.floating]]
+        controller: ControllerT, x: Tensor | NDArray[np.floating], x_std: Tensor | NDArray[np.floating]
     ) -> Generator[torch.Tensor, None, None]:
         raise NotImplementedError
 

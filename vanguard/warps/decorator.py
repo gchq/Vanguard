@@ -16,7 +16,7 @@
 Contains the SetWarp decorator.
 """
 
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing
@@ -171,7 +171,7 @@ class SetWarp(Decorator):
                 self.train_y = self.train_y.to(self.device)
 
                 def _unwarp_values(
-                    *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
+                    *values: Tensor | numpy.typing.NDArray[np.floating],
                 ) -> tuple[Tensor, ...]:
                     """
                     Map values back through the warp.
@@ -186,7 +186,7 @@ class SetWarp(Decorator):
                     return tuple(unwarped_values_as_tensors)
 
                 def _warp_values(
-                    *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
+                    *values: Tensor | numpy.typing.NDArray[np.floating],
                 ) -> tuple[Tensor, ...]:
                     """
                     Map values through the warp.
@@ -201,7 +201,7 @@ class SetWarp(Decorator):
                     return tuple(warped_values_as_tensors)
 
                 def _warp_derivative_values(
-                    *values: Union[Tensor, numpy.typing.NDArray[np.floating]],
+                    *values: Tensor | numpy.typing.NDArray[np.floating],
                 ) -> tuple[Tensor, ...]:
                     """
                     Map values through the derivative of the warp.
@@ -269,7 +269,7 @@ class SetWarp(Decorator):
                 self._gp.train_targets = warped_train_y
                 return loss
 
-            def _unwarp_values(self, *values: Union[Tensor, numpy.typing.NDArray[np.floating]]) -> tuple[Tensor, ...]:
+            def _unwarp_values(self, *values: Tensor | numpy.typing.NDArray[np.floating]) -> tuple[Tensor, ...]:
                 """Map values back through the warp."""
                 values_as_tensors = (torch.as_tensor(value) for value in values)
                 unwarped_values_as_tensors = (self.warp.inverse(tensor).reshape(-1) for tensor in values_as_tensors)

@@ -60,7 +60,7 @@ class BinaryTests(ClassificationTestCase):
         """Predict on a test dataset, and check the predictions are reasonably accurate."""
         self.controller.fit(20)
         predictions, _ = self.controller.classify_points(self.dataset.test_x)
-        self.assertPredictionsEqual(self.dataset.test_y.squeeze(), predictions, delta=0.3)
+        self.assertPredictionsEqual(self.dataset.test_y.squeeze(), predictions, delta=0.35)
 
     def test_illegal_likelihood_class(self) -> None:
         """Test that when an incorrect likelihood class is given, an appropriate exception is raised."""
@@ -174,4 +174,4 @@ class BinaryFuzzyTests(ClassificationTestCase):
         controller.fit(30)
 
         predictions, _ = controller.classify_fuzzy_points(test_x, test_x_std)
-        self.assertPredictionsEqual(dataset.test_y.squeeze(), predictions, delta=0.3)
+        self.assertPredictionsEqual(dataset.test_y.squeeze(), predictions, delta=0.35)

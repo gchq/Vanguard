@@ -16,8 +16,6 @@
 There are several pre-defined warp functions implementing some common maps.
 """
 
-from typing import Union
-
 import numpy as np
 import torch
 import torch.nn.functional
@@ -34,7 +32,7 @@ class AffineWarpFunction(WarpFunction):
     A warp of form :math:`y \mapsto ay + b`.
     """
 
-    def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0) -> None:
+    def __init__(self, a: float | int = 1, b: float | int = 0) -> None:
         """
         Initialise self.
 
@@ -78,7 +76,7 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
         See :mod:`vanguard.warps.intermediate`.
     """
 
-    def __init__(self, a: Union[float, int] = 1, b: Union[float, int] = 0) -> None:
+    def __init__(self, a: float | int = 1, b: float | int = 0) -> None:
         """
         Initialise self.
 
@@ -113,7 +111,7 @@ class PositiveAffineWarpFunction(AffineWarpFunction):
         return -(self.weight**2 * self.lambda_1 - self.bias**2 * self.lambda_2)
 
     @staticmethod
-    def _get_constraint_slopes(y_values: Union[Tensor, NDArray[np.floating]]) -> tuple[float, float]:
+    def _get_constraint_slopes(y_values: Tensor | NDArray[np.floating]) -> tuple[float, float]:
         """
         Return the two constraint slopes needed for the y_values.
 
@@ -143,7 +141,7 @@ class BoxCoxWarpFunction(WarpFunction):
         y\mapsto\frac{sgn(y)|y|^\lambda - 1}{\lambda}, \lambda\in\mathbb{R}_0^+.
     """
 
-    def __init__(self, lambda_: Union[int, float] = 0) -> None:
+    def __init__(self, lambda_: int | float = 0) -> None:
         """
         Initialise self.
 

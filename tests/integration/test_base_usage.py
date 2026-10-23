@@ -16,7 +16,7 @@
 Basic end to end functionality test for Vanguard.
 """
 
-from typing import Literal, Optional
+from typing import Literal
 
 import numpy as np
 import pytest
@@ -67,7 +67,7 @@ class TestBaseUsage:
         ],
     )
     @pytest.mark.parametrize("array_type", ["tensor", "ndarray"])
-    def test_basic_gp(self, batch_size: Optional[int], array_type: Literal["tensor", "ndarray"]) -> None:
+    def test_basic_gp(self, batch_size: int | None, array_type: Literal["tensor", "ndarray"]) -> None:
         """
         Verify Vanguard usage on a simple, single variable regression problem.
 

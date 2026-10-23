@@ -19,8 +19,6 @@ For the ease of the user, Vanguard contains a number of datasets commonly refere
 The dataset instances allow for easy access to the training and testing data through attributes.
 """
 
-from typing import Union
-
 import numpy as np
 import torch
 from numpy.typing import NDArray
@@ -44,14 +42,14 @@ class Dataset:
 
     def __init__(
         self,
-        train_x: Union[NDArray[np.floating], torch.Tensor],
-        train_x_std: Union[float, NDArray[np.floating], torch.Tensor],
-        train_y: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
-        train_y_std: Union[float, NDArray[np.floating], torch.Tensor],
-        test_x: Union[NDArray[np.floating], torch.Tensor],
-        test_x_std: Union[float, NDArray[np.floating], torch.Tensor],
-        test_y: Union[NDArray[np.floating], NDArray[np.integer], torch.Tensor],
-        test_y_std: Union[float, NDArray[np.floating], torch.Tensor],
+        train_x: NDArray[np.floating] | torch.Tensor,
+        train_x_std: float | NDArray[np.floating] | torch.Tensor,
+        train_y: NDArray[np.floating] | NDArray[np.integer] | torch.Tensor,
+        train_y_std: float | NDArray[np.floating] | torch.Tensor,
+        test_x: NDArray[np.floating] | torch.Tensor,
+        test_x_std: float | NDArray[np.floating] | torch.Tensor,
+        test_y: NDArray[np.floating] | NDArray[np.integer] | torch.Tensor,
+        test_y_std: float | NDArray[np.floating] | torch.Tensor,
         significance: float,
     ) -> None:
         """Initialise self."""

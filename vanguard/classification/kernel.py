@@ -16,7 +16,7 @@
 Contains the DirichletKernelMulticlassClassification decorator.
 """
 
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing
@@ -151,9 +151,7 @@ class DirichletKernelMulticlassClassification(Decorator):
                     **all_parameters_as_kwargs,
                 )
 
-            def classify_points(
-                self, x: Union[float, numpy.typing.NDArray[np.floating], Tensor]
-            ) -> tuple[Tensor, Tensor]:
+            def classify_points(self, x: float | numpy.typing.NDArray[np.floating] | Tensor) -> tuple[Tensor, Tensor]:
                 """Classify points."""
                 x = torch.as_tensor(x)
                 means_as_floats, _ = super().predictive_likelihood(x).prediction()
@@ -163,8 +161,8 @@ class DirichletKernelMulticlassClassification(Decorator):
             # https://github.com/gchq/Vanguard/issues/288
             def classify_fuzzy_points(
                 self,
-                x: Union[float, numpy.typing.NDArray[np.floating], Tensor],
-                x_std: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                x: float | numpy.typing.NDArray[np.floating] | Tensor,
+                x_std: float | numpy.typing.NDArray[np.floating] | Tensor,
             ) -> tuple[Tensor, Tensor]:
                 """Classify fuzzy points - not supported for this class."""
                 msg = "Fuzzy classification is not supported for DirichletKernelMulticlassClassification."
@@ -172,7 +170,7 @@ class DirichletKernelMulticlassClassification(Decorator):
 
             @staticmethod
             def _get_predictions_from_prediction_means(
-                means: Union[float, numpy.typing.NDArray[np.floating], Tensor],
+                means: float | numpy.typing.NDArray[np.floating] | Tensor,
             ) -> tuple[Tensor, Tensor]:
                 """
                 Get the predictions and certainty probabilities from predictive likelihood means.

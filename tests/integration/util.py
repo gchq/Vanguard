@@ -14,14 +14,14 @@
 
 """Utility functions for use in integration tests."""
 
-from typing import Literal, Union
+from typing import Literal
 
 import numpy as np
 import torch
 from numpy.typing import NDArray
 from torch import Tensor
 
-TrainTestData = Union[tuple[NDArray, NDArray, NDArray, NDArray], tuple[Tensor, Tensor, Tensor, Tensor]]
+TrainTestData = tuple[NDArray, NDArray, NDArray, NDArray] | tuple[Tensor, Tensor, Tensor, Tensor]
 
 
 def train_test_split_convert(
@@ -52,7 +52,7 @@ def train_test_split_convert(
     )
 
 
-def convert_array_type(arr: Union[Tensor, NDArray], array_type: Literal["ndarray", "tensor"]) -> Union[Tensor, NDArray]:
+def convert_array_type(arr: Tensor | NDArray, array_type: Literal["ndarray", "tensor"]) -> Tensor | NDArray:
     """
     Convert an NDArray or Tensor to an NDArray or Tensor.
 

@@ -16,7 +16,7 @@
 Contains some multitask classification likelihoods.
 """
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import gpytorch.distributions
 import numpy as np
@@ -43,7 +43,7 @@ class DummyNoise:
     Provides a dummy wrapper around a tensor so that the tensor can be accessed as the noise property of the class.
     """
 
-    def __init__(self, value: Union[float, numpy.typing.NDArray[np.floating], Tensor]) -> None:
+    def __init__(self, value: float | numpy.typing.NDArray[np.floating] | Tensor) -> None:
         """
         Initialise self.
 
@@ -52,7 +52,7 @@ class DummyNoise:
         self.value = value
 
     @property
-    def noise(self) -> Union[float, numpy.typing.NDArray[np.floating], Tensor]:
+    def noise(self) -> float | numpy.typing.NDArray[np.floating] | Tensor:
         """Return the dummy noise value."""
         return self.value
 
@@ -95,9 +95,7 @@ class SoftmaxLikelihood(_SoftmaxLikelihood):
     This wrapper allows the arg names more consistent with other likelihoods.
     """
 
-    def __init__(
-        self, *args: Any, num_classes: Optional[int] = None, num_tasks: Optional[int] = None, **kwargs: Any
-    ) -> None:
+    def __init__(self, *args: Any, num_classes: int | None = None, num_tasks: int | None = None, **kwargs: Any) -> None:
         r"""
         Initialise self.
 
@@ -117,9 +115,9 @@ class DirichletKernelDistribution(torch.distributions.Dirichlet):
 
     def __init__(
         self,
-        label_matrix: Union[torch.Tensor, LinearOperator],
-        kernel_matrix: Union[torch.Tensor, LinearOperator],
-        alpha: Union[torch.Tensor, float],
+        label_matrix: torch.Tensor | LinearOperator,
+        kernel_matrix: torch.Tensor | LinearOperator,
+        alpha: torch.Tensor | float,
     ) -> None:
         """
         Initialise self.
@@ -157,10 +155,10 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     def __init__(
         self,
         num_classes: int,
-        alpha: Optional[Union[float, numpy.typing.NDArray[np.floating]]] = None,
+        alpha: float | numpy.typing.NDArray[np.floating] | None = None,
         learn_alpha: bool = False,
-        alpha_prior: Optional[Prior] = None,
-        alpha_constraint: Optional[Interval] = Positive(),
+        alpha_prior: Prior | None = None,
+        alpha_constraint: Interval | None = Positive(),
     ) -> None:
         """
         Initialise self.
@@ -190,7 +188,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
             self._alpha_var = DummyNoise(self._alpha_var)
 
     @property
-    def alpha(self) -> Optional[Union[float, numpy.typing.NDArray[np.floating], Tensor]]:
+    def alpha(self) -> float | numpy.typing.NDArray[np.floating] | Tensor | None:
         """Return the Dirichlet prior concentration :math:`\alpha`."""
         return self._alpha_var.noise
 
@@ -216,7 +214,7 @@ class DirichletKernelClassifierLikelihood(_OneDimensionalLikelihood):
     # The parameter `input` is taken from superclass method, so we can't rename it here.
     # pylint: disable=redefined-builtin
     def __call__(
-        self, input: Union[torch.Tensor, DummyKernelDistribution], *args, **kwargs
+        self, input: torch.Tensor | DummyKernelDistribution, *args, **kwargs
     ) -> torch.distributions.Distribution:
         is_conditional = torch.is_tensor(input)
         is_marginal = isinstance(input, DummyKernelDistribution)
@@ -241,7 +239,7 @@ class GenericExactMarginalLogLikelihood(ExactMarginalLogLikelihood):
 
     def __init__(
         self,
-        likelihood: Union[gpytorch.likelihoods._GaussianLikelihoodBase, DirichletKernelClassifierLikelihood],
+        likelihood: gpytorch.likelihoods._GaussianLikelihoodBase | DirichletKernelClassifierLikelihood,
         model: gpytorch.models.ExactGP,
     ) -> None:
         """

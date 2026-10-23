@@ -16,8 +16,6 @@
 Vanguard includes :class:`gpytorch.kernels.Kernel` subclasses which are recommended for use in controllers.
 """
 
-from typing import Optional, Union
-
 import torch
 from gpytorch import constraints, kernels
 
@@ -28,7 +26,7 @@ class ScaledRBFKernel(kernels.ScaleKernel):
     """
 
     def __init__(
-        self, batch_shape: Union[tuple[int, ...], torch.Size] = torch.Size(), ard_num_dims: Optional[int] = None
+        self, batch_shape: tuple[int, ...] | torch.Size = torch.Size(), ard_num_dims: int | None = None
     ) -> None:
         """
         Initialise self.

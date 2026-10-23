@@ -71,7 +71,7 @@ class TestSmartOptimiser(unittest.TestCase):
 
         # Reset, and check we also reset the module
         smart_optimiser.reset()
-        torch.testing.assert_allclose(module.weight.data, initial_weights)
+        torch.testing.assert_close(module.weight.data, initial_weights)
 
     def test_register_module(self):
         """Test the ability to register additional modules after the optimiser is created."""

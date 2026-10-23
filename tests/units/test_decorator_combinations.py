@@ -17,7 +17,7 @@ Tests for the pairwise combinations of decorators.
 """
 
 import itertools
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 from unittest.mock import patch
 
 import numpy as np
@@ -442,7 +442,7 @@ def _initialise_decorator_pair(
     lower_decorator_details: tuple[type[Decorator], DecoratorDetails],
     *,
     batch_mode: bool,
-) -> tuple[Decorator, list[Decorator], Decorator, list[Decorator], list[Decorator], dict[str, Any], Optional[Dataset]]:
+) -> tuple[Decorator, list[Decorator], Decorator, list[Decorator], list[Decorator], dict[str, Any], Dataset | None]:
     """
     Initialise a pair of decorators for testing.
 
@@ -534,7 +534,7 @@ def _initialise_decorator_pair(
 
 def _create_decorator(
     details: tuple[type[Decorator], DecoratorDetails],
-) -> tuple[Decorator, list[Decorator], dict[str, Any], Optional[Dataset]]:
+) -> tuple[Decorator, list[Decorator], dict[str, Any], Dataset | None]:
     """
     Unpack decorator details.
 
@@ -589,7 +589,7 @@ def _create_decorator(
 def test_combinations(
     upper_details: tuple[type[Decorator], DecoratorDetails],
     lower_details: tuple[type[Decorator], DecoratorDetails],
-    batch_size: Optional[int],
+    batch_size: int | None,
 ) -> None:
     """
     For each decorator combination, check that basic usage doesn't throw any unexpected errors.

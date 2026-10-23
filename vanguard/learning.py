@@ -18,7 +18,7 @@ Contains the LearnYNoise decorator.
 
 import re
 import warnings
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing
@@ -210,7 +210,7 @@ class LearnYNoise(Decorator):
 
 
 def _process_y_std(
-    y_std: Union[float, torch.Tensor, numpy.typing.NDArray[np.floating]],
+    y_std: float | torch.Tensor | numpy.typing.NDArray[np.floating],
     shape: tuple[int, ...],
     dtype: torch.dtype,
     device: torch.device,

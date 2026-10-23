@@ -17,7 +17,7 @@ Contains model classes to enable classification in Vanguard.
 """
 
 import warnings
-from typing import Any, Optional, Union
+from typing import Any
 
 import gpytorch
 import torch
@@ -45,7 +45,7 @@ class DummyKernelDistribution(DummyDistribution):
     # https://github.com/gchq/Vanguard/issues/394
     __class__ = MultivariateNormal
 
-    def __init__(self, labels: Union[Tensor, LinearOperator], kernel: Union[Tensor, LinearOperator]) -> None:
+    def __init__(self, labels: Tensor | LinearOperator, kernel: Tensor | LinearOperator) -> None:
         """
         Initialise self.
 
@@ -92,10 +92,10 @@ class InertKernelModel(ExactGPModel):
 
     def __init__(
         self,
-        train_inputs: Optional[torch.Tensor],
-        train_targets: Optional[torch.Tensor],
+        train_inputs: torch.Tensor | None,
+        train_targets: torch.Tensor | None,
         covar_module: gpytorch.kernels.Kernel,
-        mean_module: Optional[gpytorch.means.Mean],
+        mean_module: gpytorch.means.Mean | None,
         likelihood: gpytorch.likelihoods.Likelihood,
         num_classes: int,
         **_: Any,
